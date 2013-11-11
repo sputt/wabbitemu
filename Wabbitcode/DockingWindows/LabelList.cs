@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
@@ -78,6 +77,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			ParserInformation info = _parserService.GetParserInfo(fileName);
 			if (info == null)
 			{
+                ClearLabels();
 				return;
 			}
 
@@ -85,7 +85,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			ListBox.ObjectCollection labelsToAdd = new ListBox.ObjectCollection(labelsBox);
 
 		    IParserData[] labels = info.Where(d => (d is Label && !((Label) d).IsReusable) || 
-                ((d is Equate || d is Define || d is Macro) && showEquates)).ToArray();
+		                                      ((d is Equate || d is Define || d is Macro) && showEquates)).ToArray();
             labelsToAdd.AddRange(labels);
 
 			labelsBox.Items.Clear();
@@ -106,7 +106,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private void alphaBox_CheckedChanged(object sender, EventArgs e)
 		{
-			Settings.Default.alphabetizeLabels = alphaBox.Checked;
+			Settings.Default.AlphabetizeLabels = alphaBox.Checked;
 			labelsBox.Sorted = alphaBox.Checked;
 			UpdateLabelBox();
 		}
@@ -119,7 +119,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private void includeEquatesBox_CheckedChanged(object sender, EventArgs e)
 		{
-			Settings.Default.showEquates = includeEquatesBox.Checked;
+			Settings.Default.ShowEquates = includeEquatesBox.Checked;
 			UpdateLabelBox();
 		}
 

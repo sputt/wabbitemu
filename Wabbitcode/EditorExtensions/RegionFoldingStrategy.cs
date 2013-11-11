@@ -38,7 +38,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 				if (
 					document.GetCharAt(offs) != '#')
 					continue;
-				var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+				var options = Settings.Default.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 				string normalText = document.GetText(offs, seg.Length - spaceCount);
 				if (normalText.StartsWith("#region", options))
 				{

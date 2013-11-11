@@ -20,7 +20,7 @@ namespace Revsoft.Wabbitcode
 			_project = project;
 
 			var directories = _project.IsInternal ?
-									   Settings.Default.includeDirs.Cast<string>() :
+									   Settings.Default.IncludeDirs.Cast<string>() :
 									   _project.IncludeDirs;
 			foreach (string dir in directories.Where(dir => !string.IsNullOrEmpty(dir)))
 			{
@@ -57,7 +57,7 @@ namespace Revsoft.Wabbitcode
 		{
 			if (_project.IsInternal)
 			{
-				Settings.Default.includeDirs = new StringCollection();
+				Settings.Default.IncludeDirs = new StringCollection();
 			}
 			else
 			{
@@ -68,7 +68,7 @@ namespace Revsoft.Wabbitcode
 			{
 				if (_project.IsInternal)
 				{
-					Settings.Default.includeDirs.Add(includeDir);
+					Settings.Default.IncludeDirs.Add(includeDir);
 				}
 				else
 				{

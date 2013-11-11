@@ -283,7 +283,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 			int lineNumber = _editorBox.Document.GetLineNumberForOffset(startOffset);
 			List<FoldMarker> foldings = _editorBox.Document.FoldingManager.GetFoldingsContainsLineNumber(lineNumber);
 			bool isInComment = false;
-			var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+			var options = Settings.Default.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
             foreach (FoldMarker folder in foldings)
             {
                 isInComment = folder.InnerText.Contains("#endcomment", options);
@@ -769,45 +769,48 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 				if (_codeCompletionWindow.ProcessKeyEvent(key))
 					return true;
 			}
-			if (_codeCompletionWindow == null && (Settings.Default.enableAutoTrigger && ",( .#\t".IndexOf(key) != -1) || (key == ' ' && Control.ModifierKeys == Keys.Control))
-			{
-				ICompletionDataProvider completionDataProvider = new CodeCompletionProvider(_mainForm, _parserService);
 
-				if (Control.ModifierKeys == Keys.Control && _editor.ActiveTextAreaControl.Caret.Offset != 0)
-				{
-					//editor.ActiveTextAreaControl.Caret.Column -= 1;
-					int startOffset = _editor.ActiveTextAreaControl.Caret.Offset;
-					if (startOffset == _editor.Text.Length)
-					{
-						startOffset--;
-					}
+		    if ((_codeCompletionWindow != null || (!Settings.Default.EnableAutoTrigger || ",( .#\t".IndexOf(key) == -1)) && (key != ' ' || Control.ModifierKeys != Keys.Control))
+		    {
+		        return Control.ModifierKeys == Keys.Control;
+		    }
 
-					while (startOffset >= 0 && ",( .#\t\n\r+-*/".IndexOf(_editor.Text[startOffset]) == -1)
-					{
-						startOffset--;
-					}
+		    ICompletionDataProvider completionDataProvider = new CodeCompletionProvider(_mainForm, _parserService);
 
-					if (startOffset == -1)
-					{
-						return false;
-					}
-					key = _editor.Document.TextContent[startOffset];
-				}
-				_codeCompletionWindow = CodeCompletionWindow.ShowCompletionWindow(
-					_mainForm,					// The parent window for the completion window
-					_editor, 					// The text editor to show the window for
-					_mainForm.Text,		        // Filename - will be passed back to the provider
-					completionDataProvider,		// Provider to get the list of possible completions
-					key							// Key pressed - will be passed to the provider
-				);
-				if (_codeCompletionWindow != null)
-				{
-					// ShowCompletionWindow can return null when the provider returns an empty list
-					_codeCompletionWindow.Closed += CloseCodeCompletionWindow;
-					//codeCompletionWindow.
-				}
-			}
-			return Control.ModifierKeys == Keys.Control;
+		    if (Control.ModifierKeys == Keys.Control && _editor.ActiveTextAreaControl.Caret.Offset != 0)
+		    {
+		        //editor.ActiveTextAreaControl.Caret.Column -= 1;
+		        int startOffset = _editor.ActiveTextAreaControl.Caret.Offset;
+		        if (startOffset == _editor.Text.Length)
+		        {
+		            startOffset--;
+		        }
+
+		        while (startOffset >= 0 && ",( .#\t\n\r+-*/".IndexOf(_editor.Text[startOffset]) == -1)
+		        {
+		            startOffset--;
+		        }
+
+		        if (startOffset == -1)
+		        {
+		            return false;
+		        }
+		        key = _editor.Document.TextContent[startOffset];
+		    }
+		    _codeCompletionWindow = CodeCompletionWindow.ShowCompletionWindow(
+		        _mainForm,					// The parent window for the completion window
+		        _editor, 					// The text editor to show the window for
+		        _mainForm.Text,		        // Filename - will be passed back to the provider
+		        completionDataProvider,		// Provider to get the list of possible completions
+		        key							// Key pressed - will be passed to the provider
+		        );
+		    if (_codeCompletionWindow != null)
+		    {
+		        // ShowCompletionWindow can return null when the provider returns an empty list
+		        _codeCompletionWindow.Closed += CloseCodeCompletionWindow;
+		        //codeCompletionWindow.
+		    }
+		    return Control.ModifierKeys == Keys.Control;
 		}
 
 		void CloseCodeCompletionWindow(object sender, EventArgs e)

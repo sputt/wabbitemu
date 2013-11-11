@@ -13,7 +13,7 @@ namespace Revsoft.Wabbitcode.Utils
 		{
 			get
 			{
-				return Settings.Default.configLoc.Replace("%docs%", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+				return Settings.Default.ConfigLoc.Replace("%docs%", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 			}
 		}
 
@@ -21,7 +21,7 @@ namespace Revsoft.Wabbitcode.Utils
 		{
 			get
 			{
-				return Path.Combine(Settings.Default.createFolders ? 
+				return Path.Combine(Settings.Default.CreateFolders ? 
 					WabbitcodeFolder : 
 					Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Includes");
 			}
@@ -31,7 +31,7 @@ namespace Revsoft.Wabbitcode.Utils
 		{
 			get
 			{
-				return Settings.Default.createFolders ? 
+				return Settings.Default.CreateFolders ? 
 					Path.Combine(WabbitcodeFolder, "Projects") : 
 					Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Templates");
 			}
@@ -41,7 +41,7 @@ namespace Revsoft.Wabbitcode.Utils
 		{
 			get
 			{
-				return Settings.Default.assemblerLoc.Replace("%docs%", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+				return Settings.Default.AssemblerLoc.Replace("%docs%", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 			}
 		}
 
@@ -49,7 +49,7 @@ namespace Revsoft.Wabbitcode.Utils
 		{
 			get
 			{
-				return Path.Combine(Settings.Default.createFolders ?
+				return Path.Combine(Settings.Default.CreateFolders ?
 					WabbitcodeFolder :
 					Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Templates");
 			}
@@ -65,7 +65,7 @@ namespace Revsoft.Wabbitcode.Utils
 
 		internal static void InitDirs()
 		{
-			if (Settings.Default.createFolders)
+			if (Settings.Default.CreateFolders)
 			{
 				try
 				{

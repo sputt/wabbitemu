@@ -64,7 +64,7 @@ namespace Revsoft.Wabbitcode.Services
 
 			// set flags
 			_assembler.SetFlags(flags);
-			_assembler.SetCaseSensitive(Settings.Default.caseSensitive);
+			_assembler.SetCaseSensitive(Settings.Default.CaseSensitive);
 
 			// assemble
 			string rawOutput = _assembler.Assemble();

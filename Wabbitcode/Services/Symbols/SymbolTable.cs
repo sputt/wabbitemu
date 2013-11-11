@@ -24,7 +24,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 
 		public string GetAddressFromLabel(string label)
 		{
-		    if (!Settings.Default.caseSensitive)
+		    if (!Settings.Default.CaseSensitive)
 		    {
 		        label = label.ToUpper();
 		    }

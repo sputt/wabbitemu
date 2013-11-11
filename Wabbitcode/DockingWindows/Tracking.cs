@@ -160,7 +160,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 	    private int EvaluateElement(string element)
 	    {
-	        if (!Settings.Default.caseSensitive)
+	        if (!Settings.Default.CaseSensitive)
 	        {
 	            element = element.ToUpper();
 	        }
