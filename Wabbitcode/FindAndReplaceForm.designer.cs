@@ -82,40 +82,43 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.findFindBox.Location = new System.Drawing.Point(85, 6);
             this.findFindBox.Name = "findFindBox";
-            this.findFindBox.Size = new System.Drawing.Size(329, 20);
+            this.findFindBox.Size = new System.Drawing.Size(276, 20);
             this.findFindBox.TabIndex = 1;
             this.findFindBox.TextChanged += new System.EventHandler(this.txtLookFor_TextChanged);
             // 
             // findNextFindButton
             // 
             this.findNextFindButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.findNextFindButton.Location = new System.Drawing.Point(340, 85);
+            this.findNextFindButton.Location = new System.Drawing.Point(286, 80);
             this.findNextFindButton.Name = "findNextFindButton";
             this.findNextFindButton.Size = new System.Drawing.Size(75, 23);
             this.findNextFindButton.TabIndex = 6;
-            this.findNextFindButton.Text = "&Find Next";
+            this.findNextFindButton.Text = "&Find next";
             this.findNextFindButton.Click += new System.EventHandler(this.findNextFindButton_Click);
             // 
             // findPrevFindButton
             // 
             this.findPrevFindButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.findPrevFindButton.Location = new System.Drawing.Point(250, 85);
+            this.findPrevFindButton.Location = new System.Drawing.Point(196, 80);
             this.findPrevFindButton.Name = "findPrevFindButton";
             this.findPrevFindButton.Size = new System.Drawing.Size(84, 23);
             this.findPrevFindButton.TabIndex = 6;
-            this.findPrevFindButton.Text = "Find Pre&vious";
+            this.findPrevFindButton.Text = "Find pre&vious";
             this.findPrevFindButton.Click += new System.EventHandler(this.findPrevFindButton_Click);
             // 
             // findTabs
             // 
+            this.findTabs.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.findTabs.Controls.Add(this.findPage);
             this.findTabs.Controls.Add(this.replacePage);
             this.findTabs.Controls.Add(this.findInFilesPage);
-            this.findTabs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.findTabs.Location = new System.Drawing.Point(0, 0);
+            this.findTabs.Location = new System.Drawing.Point(9, 9);
+            this.findTabs.Margin = new System.Windows.Forms.Padding(0);
             this.findTabs.Name = "findTabs";
             this.findTabs.SelectedIndex = 0;
-            this.findTabs.Size = new System.Drawing.Size(430, 140);
+            this.findTabs.Size = new System.Drawing.Size(375, 135);
             this.findTabs.TabIndex = 10;
             this.findTabs.SelectedIndexChanged += new System.EventHandler(this.findTabs_SelectedIndexChanged);
             // 
@@ -130,7 +133,7 @@
             this.findPage.Location = new System.Drawing.Point(4, 22);
             this.findPage.Name = "findPage";
             this.findPage.Padding = new System.Windows.Forms.Padding(3);
-            this.findPage.Size = new System.Drawing.Size(422, 114);
+            this.findPage.Size = new System.Drawing.Size(367, 109);
             this.findPage.TabIndex = 0;
             this.findPage.Text = "Find";
             this.findPage.UseVisualStyleBackColor = true;
@@ -168,7 +171,7 @@
             this.replacePage.Location = new System.Drawing.Point(4, 22);
             this.replacePage.Name = "replacePage";
             this.replacePage.Padding = new System.Windows.Forms.Padding(3);
-            this.replacePage.Size = new System.Drawing.Size(422, 114);
+            this.replacePage.Size = new System.Drawing.Size(367, 109);
             this.replacePage.TabIndex = 1;
             this.replacePage.Text = "Replace";
             this.replacePage.UseVisualStyleBackColor = true;
@@ -213,42 +216,42 @@
             // 
             this.replaceFindBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.replaceFindBox.Location = new System.Drawing.Point(85, 6);
+            this.replaceFindBox.Location = new System.Drawing.Point(87, 6);
             this.replaceFindBox.Name = "replaceFindBox";
-            this.replaceFindBox.Size = new System.Drawing.Size(329, 20);
+            this.replaceFindBox.Size = new System.Drawing.Size(274, 20);
             this.replaceFindBox.TabIndex = 14;
             // 
             // replaceReplaceBox
             // 
             this.replaceReplaceBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.replaceReplaceBox.Location = new System.Drawing.Point(86, 32);
+            this.replaceReplaceBox.Location = new System.Drawing.Point(87, 32);
             this.replaceReplaceBox.Name = "replaceReplaceBox";
-            this.replaceReplaceBox.Size = new System.Drawing.Size(329, 20);
+            this.replaceReplaceBox.Size = new System.Drawing.Size(274, 20);
             this.replaceReplaceBox.TabIndex = 16;
             // 
             // findNextReplaceButton
             // 
             this.findNextReplaceButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.findNextReplaceButton.Location = new System.Drawing.Point(340, 85);
+            this.findNextReplaceButton.Location = new System.Drawing.Point(286, 80);
             this.findNextReplaceButton.Name = "findNextReplaceButton";
             this.findNextReplaceButton.Size = new System.Drawing.Size(75, 23);
             this.findNextReplaceButton.TabIndex = 19;
-            this.findNextReplaceButton.Text = "&Find Next";
+            this.findNextReplaceButton.Text = "&Find next";
             // 
             // findPrevReplaceButton
             // 
             this.findPrevReplaceButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.findPrevReplaceButton.Location = new System.Drawing.Point(250, 85);
+            this.findPrevReplaceButton.Location = new System.Drawing.Point(196, 80);
             this.findPrevReplaceButton.Name = "findPrevReplaceButton";
             this.findPrevReplaceButton.Size = new System.Drawing.Size(84, 23);
             this.findPrevReplaceButton.TabIndex = 20;
-            this.findPrevReplaceButton.Text = "Find Pre&vious";
+            this.findPrevReplaceButton.Text = "Find pre&vious";
             // 
             // replaceButton
             // 
             this.replaceButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.replaceButton.Location = new System.Drawing.Point(169, 85);
+            this.replaceButton.Location = new System.Drawing.Point(115, 80);
             this.replaceButton.Name = "replaceButton";
             this.replaceButton.Size = new System.Drawing.Size(75, 23);
             this.replaceButton.TabIndex = 12;
@@ -258,11 +261,11 @@
             // replaceAllButton
             // 
             this.replaceAllButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.replaceAllButton.Location = new System.Drawing.Point(88, 85);
+            this.replaceAllButton.Location = new System.Drawing.Point(34, 80);
             this.replaceAllButton.Name = "replaceAllButton";
             this.replaceAllButton.Size = new System.Drawing.Size(75, 23);
             this.replaceAllButton.TabIndex = 11;
-            this.replaceAllButton.Text = "Replace &All";
+            this.replaceAllButton.Text = "Replace &all";
             this.replaceAllButton.Click += new System.EventHandler(this.replaceAllButton_Click);
             // 
             // findInFilesPage
@@ -278,7 +281,7 @@
             this.findInFilesPage.Location = new System.Drawing.Point(4, 22);
             this.findInFilesPage.Name = "findInFilesPage";
             this.findInFilesPage.Padding = new System.Windows.Forms.Padding(3);
-            this.findInFilesPage.Size = new System.Drawing.Size(422, 114);
+            this.findInFilesPage.Size = new System.Drawing.Size(367, 109);
             this.findInFilesPage.TabIndex = 2;
             this.findInFilesPage.Text = "Find in files";
             this.findInFilesPage.UseVisualStyleBackColor = true;
@@ -323,26 +326,26 @@
             // 
             this.findFilesBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.findFilesBox.Location = new System.Drawing.Point(85, 6);
+            this.findFilesBox.Location = new System.Drawing.Point(87, 6);
             this.findFilesBox.Name = "findFilesBox";
-            this.findFilesBox.Size = new System.Drawing.Size(329, 20);
+            this.findFilesBox.Size = new System.Drawing.Size(274, 20);
             this.findFilesBox.TabIndex = 24;
             // 
             // replaceFilesBox
             // 
             this.replaceFilesBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.replaceFilesBox.Location = new System.Drawing.Point(86, 32);
+            this.replaceFilesBox.Location = new System.Drawing.Point(87, 32);
             this.replaceFilesBox.Name = "replaceFilesBox";
-            this.replaceFilesBox.Size = new System.Drawing.Size(329, 20);
+            this.replaceFilesBox.Size = new System.Drawing.Size(274, 20);
             this.replaceFilesBox.TabIndex = 26;
             // 
             // findInFilesButton
             // 
             this.findInFilesButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.findInFilesButton.Location = new System.Drawing.Point(249, 85);
+            this.findInFilesButton.Location = new System.Drawing.Point(268, 80);
             this.findInFilesButton.Name = "findInFilesButton";
-            this.findInFilesButton.Size = new System.Drawing.Size(165, 23);
+            this.findInFilesButton.Size = new System.Drawing.Size(93, 23);
             this.findInFilesButton.TabIndex = 29;
             this.findInFilesButton.Text = "&Find in files";
             this.findInFilesButton.Click += new System.EventHandler(this.findInFilesButton_Click);
@@ -350,9 +353,9 @@
             // replaceInFilesButton
             // 
             this.replaceInFilesButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.replaceInFilesButton.Location = new System.Drawing.Point(87, 85);
+            this.replaceInFilesButton.Location = new System.Drawing.Point(169, 80);
             this.replaceInFilesButton.Name = "replaceInFilesButton";
-            this.replaceInFilesButton.Size = new System.Drawing.Size(156, 23);
+            this.replaceInFilesButton.Size = new System.Drawing.Size(93, 23);
             this.replaceInFilesButton.TabIndex = 22;
             this.replaceInFilesButton.Text = "&Replace in files";
             this.replaceInFilesButton.Visible = false;
@@ -362,7 +365,7 @@
             this.AcceptButton = this.findNextFindButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(430, 140);
+            this.ClientSize = new System.Drawing.Size(393, 153);
             this.Controls.Add(this.findTabs);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
