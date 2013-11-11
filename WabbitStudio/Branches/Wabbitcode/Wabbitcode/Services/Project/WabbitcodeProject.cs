@@ -275,7 +275,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 	    public string GetFilePathFromRelativePath(string relativePath)
 	    {
             IEnumerable<string> includeDirs = IsInternal ?
-                Settings.Default.includeDirs.Cast<string>() :
+                Settings.Default.IncludeDirs.Cast<string>() :
                 IncludeDirs;
 
             foreach (string dir in includeDirs.Where(dir => File.Exists(Path.Combine(dir, relativePath))))

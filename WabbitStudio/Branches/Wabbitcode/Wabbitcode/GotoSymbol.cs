@@ -37,7 +37,7 @@ namespace Revsoft.Wabbitcode
 		private void ValidateInput()
 		{
 			string symbolName = inputBox.Text;
-			IParserData data = _parserService.GetParserData(symbolName, Settings.Default.caseSensitive).FirstOrDefault();
+			IParserData data = _parserService.GetParserData(symbolName, Settings.Default.CaseSensitive).FirstOrDefault();
 			SetInputError(data == null ? "Invalid symbol name" : string.Empty);
 		}
 

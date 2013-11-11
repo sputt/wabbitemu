@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using System;
 using System.Drawing;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 
@@ -17,7 +18,16 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			_documentService = documentService;
 
 			outputWindowBox.ContextMenu = contextMenu1;
+            Settings.Default.SettingChanging += Default_SettingChanging;
 		}
+
+        void Default_SettingChanging(object sender, System.Configuration.SettingChangingEventArgs e)
+        {
+            if (e.SettingName == "OutputFont")
+            {
+                outputWindowBox.Font = (Font) e.NewValue;
+            }
+        }
 
 		public override void Copy()
 		{
@@ -59,11 +69,6 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		internal void ClearOutput()
 		{
 			outputWindowBox.Clear();
-		}
-
-		internal void UpdateFont(Font font)
-		{
-			outputWindowBox.Font = font;
 		}
 
 		private void copyOutputButton_Click(object sender, EventArgs e)

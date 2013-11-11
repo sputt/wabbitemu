@@ -272,8 +272,8 @@ namespace Revsoft.Wabbitcode
 
 			// misc stuff
 			statusBarMenuItem.Checked = statusBar.Visible;
-			lineNumMenuItem.Checked = Settings.Default.lineNumbers;
-			iconBarMenuItem.Checked = Settings.Default.iconBar;
+			lineNumMenuItem.Checked = Settings.Default.LineNumbers;
+			iconBarMenuItem.Checked = Settings.Default.IconBar;
 		}
 
 		private void GetCodeInfo(object sender, EditorSelectionEventArgs e)
@@ -613,9 +613,9 @@ namespace Revsoft.Wabbitcode
 
 				Task.Factory.StartNew(() =>
 				{
-					string outputFile = Path.ChangeExtension(inputFile, _assemblerService.GetExtension(Settings.Default.outputFile));
+					string outputFile = Path.ChangeExtension(inputFile, _assemblerService.GetExtension(Settings.Default.OutputFile));
 					string originalDir = Path.GetDirectoryName(inputFile);
-					_assemblerService.AssembleFile(inputFile, outputFile, originalDir, Settings.Default.includeDirs.Cast<string>());
+					_assemblerService.AssembleFile(inputFile, outputFile, originalDir, Settings.Default.IncludeDirs.Cast<string>());
 					if (fileEventHandler != null)
 					{
 						_assemblerService.AssemblerFileFinished -= fileEventHandler;
@@ -665,7 +665,7 @@ namespace Revsoft.Wabbitcode
 
         private void InitiailzeToolbars()
         {
-            if (Settings.Default.mainToolBar)
+            if (Settings.Default.MainToolBar)
             {
                 mainToolBar.Show();
             }
@@ -674,7 +674,7 @@ namespace Revsoft.Wabbitcode
                 mainToolBar.Hide();
             }
 
-            if (Settings.Default.debugToolbar)
+            if (Settings.Default.DebugToolbar)
             {
                 debugToolStrip.Show();
             }
@@ -737,7 +737,7 @@ namespace Revsoft.Wabbitcode
 
         private void LoadStartupProject()
         {
-            if (string.IsNullOrEmpty(Settings.Default.startupProject))
+            if (string.IsNullOrEmpty(Settings.Default.StartupProject))
             {
                 return;
             }
@@ -745,13 +745,13 @@ namespace Revsoft.Wabbitcode
             try
             {
                 bool valid = false;
-                if (File.Exists(Settings.Default.startupProject))
+                if (File.Exists(Settings.Default.StartupProject))
                 {
-                    valid = OpenProject(Settings.Default.startupProject);
+                    valid = OpenProject(Settings.Default.StartupProject);
                 }
                 else
                 {
-                    Settings.Default.startupProject = string.Empty;
+                    Settings.Default.StartupProject = string.Empty;
                     DockingService.ShowError("Error: Project file not found");
                 }
 
@@ -770,7 +770,7 @@ namespace Revsoft.Wabbitcode
                                  MessageBoxIcon.Error);
                 if (result == DialogResult.Yes)
                 {
-                    Settings.Default.startupProject = string.Empty;
+                    Settings.Default.StartupProject = string.Empty;
                 }
             }
         }
@@ -794,11 +794,11 @@ namespace Revsoft.Wabbitcode
         private void CloseProject()
         {
             DialogResult result = DialogResult.No;
-            if (_projectService.Project.NeedsSave && !Settings.Default.autoSaveProject)
+            if (_projectService.Project.NeedsSave && !Settings.Default.AutoSaveProject)
             {
                 result = MessageBox.Show("Would you like to save your changes to the project file?", "Save project?", MessageBoxButtons.YesNo, MessageBoxIcon.None);
             }
-            if (result == DialogResult.Yes || Settings.Default.autoSaveProject)
+            if (result == DialogResult.Yes || Settings.Default.AutoSaveProject)
             {
                 _projectService.SaveProject();
             }
@@ -840,7 +840,7 @@ namespace Revsoft.Wabbitcode
                     if (string.Equals(extCheck, ".wcodeproj", StringComparison.OrdinalIgnoreCase))
                     {
                         OpenProject(fileName);
-                        if (Settings.Default.startupProject == fileName)
+                        if (Settings.Default.StartupProject == fileName)
                         {
                             continue;
                         }
@@ -850,7 +850,7 @@ namespace Revsoft.Wabbitcode
                                 MessageBoxButtons.YesNo,
                                 MessageBoxIcon.Question) == DialogResult.Yes)
                         {
-                            Settings.Default.startupProject = fileName;
+                            Settings.Default.StartupProject = fileName;
                         }
                     }
                     else
@@ -1164,8 +1164,8 @@ namespace Revsoft.Wabbitcode
 
         private void ShowDebugPanels()
         {
-            _showToolbar = Settings.Default.debugToolbar;
-            Settings.Default.debugToolbar = true;
+            _showToolbar = Settings.Default.DebugToolbar;
+            Settings.Default.DebugToolbar = true;
             if (!_showToolbar)
             {
                 debugToolStrip.Visible = true;
@@ -1183,7 +1183,7 @@ namespace Revsoft.Wabbitcode
 
         private void HideDebugPanels()
         {
-            Settings.Default.debugToolbar = _showToolbar;
+            Settings.Default.DebugToolbar = _showToolbar;
             if (!_showToolbar)
             {
                 debugToolStrip.Visible = false;
@@ -1356,7 +1356,7 @@ namespace Revsoft.Wabbitcode
                         _projectService.CreateInternalProject();
                     }
 
-                    if (Settings.Default.startupProject != fileName)
+                    if (Settings.Default.StartupProject != fileName)
                     {
                         if (
                             MessageBox.Show("Would you like to make this your default project?",
@@ -1364,7 +1364,7 @@ namespace Revsoft.Wabbitcode
                                             MessageBoxButtons.YesNo,
                                             MessageBoxIcon.Question) == DialogResult.Yes)
                         {
-                            Settings.Default.startupProject = fileName;
+                            Settings.Default.StartupProject = fileName;
                         }
                     }
                 }
@@ -1631,7 +1631,7 @@ namespace Revsoft.Wabbitcode
             }
 
             string symbolString = gotoSymbolBox.inputBox.Text;
-            IParserData data = _parserService.GetParserData(symbolString, Settings.Default.caseSensitive).FirstOrDefault();
+            IParserData data = _parserService.GetParserData(symbolString, Settings.Default.CaseSensitive).FirstOrDefault();
             if (data == null)
             {
                 return;
@@ -1655,7 +1655,7 @@ namespace Revsoft.Wabbitcode
 
         private void prefsMenuItem_Click(object sender, EventArgs e)
         {
-            Preferences prefs = new Preferences(_dockingService);
+            Preferences prefs = new Preferences();
             prefs.ShowDialog();
         }
 
@@ -1711,7 +1711,7 @@ namespace Revsoft.Wabbitcode
                         mainToolBar.Hide();
                     }
 
-                    Settings.Default.mainToolBar = item.Checked;
+                    Settings.Default.MainToolBar = item.Checked;
                     break;
                 case "editorToolBar":
                     if (item.Checked)
@@ -1723,7 +1723,7 @@ namespace Revsoft.Wabbitcode
                         editorToolStrip.Hide();
                     }
 
-                    Settings.Default.editorToolbar = item.Checked;
+                    Settings.Default.EditorToolbar = item.Checked;
                     break;
                 case "outputWindow":
                     if (item.Checked)
@@ -1826,7 +1826,7 @@ namespace Revsoft.Wabbitcode
                         debugToolStrip.Hide();
                     }
 
-                    Settings.Default.debugToolbar = item.Checked;
+                    Settings.Default.DebugToolbar = item.Checked;
                     break;
                 case "errorList":
                     if (item.Checked)
@@ -1973,7 +1973,7 @@ namespace Revsoft.Wabbitcode
             string inputFile = _documentService.ActiveFileName;
             string outputFile = Path.ChangeExtension(_documentService.ActiveFileName, "lab");
             string originalDir = Path.GetDirectoryName(inputFile);
-            var includeDirs = Settings.Default.includeDirs.Cast<string>();
+            var includeDirs = Settings.Default.IncludeDirs.Cast<string>();
             _assemblerService.AssembleFile(inputFile, outputFile, originalDir,
                 includeDirs, AssemblyFlags.Normal | AssemblyFlags.Symtable);
         }
@@ -1989,7 +1989,7 @@ namespace Revsoft.Wabbitcode
             string inputFile = _dockingService.ActiveDocument.FileName;
             string outputFile = Path.ChangeExtension(inputFile, "lst");
             string originalDir = Path.GetDirectoryName(inputFile);
-            var includeDirs = Settings.Default.includeDirs.Cast<string>();
+            var includeDirs = Settings.Default.IncludeDirs.Cast<string>();
             _assemblerService.AssembleFile(inputFile, outputFile, originalDir, includeDirs, AssemblyFlags.List | AssemblyFlags.Normal);
         }
 
@@ -2004,7 +2004,7 @@ namespace Revsoft.Wabbitcode
             string inputFile = _dockingService.ActiveDocument.FileName;
             string outputFile = string.Empty;
             string originalDir = Path.GetDirectoryName(inputFile);
-            var includeDirs = Settings.Default.includeDirs.Cast<string>();
+            var includeDirs = Settings.Default.IncludeDirs.Cast<string>();
             _assemblerService.AssembleFile(inputFile, outputFile, originalDir, includeDirs, AssemblyFlags.Stats);
         }
 

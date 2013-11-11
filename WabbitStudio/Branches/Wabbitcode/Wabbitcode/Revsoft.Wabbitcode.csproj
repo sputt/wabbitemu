@@ -621,6 +621,7 @@
     <Compile Include="EditorExtensions\EditorSelectionEventArgs.cs" />
     <Compile Include="EditorExtensions\EditorEventArgs.cs" />
     <Compile Include="EditorExtensions\RegionFoldingStrategy.cs" />
+    <Compile Include="Properties\TempSettings.Designer.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\VS2012ColorTable.cs" />
     <Compile Include="Services\Assembler\AssemblerOutput.cs" />
@@ -644,6 +645,8 @@
     <Compile Include="Services\ParserEventArgs.cs" />
     <Compile Include="Services\ParserProgressEventArgs.cs" />
     <Compile Include="Services\ParserService.cs" />
+    <Compile Include="Services\Parser\IParser.cs" />
+    <Compile Include="Services\Parser\Z80Parser.cs" />
     <Compile Include="Services\Symbols\CalcLocation.cs" />
     <Compile Include="Utils\WabbitcodeBreakpointManager.cs" />
     <Compile Include="Utils\DocumentLocation.cs" />
@@ -659,11 +662,6 @@
     </Compile>
     <Compile Include="Extensions\AsmFormattingStrategy.cs" />
     <Compile Include="Utils\ListBoxItem.cs" />
-    <Compile Include="Properties\TempSettings.Designer.cs">
-      <DependentUpon>TempSettings.settings</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
     <Compile Include="Refactor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -949,10 +947,6 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="Properties\TempSettings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>TempSettings.Designer.cs</LastGenOutput>
-    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -1007,6 +1001,7 @@
     <EmbeddedResource Include="Extensions\TreeView.resx">
       <DependentUpon>TreeView.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="Properties\TempSettings.settings" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

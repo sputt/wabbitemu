@@ -1,4 +1,4 @@
-﻿using Revsoft.Wabbitcode.Services.Interfaces;
+﻿using System.Linq;
 using Revsoft.Wabbitcode.Utils;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Properties;
@@ -20,13 +20,10 @@ namespace Revsoft.Wabbitcode
 		private bool _changing;
 		private readonly int[] _fontSizes = { 6, 8, 9, 10, 12, 14, 16, 18, 24 };
 		private bool _savesettings;
-		private readonly IDockingService _dockingService;
 
-		public Preferences(IDockingService dockingService)
+	    public Preferences()
 		{
-			_dockingService = dockingService;
-
-			foreach (SettingsProperty setting in Settings.Default.Properties)
+		    foreach (SettingsProperty setting in Settings.Default.Properties)
 			{
 				TempSettings.Default[setting.Name] = Settings.Default[setting.Name];
 			}
@@ -54,7 +51,7 @@ namespace Revsoft.Wabbitcode
 			// editorbox font stuff
 			_changing = true;
 			fontBox.SelectedIndex = 0;
-			string fontName = Settings.Default.editorFont.Name;
+			string fontName = Settings.Default.EditorFont.Name;
 			while (fontBox.Items[fontBox.SelectedIndex].ToString() != fontName &&
 				   fontBox.SelectedIndex < fontBox.Items.Count - 1)
 			{
@@ -63,7 +60,7 @@ namespace Revsoft.Wabbitcode
 
 			fontSizeBox.SelectedIndex = 0;
 			while (fontSizeBox.Items[fontSizeBox.SelectedIndex].ToString() !=
-				   Settings.Default.editorFont.Size.ToString() &&
+				   Settings.Default.EditorFont.Size.ToString() &&
 				   fontSizeBox.SelectedIndex < fontSizeBox.Items.Count - 1)
 			{
 				fontSizeBox.SelectedIndex++;
@@ -71,7 +68,7 @@ namespace Revsoft.Wabbitcode
 
 			// output window font stuff
 			outFontBox.SelectedIndex = 0;
-			string outFontName = Settings.Default.outputFont.Name;
+			string outFontName = Settings.Default.OutputFont.Name;
 			while (outFontBox.Items[outFontBox.SelectedIndex].ToString() != outFontName &&
 				   outFontBox.SelectedIndex < outFontBox.Items.Count - 1)
 			{
@@ -80,7 +77,7 @@ namespace Revsoft.Wabbitcode
 
 			outFontSizeBox.SelectedIndex = 0;
 			while (outFontSizeBox.Items[outFontSizeBox.SelectedIndex].ToString() !=
-				   Settings.Default.outputFont.Size.ToString() &&
+				   Settings.Default.OutputFont.Size.ToString() &&
 				   outFontSizeBox.SelectedIndex < outFontSizeBox.Items.Count - 1)
 			{
 				outFontSizeBox.SelectedIndex++;
@@ -89,18 +86,19 @@ namespace Revsoft.Wabbitcode
 			_changing = false;
 
 			// checkboxs for editor
-			autoIndentBox.Checked = Settings.Default.autoIndent;
-			antiAliasBox.Checked = Settings.Default.antiAlias;
-			inverseScrollingBox.Checked = Settings.Default.inverseScrolling;
-			enableFoldingBox.Checked = Settings.Default.enableFolding;
-			enableAutoTriggerBox.Checked = Settings.Default.enableAutoTrigger;
-			enableRefHighlighterBox.Checked = Settings.Default.referencesHighlighter;
-			colorizeOutWinBox.Checked = Settings.Default.colorizeOutWin;
+			autoIndentBox.Checked = Settings.Default.AutoIndent;
+			antiAliasBox.Checked = Settings.Default.AntiAlias;
+			inverseScrollingBox.Checked = Settings.Default.InverseScrolling;
+			enableFoldingBox.Checked = Settings.Default.EnableFolding;
+			enableAutoTriggerBox.Checked = Settings.Default.EnableAutoTrigger;
+			enableRefHighlighterBox.Checked = Settings.Default.ReferencesHighlighter;
+			colorizeOutWinBox.Checked = Settings.Default.ColorizeOutWin;
 
 			// highlighting stuff
-			highlightEnabled.Checked = Settings.Default.useSyntaxHighlighting;
-			highlightBox.Enabled = Settings.Default.useSyntaxHighlighting;
-			defaultProjBox.Text = Settings.Default.startupProject;
+			highlightEnabled.Checked = Settings.Default.UseSyntaxHighlighting;
+			highlightBox.Enabled = Settings.Default.UseSyntaxHighlighting;
+			defaultProjBox.Text = Settings.Default.StartupProject;
+		    externalHighBox.Text = Settings.Default.ExternalHighlight;
 
 			// this is fucking badass code right here
 			foreach (Control control in highlightBox.Controls)
@@ -118,37 +116,33 @@ namespace Revsoft.Wabbitcode
 			}
 
 			// output stuff
-			foreach (Control control in outTypeBox.Controls)
+			foreach (var button in outTypeBox.Controls.OfType<RadioButton>())
 			{
-				var button = control as RadioButton;
-				if (button != null)
-				{
-					button.Checked = Settings.Default.outputFile == button.TabIndex;
-				}
+			    button.Checked = Settings.Default.OutputFile == button.TabIndex;
 			}
 
-			caseSenseBox.Checked = Settings.Default.caseSensitive;
+			caseSenseBox.Checked = Settings.Default.CaseSensitive;
 
 			// need to add this eventually
 			noBinaryBox.Checked = false;
-			sendFileEmu.Checked = Settings.Default.sendFileEmu;
-			tabSizeUpDown.Value = Settings.Default.tabSize;
-			saveAutoBox.Checked = Settings.Default.autoSaveProject;
-			convertTabsToSpacesBox.Checked = Settings.Default.convertTabs;
-			wabbitFolderCheck.Checked = Settings.Default.createFolders;
+			sendFileEmu.Checked = Settings.Default.SendFileEmu;
+			tabSizeUpDown.Value = Settings.Default.TabSize;
+			saveAutoBox.Checked = Settings.Default.AutoSaveProject;
+			convertTabsToSpacesBox.Checked = Settings.Default.ConvertTabs;
+			wabbitFolderCheck.Checked = Settings.Default.CreateFolders;
 			assemblerLocBox.Text = Environment.ExpandEnvironmentVariables(
-									   Settings.Default.assemblerLoc.Replace(
+									   Settings.Default.AssemblerLoc.Replace(
 										   "%docs%",
 										   Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
 			dockConfigLoc.Text = Environment.ExpandEnvironmentVariables(
-									 Settings.Default.wabbitLoc.Replace(
+									 Settings.Default.WabbitLoc.Replace(
 										 "%docs%",
 										 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
 		}
 
 		private void antiAliasBox_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.antiAlias = antiAliasBox.Checked;
+			TempSettings.Default.AntiAlias = antiAliasBox.Checked;
 		}
 
 		private void applyButton_Click(object sender, EventArgs e)
@@ -160,7 +154,7 @@ namespace Revsoft.Wabbitcode
 
 		private void autoIndentBox_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.autoIndent = autoIndentBox.Checked;
+			TempSettings.Default.AutoIndent = autoIndentBox.Checked;
 		}
 
 		private void browseAssembler_Click(object sender, EventArgs e)
@@ -176,7 +170,7 @@ namespace Revsoft.Wabbitcode
 			}
 
 			assemblerLocBox.Text = openFile.FileName;
-			TempSettings.Default.assemblerLoc = openFile.FileName;
+			TempSettings.Default.AssemblerLoc = openFile.FileName;
 		}
 
 		private void browseHighButton_Click(object sender, EventArgs e)
@@ -196,7 +190,7 @@ namespace Revsoft.Wabbitcode
 
 			_browsing = true;
 			externalHighBox.Text = openFileDialog.FileName;
-			TempSettings.Default.externalHighlight = openFileDialog.FileName;
+			TempSettings.Default.ExternalHighlight = openFileDialog.FileName;
 		}
 
 		private void browseProjButton_Click(object sender, EventArgs e)
@@ -216,7 +210,7 @@ namespace Revsoft.Wabbitcode
 
 			_browsing = true;
 			defaultProjBox.Text = openFileDialog.FileName;
-			TempSettings.Default.startupProject = openFileDialog.FileName;
+			TempSettings.Default.StartupProject = openFileDialog.FileName;
 		}
 
 		private void browseWabbit_Click(object sender, EventArgs e)
@@ -232,7 +226,7 @@ namespace Revsoft.Wabbitcode
 			}
 
 			wabbitLocBox.Text = openFile.FileName;
-			TempSettings.Default.wabbitLoc = openFile.FileName;
+			TempSettings.Default.WabbitLoc = openFile.FileName;
 		}
 
 		private void cancelButton_Click(object sender, EventArgs e)
@@ -242,22 +236,22 @@ namespace Revsoft.Wabbitcode
 
 		private void caseSenseBox_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.caseSensitive = caseSenseBox.Checked;
+			TempSettings.Default.CaseSensitive = caseSenseBox.Checked;
 		}
 
 		private void convertTabsToSpacesBox_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.convertTabs = convertTabsToSpacesBox.Checked;
+			TempSettings.Default.ConvertTabs = convertTabsToSpacesBox.Checked;
 		}
 
 		private void defaultProjBox_KeyPress(object sender, KeyPressEventArgs e)
 		{
-			TempSettings.Default.startupProject = defaultProjBox.Text;
+			TempSettings.Default.StartupProject = defaultProjBox.Text;
 		}
 
 		private void defaultProjBox_TextChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.startupProject = defaultProjBox.Text;
+			TempSettings.Default.StartupProject = defaultProjBox.Text;
 		}
 
 		private void dockConfigBrowse_Click(object sender, EventArgs e)
@@ -273,22 +267,22 @@ namespace Revsoft.Wabbitcode
 			}
 
 			dockConfigLoc.Text = openFile.FileName;
-			TempSettings.Default.configLoc = openFile.FileName;
+			TempSettings.Default.ConfigLoc = openFile.FileName;
 		}
 
 		private void enableAutoCompleteBox_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.enableAutoTrigger = enableAutoTriggerBox.Checked;
+			TempSettings.Default.EnableAutoTrigger = enableAutoTriggerBox.Checked;
 		}
 
 		private void enableFoldingBox_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.enableFolding = enableFoldingBox.Checked;
+			TempSettings.Default.EnableFolding = enableFoldingBox.Checked;
 		}
 
 		private void enableRefHighlighterBox_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.referencesHighlighter = enableRefHighlighterBox.Checked;
+			TempSettings.Default.ReferencesHighlighter = enableRefHighlighterBox.Checked;
 		}
 
 		private void fontBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -298,7 +292,7 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			TempSettings.Default.editorFont = new Font(
+			TempSettings.Default.EditorFont = new Font(
 				new FontFamily(fontBox.Items[fontBox.SelectedIndex].ToString()),
 				Convert.ToInt16(
 					fontSizeBox.Items[fontSizeBox.SelectedIndex].ToString()));
@@ -311,7 +305,7 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			TempSettings.Default.editorFont = new Font(
+			TempSettings.Default.EditorFont = new Font(
 				new FontFamily(fontBox.Items[fontBox.SelectedIndex].ToString()),
 				Convert.ToInt16(
 					fontSizeBox.Items[fontSizeBox.SelectedIndex].ToString()));
@@ -325,7 +319,7 @@ namespace Revsoft.Wabbitcode
 
 		private void highlightEnabled_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.useSyntaxHighlighting = highlightEnabled.Checked;
+			TempSettings.Default.UseSyntaxHighlighting = highlightEnabled.Checked;
 			highlightBox.Enabled = highlightEnabled.Checked;
 		}
 
@@ -352,7 +346,7 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			TempSettings.Default.outputFont = new Font(
+			TempSettings.Default.OutputFont = new Font(
 				new FontFamily(fontBox.Items[fontBox.SelectedIndex].ToString()),
 				Convert.ToInt16(
 					fontSizeBox.Items[fontSizeBox.SelectedIndex].ToString()));
@@ -365,7 +359,7 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			TempSettings.Default.outputFont = new Font(
+			TempSettings.Default.OutputFont = new Font(
 				new FontFamily(fontBox.Items[fontBox.SelectedIndex].ToString()),
 				Convert.ToInt16(
 					fontSizeBox.Items[fontSizeBox.SelectedIndex].ToString()));
@@ -384,57 +378,49 @@ namespace Revsoft.Wabbitcode
 
 		private void saveAutoBox_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.autoSaveProject = saveAutoBox.Checked;
+			TempSettings.Default.AutoSaveProject = saveAutoBox.Checked;
 		}
 
 		private void sendFileEmu_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.sendFileEmu = sendFileEmu.Checked;
+			TempSettings.Default.SendFileEmu = sendFileEmu.Checked;
 		}
 
 		private void tabSizeUpDown_ValueChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.tabSize = (int)tabSizeUpDown.Value;
+			TempSettings.Default.TabSize = (int)tabSizeUpDown.Value;
 		}
 
 		private void ti83Radio_CheckedChanged(object sender, EventArgs e)
 		{
 			RadioButton outputRadio = (RadioButton)sender;
-			TempSettings.Default.outputFile = outputRadio.TabIndex;
+			TempSettings.Default.OutputFile = outputRadio.TabIndex;
 		}
 
 		private void UpdateSettings()
 		{
-			if (_savesettings)
-			{
-				foreach (SettingsProperty setting in TempSettings.Default.Properties)
-				{
-					Settings.Default[setting.Name] = TempSettings.Default[setting.Name];
-				}
+		    if (!_savesettings)
+		    {
+		        return;
+		    }
 
-				if (!string.IsNullOrEmpty(Settings.Default.externalHighlight))
-				{
-					FileSyntaxModeProvider fsmProvider = new FileSyntaxModeProvider(Path.GetDirectoryName(Settings.Default.externalHighlight));
-					HighlightingManager.Manager.AddSyntaxModeFileProvider(fsmProvider);
-				}
+            if (!string.IsNullOrEmpty(TempSettings.Default.ExternalHighlight))
+            {
+                FileSyntaxModeProvider fsmProvider = new FileSyntaxModeProvider(Path.GetDirectoryName(TempSettings.Default.ExternalHighlight));
+                HighlightingManager.Manager.AddSyntaxModeFileProvider(fsmProvider);
+            }
 
-				_dockingService.OutputWindow.UpdateFont(Settings.Default.outputFont);
-				HighlightingUtils.MakeHighlightingFile();
-				foreach (Editor child in _dockingService.Documents)
-				{
-					child.UpdateOptions(TempSettings.Default);
+		    foreach (SettingsProperty setting in TempSettings.Default.Properties)
+		    {
+		        Settings.Default[setting.Name] = TempSettings.Default[setting.Name];
+		    }
 
-					// if (child.FileName != null)
-					//	child.editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(child.FileName);
-					child.SetHighlighting("Z80 Assembly");
-
-				}
-			}
+            HighlightingUtils.MakeHighlightingFile();
 		}
 
 		private void wabbitFolderCheck_CheckedChanged(object sender, EventArgs e)
 		{
-			TempSettings.Default.createFolders = wabbitFolderCheck.Checked;
+			TempSettings.Default.CreateFolders = wabbitFolderCheck.Checked;
 		}
 
 		// private void checkUpdatesBox_CheckedChanged(object sender, EventArgs e)

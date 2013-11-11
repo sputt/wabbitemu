@@ -14,57 +14,57 @@ namespace Revsoft.Wabbitcode.Utils
 	{
 		public static void MakeHighlightingFile()
 		{
-			string commentsColor = Settings.Default.commentColor.ToHexString();
+			string commentsColor = Settings.Default.CommentColor.ToHexString();
 
-			string blockCommentsColor = Settings.Default.blockCommentColor.ToHexString();
-			string stringsColor = Settings.Default.stringColor.ToHexString();
-			string directivesColor = Settings.Default.directiveColor.ToHexString();
-			string preProcessorColor = Settings.Default.preProcessorColor.ToHexString();
-			string opcodesColor = Settings.Default.opcodeColor.ToHexString();
-			string registersColor = Settings.Default.registerColor.ToHexString();
-			string conditionsColor = Settings.Default.conditionColor.ToHexString();
-			string labelsColor = Settings.Default.labelColor.ToHexString();
-			if (!Settings.Default.commentsEnabled)
+			string blockCommentsColor = Settings.Default.BlockCommentColor.ToHexString();
+			string stringsColor = Settings.Default.StringColor.ToHexString();
+			string directivesColor = Settings.Default.DirectiveColor.ToHexString();
+			string preProcessorColor = Settings.Default.PreProcessorColor.ToHexString();
+			string opcodesColor = Settings.Default.OpcodeColor.ToHexString();
+			string registersColor = Settings.Default.RegisterColor.ToHexString();
+			string conditionsColor = Settings.Default.ConditionColor.ToHexString();
+			string labelsColor = Settings.Default.LabelColor.ToHexString();
+			if (!Settings.Default.CommentsEnabled)
 			{
 				commentsColor = "#000000";
 			}
 
-			if (!Settings.Default.blockCommentEnabled)
+			if (!Settings.Default.BlockCommentEnabled)
 			{
 				blockCommentsColor = "#000000";
 			}
 
-			if (!Settings.Default.stringsEnabled)
+			if (!Settings.Default.StringsEnabled)
 			{
 				stringsColor = "#000000";
 			}
 
-			if (!Settings.Default.directivesEnabled)
+			if (!Settings.Default.DirectivesEnabled)
 			{
 				directivesColor = "#000000";
 			}
 
-			if (!Settings.Default.preProcessorEnabled)
+			if (!Settings.Default.PreProcessorEnabled)
 			{
 				preProcessorColor = "#000000";
 			}
 
-			if (!Settings.Default.opcodesEnabled)
+			if (!Settings.Default.OpcodesEnabled)
 			{
 				opcodesColor = "#000000";
 			}
 
-			if (!Settings.Default.registersEnabled)
+			if (!Settings.Default.RegistersEnabled)
 			{
 				registersColor = "#000000";
 			}
 
-			if (!Settings.Default.conditionsEnabled)
+			if (!Settings.Default.ConditionsEnabled)
 			{
 				conditionsColor = "#000000";
 			}
 
-			if (!Settings.Default.labelsEnabled)
+			if (!Settings.Default.LabelsEnabled)
 			{
 				labelsColor = "#000000";
 			}
@@ -441,12 +441,12 @@ namespace Revsoft.Wabbitcode.Utils
 
 			// Attach to the text editor
 			HighlightingManager.Manager.AddSyntaxModeFileProvider(fsmProvider);
-			if (string.IsNullOrEmpty(Settings.Default.externalHighlight))
+			if (string.IsNullOrEmpty(Settings.Default.ExternalHighlight))
 			{
 				return;
 			}
 
-			FileSyntaxModeProvider fsmProvider2 = new FileSyntaxModeProvider(Path.GetDirectoryName(Settings.Default.externalHighlight));
+			FileSyntaxModeProvider fsmProvider2 = new FileSyntaxModeProvider(Path.GetDirectoryName(Settings.Default.ExternalHighlight));
 			HighlightingManager.Manager.AddSyntaxModeFileProvider(fsmProvider2);
 		}
 	}

@@ -112,12 +112,12 @@ namespace Revsoft.Wabbitcode
 				};
 				editor.LoadFile(fileName);
 				editor.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(fileName);
-				editor.TextRenderingHint = Settings.Default.antiAlias ? TextRenderingHint.ClearTypeGridFit : TextRenderingHint.SingleBitPerPixel;
+				editor.TextRenderingHint = Settings.Default.AntiAlias ? TextRenderingHint.ClearTypeGridFit : TextRenderingHint.SingleBitPerPixel;
 
-				editor.TextEditorProperties.MouseWheelScrollDown = !Settings.Default.inverseScrolling;
-				editor.ShowLineNumbers = Settings.Default.lineNumbers;
-				editor.Font = Settings.Default.editorFont;
-				editor.LineViewerStyle = Settings.Default.lineEnabled ? LineViewerStyle.FullRow : LineViewerStyle.None;
+				editor.TextEditorProperties.MouseWheelScrollDown = !Settings.Default.InverseScrolling;
+				editor.ShowLineNumbers = Settings.Default.LineNumbers;
+				editor.Font = Settings.Default.EditorFont;
+				editor.LineViewerStyle = Settings.Default.LineEnabled ? LineViewerStyle.FullRow : LineViewerStyle.None;
 				tab.Controls.Add(editor);
 				_editors[i++] = editor;
 				foreach (var reference in file)

@@ -1,3 +1,4 @@
+using System.Configuration;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
@@ -171,11 +172,11 @@ namespace Revsoft.Wabbitcode
 
 			_textChangedTimer.Tick += textChangedTimer_Tick;
 
-			editorBox.TextRenderingHint = Settings.Default.antiAlias ? TextRenderingHint.ClearTypeGridFit : TextRenderingHint.SingleBitPerPixel;
-			editorBox.TextEditorProperties.MouseWheelScrollDown = !Settings.Default.inverseScrolling;
-			editorBox.ShowLineNumbers = Settings.Default.lineNumbers;
-			editorBox.Font = Settings.Default.editorFont;
-			editorBox.LineViewerStyle = Settings.Default.lineEnabled ? LineViewerStyle.FullRow : LineViewerStyle.None;
+			editorBox.TextRenderingHint = Settings.Default.AntiAlias ? TextRenderingHint.ClearTypeGridFit : TextRenderingHint.SingleBitPerPixel;
+			editorBox.TextEditorProperties.MouseWheelScrollDown = !Settings.Default.InverseScrolling;
+			editorBox.ShowLineNumbers = Settings.Default.LineNumbers;
+			editorBox.Font = Settings.Default.EditorFont;
+			editorBox.LineViewerStyle = Settings.Default.LineEnabled ? LineViewerStyle.FullRow : LineViewerStyle.None;
 			editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += TextArea_ToolTipRequest;
 			editorBox.Document.FormattingStrategy = new AsmFormattingStrategy();
 
@@ -202,7 +203,53 @@ namespace Revsoft.Wabbitcode
 		    }
 
 			CodeCompletionKeyHandler.Attach(this, editorBox, parserService);
+            Settings.Default.SettingChanging += Default_SettingChanging;
 		}
+
+        void Default_SettingChanging(object sender, SettingChangingEventArgs e)
+        {
+            if (e.NewValue == null)
+            {
+                return;
+            }
+            
+            switch (e.SettingName)
+            {
+                case "MouseWheelScrollDown":
+                    editorBox.TextEditorProperties.MouseWheelScrollDown = !((bool)e.NewValue);
+                    break;
+                case "EnableFolding":
+                    if ((bool)e.NewValue)
+                    {
+                        editorBox.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
+                        editorBox.Document.FoldingManager.UpdateFoldings(null, null);
+                    }
+                    else
+                    {
+                        editorBox.Document.FoldingManager.FoldingStrategy = null;
+                        editorBox.Document.FoldingManager.UpdateFoldings(new List<FoldMarker>());
+                    }
+                    break;
+                case "AutoIndent":
+                    editorBox.IndentStyle = (bool)e.NewValue ? IndentStyle.Smart : IndentStyle.None;
+                    break;
+                case "AntiAlias":
+                    editorBox.TextRenderingHint = (bool)e.NewValue ? TextRenderingHint.ClearTypeGridFit : TextRenderingHint.SingleBitPerPixel;
+                    break;
+                case "EditorFont":
+                    editorBox.Font = (Font) e.NewValue;
+                    break;
+                case "TabSize":
+                    editorBox.TabIndent = (int) e.NewValue;
+                    break;
+                case "ConvertTabs":
+                    editorBox.ConvertTabsToSpaces = (bool)e.NewValue;
+                    break;
+                case "ExternalHighlight":
+                    UpdateHighlighting();
+                    break;
+            }
+        }
 
 		protected override string GetPersistString()
 		{
@@ -233,7 +280,7 @@ namespace Revsoft.Wabbitcode
 			string tooltip;
 			try
 			{
-				IParserData data = _parserService.GetParserData(text, Settings.Default.caseSensitive).FirstOrDefault();
+				IParserData data = _parserService.GetParserData(text, Settings.Default.CaseSensitive).FirstOrDefault();
 				tooltip = data == null ? _symbolService.SymbolTable.GetAddressFromLabel(text) : data.Description;
 			}
 			catch (Exception)
@@ -332,8 +379,8 @@ namespace Revsoft.Wabbitcode
 
 		private void GetHighlightReferences(string word, string text)
 		{
-			var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-			if (string.IsNullOrEmpty(word) || !Settings.Default.referencesHighlighter)
+			var options = Settings.Default.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+			if (string.IsNullOrEmpty(word) || !Settings.Default.ReferencesHighlighter)
 			{
 				_isUpdatingRefs = false;
 				return;
@@ -689,7 +736,7 @@ namespace Revsoft.Wabbitcode
 				}
 				else
 				{
-					parserData = _parserService.GetParserData(text, Settings.Default.caseSensitive).ToList(); 
+					parserData = _parserService.GetParserData(text, Settings.Default.CaseSensitive).ToList(); 
 				}
 				
 				if (parserData.Count == 1)
@@ -778,7 +825,7 @@ namespace Revsoft.Wabbitcode
 			}
 
 			_textChangedTimer.Start();
-			if (Settings.Default.enableFolding)
+			if (Settings.Default.EnableFolding)
 			{
 				editorBox.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
 				editorBox.Document.FoldingManager.UpdateFoldings(null, null);
@@ -907,7 +954,7 @@ namespace Revsoft.Wabbitcode
 				string text = editorBox.Document.GetWord(editorBox.ActiveTextAreaControl.Caret.Offset);
 				if (!string.IsNullOrEmpty(text) && !isInclude)
 				{
-					IEnumerable<IParserData> parserData =  _parserService.GetParserData(text, Settings.Default.caseSensitive).ToList();
+					IEnumerable<IParserData> parserData =  _parserService.GetParserData(text, Settings.Default.CaseSensitive).ToList();
 					if (parserData.Any())
 					{
 						foreach (IParserData data in parserData.Where(data => data.Name != text))
@@ -1063,15 +1110,7 @@ namespace Revsoft.Wabbitcode
             editorBox.ActiveTextAreaControl.Caret.Column = 0;
 		}
 
-		internal void ScrollToOffset(int offset)
-		{
-			int line = editorBox.Document.GetLineNumberForOffset(offset);
-			editorBox.ActiveTextAreaControl.ScrollTo(line);
-			editorBox.ActiveTextAreaControl.Caret.Line = line;
-			editorBox.ActiveTextAreaControl.Caret.Column = 0;
-		}
-
-		internal void FixError(int line, DocumentService.FixableErrorType type)
+	    internal void FixError(int line, DocumentService.FixableErrorType type)
 		{
 			int offset = editorBox.Document.GetOffsetForLineNumber(line - 1);
 			int endline = offset;
@@ -1094,6 +1133,18 @@ namespace Revsoft.Wabbitcode
 		{
 			editorBox.SetHighlighting(highlightString);
 		}
+
+        private void UpdateHighlighting()
+        {
+            if (!string.IsNullOrEmpty(FileName))
+            {
+                editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
+            }
+            else
+            {
+                SetHighlighting("Z80 Assembly");
+            }
+        }
 
 		internal void SetCaretPosition(int caretCol, int caretLine)
 		{
@@ -1194,26 +1245,6 @@ namespace Revsoft.Wabbitcode
 		}
 
 		#endregion
-
-		internal void UpdateOptions(TempSettings settings)
-		{
-			editorBox.TextEditorProperties.MouseWheelScrollDown = !settings.inverseScrolling;
-			if (settings.enableFolding)
-			{
-				editorBox.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
-				editorBox.Document.FoldingManager.UpdateFoldings(null, null);
-			}
-			else
-			{
-				editorBox.Document.FoldingManager.FoldingStrategy = null;
-				editorBox.Document.FoldingManager.UpdateFoldings(new List<FoldMarker>());
-			}
-			editorBox.IndentStyle = settings.autoIndent ? IndentStyle.Smart : IndentStyle.None;
-			editorBox.TextRenderingHint = settings.antiAlias ? TextRenderingHint.ClearTypeGridFit : TextRenderingHint.SingleBitPerPixel;
-			editorBox.Font = settings.editorFont;
-			editorBox.TabIndent = Settings.Default.tabSize;
-			editorBox.ConvertTabsToSpaces = Settings.Default.convertTabs;
-		}
 
 	    #region Bookmarks
 
@@ -1331,7 +1362,7 @@ namespace Revsoft.Wabbitcode
 		internal void ConvertSpacesToTabs()
 		{
 			StringBuilder spacesString = new StringBuilder();
-			for (int i = 0; i < Settings.Default.tabSize; i++)
+			for (int i = 0; i < Settings.Default.TabSize; i++)
 			{
 				spacesString.Append(' ');
 			}

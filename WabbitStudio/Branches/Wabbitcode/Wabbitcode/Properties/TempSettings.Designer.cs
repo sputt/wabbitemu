@@ -8,916 +8,1130 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Revsoft.Wabbitcode.Properties {
-    
-    
+namespace Revsoft.Wabbitcode.Properties
+{
+
+
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "12.0.0.0")]
-    internal sealed partial class TempSettings : global::System.Configuration.ApplicationSettingsBase {
-        
+    internal sealed partial class TempSettings : global::System.Configuration.ApplicationSettingsBase
+    {
+
         private static TempSettings defaultInstance = ((TempSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new TempSettings())));
-        
-        public static TempSettings Default {
-            get {
+
+        public static TempSettings Default
+        {
+            get
+            {
                 return defaultInstance;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool useSyntaxHighlighting {
-            get {
-                return ((bool)(this["useSyntaxHighlighting"]));
+        public bool UseSyntaxHighlighting
+        {
+            get
+            {
+                return ((bool)(this["UseSyntaxHighlighting"]));
             }
-            set {
-                this["useSyntaxHighlighting"] = value;
+            set
+            {
+                this["UseSyntaxHighlighting"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("4")]
-        public int outputFile {
-            get {
-                return ((int)(this["outputFile"]));
+        public int OutputFile
+        {
+            get
+            {
+                return ((int)(this["OutputFile"]));
             }
-            set {
-                this["outputFile"] = value;
+            set
+            {
+                this["OutputFile"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Blue")]
-        public global::System.Drawing.Color labelColor {
-            get {
-                return ((global::System.Drawing.Color)(this["labelColor"]));
+        public global::System.Drawing.Color LabelColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["LabelColor"]));
             }
-            set {
-                this["labelColor"] = value;
+            set
+            {
+                this["LabelColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("32, 124, 71")]
-        public global::System.Drawing.Color commentColor {
-            get {
-                return ((global::System.Drawing.Color)(this["commentColor"]));
+        public global::System.Drawing.Color CommentColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["CommentColor"]));
             }
-            set {
-                this["commentColor"] = value;
+            set
+            {
+                this["CommentColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Gray")]
-        public global::System.Drawing.Color directiveColor {
-            get {
-                return ((global::System.Drawing.Color)(this["directiveColor"]));
+        public global::System.Drawing.Color DirectiveColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["DirectiveColor"]));
             }
-            set {
-                this["directiveColor"] = value;
+            set
+            {
+                this["DirectiveColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("160, 32, 240")]
-        public global::System.Drawing.Color stringColor {
-            get {
-                return ((global::System.Drawing.Color)(this["stringColor"]));
+        public global::System.Drawing.Color StringColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["StringColor"]));
             }
-            set {
-                this["stringColor"] = value;
+            set
+            {
+                this["StringColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Courier New, 9pt")]
-        public global::System.Drawing.Font editorFont {
-            get {
-                return ((global::System.Drawing.Font)(this["editorFont"]));
+        public global::System.Drawing.Font EditorFont
+        {
+            get
+            {
+                return ((global::System.Drawing.Font)(this["EditorFont"]));
             }
-            set {
-                this["editorFont"] = value;
+            set
+            {
+                this["EditorFont"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool sendFileEmu {
-            get {
-                return ((bool)(this["sendFileEmu"]));
+        public bool SendFileEmu
+        {
+            get
+            {
+                return ((bool)(this["SendFileEmu"]));
             }
-            set {
-                this["sendFileEmu"] = value;
+            set
+            {
+                this["SendFileEmu"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool mainToolBar {
-            get {
-                return ((bool)(this["mainToolBar"]));
+        public bool MainToolBar
+        {
+            get
+            {
+                return ((bool)(this["MainToolBar"]));
             }
-            set {
-                this["mainToolBar"] = value;
+            set
+            {
+                this["MainToolBar"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool statusBar {
-            get {
-                return ((bool)(this["statusBar"]));
+        public bool StatusBar
+        {
+            get
+            {
+                return ((bool)(this["StatusBar"]));
             }
-            set {
-                this["statusBar"] = value;
+            set
+            {
+                this["StatusBar"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool lineNumbers {
-            get {
-                return ((bool)(this["lineNumbers"]));
+        public bool LineNumbers
+        {
+            get
+            {
+                return ((bool)(this["LineNumbers"]));
             }
-            set {
-                this["lineNumbers"] = value;
+            set
+            {
+                this["LineNumbers"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool showProjectBar {
-            get {
-                return ((bool)(this["showProjectBar"]));
+        public bool ShowProjectBar
+        {
+            get
+            {
+                return ((bool)(this["ShowProjectBar"]));
             }
-            set {
-                this["showProjectBar"] = value;
+            set
+            {
+                this["ShowProjectBar"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("600")]
-        public int sizeX {
-            get {
-                return ((int)(this["sizeX"]));
+        public int SizeX
+        {
+            get
+            {
+                return ((int)(this["SizeX"]));
             }
-            set {
-                this["sizeX"] = value;
+            set
+            {
+                this["SizeX"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("440")]
-        public int sizeY {
-            get {
-                return ((int)(this["sizeY"]));
+        public int SizeY
+        {
+            get
+            {
+                return ((int)(this["SizeY"]));
             }
-            set {
-                this["sizeY"] = value;
+            set
+            {
+                this["SizeY"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool labelsEnabled {
-            get {
-                return ((bool)(this["labelsEnabled"]));
+        public bool LabelsEnabled
+        {
+            get
+            {
+                return ((bool)(this["LabelsEnabled"]));
             }
-            set {
-                this["labelsEnabled"] = value;
+            set
+            {
+                this["LabelsEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool commentsEnabled {
-            get {
-                return ((bool)(this["commentsEnabled"]));
+        public bool CommentsEnabled
+        {
+            get
+            {
+                return ((bool)(this["CommentsEnabled"]));
             }
-            set {
-                this["commentsEnabled"] = value;
+            set
+            {
+                this["CommentsEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool directivesEnabled {
-            get {
-                return ((bool)(this["directivesEnabled"]));
+        public bool DirectivesEnabled
+        {
+            get
+            {
+                return ((bool)(this["DirectivesEnabled"]));
             }
-            set {
-                this["directivesEnabled"] = value;
+            set
+            {
+                this["DirectivesEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool stringsEnabled {
-            get {
-                return ((bool)(this["stringsEnabled"]));
+        public bool StringsEnabled
+        {
+            get
+            {
+                return ((bool)(this["StringsEnabled"]));
             }
-            set {
-                this["stringsEnabled"] = value;
+            set
+            {
+                this["StringsEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool wrapText {
-            get {
-                return ((bool)(this["wrapText"]));
+        public bool WrapText
+        {
+            get
+            {
+                return ((bool)(this["WrapText"]));
             }
-            set {
-                this["wrapText"] = value;
+            set
+            {
+                this["WrapText"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool autoIndent {
-            get {
-                return ((bool)(this["autoIndent"]));
+        public bool AutoIndent
+        {
+            get
+            {
+                return ((bool)(this["AutoIndent"]));
             }
-            set {
-                this["autoIndent"] = value;
+            set
+            {
+                this["AutoIndent"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("%HOMEDIR%\\Wabbitcode\\Wabbitemu.exe")]
-        public string wabbitLoc {
-            get {
-                return ((string)(this["wabbitLoc"]));
+        [global::System.Configuration.DefaultSettingValueAttribute("%docs%\\Wabbitcode\\Wabbitemu.exe")]
+        public string WabbitLoc
+        {
+            get
+            {
+                return ((string)(this["WabbitLoc"]));
             }
-            set {
-                this["wabbitLoc"] = value;
+            set
+            {
+                this["WabbitLoc"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Wabbitemu")]
-        public string emuName {
-            get {
-                return ((string)(this["emuName"]));
+        public string EmuName
+        {
+            get
+            {
+                return ((string)(this["EmuName"]));
             }
-            set {
-                this["emuName"] = value;
+            set
+            {
+                this["EmuName"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool showLabelPanel {
-            get {
-                return ((bool)(this["showLabelPanel"]));
+        public bool ShowLabelPanel
+        {
+            get
+            {
+                return ((bool)(this["ShowLabelPanel"]));
             }
-            set {
-                this["showLabelPanel"] = value;
+            set
+            {
+                this["ShowLabelPanel"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool preProcessorEnabled {
-            get {
-                return ((bool)(this["preProcessorEnabled"]));
+        public bool PreProcessorEnabled
+        {
+            get
+            {
+                return ((bool)(this["PreProcessorEnabled"]));
             }
-            set {
-                this["preProcessorEnabled"] = value;
+            set
+            {
+                this["PreProcessorEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Gray")]
-        public global::System.Drawing.Color preProcessorColor {
-            get {
-                return ((global::System.Drawing.Color)(this["preProcessorColor"]));
+        public global::System.Drawing.Color PreProcessorColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["PreProcessorColor"]));
             }
-            set {
-                this["preProcessorColor"] = value;
+            set
+            {
+                this["PreProcessorColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool equatesEnabled {
-            get {
-                return ((bool)(this["equatesEnabled"]));
+        public bool EquatesEnabled
+        {
+            get
+            {
+                return ((bool)(this["EquatesEnabled"]));
             }
-            set {
-                this["equatesEnabled"] = value;
+            set
+            {
+                this["EquatesEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("34, 34, 224")]
-        public global::System.Drawing.Color equateColor {
-            get {
-                return ((global::System.Drawing.Color)(this["equateColor"]));
+        public global::System.Drawing.Color EquateColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["EquateColor"]));
             }
-            set {
-                this["equateColor"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(".\\pti.exe")]
-        public string ptiLoc {
-            get {
-                return ((string)(this["ptiLoc"]));
-            }
-            set {
-                this["ptiLoc"] = value;
+            set
+            {
+                this["EquateColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("96, 63, 205")]
-        public global::System.Drawing.Color opcodeColor {
-            get {
-                return ((global::System.Drawing.Color)(this["opcodeColor"]));
+        public global::System.Drawing.Color OpcodeColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["OpcodeColor"]));
             }
-            set {
-                this["opcodeColor"] = value;
+            set
+            {
+                this["OpcodeColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool opcodesEnabled {
-            get {
-                return ((bool)(this["opcodesEnabled"]));
+        public bool OpcodesEnabled
+        {
+            get
+            {
+                return ((bool)(this["OpcodesEnabled"]));
             }
-            set {
-                this["opcodesEnabled"] = value;
+            set
+            {
+                this["OpcodesEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool registersEnabled {
-            get {
-                return ((bool)(this["registersEnabled"]));
+        public bool RegistersEnabled
+        {
+            get
+            {
+                return ((bool)(this["RegistersEnabled"]));
             }
-            set {
-                this["registersEnabled"] = value;
+            set
+            {
+                this["RegistersEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("63, 124, 188")]
-        public global::System.Drawing.Color registerColor {
-            get {
-                return ((global::System.Drawing.Color)(this["registerColor"]));
+        public global::System.Drawing.Color RegisterColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["RegisterColor"]));
             }
-            set {
-                this["registerColor"] = value;
+            set
+            {
+                this["RegisterColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool wrapTextOut {
-            get {
-                return ((bool)(this["wrapTextOut"]));
+        public bool WrapTextOut
+        {
+            get
+            {
+                return ((bool)(this["WrapTextOut"]));
             }
-            set {
-                this["wrapTextOut"] = value;
+            set
+            {
+                this["WrapTextOut"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Courier New, 9pt")]
-        public global::System.Drawing.Font outputFont {
-            get {
-                return ((global::System.Drawing.Font)(this["outputFont"]));
+        public global::System.Drawing.Font OutputFont
+        {
+            get
+            {
+                return ((global::System.Drawing.Font)(this["OutputFont"]));
             }
-            set {
-                this["outputFont"] = value;
+            set
+            {
+                this["OutputFont"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool showEquates {
-            get {
-                return ((bool)(this["showEquates"]));
+        public bool ShowEquates
+        {
+            get
+            {
+                return ((bool)(this["ShowEquates"]));
             }
-            set {
-                this["showEquates"] = value;
+            set
+            {
+                this["ShowEquates"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool caseSensitive {
-            get {
-                return ((bool)(this["caseSensitive"]));
+        public bool CaseSensitive
+        {
+            get
+            {
+                return ((bool)(this["CaseSensitive"]));
             }
-            set {
-                this["caseSensitive"] = value;
+            set
+            {
+                this["CaseSensitive"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool showAllFile {
-            get {
-                return ((bool)(this["showAllFile"]));
+        public bool ShowAllFile
+        {
+            get
+            {
+                return ((bool)(this["ShowAllFile"]));
             }
-            set {
-                this["showAllFile"] = value;
+            set
+            {
+                this["ShowAllFile"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection RecentFiles {
-            get {
+        public global::System.Collections.Specialized.StringCollection RecentFiles
+        {
+            get
+            {
                 return ((global::System.Collections.Specialized.StringCollection)(this["RecentFiles"]));
             }
-            set {
+            set
+            {
                 this["RecentFiles"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("10")]
-        public int maxNumFiles {
-            get {
-                return ((int)(this["maxNumFiles"]));
+        public int MaxNumFiles
+        {
+            get
+            {
+                return ((int)(this["MaxNumFiles"]));
             }
-            set {
-                this["maxNumFiles"] = value;
+            set
+            {
+                this["MaxNumFiles"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("192, 64, 0")]
-        public global::System.Drawing.Color conditionColor {
-            get {
-                return ((global::System.Drawing.Color)(this["conditionColor"]));
+        public global::System.Drawing.Color ConditionColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["ConditionColor"]));
             }
-            set {
-                this["conditionColor"] = value;
+            set
+            {
+                this["ConditionColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection includeDirs {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["includeDirs"]));
+        public global::System.Collections.Specialized.StringCollection IncludeDirs
+        {
+            get
+            {
+                return ((global::System.Collections.Specialized.StringCollection)(this["IncludeDirs"]));
             }
-            set {
-                this["includeDirs"] = value;
+            set
+            {
+                this["IncludeDirs"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool lineEnabled {
-            get {
-                return ((bool)(this["lineEnabled"]));
+        public bool LineEnabled
+        {
+            get
+            {
+                return ((bool)(this["LineEnabled"]));
             }
-            set {
-                this["lineEnabled"] = value;
+            set
+            {
+                this["LineEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool alphabetizeLabels {
-            get {
-                return ((bool)(this["alphabetizeLabels"]));
+        public bool AlphabetizeLabels
+        {
+            get
+            {
+                return ((bool)(this["AlphabetizeLabels"]));
             }
-            set {
-                this["alphabetizeLabels"] = value;
+            set
+            {
+                this["AlphabetizeLabels"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("255, 255, 192")]
-        public global::System.Drawing.Color lineColor {
-            get {
-                return ((global::System.Drawing.Color)(this["lineColor"]));
+        public global::System.Drawing.Color LineColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["LineColor"]));
             }
-            set {
-                this["lineColor"] = value;
+            set
+            {
+                this["LineColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool blockCommentEnabled {
-            get {
-                return ((bool)(this["blockCommentEnabled"]));
+        public bool BlockCommentEnabled
+        {
+            get
+            {
+                return ((bool)(this["BlockCommentEnabled"]));
             }
-            set {
-                this["blockCommentEnabled"] = value;
+            set
+            {
+                this["BlockCommentEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Green")]
-        public global::System.Drawing.Color blockCommentColor {
-            get {
-                return ((global::System.Drawing.Color)(this["blockCommentColor"]));
+        public global::System.Drawing.Color BlockCommentColor
+        {
+            get
+            {
+                return ((global::System.Drawing.Color)(this["BlockCommentColor"]));
             }
-            set {
-                this["blockCommentColor"] = value;
+            set
+            {
+                this["BlockCommentColor"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool conditionsEnabled {
-            get {
-                return ((bool)(this["conditionsEnabled"]));
+        public bool ConditionsEnabled
+        {
+            get
+            {
+                return ((bool)(this["ConditionsEnabled"]));
             }
-            set {
-                this["conditionsEnabled"] = value;
+            set
+            {
+                this["ConditionsEnabled"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool iconBar {
-            get {
-                return ((bool)(this["iconBar"]));
+        public bool IconBar
+        {
+            get
+            {
+                return ((bool)(this["IconBar"]));
             }
-            set {
-                this["iconBar"] = value;
+            set
+            {
+                this["IconBar"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string startupProject {
-            get {
-                return ((string)(this["startupProject"]));
+        public string StartupProject
+        {
+            get
+            {
+                return ((string)(this["StartupProject"]));
             }
-            set {
-                this["startupProject"] = value;
+            set
+            {
+                this["StartupProject"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool debugToolbar {
-            get {
-                return ((bool)(this["debugToolbar"]));
+        public bool DebugToolbar
+        {
+            get
+            {
+                return ((bool)(this["DebugToolbar"]));
             }
-            set {
-                this["debugToolbar"] = value;
+            set
+            {
+                this["DebugToolbar"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool antiAlias {
-            get {
-                return ((bool)(this["antiAlias"]));
+        public bool AntiAlias
+        {
+            get
+            {
+                return ((bool)(this["AntiAlias"]));
             }
-            set {
-                this["antiAlias"] = value;
+            set
+            {
+                this["AntiAlias"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool inverseScrolling {
-            get {
-                return ((bool)(this["inverseScrolling"]));
+        public bool InverseScrolling
+        {
+            get
+            {
+                return ((bool)(this["InverseScrolling"]));
             }
-            set {
-                this["inverseScrolling"] = value;
+            set
+            {
+                this["InverseScrolling"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool enableFolding {
-            get {
-                return ((bool)(this["enableFolding"]));
+        public bool EnableFolding
+        {
+            get
+            {
+                return ((bool)(this["EnableFolding"]));
             }
-            set {
-                this["enableFolding"] = value;
+            set
+            {
+                this["EnableFolding"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool enableAutoComplete {
-            get {
-                return ((bool)(this["enableAutoComplete"]));
+        public bool EnableAutoComplete
+        {
+            get
+            {
+                return ((bool)(this["EnableAutoComplete"]));
             }
-            set {
-                this["enableAutoComplete"] = value;
+            set
+            {
+                this["EnableAutoComplete"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int buildConfig {
-            get {
-                return ((int)(this["buildConfig"]));
+        public int BuildConfig
+        {
+            get
+            {
+                return ((int)(this["BuildConfig"]));
             }
-            set {
-                this["buildConfig"] = value;
+            set
+            {
+                this["BuildConfig"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool colorizeOutWin {
-            get {
-                return ((bool)(this["colorizeOutWin"]));
+        public bool ColorizeOutWin
+        {
+            get
+            {
+                return ((bool)(this["ColorizeOutWin"]));
             }
-            set {
-                this["colorizeOutWin"] = value;
+            set
+            {
+                this["ColorizeOutWin"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string openFiles {
-            get {
-                return ((string)(this["openFiles"]));
+        public string OpenFiles
+        {
+            get
+            {
+                return ((string)(this["OpenFiles"]));
             }
-            set {
-                this["openFiles"] = value;
+            set
+            {
+                this["OpenFiles"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("4")]
-        public int numRecentFiles {
-            get {
-                return ((int)(this["numRecentFiles"]));
+        public int NumRecentFiles
+        {
+            get
+            {
+                return ((int)(this["NumRecentFiles"]));
             }
-            set {
-                this["numRecentFiles"] = value;
+            set
+            {
+                this["NumRecentFiles"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool enableAutoTrigger {
-            get {
-                return ((bool)(this["enableAutoTrigger"]));
+        public bool EnableAutoTrigger
+        {
+            get
+            {
+                return ((bool)(this["EnableAutoTrigger"]));
             }
-            set {
-                this["enableAutoTrigger"] = value;
+            set
+            {
+                this["EnableAutoTrigger"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string externalHighlight {
-            get {
-                return ((string)(this["externalHighlight"]));
+        public string ExternalHighlight
+        {
+            get
+            {
+                return ((string)(this["ExternalHighlight"]));
             }
-            set {
-                this["externalHighlight"] = value;
+            set
+            {
+                this["ExternalHighlight"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string extraExtensions {
-            get {
-                return ((string)(this["extraExtensions"]));
+        public string ExtraExtensions
+        {
+            get
+            {
+                return ((string)(this["ExtraExtensions"]));
             }
-            set {
-                this["extraExtensions"] = value;
+            set
+            {
+                this["ExtraExtensions"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool firstRun {
-            get {
-                return ((bool)(this["firstRun"]));
+        public bool FirstRun
+        {
+            get
+            {
+                return ((bool)(this["FirstRun"]));
             }
-            set {
-                this["firstRun"] = value;
+            set
+            {
+                this["FirstRun"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool editorToolbar {
-            get {
-                return ((bool)(this["editorToolbar"]));
+        public bool EditorToolbar
+        {
+            get
+            {
+                return ((bool)(this["EditorToolbar"]));
             }
-            set {
-                this["editorToolbar"] = value;
+            set
+            {
+                this["EditorToolbar"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Normal")]
-        public global::System.Windows.Forms.FormWindowState WindowState {
-            get {
+        public global::System.Windows.Forms.FormWindowState WindowState
+        {
+            get
+            {
                 return ((global::System.Windows.Forms.FormWindowState)(this["WindowState"]));
             }
-            set {
+            set
+            {
                 this["WindowState"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("500, 300")]
-        public global::System.Drawing.Size WindowSize {
-            get {
+        [global::System.Configuration.DefaultSettingValueAttribute("800, 600")]
+        public global::System.Drawing.Size WindowSize
+        {
+            get
+            {
                 return ((global::System.Drawing.Size)(this["WindowSize"]));
             }
-            set {
+            set
+            {
                 this["WindowSize"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool recentlyUpdated {
-            get {
-                return ((bool)(this["recentlyUpdated"]));
+        public bool RecentlyUpdated
+        {
+            get
+            {
+                return ((bool)(this["RecentlyUpdated"]));
             }
-            set {
-                this["recentlyUpdated"] = value;
+            set
+            {
+                this["RecentlyUpdated"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool mouseWheelZoom {
-            get {
-                return ((bool)(this["mouseWheelZoom"]));
+        public bool MouseWheelZoom
+        {
+            get
+            {
+                return ((bool)(this["MouseWheelZoom"]));
             }
-            set {
-                this["mouseWheelZoom"] = value;
+            set
+            {
+                this["MouseWheelZoom"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool referencesHighlighter {
-            get {
-                return ((bool)(this["referencesHighlighter"]));
+        public bool ReferencesHighlighter
+        {
+            get
+            {
+                return ((bool)(this["ReferencesHighlighter"]));
             }
-            set {
-                this["referencesHighlighter"] = value;
+            set
+            {
+                this["ReferencesHighlighter"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool autoSaveProject {
-            get {
-                return ((bool)(this["autoSaveProject"]));
+        public bool AutoSaveProject
+        {
+            get
+            {
+                return ((bool)(this["AutoSaveProject"]));
             }
-            set {
-                this["autoSaveProject"] = value;
+            set
+            {
+                this["AutoSaveProject"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("4")]
-        public int tabSize {
-            get {
-                return ((int)(this["tabSize"]));
+        public int TabSize
+        {
+            get
+            {
+                return ((int)(this["TabSize"]));
             }
-            set {
-                this["tabSize"] = value;
+            set
+            {
+                this["TabSize"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool convertTabs {
-            get {
-                return ((bool)(this["convertTabs"]));
+        public bool ConvertTabs
+        {
+            get
+            {
+                return ((bool)(this["ConvertTabs"]));
             }
-            set {
-                this["convertTabs"] = value;
+            set
+            {
+                this["ConvertTabs"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool createFolders {
-            get {
-                return ((bool)(this["createFolders"]));
+        public bool CreateFolders
+        {
+            get
+            {
+                return ((bool)(this["CreateFolders"]));
             }
-            set {
-                this["createFolders"] = value;
+            set
+            {
+                this["CreateFolders"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("%HOMEDIR%\\Wabbitcode\\Wabbitemu.exe")]
-        public string assemblerLoc {
-            get {
-                return ((string)(this["assemblerLoc"]));
+        [global::System.Configuration.DefaultSettingValueAttribute("%docs%\\Wabbitcode\\spasm.exe")]
+        public string AssemblerLoc
+        {
+            get
+            {
+                return ((string)(this["AssemblerLoc"]));
             }
-            set {
-                this["assemblerLoc"] = value;
+            set
+            {
+                this["AssemblerLoc"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string configLoc {
-            get {
-                return ((string)(this["configLoc"]));
+        [global::System.Configuration.DefaultSettingValueAttribute("%docs%\\Wabbitcode\\DockPanel.config")]
+        public string ConfigLoc
+        {
+            get
+            {
+                return ((string)(this["ConfigLoc"]));
             }
-            set {
-                this["configLoc"] = value;
+            set
+            {
+                this["ConfigLoc"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public string checkUpdates {
-            get {
-                return ((string)(this["checkUpdates"]));
+        public string CheckUpdates
+        {
+            get
+            {
+                return ((string)(this["CheckUpdates"]));
             }
-            set {
-                this["checkUpdates"] = value;
+            set
+            {
+                this["CheckUpdates"] = value;
             }
         }
     }
