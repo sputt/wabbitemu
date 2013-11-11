@@ -24,6 +24,14 @@ Public Class Scenario
     Public Shared ReadOnly TilesetsProperty As DependencyProperty =
         DependencyProperty.Register("Tilesets", GetType(ObservableCollection(Of Tileset)), GetType(Scenario))
 
+    ' Player starting position and map
+    Public Shared ReadOnly StartXProperty As DependencyProperty =
+        DependencyProperty.Register("StartX", GetType(Byte), GetType(Scenario))
+    Public Shared ReadOnly StartYProperty As DependencyProperty =
+        DependencyProperty.Register("StartY", GetType(Byte), GetType(Scenario))
+    Public Shared ReadOnly StartMapIndexProperty As DependencyProperty =
+        DependencyProperty.Register("StartMapIndex", GetType(Integer), GetType(Scenario))
+
     Public Property Images As ObservableCollection(Of ZeldaImage)
         Get
             Return GetValue(ImagesProperty)
