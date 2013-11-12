@@ -1,9 +1,9 @@
-﻿using System.IO;
-using Revsoft.Wabbitcode.Properties;
+﻿using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Revsoft.Wabbitcode.Services
@@ -31,11 +31,15 @@ namespace Revsoft.Wabbitcode.Services
             if (string.IsNullOrEmpty(file))
             {
                 System.Diagnostics.Debug.WriteLine("No file name specified");
-                return null;
+                return new List<Reference>();
             }
 
             string extension = Path.GetExtension(file);
             IParser parser = ParserFactory.CreateFromExtension(extension);
+            if (parser == null)
+            {
+                return new List<Reference>();
+            }
 
             string fileText = _fileReaderService.GetFileText(file);
             return parser.FindReferences(file, fileText, refString, Settings.Default.CaseSensitive);
@@ -68,18 +72,18 @@ namespace Revsoft.Wabbitcode.Services
             ParseFile(hashCode, filename, fileText);
         }
 
-        public ParserInformation ParseFile(int hashCode, string file, string fileText)
+        public void ParseFile(int hashCode, string file, string fileText)
         {
             if (string.IsNullOrEmpty(file))
             {
                 System.Diagnostics.Debug.WriteLine("No file name specified");
-                return null;
+                return;
             }
 
             if (string.IsNullOrEmpty(fileText))
             {
                 System.Diagnostics.Debug.WriteLine("Lines were null or empty");
-                return null;
+                return;
             }
 
             if (hashCode == 0)
@@ -91,7 +95,7 @@ namespace Revsoft.Wabbitcode.Services
             IParser parser = ParserFactory.CreateFromExtension(extension);
             if (parser == null)
             {
-                return null;
+                return;
             }
 
             ParserInformation parserInfo = new ParserInformation(hashCode, file);
@@ -111,8 +115,6 @@ namespace Revsoft.Wabbitcode.Services
             {
                 OnParserFinished(this, new ParserEventArgs(file));
             }
-
-            return parserInfo;
         }
 
         public ParserInformation GetParserInfo(string fileName)
@@ -128,7 +130,6 @@ namespace Revsoft.Wabbitcode.Services
         public ParserService(IFileReaderService fileReaderService)
         {
             _fileReaderService = fileReaderService;
-            ParserFactory.RegisterExtension(".asm", typeof(Z80Parser));
         }
 
         public void DestroyService()
@@ -138,7 +139,9 @@ namespace Revsoft.Wabbitcode.Services
 
         public void InitService(params object[] objects)
         {
-
+            ParserFactory.RegisterExtension(".asm", typeof(Z80Parser));
+            ParserFactory.RegisterExtension(".z80", typeof(Z80Parser));
+            ParserFactory.RegisterExtension(".inc", typeof(Z80Parser));
         }
     }
 
@@ -146,22 +149,40 @@ namespace Revsoft.Wabbitcode.Services
     {
         private static readonly Dictionary<string, Type> ParserDictionary = new Dictionary<string, Type>();
 
-        public static IParser CreateFromExtension(string extension)
+        internal static IParser CreateFromExtension(string extension)
         {
             Type parserType;
             return !ParserDictionary.TryGetValue(extension, out parserType) ? null : (IParser) Activator.CreateInstance(parserType);
         }
 
+        /// <summary>
+        /// Registers a new parser based on the specified extension.
+        /// </summary>
+        /// <param name="extension">The extension to create the parser for</param>
+        /// <param name="parserType">The parser </param>
+        /// <exception cref="ArgumentException">Thrown if the extension is already registered.</exception>
+        /// <exception cref="ArgumentException">Thrown if the parser is not of type IParser</exception>
+        /// <exception cref="NullReferenceException">Thrown if the parser or extension is null</exception>
         public static void RegisterExtension(string extension, Type parserType)
         {
             if (string.IsNullOrWhiteSpace(extension))
             {
-                return;
+                throw new NullReferenceException("Extension is null or empty");
             }
 
-            if (parserType == null || parserType.IsInstanceOfType(typeof(IParser)))
+            if (parserType == null)
             {
-                return;
+                throw new NullReferenceException("Parser type is null");
+            }
+
+            if (parserType.IsInstanceOfType(typeof(IParser)))
+            {
+                throw new ArgumentException("Parser is not of type IParser");
+            }
+
+            if (ParserDictionary.ContainsKey(extension))
+            {
+                throw new ArgumentException("Extension is already registered");
             }
 
             ParserDictionary.Add(extension, parserType);

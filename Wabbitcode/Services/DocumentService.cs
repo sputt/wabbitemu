@@ -1,4 +1,5 @@
 ﻿using System.Collections.Specialized;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
@@ -63,25 +64,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public Editor GotoFile(string file)
 		{
-			Editor editorBox = ActiveDocument;
-			if (editorBox == null)
-			{
-				return OpenDocument(file);
-			}
-
-			if (string.Equals(file, ActiveFileName, StringComparison.OrdinalIgnoreCase))
-			{
-				return ActiveDocument;
-			}
-
-			foreach (Editor child in _dockingService.Documents.Where(child => !string.IsNullOrEmpty(child.FileName) &&
-			                                                                  string.Equals(child.FileName, file, StringComparison.OrdinalIgnoreCase)))
-			{
-				child.Show();
-				return child;
-			}
-
-			return OpenDocument(file);
+		    return OpenDocument(file);
 		}
 
 		public void GotoLabel(IParserData item)
@@ -173,10 +156,17 @@ namespace Revsoft.Wabbitcode.Services
 
 		public Editor OpenDocument(string filename)
 		{
-			Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this,
-				_fileReaderService, _parserService, _projectService, _symbolService);
-			OpenDocument(doc, filename);
-			return doc;
+            var child = _dockingService.Documents.SingleOrDefault(e => FileOperations.CompareFilePath(e.FileName, filename));
+            if (child != null)
+            {
+                child.Show();
+                return child;
+            }
+
+            Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this,
+                _fileReaderService, _parserService, _projectService, _symbolService);
+            OpenDocument(doc, filename);
+            return doc;
 		}
 
 		public void OpenDocument(Editor doc, string filename)

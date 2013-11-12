@@ -1,14 +1,14 @@
-﻿namespace Revsoft.Wabbitcode.Services.Assembler
-{
-    using Revsoft.Wabbitcode.Services.Project;
-    using System;
+﻿using Revsoft.Wabbitcode.Services.Project;
+using System;
 
+namespace Revsoft.Wabbitcode.Services.Assembler
+{
     public abstract class AssemblyFinishEventArgs : EventArgs
     {
-        public AssemblyFinishEventArgs(string output, bool succeeded)
+        protected AssemblyFinishEventArgs(string output, bool succeeded)
         {
-            this.Output = new AssemblerOutput(output, succeeded);
-            this.AssemblySucceeded = succeeded;
+            Output = new AssemblerOutput(output, succeeded);
+            AssemblySucceeded = succeeded;
         }
 
         public bool AssemblySucceeded

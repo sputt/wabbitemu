@@ -105,9 +105,9 @@ namespace Revsoft.Wabbitcode.Services
 
 		#region Events
 
-		public static event EventHandler OnActiveDocumentChanged;
+		public event EventHandler OnActiveDocumentChanged;
 
-		private static void DockPanelOnActiveDocumentChanged(object sender, EventArgs eventArgs)
+		private void DockPanelOnActiveDocumentChanged(object sender, EventArgs eventArgs)
 		{
 			if (OnActiveDocumentChanged != null)
 			{

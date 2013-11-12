@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
@@ -12,8 +13,15 @@ namespace Revsoft.Wabbitcode.Services
 	[ServiceDependency(typeof(IParserService))]
 	[ServiceDependency(typeof(ISymbolService))]
 	public class ProjectService : IProjectService
-	{
-		private readonly List<ParserInformation> _parseInfo = new List<ParserInformation>();
+    {
+        #region Events
+
+        public event EventHandler ProjectOpened;
+        public event EventHandler ProjectClosed;
+
+	    #endregion
+
+        private readonly List<ParserInformation> _parseInfo = new List<ParserInformation>();
 		private readonly IParserService _parserService;
 		private readonly IAssemblerService _assemblerService;
 		private readonly ISymbolService _symbolService;
@@ -44,6 +52,11 @@ namespace Revsoft.Wabbitcode.Services
 			_parseInfo.Clear();
 			Task.Factory.StartNew(() => ParseFiles(Project.MainFolder));
 
+            if (ProjectOpened != null)
+            {
+                ProjectOpened(this, EventArgs.Empty);
+            }
+
 			return true;
 		}
 
@@ -69,6 +82,12 @@ namespace Revsoft.Wabbitcode.Services
 				return;
 			}
 
+
+            if (ProjectClosed != null)
+            {
+                ProjectClosed(this, EventArgs.Empty);
+            }
+
 			CreateInternalProject();
 		}
 
@@ -83,6 +102,12 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				IsInternal = true
 			};
+
+            if (ProjectOpened != null)
+            {
+                ProjectOpened(this, EventArgs.Empty);
+            }
+
 			return Project;
 		}
 
@@ -90,6 +115,12 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			Project = new WabbitcodeProject(_assemblerService);
 			Project.CreateNewProject(projectFile, projectName);
+
+            if (ProjectOpened != null)
+            {
+                ProjectOpened(this, EventArgs.Empty);
+            }
+
 			return Project;
 		}
 

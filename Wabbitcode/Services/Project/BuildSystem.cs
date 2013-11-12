@@ -136,6 +136,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			{
 				throw new MissingConfigException("Missing config");
 			}
+
 			BuildConfig config = _buildConfigs[_currentConfigIndex];
 			bool succeeded = config.Build(_assemblerService, _project);
 			_outputText = config.OutputText;
@@ -154,17 +155,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 			var attribute = reader.GetAttribute("IncludeDirs");
 			if (attribute != null)
 			{
-				string[] includeDirs = attribute.Split(';');
-				foreach (string include in includeDirs)
-				{
-					if (!string.IsNullOrEmpty(include))
-					{
-						_project.IncludeDirs.Add(Uri.UnescapeDataString(new Uri(Path.Combine(root, include)).AbsolutePath));
-					}
-				}
+			    string[] includeDirs = attribute.Split(';');
+			    foreach (string include in includeDirs.Where(include => !string.IsNullOrEmpty(include)))
+			    {
+			        _project.IncludeDirs.Add(Uri.UnescapeDataString(new Uri(Path.Combine(root, include)).AbsolutePath));
+			    }
 			}
 
-			BuildConfig configToAdd = null;
+		    BuildConfig configToAdd = null;
 			while (reader.MoveToNextElement())
 			{
 				if (reader.Name.Contains("Step"))

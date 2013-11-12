@@ -7,6 +7,8 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 {
 	public interface IDockingService : IService
 	{
+        event EventHandler OnActiveDocumentChanged;
+
 		BreakpointManagerWindow BreakManagerWindow { get; }
 		CallStack CallStack { get; }
 		DebugPanel DebugPanel { get; }

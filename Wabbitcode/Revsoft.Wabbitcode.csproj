@@ -586,6 +586,10 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="Actions\AbstractUiAction.cs" />
+    <Compile Include="Actions\EditActions.cs" />
+    <Compile Include="Actions\FileActions.cs" />
+    <Compile Include="Actions\ProjectActions.cs" />
     <Compile Include="AppBase.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -616,11 +620,13 @@
     <Compile Include="GotoSymbol.Designer.cs">
       <DependentUpon>GotoSymbol.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\IClipboardOperation.cs" />
     <Compile Include="EditorExtensions\CodeCompletion.cs" />
     <Compile Include="EditorExtensions\EditorSelectionEventArgs.cs" />
     <Compile Include="EditorExtensions\EditorEventArgs.cs" />
     <Compile Include="EditorExtensions\RegionFoldingStrategy.cs" />
+    <Compile Include="Interface\IClipboardOperation.cs" />
+    <Compile Include="Interface\ISelectable.cs" />
+    <Compile Include="Interface\IUndoable.cs" />
     <Compile Include="Properties\TempSettings.Designer.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\VS2012ColorTable.cs" />

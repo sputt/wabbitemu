@@ -217,6 +217,11 @@ namespace Revsoft.Wabbitcode.Extensions
 
 		public static bool CompareFilePath(string path1, string path2)
 		{
+		    if (path1 == null || path2 == null)
+		    {
+		        return false;
+		    }
+
 			return String.Compare(
 				Path.GetFullPath(path1).TrimEnd('\\'),
 				Path.GetFullPath(path2).TrimEnd('\\'),

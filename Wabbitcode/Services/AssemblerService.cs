@@ -11,7 +11,8 @@ using System.Windows.Forms;
 namespace Revsoft.Wabbitcode.Services
 {
 	[ServiceDependency(typeof(ISymbolService))]
-	public sealed class AssemblerService : IDisposable, IAssemblerService
+    [ServiceDependency(typeof(IFileReaderService))]
+	public sealed class AssemblerService : IAssemblerService, IDisposable
 	{
 		#region Events
 
@@ -31,21 +32,16 @@ namespace Revsoft.Wabbitcode.Services
 										  "Assembling {1}" + Environment.NewLine + "{2}";
 
 		private readonly ISymbolService _symbolService;
+	    private readonly IFileReaderService _fileReaderService;
 
-		public AssemblerService(ISymbolService symbolService)
+		public AssemblerService(IFileReaderService fileReaderService, ISymbolService symbolService)
 		{
+		    _fileReaderService = fileReaderService;
 			_symbolService = symbolService;
 		}
 
-
-		public AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir,
+	    public AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir, 
             IEnumerable<string> includeDirs, AssemblyFlags flags = AssemblyFlags.Normal)
-		{
-			return AssembleFile(inputFile, outputFile, originalDir, includeDirs, flags, false);
-		}
-
-		private AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir, 
-            IEnumerable<string> includeDirs, AssemblyFlags flags = AssemblyFlags.Normal, bool suppressEvents = false)
 		{
 			_assembler = new SpasmComAssembler();
 
@@ -73,16 +69,13 @@ namespace Revsoft.Wabbitcode.Services
 			string outputText = string.Format(_outputFormatting, Path.GetFileName(inputFile),  inputFile, rawOutput);
 
 			bool errors = outputText.Contains("error");
-			if (!suppressEvents)
-			{
-				OnAssemblerFileFinished(this, new AssemblyFinishFileEventArgs(inputFile, outputFile, outputText, !errors));
-			}
+            OnAssemblerFileFinished(this, new AssemblyFinishFileEventArgs(inputFile, outputFile, outputText, !errors));
 
 			// tell if the assembly was successful
 			return new AssemblerOutput(outputText, !errors);
 		}
 
-		public void AssembleProject(IProject project, bool suppressEvents = false)
+		public void AssembleProject(IProject project)
 		{
 			lock (AssemblyLock)
 			{
@@ -92,34 +85,18 @@ namespace Revsoft.Wabbitcode.Services
 
 				if (!string.IsNullOrEmpty(project.BuildSystem.ListOutput))
 				{
-					StreamReader reader = null;
-					try
-					{
-						reader = new StreamReader(project.BuildSystem.ListOutput);
-						_symbolService.ParseListFile(reader.ReadToEnd());
-					}
-					finally
-					{
-						if (reader != null)
-						{
-							reader.Dispose();
-						}
-					}
+				    string fileText = _fileReaderService.GetFileText(project.BuildSystem.ListOutput);
+                    _symbolService.ParseListFile(fileText);
 				}
 
 				if (!string.IsNullOrEmpty(project.BuildSystem.LabelOutput))
 				{
-					using (StreamReader reader = new StreamReader(project.BuildSystem.LabelOutput))
-					{
-						_symbolService.ParseSymbolFile(reader.ReadToEnd());
-					}
+                    string fileText = _fileReaderService.GetFileText(project.BuildSystem.LabelOutput);
+                    _symbolService.ParseSymbolFile(fileText);
 				}
 
 				project.ProjectWatcher.EnableRaisingEvents = true;
-				if (!suppressEvents)
-				{
-					OnAssemblerProjectFinished(this, new AssemblyFinishProjectEventArgs(project, project.BuildSystem.OutputText, succeeded));
-				}
+                OnAssemblerProjectFinished(this, new AssemblyFinishProjectEventArgs(project, project.BuildSystem.OutputText, succeeded));
 			}
 		}
 

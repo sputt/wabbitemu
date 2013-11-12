@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.DockingWindows;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
@@ -21,7 +20,6 @@ namespace Revsoft.Wabbitcode
         Replace,
         FindInFiles,
     }
-
 
 	public partial class FindAndReplaceForm : Form
 	{
@@ -41,7 +39,7 @@ namespace Revsoft.Wabbitcode
 		{
 			_dockingService = dockingService;
 			_projectService = projectServiceService;
-            DockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+            _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
 
 			InitializeComponent();
 		}
