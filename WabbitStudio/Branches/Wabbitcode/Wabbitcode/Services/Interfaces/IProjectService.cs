@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 
@@ -6,6 +7,9 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 {
 	public interface IProjectService : IService
 	{
+        event EventHandler ProjectOpened;
+        event EventHandler ProjectClosed;
+
 		IProject Project { get; }
 
 		bool OpenProject(string fileName);

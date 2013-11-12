@@ -131,7 +131,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAD6
-        KwAAAk1TRnQBSQFMAgEBCQEAAYwBAgGMAQIBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
+        KwAAAk1TRnQBSQFMAgEBCQEAAaQBAgGkAQIBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
         AwABMAMAAQEBAAEgBgABMBIAA0ABcAOBAf8DgQH/A4EB/wOBAf8DgQH/A4EB/wOBAf8DgQH/A4EB/wOB
         Af8DgQH/A4EB/wOBAf8DgQH/A0ABcMAAA4EB/wGgAoEB/wGgAoEB/wGgAoEB/wGdAaABnwH/A4EB/wOB
         Af8B+wH+Av8B5QHiAecB/wHFAbwBvwH/AZ0BoAGfAf8DgQH/A4EB/wGgAoEB/wGgAoEB/wOBAf/AAAOB
@@ -449,9 +449,6 @@
         lcnXDAIq+VLkawYB6QxB8jWDgEgyJ/mahxpgYAAAzpJIkejpLnEAAAAASUVORK5CYII=
 </value>
   </data>
-  <metadata name="documentParser.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>374, 17</value>
-  </metadata>
   <metadata name="wabbitemu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>634, 17</value>
   </metadata>

@@ -12,7 +12,7 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 		AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir, IEnumerable<string> includeDirs,
 			AssemblyFlags flags = AssemblyFlags.Normal);
 
-		void AssembleProject(IProject project, bool suppressEvents = false);
+		void AssembleProject(IProject project);
 		CodeCountInfo CountCode(string lines);
 		string GetExtension(int outputFile);
 	}

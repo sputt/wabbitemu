@@ -1,4 +1,4 @@
-﻿namespace Revsoft.Wabbitcode.DockingWindows
+﻿namespace Revsoft.Wabbitcode.Interface
 {
 	public interface IClipboardOperation
 	{

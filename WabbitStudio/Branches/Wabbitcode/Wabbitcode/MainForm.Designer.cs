@@ -958,27 +958,30 @@
             // 
             // mainToolMenuItem
             // 
+            this.mainToolMenuItem.CheckOnClick = true;
             this.mainToolMenuItem.Name = "mainToolMenuItem";
             this.mainToolMenuItem.Size = new System.Drawing.Size(153, 22);
             this.mainToolMenuItem.Tag = "mainToolBar";
             this.mainToolMenuItem.Text = "Main Toolbar";
-            this.mainToolMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.mainToolMenuItem.Click += new System.EventHandler(this.mainToolMenuItem_Click);
             // 
             // debugToolMenuItem
             // 
+            this.debugToolMenuItem.CheckOnClick = true;
             this.debugToolMenuItem.Name = "debugToolMenuItem";
             this.debugToolMenuItem.Size = new System.Drawing.Size(153, 22);
             this.debugToolMenuItem.Tag = "debugToolBar";
             this.debugToolMenuItem.Text = "Debug Toolbar";
-            this.debugToolMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.debugToolMenuItem.Click += new System.EventHandler(this.debugToolMenuItem_Click);
             // 
             // editorToolBarMenuItem
             // 
+            this.editorToolBarMenuItem.CheckOnClick = true;
             this.editorToolBarMenuItem.Name = "editorToolBarMenuItem";
             this.editorToolBarMenuItem.Size = new System.Drawing.Size(153, 22);
             this.editorToolBarMenuItem.Tag = "editorToolbar";
             this.editorToolBarMenuItem.Text = "Editor Toolbar";
-            this.editorToolBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.editorToolBarMenuItem.Click += new System.EventHandler(this.editorToolBarMenuItem_Click);
             // 
             // toolStripSeparator6
             // 
@@ -987,27 +990,30 @@
             // 
             // labelListMenuItem
             // 
+            this.labelListMenuItem.CheckOnClick = true;
             this.labelListMenuItem.Name = "labelListMenuItem";
             this.labelListMenuItem.Size = new System.Drawing.Size(159, 22);
             this.labelListMenuItem.Tag = "labelsList";
             this.labelListMenuItem.Text = "Label List";
-            this.labelListMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.labelListMenuItem.Click += new System.EventHandler(this.labelListMenuItem_Click);
             // 
             // projViewMenuItem
             // 
+            this.projViewMenuItem.CheckOnClick = true;
             this.projViewMenuItem.Name = "projViewMenuItem";
             this.projViewMenuItem.Size = new System.Drawing.Size(159, 22);
             this.projViewMenuItem.Tag = "projectViewer";
             this.projViewMenuItem.Text = "Project View";
-            this.projViewMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.projViewMenuItem.Click += new System.EventHandler(this.projViewMenuItem_Click);
             // 
             // macroManagerMenuItem
             // 
+            this.macroManagerMenuItem.CheckOnClick = true;
             this.macroManagerMenuItem.Name = "macroManagerMenuItem";
             this.macroManagerMenuItem.Size = new System.Drawing.Size(159, 22);
             this.macroManagerMenuItem.Tag = "macroManager";
             this.macroManagerMenuItem.Text = "Macro Manager";
-            this.macroManagerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.macroManagerMenuItem.Click += new System.EventHandler(this.macroManagerMenuItem_Click);
             // 
             // toolStripSeparator7
             // 
@@ -1028,43 +1034,48 @@
             // 
             // debugPanelMenuItem
             // 
+            this.debugPanelMenuItem.CheckOnClick = true;
             this.debugPanelMenuItem.Name = "debugPanelMenuItem";
             this.debugPanelMenuItem.Size = new System.Drawing.Size(181, 22);
             this.debugPanelMenuItem.Tag = "debugPanel";
             this.debugPanelMenuItem.Text = "Debug Panel";
-            this.debugPanelMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.debugPanelMenuItem.Click += new System.EventHandler(this.debugPanelMenuItem_Click);
             // 
             // callStackMenuItem
             // 
+            this.callStackMenuItem.CheckOnClick = true;
             this.callStackMenuItem.Name = "callStackMenuItem";
             this.callStackMenuItem.Size = new System.Drawing.Size(181, 22);
             this.callStackMenuItem.Tag = "callStack";
             this.callStackMenuItem.Text = "Call Stack";
-            this.callStackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.callStackMenuItem.Click += new System.EventHandler(this.callStackMenuItem_Click);
             // 
             // stackViewerMenuItem
             // 
+            this.stackViewerMenuItem.CheckOnClick = true;
             this.stackViewerMenuItem.Name = "stackViewerMenuItem";
             this.stackViewerMenuItem.Size = new System.Drawing.Size(181, 22);
             this.stackViewerMenuItem.Tag = "stackViewer";
             this.stackViewerMenuItem.Text = "Stack Viewer";
-            this.stackViewerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.stackViewerMenuItem.Click += new System.EventHandler(this.stackViewerMenuItem_Click);
             // 
             // varTrackMenuItem
             // 
+            this.varTrackMenuItem.CheckOnClick = true;
             this.varTrackMenuItem.Name = "varTrackMenuItem";
             this.varTrackMenuItem.Size = new System.Drawing.Size(181, 22);
             this.varTrackMenuItem.Tag = "varTrack";
             this.varTrackMenuItem.Text = "Variable Tracking";
-            this.varTrackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.varTrackMenuItem.Click += new System.EventHandler(this.varTrackMenuItem_Click);
             // 
             // breakManagerMenuItem
             // 
+            this.breakManagerMenuItem.CheckOnClick = true;
             this.breakManagerMenuItem.Name = "breakManagerMenuItem";
             this.breakManagerMenuItem.Size = new System.Drawing.Size(181, 22);
             this.breakManagerMenuItem.Tag = "breakManager";
             this.breakManagerMenuItem.Text = "Breakpoint Manager";
-            this.breakManagerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.breakManagerMenuItem.Click += new System.EventHandler(this.breakManagerMenuItem_Click);
             // 
             // toolStripSeparator8
             // 
@@ -1073,35 +1084,39 @@
             // 
             // outWinMenuItem
             // 
+            this.outWinMenuItem.CheckOnClick = true;
             this.outWinMenuItem.Name = "outWinMenuItem";
             this.outWinMenuItem.Size = new System.Drawing.Size(159, 22);
             this.outWinMenuItem.Tag = "outputWindow";
             this.outWinMenuItem.Text = "Output Window";
-            this.outWinMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.outWinMenuItem.Click += new System.EventHandler(this.outWinMenuItem_Click);
             // 
             // errListMenuItem
             // 
+            this.errListMenuItem.CheckOnClick = true;
             this.errListMenuItem.Name = "errListMenuItem";
             this.errListMenuItem.Size = new System.Drawing.Size(159, 22);
             this.errListMenuItem.Tag = "errorList";
             this.errListMenuItem.Text = "Error List";
-            this.errListMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.errListMenuItem.Click += new System.EventHandler(this.errListMenuItem_Click);
             // 
             // findResultsMenuItem
             // 
+            this.findResultsMenuItem.CheckOnClick = true;
             this.findResultsMenuItem.Name = "findResultsMenuItem";
             this.findResultsMenuItem.Size = new System.Drawing.Size(159, 22);
             this.findResultsMenuItem.Tag = "FindResults";
             this.findResultsMenuItem.Text = "Find Results";
-            this.findResultsMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.findResultsMenuItem.Click += new System.EventHandler(this.findResultsMenuItem_Click);
             // 
             // statusBarMenuItem
             // 
+            this.statusBarMenuItem.CheckOnClick = true;
             this.statusBarMenuItem.Name = "statusBarMenuItem";
             this.statusBarMenuItem.Size = new System.Drawing.Size(159, 22);
             this.statusBarMenuItem.Tag = "statusBar";
             this.statusBarMenuItem.Text = "Status Bar";
-            this.statusBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.statusBarMenuItem.Click += new System.EventHandler(this.statusBarMenuItem_Click);
             // 
             // toolStripSeparator9
             // 
@@ -1110,19 +1125,21 @@
             // 
             // lineNumMenuItem
             // 
+            this.lineNumMenuItem.CheckOnClick = true;
             this.lineNumMenuItem.Name = "lineNumMenuItem";
             this.lineNumMenuItem.Size = new System.Drawing.Size(159, 22);
             this.lineNumMenuItem.Tag = "lineNumbers";
             this.lineNumMenuItem.Text = "Line Numbers";
-            this.lineNumMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.lineNumMenuItem.Click += new System.EventHandler(this.lineNumMenuItem_Click);
             // 
             // iconBarMenuItem
             // 
+            this.iconBarMenuItem.CheckOnClick = true;
             this.iconBarMenuItem.Name = "iconBarMenuItem";
             this.iconBarMenuItem.Size = new System.Drawing.Size(159, 22);
             this.iconBarMenuItem.Tag = "iconBar";
             this.iconBarMenuItem.Text = "Icon Bar";
-            this.iconBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            this.iconBarMenuItem.Click += new System.EventHandler(this.iconBarMenuItem_Click);
             // 
             // refactorMenuItem
             // 

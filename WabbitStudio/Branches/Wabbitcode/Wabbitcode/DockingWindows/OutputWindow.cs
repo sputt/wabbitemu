@@ -1,13 +1,14 @@
 ﻿using System.Text.RegularExpressions;
 using System;
 using System.Drawing;
+using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 
 namespace Revsoft.Wabbitcode.DockingWindows
 {
-	public partial class OutputWindow : ToolWindow
+	public partial class OutputWindow : ToolWindow, ISelectable
 	{
 		private readonly IDocumentService _documentService;
 		public OutputWindow(IDockingService dockingService, IDocumentService documentService)
@@ -95,7 +96,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private void selectAllOuputButton_Click(object sender, EventArgs e)
 		{
-			outputWindowBox.SelectAll();
+			SelectAll();
 		}
+
+	    public void SelectAll()
+	    {
+            outputWindowBox.SelectAll();
+	    }
 	}
 }

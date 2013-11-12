@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Extensions;
+﻿using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
@@ -32,10 +33,19 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			_dockingService = dockingService;
 			_documentService = documentService;
 			_projectService = projectService;
+
+		    _projectService.ProjectOpened += (sender, args) => BuildProjTree();
+		    _projectService.ProjectClosed += (sender, args) => CloseProject();
 		}
 
 		private void AddFile(ProjectFile file, TreeNode parent)
 		{
+		    if (string.IsNullOrEmpty(file.FileFullPath))
+		    {
+                // should never happen
+		        return;
+		    }
+
 			TreeNode nodeFile = new TreeNode
 			{
 				Tag = file,
@@ -160,7 +170,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			_documentService.OpenDocument(file);
 		}
 
-		internal void CloseProject()
+	    private void CloseProject()
 		{
 			projViewer.Nodes.Clear();
 		}
@@ -237,27 +247,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private void existingFileMenuItem_Click(object sender, EventArgs e)
 		{
-			OpenFileDialog openFileDialog = new OpenFileDialog
-			{
-				CheckFileExists = true,
-				DefaultExt = "*.asm",
-				Filter = "All Know File Types | *.asm; *.z80; *.inc; |Assembly Files (*.asm)|*.asm|*.z80" +
-						 " Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|All Files(*.*)|*.*",
-				FilterIndex = 0,
-				Multiselect = true,
-				RestoreDirectory = true,
-				Title = "Add Existing File",
-			};
-			DialogResult result = openFileDialog.ShowDialog();
-			if (result != DialogResult.OK)
-			{
-				return;
-			}
-
-			foreach (string file in openFileDialog.FileNames)
-			{
-				AddExistingFile(file);
-			}
+			new AddExistingFileAction(this).Execute();
 		}
 
 		private ProjectFile GetFileFromPath(string path)
@@ -570,7 +560,18 @@ namespace Revsoft.Wabbitcode.DockingWindows
 				return;
 			}
 			ProjectFile file = (ProjectFile)node.Tag;
-			string newFileName = Path.Combine(Path.GetDirectoryName(file.FileFullPath), newName);
+		    if (string.IsNullOrEmpty(file.FileFullPath))
+		    {
+		        return;
+		    }
+
+		    string dir = Path.GetDirectoryName(file.FileFullPath);
+		    if (string.IsNullOrEmpty(dir))
+		    {
+		        return;
+		    }
+
+			string newFileName = Path.Combine(dir, newName);
 			File.Move(file.FileFullPath, newFileName);
 			foreach (Editor editor in _dockingService.Documents
 				.Where(editor => string.Equals(editor.FileName, file.FileFullPath, StringComparison.OrdinalIgnoreCase)))

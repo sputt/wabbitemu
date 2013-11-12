@@ -2,10 +2,11 @@ using System.Configuration;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
@@ -33,11 +34,11 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace Revsoft.Wabbitcode
 {
-	/// <summary>
+    /// <summary>
 	/// Summary description for frmDocument.
 	/// </summary>
-	public partial class Editor : IClipboardOperation
-	{
+	public partial class Editor : IClipboardOperation, IUndoable, ISelectable
+    {
 		#region Private Memebers
 		private const int LabelsCacheSize = 100;
 	    private static readonly Regex LineRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|\%|'|\\|\<|\>]*?)\s*(;.*)?$", RegexOptions.Compiled);
@@ -104,15 +105,6 @@ namespace Revsoft.Wabbitcode
 			get { return editorBox.Document.TotalNumberOfLines; }
 		}
 
-		public bool IsIconBarVisible
-		{
-			set { editorBox.IsIconBarVisible = value; }
-		}
-
-		public bool ShowLineNumbers
-		{
-			set { editorBox.ShowLineNumbers = value; }
-		}
 
 	    public bool ReadOnly
 	    {
@@ -247,6 +239,12 @@ namespace Revsoft.Wabbitcode
                     break;
                 case "ExternalHighlight":
                     UpdateHighlighting();
+                    break;
+                case "IconBar":
+                    editorBox.IsIconBarVisible = (bool) e.NewValue;
+                    break;
+                case "LineNumbers":
+                    editorBox.ShowLineNumbers = (bool) e.NewValue;
                     break;
             }
         }
@@ -456,31 +454,18 @@ namespace Revsoft.Wabbitcode
 			editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
 		}
 
-		public bool SaveFileAs()
-		{
-			SaveFileDialog saveFileDialog = new SaveFileDialog
-			{
-				DefaultExt = "asm",
-				RestoreDirectory = true,
-				Filter = "All Know File Types | *.asm; *.z80| Assembly Files (*.asm)|*.asm|Z80" +
-						 " Assembly Files (*.z80)|*.z80|All Files(*.*)|*.*",
-				FilterIndex = 0,
-				Title = "Save File As"
-			};
+	    internal void SaveFile(string fileName)
+	    {
+	        if (string.IsNullOrEmpty(fileName))
+	        {
+	            return;
+	        }
 
-			if (saveFileDialog.ShowDialog() != DialogResult.OK)
-			{
-				return false;
-			}
-			if (string.IsNullOrEmpty(saveFileDialog.FileName))
-			{
-				return false;
-			}
-			FileName = saveFileDialog.FileName;
-			return true;
-		}
+	        FileName = fileName;
+	        SaveFile();
+	    }
 
-		public bool SaveFile()
+		internal void SaveFile()
 		{
 			if (_projectService.Project.ProjectWatcher != null)
 			{
@@ -488,28 +473,18 @@ namespace Revsoft.Wabbitcode
 			}
 			if (string.IsNullOrEmpty(FileName))
 			{
-				bool success = SaveFileAs();
-				if (!success)
-				{
-					return false;
-				}
+                new SaveAsCommand(this).Execute();
+			    return;
 			}
 
-			if (string.IsNullOrEmpty(FileName))
-			{
-				return false;
-			}
-
-			bool saved = true;
-			_stackTop = editorBox.Document.UndoStack.UndoItemCount;
+		    _stackTop = editorBox.Document.UndoStack.UndoItemCount;
 			try
 			{
 				editorBox.SaveFile(FileName);
 			}
 			catch (Exception ex)
 			{
-				saved = false;
-				DockingService.ShowError("Error saving the file", ex);
+			    DockingService.ShowError("Error saving the file", ex);
 			}
 
 			if (_projectService.Project.ProjectWatcher != null)
@@ -520,7 +495,6 @@ namespace Revsoft.Wabbitcode
 			editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
 			TabText = Path.GetFileName(FileName);
 			DocumentChanged = false;
-			return saved;
 		}
 
 		private void editor_FormClosing(object sender, CancelEventArgs e)
@@ -804,7 +778,7 @@ namespace Revsoft.Wabbitcode
 
 		#endregion
 
-		internal void SelectAll()
+        public void SelectAll()
 		{
 			TextLocation selectStart = new TextLocation(0, 0);
 			TextLocation selectEnd = new TextLocation(editorBox.Text.Split('\n')[editorBox.Document.TotalNumberOfLines - 1].Length, editorBox.Document.TotalNumberOfLines - 1);
@@ -907,9 +881,9 @@ namespace Revsoft.Wabbitcode
 		private void findRefContext_Click(object sender, EventArgs e)
 		{
 			string word = GetWord();
+            var refs = _projectService.FindAllReferences(word);
 			_dockingService.FindResults.NewFindResults(word, _projectService.Project.ProjectName);
-			var refs = _projectService.FindAllReferences(word);
-			foreach (var fileRef in refs.SelectMany(reference => reference))
+			foreach (var fileRef in refs.SelectMany(r => r))
 			{
 				_dockingService.FindResults.AddFindResult(fileRef);
 			}

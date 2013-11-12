@@ -41,7 +41,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		        _dockingService.Invoke(UpdateLabelBox);
 		    };
-            DockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+            _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
 		}
 
         void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
