@@ -47,6 +47,14 @@ public:
 		return hr;
 	}
 
+	void FinalRelease()
+	{
+		if (!m_fFirstAssembly)
+		{
+			free_storage();
+		}
+	}
+
 	STDMETHOD(get_Defines)(IDictionary **ppDictionary)
 	{
 		return m_dict->QueryInterface(ppDictionary);
@@ -155,6 +163,7 @@ public:
 		if (V_VT(&varInput) == VT_BSTR)
 		{
 			mode |= MODE_NORMAL | MODE_COMMANDLINE;
+			mode &= ~MODE_LIST;
 
 			if (m_fFirstAssembly)
 			{
@@ -171,13 +180,7 @@ public:
 			mode &= ~MODE_COMMANDLINE;
 			mode |= MODE_NORMAL;
 
-			if (curr_input_file) {
-				free(curr_input_file);
-			}
 			curr_input_file = strdup(m_bstrInputFile);
-			if (output_filename) {
-				free(output_filename);
-			}
 			output_filename = strdup(m_bstrOutputFile);
 
 			if (!m_fFirstAssembly)
@@ -220,6 +223,22 @@ public:
 		pStream->SetSize(ul);
 
 		m_fFirstAssembly = FALSE;
+		if (output_filename != NULL)
+		{
+			free(output_filename);
+			output_filename = NULL;
+		}
+		if (curr_input_file)
+		{
+			free(curr_input_file);
+			curr_input_file = NULL;
+		}
+
+		if (mode & MODE_COMMANDLINE)
+		{
+			free(input_contents);
+			input_contents = NULL;
+		}
 		return pStream->QueryInterface(ppOutput);
 	}
 
@@ -249,7 +268,9 @@ private:
 
 			_bstr_t val = varValue;
 
-			add_define(strdup(key), NULL)->contents = strdup(val);
+			bool redefined;
+			define_t *define = add_define(strdup(key), &redefined);
+			set_define(define, val, -1, redefined);
 		}
 	}
 

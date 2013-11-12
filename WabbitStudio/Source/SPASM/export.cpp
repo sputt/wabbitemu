@@ -89,6 +89,7 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	int i, calc;
 
 	free(curr_input_file);
+
 	curr_input_file = strdup(_T("exporter"));
 	line_num = -1;
 
@@ -118,6 +119,8 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	if (!outfile) {
 		int error = errno;
 		SetLastSPASMError(SPASM_ERR_FILE_NOT_FOUND, output_filename);
+		free(curr_input_file);
+		curr_input_file = NULL;
 		return;
 	}
 
@@ -174,6 +177,8 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 		
 
 	fclose (outfile);
+	free(curr_input_file);
+	curr_input_file = NULL;
 }
 
 void makerom (const unsigned char *output_contents, DWORD size, FILE *outfile) {

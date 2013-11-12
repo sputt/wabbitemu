@@ -81,7 +81,7 @@ int run_assembly()
 	out_ptr = output_contents;
 
 	//along with the listing buffer, if required
-	if (mode & MODE_LIST) {
+	if ((mode & MODE_LIST)) {
 		listing_buf = eb_init (LISTING_BUF_SIZE);
 		listing_offset = 0;
 		listing_on = true;
@@ -118,8 +118,9 @@ int run_assembly()
 	if ((mode & MODE_COMMANDLINE) == 0)
 	{
 		release_file_contents(input_contents);
+		input_contents = NULL;
 	}
-	input_contents = NULL;
+	
 	list_free (include_dirs, true, NULL);
 	include_dirs = NULL;
 
@@ -139,7 +140,7 @@ int run_assembly()
 		}
 
 		//write the listing file if necessary
-		if (mode & MODE_LIST) {
+		if ((mode & MODE_LIST)) {
 			FILE *file;
 			char *name;
 
