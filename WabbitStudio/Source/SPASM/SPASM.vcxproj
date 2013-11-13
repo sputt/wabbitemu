@@ -230,7 +230,8 @@
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <ForcedIncludeFiles>debug.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <Midl>
       <TargetEnvironment>Win32</TargetEnvironment>
@@ -264,7 +265,8 @@
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <ForcedIncludeFiles>debug.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -349,7 +351,6 @@
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <ForcedIncludeFiles>debug.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Midl>
       <DllDataFileName>
@@ -380,7 +381,8 @@
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <ForcedIncludeFiles>debug.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -721,7 +723,6 @@
     <ClInclude Include="CIncludeDirectoryCollection.h" />
     <ClInclude Include="console.h" />
     <ClInclude Include="CTextStream.h" />
-    <ClInclude Include="debug.h" />
     <ClInclude Include="directive.h" />
     <ClInclude Include="errors.h" />
     <ClInclude Include="expand_buf.h" />

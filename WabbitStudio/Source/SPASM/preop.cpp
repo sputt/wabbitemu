@@ -16,7 +16,6 @@ char *handle_preop_define (const char *ptr);
 static char *handle_preop_include (char *ptr);
 char *handle_preop_import (char *ptr);
 char *handle_preop_if (char *ptr);
-char *handle_preop_elif (char *ptr);
 static char *skip_until (char *ptr, int *line, int argc, ...);
 
 extern bool case_sensitive;
@@ -623,38 +622,6 @@ char *handle_preop_if (char *ptr) {
 	
 	return do_if ((char *) expr_end, condition);
 }
-
-/*
- * Handles #IF statement,
- * returns pointer to new
- * location in file
- */
-
-char *handle_preop_elif (char *ptr)
-{
-	char *expr_end, *expr;
-	int condition;
-
-	if (is_end_of_code_line (ptr)) {
-		show_fatal_error ("#ELIF is missing condition");
-		return ptr;
-	}
-
-	expr_end = (char *) skip_to_code_line_end(ptr);
-	while (is_end_of_code_line (expr_end))
-		expr_end--;
-//	expr_end = skip_to_line_end (ptr);
-	
-	expr = strndup (ptr, expr_end - ptr + 1);
-	
-	parse_num (expr, &condition);
-	free(expr);
-	
-	//return do_elif(expr_end + 1, condition);
-}
-
-
-
 
 /*
  * Skips the appropriate

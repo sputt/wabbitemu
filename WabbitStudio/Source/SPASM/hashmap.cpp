@@ -117,7 +117,7 @@ static list_t *list_find(list_t *list, const char *name)
 	if (strcmp(((store_t *) list->data)->name, name) == 0) {
 		return list;
 	} else {
-		list_find(list->next, name);
+		return list_find(list->next, name);
 	}
 }
 
@@ -127,9 +127,10 @@ static list_t *list_find(list_t *list, const char *name)
 
 hash_t *hash_init (size_t size, void remove_callback(void *)) {
 	hash_t *hashtable = new hash_t();
-	hashtable->list = NULL;
+	//hashtable->list = NULL;
+	hashtable->single_element = NULL;
 
-	if (false) { //size <= 16) {
+	if (false) { //size <= 1) {
 		hashtable->table = NULL;	
 	} else	{
 		hashtable->table = new hash_t::maptype();
@@ -144,13 +145,11 @@ hash_t *hash_init (size_t size, void remove_callback(void *)) {
  */
 
 void *hash_insert (hash_t *ht, void *store) {
-	if (ht->table != NULL)
-	{
+	if (ht->table != NULL) {
 		(*ht->table)[((store_t *) store)->name] = store;
-	}
-	else
-	{
-		list_t *item = list_find(ht->list, ((store_t *) store)->name);
+	} else {
+		ht->single_element = store;
+		//ht->list = list_prepend(ht->list, store);
 	}
 	return store;
 }
@@ -162,51 +161,102 @@ void *hash_insert (hash_t *ht, void *store) {
  */
 
 void *hash_lookup (hash_t *ht, const char *name) {
-	auto it = ht->table->find(name);
-	if (it == ht->table->end()) {
-		return NULL;
+	if (ht->table != NULL) {
+		auto it = ht->table->find(name);
+		if (it == ht->table->end()) {
+			return NULL;
+		}
+		return it->second;
+	} else {
+		return ht->single_element;
+		//list_t *item = list_find(ht->list, name);
+		//if (item != NULL) {
+		//	return item->data;
+		//}
+		//return NULL;
 	}
-	return it->second;
 }
 
 
 /*
  * Removes a hash from a hash table
+ *   return 1 if the item was removed, 0 if otherwise
  */
 
 int hash_remove (hash_t *ht, const char *name) {
-	auto it = ht->table->find(name);
-	if (it != ht->table->end()) {
-		auto store = it->second;
-		ht->table->erase(it);
-		ht->remove_callback(store);
-		return 1;
+	if (ht->table != NULL) {
+		auto it = ht->table->find(name);
+		if (it != ht->table->end()) {
+			auto store = it->second;
+			ht->table->erase(it);
+			ht->remove_callback(store);
+			return 1;
+		}
+		return 0;
+	} else {
+		//list_t *item = list_find(ht->list, name);
+		//if (item != NULL) {
+		//	ht->list = list_remove(ht->list, item);
+		//	return 1;
+		//}
+		if (ht->single_element != NULL) {
+			ht->remove_callback(ht->single_element);
+			ht->single_element = NULL;
+			return 1;
+		}
+		return 0;
 	}
-	return 0;
 }
 
 void hash_enum (hash_t *ht, void enum_callback(void *, void *), void *arg) {
-	for (auto it = ht->table->cbegin(); it != ht->table->cend(); it++)
-	{
-		enum_callback(it->second, arg);
+	if (ht->table != NULL) {
+		for (auto it = ht->table->cbegin(); it != ht->table->cend(); it++)
+		{
+			enum_callback(it->second, arg);
+		}
+	} else {
+		//list_t *item = ht->list;
+		//while (item != NULL) {
+		//	enum_callback(item->data, arg);
+		//	item = item->next;
+		//}
+		if (ht->single_element != NULL) {
+			enum_callback(ht->single_element, arg);
+		}
 	}
 }
 
 int hash_count (hash_t *ht) {
-	return ht->table->size();
+	if (ht->table != NULL) {
+		return ht->table->size();
+	} else {
+		//int size = 0;
+		//list_t *item = ht->list;
+		//while (item != NULL) {
+		//	size++;
+		//	item = item->next;
+		//}
+		//return size;
+		return ht->single_element != NULL ? 1 : 0;
+	}
 }
 
 /*
  * Free a hash table, removing elements
  */
 void hash_free (hash_t *ht) {
-	for (auto it = ht->table->cbegin(); it != ht->table->cend(); it++)
-	{
-		ht->remove_callback(it->second);
-	}
 	if (ht->table != NULL)
 	{
+		for (auto it = ht->table->cbegin(); it != ht->table->cend(); it++)
+		{
+			ht->remove_callback(it->second);
+		}
 		delete ht->table;
+	} else {
+		//list_free(ht->list, true, ht->remove_callback); 
+		if (ht->single_element != NULL) {
+			ht->remove_callback(ht->single_element);
+		}
 	}
 	delete ht;
 }

@@ -154,9 +154,6 @@
     <ClInclude Include="bitmap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="debug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="modp_ascii.h">
       <Filter>Header Files</Filter>
     </ClInclude>
