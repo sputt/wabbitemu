@@ -1,6 +1,8 @@
 #ifndef HASH_H_
 #define HASH_H_
 
+#include "list.h"
+
 typedef struct {
 	char *name;
 } store_t;
@@ -43,8 +45,10 @@ typedef struct _mh_hash_table {
 	};
 typedef struct
 {
-	std::unordered_map<const char *, void*, mystringhash, myequalto> table;
+	typedef std::unordered_map<const char *, void*, mystringhash, myequalto> maptype;
+	 maptype *table;
 	void (*remove_callback)(void *);
+	list_t *list;
 }
 hash_t;
 

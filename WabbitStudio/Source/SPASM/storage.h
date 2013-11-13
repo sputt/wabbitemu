@@ -39,8 +39,8 @@ typedef struct common_store {
 void write_labels (char *filename);
 void init_storage ();
 EXPORT void free_storage();
-define_t *add_define (char *name, bool *redefined);
-define_t *search_defines (const char *name);
+define_t *add_define (char *name, bool *redefined, bool search_local = true);
+define_t *search_defines (const char *name, bool search_local = true);
 define_t *search_local_defines (const char *name);
 void remove_define (char *name);
 void set_define (define_t *define, const char *str, int len, bool redefined);

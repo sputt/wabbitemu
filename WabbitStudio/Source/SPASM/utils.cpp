@@ -771,7 +771,7 @@ int strnlen (const char *str, int maxlen) {
  * text replacements
  */
 
-void expand_expr_full (const char *expr, expand_buf *new_expr, int depth) {
+static void expand_expr_full (const char *expr, expand_buf *new_expr, int depth, bool search_local) {
 	const char *block_start;
 	char *name;
 	static char separators[] = "=+-*<>|&/%^()\\, \t\r";
@@ -806,7 +806,7 @@ void expand_expr_full (const char *expr, expand_buf *new_expr, int depth) {
 			name = strndup (expr, name_len);
 			
 			//if it's a define, recursively expand its contents
-			if ((define = search_defines (name)) && define->contents != NULL) {
+			if ((define = search_defines (name, search_local)) && define->contents != NULL) {
 				list_t *args = NULL;
 
 				if (define->num_args > 0) {
@@ -818,7 +818,7 @@ void expand_expr_full (const char *expr, expand_buf *new_expr, int depth) {
 				} else {
 					expr += name_len;
 				}
-				expand_expr_full (define->contents, new_expr, depth + 1);
+				expand_expr_full (define->contents, new_expr, depth + 1, search_local);
 				remove_arg_set (args);
 				if (error_occurred) return;
 			//if it's a label, write its value
@@ -851,13 +851,13 @@ void expand_expr_full (const char *expr, expand_buf *new_expr, int depth) {
 }
 
 
-char *expand_expr (const char *expr) {
+char *expand_expr (const char *expr, bool search_local) {
 	expand_buf *new_expr;
 	char *new_expr_text;
 
 	new_expr = eb_init(strlen(expr) * 2);
 
-	expand_expr_full (expr, new_expr, 0);
+	expand_expr_full (expr, new_expr, 0, search_local);
 	new_expr_text = eb_extract (new_expr);
 	eb_free (new_expr);
 

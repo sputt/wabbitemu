@@ -107,12 +107,33 @@ unsigned int
 #endif
 }
 
+
+static list_t *list_find(list_t *list, const char *name)
+{
+	if (list == NULL) {
+		return NULL;
+	}
+
+	if (strcmp(((store_t *) list->data)->name, name) == 0) {
+		return list;
+	} else {
+		list_find(list->next, name);
+	}
+}
+
 /*
  * Creates a new hash table with an upper bound size
  */
 
 hash_t *hash_init (size_t size, void remove_callback(void *)) {
 	hash_t *hashtable = new hash_t();
+	hashtable->list = NULL;
+
+	if (false) { //size <= 16) {
+		hashtable->table = NULL;	
+	} else	{
+		hashtable->table = new hash_t::maptype();
+	}
 	hashtable->remove_callback = remove_callback;
 	return hashtable;
 }
@@ -123,7 +144,14 @@ hash_t *hash_init (size_t size, void remove_callback(void *)) {
  */
 
 void *hash_insert (hash_t *ht, void *store) {
-	ht->table[((store_t *) store)->name] = store;
+	if (ht->table != NULL)
+	{
+		(*ht->table)[((store_t *) store)->name] = store;
+	}
+	else
+	{
+		list_t *item = list_find(ht->list, ((store_t *) store)->name);
+	}
 	return store;
 }
 
@@ -134,8 +162,8 @@ void *hash_insert (hash_t *ht, void *store) {
  */
 
 void *hash_lookup (hash_t *ht, const char *name) {
-	auto it = ht->table.find(name);
-	if (it == ht->table.end()) {
+	auto it = ht->table->find(name);
+	if (it == ht->table->end()) {
 		return NULL;
 	}
 	return it->second;
@@ -147,10 +175,10 @@ void *hash_lookup (hash_t *ht, const char *name) {
  */
 
 int hash_remove (hash_t *ht, const char *name) {
-	auto it = ht->table.find(name);
-	if (it != ht->table.end()) {
+	auto it = ht->table->find(name);
+	if (it != ht->table->end()) {
 		auto store = it->second;
-		ht->table.erase(it);
+		ht->table->erase(it);
 		ht->remove_callback(store);
 		return 1;
 	}
@@ -158,23 +186,27 @@ int hash_remove (hash_t *ht, const char *name) {
 }
 
 void hash_enum (hash_t *ht, void enum_callback(void *, void *), void *arg) {
-	for (auto it = ht->table.cbegin(); it != ht->table.cend(); it++)
+	for (auto it = ht->table->cbegin(); it != ht->table->cend(); it++)
 	{
 		enum_callback(it->second, arg);
 	}
 }
 
 int hash_count (hash_t *ht) {
-	return ht->table.size();
+	return ht->table->size();
 }
 
 /*
  * Free a hash table, removing elements
  */
 void hash_free (hash_t *ht) {
-	for (auto it = ht->table.cbegin(); it != ht->table.cend(); it++)
+	for (auto it = ht->table->cbegin(); it != ht->table->cend(); it++)
 	{
 		ht->remove_callback(it->second);
+	}
+	if (ht->table != NULL)
+	{
+		delete ht->table;
 	}
 	delete ht;
 }

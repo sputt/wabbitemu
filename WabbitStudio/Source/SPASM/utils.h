@@ -49,7 +49,7 @@ bool define_with_value (const char *name, const int value);
 int strnlen (const char *str, int maxlen);
 #endif
 
-char *expand_expr (const char *expr);
+char *expand_expr (const char *expr, bool search_local = true);
 
 extern char *curr_input_file;
 extern int line_num;

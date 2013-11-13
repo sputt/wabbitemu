@@ -253,7 +253,7 @@ bool get_case_sensitive() {
  * Call with redefined = NULL if you don't care
  */
 
-define_t *add_define (char *name, bool *redefined) {
+define_t *add_define (char *name, bool *redefined, bool search_local) {
 	define_t *define;
 	label_t *conflict_label;
 
@@ -276,7 +276,7 @@ define_t *add_define (char *name, bool *redefined) {
 	}
 	
 	// handle redefinitions
-	if ((define = search_defines ((const char *)name))) {
+	if ((define = search_defines (name, search_local))) {
 		int curr_arg;
 
 		free (name);
@@ -362,7 +362,7 @@ define_t *search_local_defines (const char *name) {
  * or NULL if not found
  */
 
-define_t *search_defines (const char *name) {	
+define_t *search_defines (const char *name, bool search_local) {	
 	define_t *result = NULL;
 	char *search_name;
 	list_t *curr_arg_set = arg_list;
@@ -375,11 +375,14 @@ define_t *search_defines (const char *name) {
 		search_name = (char *)name;
 
 	//first search all the sets of arguments in order
-	while (curr_arg_set) {
-		result = (define_t *)hash_lookup ((hash_t *)(curr_arg_set->data), search_name);
-		if (result)
-			break;
-		curr_arg_set = curr_arg_set->next;
+	if (search_local)
+	{
+		while (curr_arg_set) {
+			result = (define_t *)hash_lookup ((hash_t *)(curr_arg_set->data), search_name);
+			if (result)
+				break;
+			curr_arg_set = curr_arg_set->next;
+		}
 	}
 
 	//if that doesn't work, look in the global define table
@@ -462,9 +465,9 @@ void set_define (define_t *define, const char *str, int len, bool redefined) {
 
 		define_table = hash_init (1, (HASH_REMOVE_CALLBACK) destroy_define_value);
 		
-		add_define (strdup (define->name), NULL)->contents = strdup (define->contents);
+		add_define (strdup (define->name), NULL, false)->contents = strdup (define->contents);
 		temp = len == -1 ? strdup (str) : strndup (str, len);
-		result = expand_expr (temp);
+		result = expand_expr (temp, false);
 		free(temp);
 
 		if (define->contents != NULL)
