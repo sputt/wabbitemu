@@ -46,13 +46,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		private readonly ISymbolService _symbolService;
 	    private VariableType _lastVariableType;
 
-		public TrackingWindow(IDockingService dockingService, ISymbolService symbolService)
-			: base(dockingService)
+		public TrackingWindow()
 		{
 			InitializeComponent();
 
             WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
-			_symbolService = symbolService;
+            _symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
 		}
 
 		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)

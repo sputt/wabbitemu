@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
@@ -31,10 +32,10 @@ namespace Revsoft.Wabbitcode.Actions
         private readonly IDocumentService _documentService;
         private readonly IProjectService _projectService;
 
-        public OpenFileAction(IDocumentService documentService, IProjectService projectService)
+        public OpenFileAction()
         {
-            _documentService = documentService;
-            _projectService = projectService;
+            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
+            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
         }
 
         public override void Execute()
@@ -96,9 +97,9 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly IProjectService _projectService;
 
-        public OpenProjectCommand(IProjectService projectService)
+        public OpenProjectCommand()
         {
-            _projectService = projectService;
+            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
         }
 
         public override void Execute()
@@ -149,9 +150,9 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class SaveCommand : AbstractUiAction
     {
-        private readonly Editor _editor;
+        private readonly AbstractFileEditor _editor;
 
-        public SaveCommand(Editor editor)
+        public SaveCommand(AbstractFileEditor editor)
         {
             _editor = editor;
         }
@@ -171,9 +172,9 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class SaveAsCommand : AbstractUiAction
     {
-        private readonly Editor _editor;
+        private readonly AbstractFileEditor _editor;
 
-        public SaveAsCommand(Editor editor)
+        public SaveAsCommand(AbstractFileEditor editor)
         {
             _editor = editor;
         }
@@ -207,14 +208,14 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly IDockingService _dockingService;
 
-        public SaveAllCommand(IDockingService dockingService)
+        public SaveAllCommand()
         {
-            _dockingService = dockingService;
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
         }
 
         public override void Execute()
         {
-            foreach (Editor child in _dockingService.Documents)
+            foreach (AbstractFileEditor child in _dockingService.Documents.OfType<AbstractFileEditor>())
             {
                 child.SaveFile();
             }
@@ -223,9 +224,9 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class CloseCommand : AbstractUiAction
     {
-        private readonly Editor _editor;
+        private readonly AbstractFileEditor _editor;
 
-        public CloseCommand(Editor editor)
+        public CloseCommand(AbstractFileEditor editor)
         {
             _editor = editor;
         }

@@ -1,6 +1,4 @@
-﻿using Revsoft.Wabbitcode.Services.Interfaces;
-
-namespace Revsoft.Wabbitcode.Services.Project
+﻿namespace Revsoft.Wabbitcode.Services.Project
 {
 	using System;
 
@@ -32,6 +30,6 @@ namespace Revsoft.Wabbitcode.Services.Project
 		/// Runs the build step
 		/// </summary>
 		/// <returns>Returns true if success, false otherwise</returns>
-		bool Build(IAssemblerService assemblerService, IProject project);
+		bool Build(IProject project);
 	}
 }

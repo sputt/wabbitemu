@@ -1,6 +1,4 @@
-﻿using Revsoft.Wabbitcode.Services.Interfaces;
-
-namespace Revsoft.Wabbitcode.Services
+﻿namespace Revsoft.Wabbitcode.Services.Interfaces
 {
     public interface IFileReaderService : IService
     {

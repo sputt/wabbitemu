@@ -5,7 +5,6 @@ using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
@@ -31,7 +30,6 @@ namespace Revsoft.Wabbitcode.Services
 		public ProjectViewer ProjectViewer { get; private set; }
 		public StackViewer StackViewer { get; private set; }
 		public TrackingWindow TrackWindow { get; private set; }
-		public bool HasBeenInited { get; private set; }
 		public LabelList LabelList { get; private set; }
 		public MacroManager MacroManager { get; private set; }
         public ExpressionWindow ExpressionWindow { get; private set; }
@@ -44,31 +42,21 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		public Editor ActiveDocument
+		public IDockContent ActiveDocument
 		{
 			get
 			{
-				if (_dockPanel.ActiveDocument == null)
-				{
-					return null;
-				}
-
-				if (!(_dockPanel.ActiveDocument is Editor))
-				{
-					return null;
-				}
-
-				return _dockPanel.ActiveDocument as Editor;
+			    return _dockPanel.ActiveDocument;
 			}
 		}
 
-		public IEnumerable<Editor> Documents
+		public IEnumerable<IDockContent> Documents
 		{
 			get
 			{
 				lock (_dockPanel.Documents)
 				{
-					return _dockPanel.Documents.Where(doc => doc is Editor).Cast<Editor>();
+				    return _dockPanel.Documents;
 				}
 			}
 		}
@@ -172,41 +160,24 @@ namespace Revsoft.Wabbitcode.Services
             }
 		}
 
-		public void Invoke(Action action)
-		{
-            if (_dockPanel != null && _dockPanel.Parent != null)
-			{
-				_dockPanel.Parent.Invoke(action);
-			}
-		}
+	    public void InitPanels()
+	    {
+            ProjectViewer = new ProjectViewer();
+            ErrorList = new ErrorList();
+            TrackWindow = new TrackingWindow();
+            DebugPanel = new DebugPanel();
+            CallStack = new CallStack();
+            LabelList = new LabelList();
+            OutputWindow = new OutputWindow();
+            FindForm = new FindAndReplaceForm();
+            FindResults = new FindResultsWindow();
+            MacroManager = new MacroManager();
+            BreakManagerWindow = new BreakpointManagerWindow();
+            StackViewer = new StackViewer();
+            ExpressionWindow = new ExpressionWindow();
+	    }
 
-		public void InitPanels(ProjectViewer projectViewer, ErrorList errorList, TrackingWindow trackingWindow,
-			DebugPanel debugPanel, CallStack callStack, LabelList labelList, OutputWindow outputWindow,
-			FindAndReplaceForm findAndReplaceForm, FindResultsWindow findResults, MacroManager macroManager,
-			BreakpointManagerWindow breakpointManagerWindow, StackViewer stackViewer, ExpressionWindow expressionWindow)
-		{
-			if (HasBeenInited)
-			{
-				throw new Exception("Cannot init panels twice");
-			}
-
-			ProjectViewer = projectViewer;
-			ErrorList = errorList;
-			TrackWindow = trackingWindow;
-			DebugPanel = debugPanel;
-			CallStack = callStack;
-			LabelList = labelList;
-			OutputWindow = outputWindow;
-			FindForm = findAndReplaceForm;
-			FindResults = findResults;
-			MacroManager = macroManager;
-			BreakManagerWindow = breakpointManagerWindow;
-			StackViewer = stackViewer;
-		    ExpressionWindow = expressionWindow;
-			HasBeenInited = true;
-		}
-
-		#region IService
+	    #region IService
 
 		public void DestroyService()
 		{
@@ -227,7 +198,6 @@ namespace Revsoft.Wabbitcode.Services
 				}
 
 				_dockPanel.SaveAsXml(FileLocations.ConfigFile);
-				HasBeenInited = false;
 			}
 			catch (Exception ex)
 			{

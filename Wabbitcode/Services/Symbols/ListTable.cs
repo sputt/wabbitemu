@@ -117,6 +117,11 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 		/// if the file line number combination do not map to a location on the calc</returns>
 		public CalcLocation GetCalcLocation(string filename, int lineNumber)
 		{
+		    if (string.IsNullOrEmpty(filename))
+		    {
+		        return null;
+		    }
+
 			CalcLocation value;
 			DocumentLocation key = new DocumentLocation(filename.ToLower(), lineNumber);
 			_fileToCalc.TryGetValue(key, out value);

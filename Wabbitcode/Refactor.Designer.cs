@@ -1,6 +1,6 @@
 ﻿namespace Revsoft.Wabbitcode
 {
-    partial class RefactorForm
+    sealed partial class RefactorForm
     {
         /// <summary>
         /// Required designer variable.

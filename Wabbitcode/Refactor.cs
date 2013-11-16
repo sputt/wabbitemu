@@ -1,5 +1,6 @@
 ﻿using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
+using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using System;
@@ -12,7 +13,7 @@ using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode
 {
-	public partial class RefactorForm : Form
+	public sealed partial class RefactorForm : Form
 	{
 		private const int PreviewHeight = 400;
 		private readonly string _word;
@@ -24,15 +25,16 @@ namespace Revsoft.Wabbitcode
 		{
 			_projectService = projectService;
 		    InitializeComponent();
-			_word = dockingService.ActiveDocument.GetWord();
+		    ITextEditor document = dockingService.ActiveDocument as ITextEditor;
+		    if (document == null)
+		    {
+		        Close();
+		        return;
+		    }
+
+			_word = document.GetWordAtCaret();
 			Text = string.Format("Refactor '{0}'", _word);
 			nameBox.Text = _word;
-		}
-
-		public override sealed string Text
-		{
-			get { return base.Text; }
-			set { base.Text = value; }
 		}
 
 		private void cancelButton_Click(object sender, EventArgs e)

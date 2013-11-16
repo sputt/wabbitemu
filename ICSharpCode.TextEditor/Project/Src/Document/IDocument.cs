@@ -282,12 +282,6 @@ namespace Revsoft.TextEditor.Document
 		/// </param>
 		string GetText(int offset, int length);
 
-        /// <summary>
-        /// Fetches the string at counter, based off built-in delimeters
-        /// </summary>
-        /// <param name="counter"></param>
-        /// <returns></returns>
-        string GetWord(int counter);
 		#endregion
 		string GetText(ISegment segment);
 		

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -14,26 +15,23 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	{
 		private IWabbitcodeDebugger _debugger;
 
-        private readonly IDockingService _dockingService;
         private readonly IDocumentService _documentService;
 
         private readonly List<DocumentLocation> _callLocations = new List<DocumentLocation>();
 
-		public CallStack(IDockingService dockingService, IDocumentService documentService)
-			: base(dockingService)
+		public CallStack()
 		{
 			InitializeComponent();
 
-			_dockingService = dockingService;
             WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
-		    _documentService = documentService;
+            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 		}
 
 		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
 		{
 			_debugger = e.Debugger;
-			_debugger.OnDebuggerStep += (o, args) => _dockingService.Invoke(UpdateStack);
-			_debugger.OnDebuggerRunningChanged += (o, args) => _dockingService.Invoke(UpdateStack);
+			_debugger.OnDebuggerStep += (o, args) => this.Invoke(UpdateStack);
+			_debugger.OnDebuggerRunningChanged += (o, args) => this.Invoke(UpdateStack);
 		}
 
 		private void UpdateStack()

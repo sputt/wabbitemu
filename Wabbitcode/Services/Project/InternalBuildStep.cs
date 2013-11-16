@@ -1,7 +1,6 @@
 ﻿using System;
 using Revsoft.Wabbitcode.Services.Assembler;
 using System.IO;
-using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -137,43 +136,40 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 		}
 
-		public bool Build(IAssemblerService assemblerService, IProject project)
+		public bool Build(IProject project)
 		{
+		    IAssembler assembler = AssemblerFactory.CreateAssembler();
 			AssemblerOutput output;
+		    string outputString;
 			switch (_stepType)
 			{
 				case BuildStepType.All:
-					output = assemblerService.AssembleFile(
-						_inputFile,
-						_outputFile,
-						project.ProjectDirectory,
-						project.IncludeDirs,
-						AssemblyFlags.Normal | AssemblyFlags.Symtable | AssemblyFlags.List);
+                    AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
+                        project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.Symtable | AssemblyFlags.List);
+			        outputString = assembler.Assemble();
+			        output = new AssemblerOutput(outputString, outputString.Contains("error"));
 					project.BuildSystem.ProjectOutput = _outputFile;
 					project.BuildSystem.ListOutput = Path.ChangeExtension(_outputFile, "lst");
 					project.BuildSystem.LabelOutput = Path.ChangeExtension(_outputFile, "lab");
 					break;
 				case BuildStepType.Listing:
-					output = assemblerService.AssembleFile(
-							_inputFile,
-							_outputFile,
-							project.ProjectDirectory,
-							project.IncludeDirs,
-							 AssemblyFlags.Normal | AssemblyFlags.List);
+                    AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
+                        project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.List);
+			        outputString = assembler.Assemble();
+			        output = new AssemblerOutput(outputString, outputString.Contains("error"));
 					project.BuildSystem.ProjectOutput = _outputFile;
 					project.BuildSystem.ListOutput = Path.ChangeExtension(_outputFile, "lst");
 					break;
 				case BuildStepType.SymbolTable:
-					output = assemblerService.AssembleFile(
-								 _inputFile,
-							_outputFile,
-							project.ProjectDirectory,
-							project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.Symtable);
+					AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
+                        project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.Symtable);
+			        outputString = assembler.Assemble();
+			        output = new AssemblerOutput(outputString, outputString.Contains("error"));
 					project.BuildSystem.ProjectOutput = _outputFile;
 					project.BuildSystem.LabelOutput = Path.ChangeExtension(_outputFile, "lab");
 					break;
 				default:
-					throw new Exception("Unknown step type");
+					throw new InvalidOperationException("Unknown step type");
 			}
 
 			_outputText = output.OutputText;

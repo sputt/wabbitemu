@@ -7,7 +7,6 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -17,13 +16,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		private ProjectFile _fileFound;
 		private ProjectFolder _mainFolder;
-		private readonly IAssemblerService _assemblerService;
 
-		public WabbitcodeProject(IAssemblerService assemblerService)
+	    public WabbitcodeProject()
 		{
 			IncludeDirs = new List<string>();
-			_assemblerService = assemblerService;
-			BuildSystem = new BuildSystem(_assemblerService, this);
+		    BuildSystem = new BuildSystem(this);
 			ProjectWatcher = new FileSystemWatcher();
 			if (!string.IsNullOrEmpty(ProjectDirectory))
 			{
@@ -31,8 +28,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 		}
 
-		public WabbitcodeProject(string projectFile, IAssemblerService assemblerService)
-			: this(assemblerService)
+		public WabbitcodeProject(string projectFile)
+			: this()
 		{
 			ProjectFile = projectFile;
 			ProjectDirectory = Path.GetDirectoryName(projectFile);
@@ -109,7 +106,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			ProjectFile = projectFile;
 			ProjectDirectory = Path.GetDirectoryName(projectFile);
 
-			BuildSystem = new BuildSystem(_assemblerService, this);
+			BuildSystem = new BuildSystem(this);
 			BuildSystem.CreateDefaultConfigs();
 		}
 

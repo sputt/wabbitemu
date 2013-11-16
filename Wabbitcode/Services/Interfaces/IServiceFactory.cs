@@ -4,6 +4,8 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 {
     public interface IServiceFactory
     {
+        event EventHandler<ServiceInitializedEventArgs> OnServiceInitialized;
+
         T CreateServiceInstance<T>()
         where T : IService;
 

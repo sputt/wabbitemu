@@ -7,21 +7,22 @@ namespace Revsoft.Wabbitcode.Services
 {
 	[ServiceDependency(typeof(IProjectService))]
 	[ServiceDependency(typeof(IAssemblerService))]
+    [ServiceDependency(typeof(IStatusBarService))]
 	public class BackgroundAssemblerService : IBackgroundAssemblerService
 	{
-		#region Private Static Members
+		#region Private Members
 
 		private volatile bool _isAssembling;
 		private volatile bool _restartAssembling;
 		private readonly IAssemblerService _assemblerService;
 		private readonly IProjectService _projectService;
+	    private readonly IStatusBarService _statusBarService;
 
 		#endregion
 
 		#region Events
 
-		public delegate void BackgroundAssemblerComplete(object sender, EventArgs e);
-		public event BackgroundAssemblerComplete OnBackgroundAssemblerComplete;
+		public event EventHandler<AssemblyFinishEventArgs> OnBackgroundAssemblerComplete;
 
 		#endregion
 
@@ -57,7 +58,16 @@ namespace Revsoft.Wabbitcode.Services
 			});
 		}
 
-		//private void CodeCheckAssemblerFinished(object sender, AssemblyFinishEventArgs e)
+	    public void CountCode(string codeInfoLines)
+	    {
+	        Task.Factory.StartNew(() =>
+	        {
+	            var info = _assemblerService.CountCode(codeInfoLines);
+	            _statusBarService.SetCodeCountInfo(info);
+	        });
+	    }
+
+	    //private void CodeCheckAssemblerFinished(object sender, AssemblyFinishEventArgs e)
 		//{
 		//	foreach (Editor doc in DockingService.Documents)
 		//	{
@@ -100,17 +110,22 @@ namespace Revsoft.Wabbitcode.Services
 
 		#endregion
 
-		private static void AssemblerFinished(object sender, AssemblyFinishProjectEventArgs e)
+		private void AssemblerFinished(object sender, AssemblyFinishEventArgs e)
 		{
-			
+		    if (OnBackgroundAssemblerComplete != null)
+		    {
+		        OnBackgroundAssemblerComplete(sender, e);
+		    }
 		}
 
 		#region IService
 
-		public BackgroundAssemblerService(IAssemblerService assemblerService, IProjectService projectService)
+		public BackgroundAssemblerService(IAssemblerService assemblerService, IProjectService projectService, 
+            IStatusBarService statusBarService)
 		{
 			_projectService = projectService;
 			_assemblerService = assemblerService;
+		    _statusBarService = statusBarService;
 		}
 
 		public void DestroyService()

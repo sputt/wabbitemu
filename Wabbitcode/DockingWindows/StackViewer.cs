@@ -1,27 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using System;
 using System.Globalization;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.DockingWindows
 {
     public partial class StackViewer : ToolWindow
     {
         private IWabbitcodeDebugger _debugger;
-        private readonly IDockingService _dockingService;
         private const int StackDataColIndex = 1;
 
-        public StackViewer(IDockingService dockingService)
-            : base(dockingService)
+        public StackViewer()
         {
             InitializeComponent();
 
-            _dockingService = dockingService;
             WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
             WabbitcodeDebugger.OnDebuggingEnded += mainForm_OnDebuggingEnded;
         }
@@ -29,8 +26,8 @@ namespace Revsoft.Wabbitcode.DockingWindows
         void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
             _debugger = e.Debugger;
-            _debugger.OnDebuggerStep += (o, args) => _dockingService.Invoke(UpdateStack);
-            _debugger.OnDebuggerRunningChanged += (o, args) => _dockingService.Invoke(UpdateStack);
+            _debugger.OnDebuggerStep += (o, args) => this.Invoke(UpdateStack);
+            _debugger.OnDebuggerRunningChanged += (o, args) => this.Invoke(UpdateStack);
         }
 
         void mainForm_OnDebuggingEnded(object sender, DebuggingEventArgs e)

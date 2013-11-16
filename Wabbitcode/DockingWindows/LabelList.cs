@@ -15,38 +15,36 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	{
 		#region Private Properties
 
-		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
 		private readonly IParserService _parserService;
 
 		#endregion
 
-		public LabelList(IDockingService dockingService, IDocumentService documentService, IParserService parserService)
-			: base(dockingService)
+		public LabelList()
 		{
 			InitializeComponent();
 
-			_dockingService = dockingService;
-			_documentService = documentService;
-			_parserService = parserService;
+            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
+            _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
 
 		    _parserService.OnParserFinished += (sender, args) =>
 		    {
-		        if (_dockingService.ActiveDocument == null || 
-                    string.IsNullOrEmpty(_dockingService.ActiveDocument.FileName) ||
-                    !FileOperations.CompareFilePath(args.FileName, _dockingService.ActiveDocument.FileName))
+		        var document = DockingService.ActiveDocument as AbstractFileEditor;
+		        if (document == null || 
+                    string.IsNullOrEmpty(document.FileName) ||
+                    !FileOperations.CompareFilePath(args.FileName, document.FileName))
 		        {
 		            return;
 		        }
 
-		        _dockingService.Invoke(UpdateLabelBox);
+		        this.Invoke(UpdateLabelBox);
 		    };
-            _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+            DockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
 		}
 
         void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
         {
-            if (_dockingService.ActiveDocument != null)
+            if (DockingService.ActiveDocument != null)
             {
                 UpdateLabelBox();
             }
@@ -63,12 +61,13 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private void AddLabels()
 		{
-            if (_dockingService.ActiveDocument == null)
+            var fileEditor = DockingService.ActiveDocument as AbstractFileEditor;
+            if (fileEditor == null)
             {
                 return;
             }
 
-            string fileName = _dockingService.ActiveDocument.FileName;
+		    string fileName = fileEditor.FileName;
 			if (string.IsNullOrEmpty(fileName))
 			{
 				return;
@@ -84,8 +83,9 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			bool showEquates = includeEquatesBox.Checked;
 			ListBox.ObjectCollection labelsToAdd = new ListBox.ObjectCollection(labelsBox);
 
-		    IParserData[] labels = info.Where(d => (d is Label && !((Label) d).IsReusable) || 
-		                                      ((d is Equate || d is Define || d is Macro) && showEquates)).ToArray();
+		    var labels = info.Where(d => (d is Label && !((Label) d).IsReusable) || 
+		                                      ((d is Equate || d is Define || d is Macro) && showEquates))
+                                              .Cast<object>().ToArray();
             labelsToAdd.AddRange(labels);
 
 			labelsBox.Items.Clear();
@@ -141,7 +141,11 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			}
 
 			_documentService.GotoLabel((ILabel)labelsBox.SelectedItem);
-			_dockingService.ActiveDocument.Focus();
+		    var activeForm = DockingService.ActiveDocument as Form;
+		    if (activeForm != null)
+		    {
+		        activeForm.Focus();
+		    }
 		}
 	}
 }

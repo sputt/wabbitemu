@@ -18,21 +18,17 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	{
 		#region Private Members
 
-		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
 		private readonly IProjectService _projectService;
 
 		#endregion
 
-		public ProjectViewer(IDockingService dockingService, IDocumentService documentService,
-			IProjectService projectService)
-			: base(dockingService)
+		public ProjectViewer()
 		{
 			InitializeComponent();
 
-			_dockingService = dockingService;
-			_documentService = documentService;
-			_projectService = projectService;
+		    _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
+		    _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
 
 		    _projectService.ProjectOpened += (sender, args) => BuildProjTree();
 		    _projectService.ProjectClosed += (sender, args) => CloseProject();
@@ -141,7 +137,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			}
 			catch (Exception ex)
 			{
-				DockingService.ShowError("Error adding file", ex);
+				Services.DockingService.ShowError("Error adding file", ex);
 			}
 		}
 
@@ -573,7 +569,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 			string newFileName = Path.Combine(dir, newName);
 			File.Move(file.FileFullPath, newFileName);
-			foreach (Editor editor in _dockingService.Documents
+            foreach (AbstractFileEditor editor in DockingService.Documents.OfType<AbstractFileEditor>()
 				.Where(editor => string.Equals(editor.FileName, file.FileFullPath, StringComparison.OrdinalIgnoreCase)))
 			{
 				editor.FileName = newFileName;

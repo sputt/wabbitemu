@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Services;
+﻿using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -16,18 +17,15 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	{
 		private int _errors;
 		private int _warnings;
-		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
 		private readonly IProjectService _projectService;
 
-		public ErrorList(IAssemblerService assemblerService, IDockingService dockingService,
-			IDocumentService documentService, IProjectService projectService)
-			: base(dockingService)
+		public ErrorList()
 		{
 			InitializeComponent();
-			_dockingService = dockingService;
-			_documentService = documentService;
-			_projectService = projectService;
+            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
+            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            var assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
 
 			errorGridView.ContextMenu = contextMenu1;
 			assemblerService.AssemblerFileFinished += Instance_AssemblerFileFinished;
@@ -47,7 +45,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		#endregion
 
-		public void ParseOutput(List<Errors> parsedErrors)
+	    private void ParseOutput(IEnumerable<Errors> parsedErrors)
 		{
 			_errors = 0;
 			_warnings = 0;
@@ -66,10 +64,6 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 			errorToolButton.Text = _errors + " Errors";
 			warnToolButton.Text = _warnings + " Warnings";
-			foreach (Editor child in _dockingService.Documents)
-			{
-				child.UpdateIcons(parsedErrors);
-			}
 		}
 
 		private void AddError(string description, string file, string line, bool visible)
@@ -163,12 +157,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 				return;
 			}
 
-			_dockingService.Invoke(() => ParseOutput(e.Output.ParsedErrors));
+			this.Invoke(() => ParseOutput(e.Output.ParsedErrors));
 		}
 
 		private void Instance_AssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
 		{
-			_dockingService.Invoke(() => ParseOutput(e.Output.ParsedErrors));
+			this.Invoke(() => ParseOutput(e.Output.ParsedErrors));
 		}
 
 		private void warnToolButton_CheckedChanged(object sender, EventArgs e)

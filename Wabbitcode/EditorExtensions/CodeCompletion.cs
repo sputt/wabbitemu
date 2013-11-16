@@ -15,13 +15,13 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 	class CodeCompletionProvider : ICompletionDataProvider
 	{
 		readonly Editor _editor;
-		readonly TextEditorControl _editorBox;
+		readonly TextEditorControl _textEditor;
         readonly IParserService _parserService;
 
-		public CodeCompletionProvider(Editor editor, IParserService parserService)
+		public CodeCompletionProvider(Editor editor, TextEditorControl textTextEditor, IParserService parserService)
 		{
 			_editor = editor;
-			_editorBox = editor.EditorBox;
+			_textEditor = textTextEditor;
             _parserService = parserService;
 		}
 
@@ -68,22 +68,22 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
 		private string GetLine(int start)
 		{
-			if (string.IsNullOrEmpty(_editorBox.Text) || start < 0)
+			if (string.IsNullOrEmpty(_textEditor.Text) || start < 0)
 			{
 				return string.Empty;
 			}
-			if (start == _editorBox.Text.Length)
+			if (start == _textEditor.Text.Length)
 			{
 				start -= 2;
 			}
-			while (start >= 0 && _editorBox.Text[start] != '\n')
+			while (start >= 0 && _textEditor.Text[start] != '\n')
 			{
 				start--;
 			}
 			start++;
 			int end = start;
 			//comment effectively ends the line (for our purposes)
-			while (end < _editorBox.Text.Length && _editorBox.Text[end] != '\n' && _editorBox.Text[end] != ';')
+			while (end < _textEditor.Text.Length && _textEditor.Text[end] != '\n' && _textEditor.Text[end] != ';')
 			{
 				end++;
 			}
@@ -92,7 +92,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 			{
 				return string.Empty;
 			}
-			string line = _editorBox.Text.Substring(start, end - start);
+			string line = _textEditor.Text.Substring(start, end - start);
 			return line;
 		}
 
@@ -133,20 +133,11 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
 		private void AddParserData(List<ICompletionData> resultList)
 		{
-            var data = _parserService.GetAllParserData().Where(s => s is ILabel || s is IDefine);
-            foreach (var parserData in data)
-            {
-                var label = parserData as ILabel;
-                if (label != null && label.IsReusable)
-                {
-                    continue;
-                }
-
-                resultList.Add(new CodeCompletionData(parserData.Name, CodeCompletionType.Label, parserData.Description));
-            }
+		    var data = _parserService.GetAllParserData().Where(s => (s is ILabel && !((ILabel) s).IsReusable) || s is IDefine);
+		    resultList.AddRange(data.Select(parserData => new CodeCompletionData(parserData.Name, CodeCompletionType.Label, parserData.Description)));
 		}
 
-		#region Predefined Data
+	    #region Predefined Data
 
 		readonly ICompletionData[] _preprocessors =
 		{
@@ -279,9 +270,9 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 		public ICompletionData[] GenerateCompletionData(string fileName, TextArea textArea, char charTyped)
 		{
 			List<ICompletionData> resultList = new List<ICompletionData>();
-			int startOffset = _editorBox.ActiveTextAreaControl.Caret.Offset;
-			int lineNumber = _editorBox.Document.GetLineNumberForOffset(startOffset);
-			List<FoldMarker> foldings = _editorBox.Document.FoldingManager.GetFoldingsContainsLineNumber(lineNumber);
+			int startOffset = _textEditor.ActiveTextAreaControl.Caret.Offset;
+			int lineNumber = _textEditor.Document.GetLineNumberForOffset(startOffset);
+			List<FoldMarker> foldings = _textEditor.Document.FoldingManager.GetFoldingsContainsLineNumber(lineNumber);
 			bool isInComment = false;
 			var options = Settings.Default.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
             foreach (FoldMarker folder in foldings)
@@ -290,7 +281,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             }
 
 			string line = GetLine(startOffset);
-			int start = _editorBox.Document.OffsetToPosition(startOffset).Column;
+			int start = _textEditor.Document.OffsetToPosition(startOffset).Column;
             if (line.Length == 0 || line.Length < start || isInComment || char.IsLetterOrDigit(line[0]))
             {
                 return resultList.ToArray();
@@ -534,15 +525,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                         default:
                             {
                                 var macros = _parserService.GetAllParserData().Where(s => s is IMacro);
-                                bool foundMacro = false;
-                                foreach (var macro in macros)
-                                {
-                                    if (command.StartsWith(macro.Name))
-                                    {
-                                        foundMacro = true;
-                                        break;
-                                    }
-                                }
+                                bool foundMacro = macros.Any(macro => command.StartsWith(macro.Name));
 
                                 if (!foundMacro)
                                 {
@@ -775,7 +758,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 		        return Control.ModifierKeys == Keys.Control;
 		    }
 
-		    ICompletionDataProvider completionDataProvider = new CodeCompletionProvider(_mainForm, _parserService);
+		    ICompletionDataProvider completionDataProvider = new CodeCompletionProvider(_mainForm, _editor, _parserService);
 
 		    if (Control.ModifierKeys == Keys.Control && _editor.ActiveTextAreaControl.Caret.Offset != 0)
 		    {

@@ -1,12 +1,10 @@
 ﻿using System;
-using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class MacroManager : ToolWindow
 	{
-		public MacroManager(IDockingService dockingService)
-			: base(dockingService)
+		public MacroManager()
 		{
 			InitializeComponent();
 		}

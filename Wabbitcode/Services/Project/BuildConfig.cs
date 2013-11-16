@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -25,14 +24,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 		}
 
-		public bool Build(IAssemblerService assemblerService, IProject project)
+		public bool Build(IProject project)
 		{
 			bool succeeded = true;
 			OutputText = string.Empty;
 
 			foreach (IBuildStep step in _steps)
 			{
-				succeeded &= step.Build(assemblerService, project);
+				succeeded &= step.Build(project);
 				OutputText += step.OutputText;
 			}
 

@@ -14,12 +14,10 @@ namespace Revsoft.Wabbitcode.Services.Project
 		private readonly List<BuildConfig> _buildConfigs = new List<BuildConfig>();
 		private int _currentConfigIndex;
 		private string _outputText = string.Empty;
-		private readonly IAssemblerService _assemblerService;
 		private readonly IProject _project;
 
-		public BuildSystem(IAssemblerService assemblerService, IProject project)
+		public BuildSystem(IProject project)
 		{
-			_assemblerService = assemblerService;
 			_project = project;
 		}
 
@@ -138,7 +136,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 
 			BuildConfig config = _buildConfigs[_currentConfigIndex];
-			bool succeeded = config.Build(_assemblerService, _project);
+			bool succeeded = config.Build(_project);
 			_outputText = config.OutputText;
 			return succeeded;
 		}
