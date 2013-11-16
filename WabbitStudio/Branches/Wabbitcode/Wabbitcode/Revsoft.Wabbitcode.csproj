@@ -115,7 +115,7 @@
     <OutputPath>bin\X86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <BaseAddress>285212672</BaseAddress>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <FileAlignment>4096</FileAlignment>
     <DebugType>Full</DebugType>
     <PlatformTarget>X86</PlatformTarget>
@@ -569,6 +569,8 @@
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing">
       <Name>System.Drawing</Name>
     </Reference>
@@ -586,8 +588,13 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="AbstractFileEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Actions\AbstractUiAction.cs" />
+    <Compile Include="Actions\DebuggerActions.cs" />
     <Compile Include="Actions\EditActions.cs" />
+    <Compile Include="Actions\EditorActions.cs" />
     <Compile Include="Actions\FileActions.cs" />
     <Compile Include="Actions\ProjectActions.cs" />
     <Compile Include="AppBase.cs" />
@@ -613,6 +620,7 @@
       <DependentUpon>ExpressionWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="EditorExtensions\EditorToolTipRequestEventArgs.cs" />
+    <Compile Include="EditorExtensions\FoldingItem.cs" />
     <Compile Include="Exceptions\InvalidProjectVersionException.cs" />
     <Compile Include="GotoSymbol.cs">
       <SubType>Form</SubType>
@@ -626,10 +634,16 @@
     <Compile Include="EditorExtensions\RegionFoldingStrategy.cs" />
     <Compile Include="Interface\IClipboardOperation.cs" />
     <Compile Include="Interface\ISelectable.cs" />
+    <Compile Include="Interface\ITextEditor.cs" />
     <Compile Include="Interface\IUndoable.cs" />
+    <Compile Include="GUI\MainToolBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Properties\TempSettings.Designer.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\VS2012ColorTable.cs" />
+    <Compile Include="Services\Assembler\AssemblerFactory.cs" />
+    <Compile Include="Services\Assembler\AssemblerHelper.cs" />
     <Compile Include="Services\Assembler\AssemblerOutput.cs" />
     <Compile Include="Services\Assembler\CodeCountInfo.cs" />
     <Compile Include="Services\Assembler\SpasmComAssembler.cs" />
@@ -640,11 +654,11 @@
     <Compile Include="Services\Debugger\DebuggerEventArgs.cs" />
     <Compile Include="Services\Debugger\DebuggerStepEventArgs.cs" />
     <Compile Include="Services\FileReaderService.cs" />
-    <Compile Include="Services\IFileReaderService.cs" />
     <Compile Include="Services\Interfaces\IAssemblerService.cs" />
     <Compile Include="Services\Interfaces\IBackgroundAssemblerService.cs" />
     <Compile Include="Services\Interfaces\IDockingService.cs" />
     <Compile Include="Services\Interfaces\IDocumentService.cs" />
+    <Compile Include="Services\Interfaces\IFileReaderService.cs" />
     <Compile Include="Services\Interfaces\IParserService.cs" />
     <Compile Include="Services\Interfaces\IProjectService.cs" />
     <Compile Include="Services\Interfaces\ISymbolService.cs" />
@@ -653,6 +667,8 @@
     <Compile Include="Services\ParserService.cs" />
     <Compile Include="Services\Parser\IParser.cs" />
     <Compile Include="Services\Parser\Z80Parser.cs" />
+    <Compile Include="Services\ServiceInitializedEventArgs.cs" />
+    <Compile Include="Services\StatusBarService.cs" />
     <Compile Include="Services\Symbols\CalcLocation.cs" />
     <Compile Include="Utils\WabbitcodeBreakpointManager.cs" />
     <Compile Include="Utils\DocumentLocation.cs" />
@@ -863,6 +879,9 @@
     <Compile Include="Utils\TextEditorSearcher.cs" />
     <Compile Include="Utils\TextUtils.cs" />
     <Compile Include="Utils\WabbitcodeBreakpointEventArgs.cs" />
+    <Compile Include="GUI\WabbitcodeStatusBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <EmbeddedResource Include="DockingWindows\ExpressionWindow.resx">
       <DependentUpon>ExpressionWindow.cs</DependentUpon>
     </EmbeddedResource>
@@ -878,6 +897,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DockingWindows\MacroManager.resx">
       <DependentUpon>MacroManager.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\MainToolBar.resx">
+      <DependentUpon>MainToolBar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Refactor.resx">
       <DependentUpon>Refactor.cs</DependentUpon>
@@ -1040,9 +1062,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ICSharpCode.TextEditor\Project\Revsoft.TextEditor.csproj">

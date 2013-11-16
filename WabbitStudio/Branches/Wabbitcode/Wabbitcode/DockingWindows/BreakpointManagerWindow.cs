@@ -15,20 +15,16 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	{
 		// TODO: this entire class looks nasty
 		private IWabbitcodeDebugger _debugger;
-		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
 		private readonly IProjectService _projectService;
 
-		public BreakpointManagerWindow(IDockingService dockingService, IDocumentService documentService, IProjectService projectService)
-			: base(dockingService)
+		public BreakpointManagerWindow()
 		{
 			InitializeComponent();
 
-			_dockingService = dockingService;
             WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
-			_documentService = documentService;
-
-			_projectService = projectService;
+            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
+            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
 		}
 
 		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
@@ -115,7 +111,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private void breakpointToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			NewBreakpointForm form = new NewBreakpointForm(_dockingService, _documentService);
+			NewBreakpointForm form = new NewBreakpointForm(DockingService, _documentService);
 			form.ShowDialog();
 		}
 

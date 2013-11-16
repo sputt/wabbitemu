@@ -5,7 +5,7 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode
 {
-	partial class Editor : DockContent
+	partial class Editor : AbstractFileEditor
 	{
 		private IContainer components;
 		/// <summary>
@@ -65,13 +65,21 @@ namespace Revsoft.Wabbitcode
 			// 
 			this.editorBox.AllowDrop = true;
 			this.editorBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.editorBox.Font = Revsoft.Wabbitcode.Properties.Settings.Default.EditorFont;
 			this.editorBox.IsIconBarVisible = true;
 			this.editorBox.IsReadOnly = false;
+            this.editorBox.LineViewerStyle = Revsoft.Wabbitcode.Properties.Settings.Default.LineEnabled ?
+                Revsoft.TextEditor.Document.LineViewerStyle.FullRow : Revsoft.TextEditor.Document.LineViewerStyle.None;
 			this.editorBox.Location = new System.Drawing.Point(2, 2);
 			this.editorBox.Name = "editorBox";
+            this.editorBox.ShowLineNumbers = Revsoft.Wabbitcode.Properties.Settings.Default.LineNumbers;
 			this.editorBox.ShowVRuler = false;
 			this.editorBox.Size = new System.Drawing.Size(560, 336);
 			this.editorBox.TabIndex = 1;
+            this.editorBox.TextEditorProperties.MouseWheelScrollDown = !Revsoft.Wabbitcode.Properties.Settings.Default.InverseScrolling;
+            this.editorBox.TextRenderingHint = Revsoft.Wabbitcode.Properties.Settings.Default.AntiAlias ?
+                System.Drawing.Text.TextRenderingHint.ClearTypeGridFit : System.Drawing.Text.TextRenderingHint.SingleBitPerPixel;
+            this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += TextArea_ToolTipRequest;
 			this.editorBox.TextChanged += new System.EventHandler(this.editorBox_TextChanged);
 			this.editorBox.DragDrop += new System.Windows.Forms.DragEventHandler(this.editorBox_DragDrop);
 			this.editorBox.DragEnter += new System.Windows.Forms.DragEventHandler(this.editorBox_DragEnter);

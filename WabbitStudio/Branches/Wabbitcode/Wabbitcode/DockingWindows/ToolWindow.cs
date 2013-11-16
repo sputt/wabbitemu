@@ -14,20 +14,13 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
         #endregion
 
-        private readonly IDockingService _dockingService;
+        protected readonly IDockingService DockingService;
 
-		/// <summary>
-		/// Only for visual studio designer
-		/// </summary>
-		private ToolWindow() : this(new DockingService())
-		{
-		}
-
-		protected ToolWindow(IDockingService dockingService)
+		protected ToolWindow()
 		{
 			InitializeComponent();
 
-			_dockingService = dockingService;
+			DockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
 		}
 
 		public virtual void Copy()

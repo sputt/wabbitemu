@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.DockingWindows;
+using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
@@ -11,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Utils;
+using IFileReaderService = Revsoft.Wabbitcode.Services.Interfaces.IFileReaderService;
 
 namespace Revsoft.Wabbitcode
 {
@@ -35,10 +38,10 @@ namespace Revsoft.Wabbitcode
 		private readonly IDockingService _dockingService;
 		private readonly IProjectService _projectService;
 
-		public FindAndReplaceForm(IDockingService dockingService, IProjectService projectServiceService)
+		public FindAndReplaceForm()
 		{
-			_dockingService = dockingService;
-			_projectService = projectServiceService;
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
 
 			InitializeComponent();
@@ -46,7 +49,8 @@ namespace Revsoft.Wabbitcode
 
         void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
         {
-            if (_dockingService.ActiveDocument == null || Visible == false)
+            ITextEditor textEditor = _dockingService.ActiveDocument as ITextEditor;
+            if (textEditor == null || Visible == false)
             {
                 return;
             }
@@ -54,18 +58,18 @@ namespace Revsoft.Wabbitcode
             switch (findTabs.SelectedIndex)
             {
                 case FindTabIndex:
-                    _dockingService.ActiveDocument.ShowFindForm(Owner, SearchMode.Find);
+                    textEditor.ShowFindForm(Owner, SearchMode.Find);
                     break;
                 case ReplaceTabIndex:
-                    _dockingService.ActiveDocument.ShowFindForm(Owner, SearchMode.Replace);
+                    textEditor.ShowFindForm(Owner, SearchMode.Replace);
                     break;
                 case FindFilesTabIndex:
-                    _dockingService.ActiveDocument.ShowFindForm(Owner, SearchMode.FindInFiles);
+                    textEditor.ShowFindForm(Owner, SearchMode.FindInFiles);
                     break;
             }
         }
 
-	    private TextRange FindNext(bool viaF3, bool matchCase, bool matchWholeWord, bool searchBackward, string messageIfNotFound)
+	    private TextRange FindNext(bool matchCase, bool matchWholeWord, bool searchBackward, string messageIfNotFound)
 		{
 			if (string.IsNullOrEmpty(findFindBox.Text))
 			{
@@ -85,12 +89,6 @@ namespace Revsoft.Wabbitcode
 	        _search.MatchWholeWordOnly = matchWholeWord;
 
 			var caret = _editor.ActiveTextAreaControl.Caret;
-			if (viaF3 && _search.HasScanRegion && caret.Offset <= _search.BeginOffset && caret.Offset >= _search.EndOffset)
-			{
-				// user moved outside of the originally selected region
-				_search.ClearScanRegion();
-			}
-
 			int startFrom = caret.Offset - (searchBackward ? 1 : 0);
 			TextRange range = _search.FindNext(startFrom, searchBackward, out _lastSearchLoopedAround);
 			if (range != null)
@@ -108,7 +106,9 @@ namespace Revsoft.Wabbitcode
 		public void ShowFor(Form owner, TextEditorControl editor, SearchMode mode)
 		{
 		    _editor = editor;
-            _search = new TextEditorSearcher(editor != null ? editor.Document : null);
+            IFileReaderService fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
+            string fileText = editor == null ? string.Empty : fileReaderService.GetFileText(editor.FileName);
+            _search = new TextEditorSearcher(fileText);
 
 		    Owner = owner;
 			Show();
@@ -135,14 +135,14 @@ namespace Revsoft.Wabbitcode
 		{
             bool matchCase = matchCaseFindCheckbox.Checked;
             bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
-            FindNext(false, matchCase, matchWholeWord, false, "Text not found");
+            FindNext(matchCase, matchWholeWord, false, "Text not found");
 		}
 
 		private void findPrevFindButton_Click(object sender, EventArgs e)
 		{
             bool matchCase = matchCaseFindCheckbox.Checked;
             bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
-			FindNext(false, matchCase, matchWholeWord, true, "Text not found");
+			FindNext(matchCase, matchWholeWord, true, "Text not found");
 		}
 
 	    private void FindInFiles(string textToFind, bool matchCase, bool matchWholeWord)
@@ -253,7 +253,7 @@ namespace Revsoft.Wabbitcode
                 InsertText(replaceReplaceBox.Text);
             }
 
-            FindNext(false, matchCase, matchWholeWord, _lastSearchWasBackward, "Text not found.");
+            FindNext(matchCase, matchWholeWord, _lastSearchWasBackward, "Text not found.");
         }
 
         private void replaceAllButton_Click(object sender, EventArgs e)
@@ -271,7 +271,7 @@ namespace Revsoft.Wabbitcode
             _editor.Document.UndoStack.StartUndoGroup();
             try
             {
-                while (FindNext(false, matchCase, matchWholeWord, false, null) != null)
+                while (FindNext(matchCase, matchWholeWord, false, null) != null)
                 {
                     if (_lastSearchLoopedAround)
                     {
@@ -319,22 +319,22 @@ namespace Revsoft.Wabbitcode
         private void FindAndReplaceForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Prevent dispose, as this form can be re-used
-            if (e.CloseReason != CloseReason.FormOwnerClosing)
+            if (e.CloseReason == CloseReason.FormOwnerClosing)
             {
-                if (Owner != null)
-                {
-                    Owner.Select();    // prevent another app from being activated instead
-                }
+                return;
+            }
 
-                e.Cancel = true;
-                Hide();
+            if (Owner != null)
+            {
+                Owner.Select();    // prevent another app from being activated instead
+            }
 
-                // Discard search region
-                _search.ClearScanRegion();
-                if (_editor != null)
-                {
-                    _editor.Refresh(); // must repaint manually
-                }
+            e.Cancel = true;
+            Hide();
+
+            if (_editor != null)
+            {
+                _editor.Refresh(); // must repaint manually
             }
         }
 	}

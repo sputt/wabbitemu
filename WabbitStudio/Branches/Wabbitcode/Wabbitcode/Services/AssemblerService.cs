@@ -1,12 +1,10 @@
-﻿using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services.Assembler;
+﻿using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -16,11 +14,8 @@ namespace Revsoft.Wabbitcode.Services
 	{
 		#region Events
 
-		public delegate void OnFinishAssemblyFile(object sender, AssemblyFinishFileEventArgs e);
-		public event OnFinishAssemblyFile AssemblerFileFinished;
-
-		public delegate void OnFinishAssemblyProject(object sender, AssemblyFinishProjectEventArgs e);
-		public event OnFinishAssemblyProject AssemblerProjectFinished;
+        public event EventHandler<AssemblyFinishFileEventArgs> AssemblerFileFinished;
+        public event EventHandler<AssemblyFinishProjectEventArgs> AssemblerProjectFinished;
 
 		#endregion 
 
@@ -45,24 +40,7 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			_assembler = new SpasmComAssembler();
 
-			_assembler.SetWorkingDirectory(originalDir);
-
-			// include dirs
-			_assembler.AddIncludeDir(Application.StartupPath);
-			foreach (string dir in includeDirs)
-			{
-				_assembler.AddIncludeDir(dir);
-			}
-
-			// setup files
-			_assembler.SetInputFile(inputFile);
-			_assembler.SetOutputFile(outputFile);
-
-			// set flags
-			_assembler.SetFlags(flags);
-			_assembler.SetCaseSensitive(Settings.Default.CaseSensitive);
-
-			// assemble
+		    AssemblerHelper.SetupAssembler(_assembler, inputFile, outputFile, originalDir, includeDirs, flags);	
 			string rawOutput = _assembler.Assemble();
 
 			// lets write it to the output window so the user knows whats happening

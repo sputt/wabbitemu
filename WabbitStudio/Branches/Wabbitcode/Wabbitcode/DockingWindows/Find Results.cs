@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 using System;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 
@@ -13,12 +14,11 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		private readonly StringBuilder _stringBuilder;
 		private int _numResults;
 
-		public FindResultsWindow(IDockingService dockingService, IDocumentService documentService)
-			: base(dockingService)
+		public FindResultsWindow()
 		{
 			InitializeComponent();
 
-			_documentService = documentService;
+            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 			_stringBuilder = new StringBuilder();
 		}
 

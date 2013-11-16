@@ -2,7 +2,6 @@
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Services.Assembler;
-using Revsoft.Wabbitcode.Services.Interfaces;
 
 
 namespace Revsoft.Wabbitcode.DockingWindows
@@ -12,15 +11,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	    private int _lineStartIndex;
 	    private string _currentLine;
 	    private readonly SpasmComAssembler _assembler;
-	    private readonly ISymbolService _symbolService;
 
-		public ExpressionWindow(IDockingService dockingService, ISymbolService symbolService)
-			: base(dockingService)
+		public ExpressionWindow()
 		{
 			InitializeComponent();
             _assembler = new SpasmComAssembler();
 		    _currentLine = string.Empty;
-		    _symbolService = symbolService;
 		    DisplayLineStart();
 		}
 

@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 
@@ -11,12 +12,11 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	public partial class OutputWindow : ToolWindow, ISelectable
 	{
 		private readonly IDocumentService _documentService;
-		public OutputWindow(IDockingService dockingService, IDocumentService documentService)
-			: base(dockingService)
+		public OutputWindow()
 		{
 			InitializeComponent();
 
-			_documentService = documentService;
+            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 
 			outputWindowBox.ContextMenu = contextMenu1;
             Settings.Default.SettingChanging += Default_SettingChanging;

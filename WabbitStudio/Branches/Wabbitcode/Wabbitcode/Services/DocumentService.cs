@@ -12,23 +12,13 @@ using System.Linq;
 
 namespace Revsoft.Wabbitcode.Services
 {
-	[ServiceDependency(typeof (IBackgroundAssemblerService))]
 	[ServiceDependency(typeof (IDockingService))]
-	[ServiceDependency(typeof (IParserService))]
-	[ServiceDependency(typeof(IProjectService))]
-	[ServiceDependency(typeof (ISymbolService))]
-    [ServiceDependency(typeof(IFileReaderService))]
 	public class DocumentService : IDocumentService
 	{
 		private int _debugIndex;
 		private readonly List<DocumentLocation> _highlights = new List<DocumentLocation>();
 		private int _recentFileIndex;
 		private readonly IDockingService _dockingService;
-		private readonly IBackgroundAssemblerService _backgroundAssemblerService;
-	    private readonly IFileReaderService _fileReaderService;
-		private readonly IParserService _parserService;
-		private readonly IProjectService _projectService;
-		private readonly ISymbolService _symbolService;
 
 		/// <summary>
 		/// Each string is the path to a recently opened file. Is also stored in properties as a big long string.
@@ -42,18 +32,12 @@ namespace Revsoft.Wabbitcode.Services
 
 		public Editor ActiveDocument
 		{
-			get { return _dockingService.ActiveDocument; }
-		}
-
-		public string ActiveFileName
-		{
-			get { return ActiveDocument == null ? null : ActiveDocument.FileName; }
+			get { return _dockingService.ActiveDocument as Editor; }
 		}
 
 		public Editor CreateNewDocument()
 		{
-			Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this,
-				_fileReaderService, _parserService, _projectService, _symbolService)
+			Editor doc = new Editor
 			{
 				Text = "New Document",
 				TabText = "New Document"
@@ -72,21 +56,14 @@ namespace Revsoft.Wabbitcode.Services
 			ParserInformation info = item.Parent;
 			string file = info.SourceFile;
 			Editor child = GotoFile(file);
-			child.ScrollToLine(item.Location.Line);
+			child.GotoLine(item.Location.Line);
 		    child.Focus();
-		}
-
-		public void GotoLine(Editor editor, int line)
-		{
-			editor.ScrollToLine(line);
-			// fix for 0 indexed
-			editor.SetCaretPosition(0, line - 1);
 		}
 
 		public void GotoLine(string file, int scrollToLine)
 		{
 			Editor child = GotoFile(file);
-			GotoLine(child, scrollToLine);
+			child.GotoLine(scrollToLine);
 		}
 
 		public void HighlightDebugLine(int newLineNumber)
@@ -97,7 +74,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		private void HighlightLine(int newLineNumber, Color foregroundColor)
 		{
-			DocumentLocation value = new DocumentLocation(ActiveFileName, newLineNumber);
+			DocumentLocation value = new DocumentLocation(ActiveDocument.FileName, newLineNumber);
 			_highlights.Add(value);
 			ActiveDocument.HighlightLine(newLineNumber, foregroundColor);
 		}
@@ -156,15 +133,14 @@ namespace Revsoft.Wabbitcode.Services
 
 		public Editor OpenDocument(string filename)
 		{
-            var child = _dockingService.Documents.SingleOrDefault(e => FileOperations.CompareFilePath(e.FileName, filename));
+            var child = _dockingService.Documents.OfType<Editor>().SingleOrDefault(e => FileOperations.CompareFilePath(e.FileName, filename));
             if (child != null)
             {
                 child.Show();
                 return child;
             }
 
-            Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this,
-                _fileReaderService, _parserService, _projectService, _symbolService);
+            Editor doc = new Editor();
             OpenDocument(doc, filename);
             return doc;
 		}
@@ -225,16 +201,9 @@ namespace Revsoft.Wabbitcode.Services
 		{
 		}
 
-		public DocumentService(IBackgroundAssemblerService backgroundAssemblerService, IDockingService dockingService, 
-			IFileReaderService fileReaderService, IParserService parserService, IProjectService projectService,
-            ISymbolService symbolService)
+		public DocumentService(IDockingService dockingService)
 		{
-			_backgroundAssemblerService = backgroundAssemblerService;
 			_dockingService = dockingService;
-		    _fileReaderService = fileReaderService;
-			_parserService = parserService;
-			_projectService = projectService;
-			_symbolService = symbolService;
 		}
 
 		#endregion

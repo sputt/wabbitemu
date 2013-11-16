@@ -9,7 +9,6 @@ using System.Linq;
 
 namespace Revsoft.Wabbitcode.Services
 {
-	[ServiceDependency(typeof(IAssemblerService))]
 	[ServiceDependency(typeof(IParserService))]
 	[ServiceDependency(typeof(ISymbolService))]
 	public class ProjectService : IProjectService
@@ -23,8 +22,7 @@ namespace Revsoft.Wabbitcode.Services
 
         private readonly List<ParserInformation> _parseInfo = new List<ParserInformation>();
 		private readonly IParserService _parserService;
-		private readonly IAssemblerService _assemblerService;
-		private readonly ISymbolService _symbolService;
+	    private readonly ISymbolService _symbolService;
 
 		private IList<ParserInformation> ParserInfomInformation
 		{
@@ -36,16 +34,15 @@ namespace Revsoft.Wabbitcode.Services
 
 		public IProject Project { get; private set; }
 
-		public ProjectService(IAssemblerService assemblerService, IParserService parserService, ISymbolService symbolService)
+		public ProjectService(IParserService parserService, ISymbolService symbolService)
 		{
-			_assemblerService = assemblerService;
-			_parserService = parserService;
+		    _parserService = parserService;
 			_symbolService = symbolService;
 		}
 
 		public bool OpenProject(string fileName)
 		{
-			Project = new WabbitcodeProject(fileName, _assemblerService);
+			Project = new WabbitcodeProject(fileName);
 			Project.OpenProject(fileName);
 			_symbolService.ProjectDirectory = Project.ProjectDirectory;
 
@@ -98,7 +95,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public IProject CreateInternalProject()
 		{
-			Project = new WabbitcodeProject(_assemblerService)
+			Project = new WabbitcodeProject
 			{
 				IsInternal = true
 			};
@@ -113,7 +110,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public IProject CreateNewProject(string projectFile, string projectName)
 		{
-			Project = new WabbitcodeProject(_assemblerService);
+			Project = new WabbitcodeProject();
 			Project.CreateNewProject(projectFile, projectName);
 
             if (ProjectOpened != null)

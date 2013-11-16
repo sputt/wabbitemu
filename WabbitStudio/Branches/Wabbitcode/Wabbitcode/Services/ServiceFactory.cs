@@ -13,6 +13,8 @@ namespace Revsoft.Wabbitcode.Services
 		private readonly IDictionary<Type, IService> _cachedServices;
 		private readonly IDictionary<Type, Type> _impDict;
 
+	    public event EventHandler<ServiceInitializedEventArgs> OnServiceInitialized;
+
 		public ServiceFactory(IDictionary<Type, Type> implementationDictionary)
 		{
 			_cachedServices = new Dictionary<Type, IService>();
@@ -59,6 +61,7 @@ namespace Revsoft.Wabbitcode.Services
 			if (_cachedServices.ContainsKey(typeof(T)))
 			{
 				newInstance = (T)_cachedServices[typeof(T)];
+                newInstance.InitService(objects);
 			}
 			else
 			{
@@ -82,13 +85,16 @@ namespace Revsoft.Wabbitcode.Services
 					serviceList.Add(foundService);
 				}
 
-				IService[] paramsArray = new IService[serviceList.Count];
-				serviceList.CopyTo(paramsArray);
-				newInstance = (T)Activator.CreateInstance(typeToCreate, paramsArray);
+                newInstance = (T)Activator.CreateInstance(typeToCreate, serviceList.Cast<object>().ToArray());
 				_cachedServices.Add(typeof(T), newInstance);
+
+                newInstance.InitService(objects);
+                if (OnServiceInitialized != null)
+                {
+                    OnServiceInitialized(this, new ServiceInitializedEventArgs(typeof(T), newInstance));
+                }
 			}
 
-			newInstance.InitService(objects);
 			return newInstance;
 		}
 

@@ -1,36 +1,20 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
-using Revsoft.TextEditor.Document;
 
 namespace Revsoft.Wabbitcode.Utils
 {
-	/// <summary>This class finds occurrances of a search string in a text
-	/// editor's IDocument... it's like Find box without a GUI.
-	/// </summary>
 	public sealed class TextEditorSearcher : IDisposable
 	{
 		public bool MatchCase;
 		public bool MatchWholeWordOnly;
 
-		private IDocument _document;
+	    private readonly string _fileText;
 		private string _lookFor;
 		private string _lookForUppercase; // uppercase in case-insensitive mode
 
-		// I would have used the TextAnchor class to represent the beginning and
-		// end of the region to scan while automatically adjusting to changes in
-		// the document--but for some reason it is sealed and its constructor is
-		// internal. Instead I use a TextMarker, which is perhaps even better as
-		// it gives me the opportunity to highlight the region. Note that all the
-		// markers and coloring information is associated with the text document,
-		// not the editor control, so TextEditorSearcher doesn't need a reference
-		// to the TextEditorControl. After adding the marker to the document, we
-		// must remember to remove it when it is no longer needed.
-		private TextMarker _region;
-
-	    public TextEditorSearcher(IDocument document)
+	    public TextEditorSearcher(string fileText)
 	    {
-	        _document = document;
+	        _fileText = fileText;
 	    }
 
 	    ~TextEditorSearcher()
@@ -38,54 +22,13 @@ namespace Revsoft.Wabbitcode.Utils
 			Dispose();
 		}
 
-		/// <summary>Begins the start offset for searching</summary>
-		public int BeginOffset
-		{
-			get
-			{
-				if (_region != null)
-				{
-					return _region.Offset;
-				}
-				return 0;
-			}
-		}
-
-		/// <summary>Begins the end offset for searching</summary>
-		public int EndOffset
-		{
-			get
-			{
-				if (_region != null)
-				{
-					return _region.EndOffset;
-				}
-				return _document.TextLength;
-			}
-		}
-
-		public bool HasScanRegion
-		{
-			get { return _region != null; }
-		}
-
 		public string LookFor
 		{
 			set { _lookFor = value; }
 		}
 
-		public void ClearScanRegion()
-		{
-			if (_region != null)
-			{
-				_document.MarkerStrategy.RemoveMarker(_region);
-				_region = null;
-			}
-		}
-
 		public void Dispose()
 		{
-			ClearScanRegion();
 			GC.SuppressFinalize(this);
 		}
 
@@ -101,8 +44,9 @@ namespace Revsoft.Wabbitcode.Utils
 			Debug.Assert(!string.IsNullOrEmpty(_lookFor));
 			loopedAround = false;
 
-			int startAt = BeginOffset, endAt = EndOffset;
-			int curOffs = beginAtOffset; // .InRange(startAt, endAt);
+			const int startAt = 0;
+		    int endAt = _fileText.Length;
+		    int curOffs = beginAtOffset; // .InRange(startAt, endAt);
 
 			_lookForUppercase = MatchCase ? _lookFor : _lookFor.ToUpperInvariant();
 
@@ -110,51 +54,30 @@ namespace Revsoft.Wabbitcode.Utils
 			if (searchBackward)
 			{
 				result = FindNextIn(startAt, curOffs, true);
-				if (result == null)
-				{
-					loopedAround = true;
-					result = FindNextIn(curOffs, endAt, true);
-				}
+			    if (result != null)
+			    {
+			        return result;
+			    }
+
+			    loopedAround = true;
+			    result = FindNextIn(curOffs, endAt, true);
 			}
 			else
 			{
 				result = FindNextIn(curOffs, endAt, false);
-				if (result == null)
-				{
-					loopedAround = true;
-					result = FindNextIn(startAt, curOffs, false);
-				}
+			    if (result != null)
+			    {
+			        return result;
+			    }
+
+			    loopedAround = true;
+			    result = FindNextIn(startAt, curOffs, false);
 			}
 
 			return result;
 		}
 
-		/// <summary>Sets the region to search. The region is updated
-		/// automatically as the document changes.</summary>
-		public void SetScanRegion(ISelection sel)
-		{
-			SetScanRegion(sel.Offset, sel.Length);
-		}
-
-		/// <summary>Sets the region to search. The region is updated
-		/// automatically as the document changes.</summary>
-		private void SetScanRegion(int offset, int length)
-		{
-			var bkgColor = _document.HighlightingStrategy.GetColorFor("Default").BackgroundColor;
-			_region = new TextMarker(
-				offset,
-				length,
-				TextMarkerType.SolidBlock,
-				bkgColor,
-				(
-					Color.FromArgb(
-						160,
-						160,
-						160)));
-			_document.MarkerStrategy.AddMarker(_region);
-		}
-
-		private TextRange FindNextIn(int offset1, int offset2, bool searchBackward)
+	    private TextRange FindNextIn(int offset1, int offset2, bool searchBackward)
 		{
 			Debug.Assert(offset2 >= offset1);
 			offset2 -= _lookFor.Length;
@@ -171,11 +94,11 @@ namespace Revsoft.Wabbitcode.Utils
 				{
 					if (!MatchCase)
 					{
-						matchFirstChar = lookForCh == char.ToUpperInvariant(_document.GetCharAt(offset));
+						matchFirstChar = lookForCh == char.ToUpperInvariant(_fileText[offset]);
 					}
 					else
 					{
-						matchFirstChar = lookForCh == _document.GetCharAt(offset);
+					    matchFirstChar = lookForCh == _fileText[offset];
 					}
 
 					matchWord = MatchWholeWordOnly ? IsWholeWordMatch(offset) : IsPartWordMatch(offset);
@@ -192,11 +115,11 @@ namespace Revsoft.Wabbitcode.Utils
 				{
 					if (!MatchCase)
 					{
-						matchFirstChar = lookForCh == char.ToUpperInvariant(_document.GetCharAt(offset));
+                        matchFirstChar = lookForCh == char.ToUpperInvariant(_fileText[offset]);
 					}
 					else
 					{
-						matchFirstChar = lookForCh == _document.GetCharAt(offset);
+					    matchFirstChar = lookForCh == _fileText[offset];
 					}
 
 					matchWord = MatchWholeWordOnly ? IsWholeWordMatch(offset) : IsPartWordMatch(offset);
@@ -213,13 +136,13 @@ namespace Revsoft.Wabbitcode.Utils
 
 		private bool IsAlphaNumeric(int offset)
 		{
-			char c = _document.GetCharAt(offset);
+		    char c = _fileText[offset];
 			return char.IsLetterOrDigit(c) || c == '_';
 		}
 
 		private bool IsPartWordMatch(int offset)
 		{
-			string substr = _document.GetText(offset, _lookFor.Length);
+		    string substr = _fileText.Substring(offset, _lookFor.Length);
 			if (!MatchCase)
 			{
 				substr = substr.ToUpperInvariant();
@@ -239,7 +162,7 @@ namespace Revsoft.Wabbitcode.Utils
 
 		private bool IsWordBoundary(int offset)
 		{
-			return offset <= 0 || offset >= _document.TextLength ||
+			return offset <= 0 || offset >= _fileText.Length ||
 			       !IsAlphaNumeric(offset - 1) || !IsAlphaNumeric(offset);
 		}
 	}

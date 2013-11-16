@@ -302,25 +302,6 @@ namespace Revsoft.TextEditor.Document
 		{
 			return GetText(segment.Offset, segment.Length);
 		}
-
-        const string delimeters = "&<>~!%^*()-+=|\\/{}[]:;\"' \n\t\r?,";
-        public string GetWord(int offset)
-        {
-            if (offset >= textBufferStrategy.Length)
-                return "";
-            int newOffset = offset;
-            char test = textBufferStrategy.GetCharAt(offset);
-            while (offset > 0 && delimeters.IndexOf(test) == -1)
-                test = textBufferStrategy.GetCharAt(--offset);
-            if (offset > 0)
-                offset++;
-            test = textBufferStrategy.GetCharAt(newOffset);
-            while (newOffset + 1 < textBufferStrategy.Length && delimeters.IndexOf(test) == -1)
-                test = textBufferStrategy.GetCharAt(++newOffset);
-            if (newOffset < offset)
-                return "";
-            return GetText(offset, newOffset - offset);
-        }
 		
 		public int TotalNumberOfLines {
 			get {
@@ -335,15 +316,8 @@ namespace Revsoft.TextEditor.Document
 
         public int GetOffsetForLineNumber(int lineNumber)
         {
-            int offset = 0, lineNum = 0;
-            while (offset < TextContent.Length && lineNum < lineNumber)
-            {
-                if (TextContent[offset] == '\n')
-                    lineNum++;
-                offset++;
-            }
-            
-            return offset;
+            var segment = lineTrackingStrategy.GetLineSegment(lineNumber);
+            return segment.Offset;
         }
 
 	    public LineSegment GetLineSegmentForOffset(int offset)

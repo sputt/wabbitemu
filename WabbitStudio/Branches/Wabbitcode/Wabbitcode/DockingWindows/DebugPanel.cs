@@ -4,7 +4,6 @@ using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using System;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Services.Interfaces;
 using WabbitemuLib;
 
 
@@ -15,8 +14,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		private bool _updating;
 		private IWabbitcodeDebugger _debugger;
 
-		public DebugPanel(IDockingService dockingService)
-			: base(dockingService)
+		public DebugPanel()
 		{
 			InitializeComponent();
 

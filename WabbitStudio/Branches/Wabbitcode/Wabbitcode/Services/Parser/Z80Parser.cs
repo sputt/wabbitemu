@@ -12,13 +12,13 @@ namespace Revsoft.Wabbitcode.Services.Parser
         #region Constants
 
         private const char CommentChar = ';';
-        private const string CommentString = "#comment";
-        private const string DefineString = "#define";
-        private const string EndCommentString = "#endcomment";
-        private const string EndMacroString = "#endmacro";
+        private const string CommentString = "comment";
+        private const string DefineString = "define";
+        private const string EndCommentString = "endcomment";
+        private const string EndMacroString = "endmacro";
         private const char EndOfLineChar = '\\';
-        private const string IncludeString = "#include";
-        private const string MacroString = "#macro";
+        private const string IncludeString = "include";
+        private const string MacroString = "macro";
         private const string Delimeters = "&<>~!%^*()-+=|\\/{}[]:;\"' \n\t\r?,";
 
         #endregion
@@ -32,7 +32,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
         private static IEnumerable<string> TokenizeLine(string line)
         {
-            Regex re = new Regex("([&<>~!%\\^\\*\\(\\)-\\+=\\|\\\\/\\{}\\[\\]:;\"'\\ \\n\\t\\r\\?,])", RegexOptions.Compiled);
+            Regex re = new Regex("([&<>~!%#\\^\\*\\(\\)-\\+=\\|\\\\/\\{}\\[\\]:;\"'\\ \\n\\t\\r\\?,])", RegexOptions.Compiled);
             var tokenList = re.Split(line).Where(t => !String.IsNullOrEmpty(t));
             return tokenList;
         }
@@ -80,7 +80,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
                     }
                     else
                     {
-                        if (Char.IsWhiteSpace(firstChar))
+                        if (char.IsWhiteSpace(firstChar))
                         {
                             hasNext = SkipWhitespace();
                             if (!hasNext)
@@ -89,20 +89,24 @@ namespace Revsoft.Wabbitcode.Services.Parser
                             }
                         }
 
-                        switch (_tokensEnumerator.Current.ToLower())
+                        if (_tokensEnumerator.Current == "#")
                         {
-                            case IncludeString:
-                                HandleInclude();
-                                break;
-                            case DefineString:
-                                HandleDefine();
-                                break;
-                            case CommentString:
-                                _lineIndex = HandleBlockComment();
-                                break;
-                            case MacroString:
-                                _lineIndex = HandleMacro();
-                                break;
+                            _tokensEnumerator.MoveNext();
+                            switch (_tokensEnumerator.Current.ToLower())
+                            {
+                                case IncludeString:
+                                    HandleInclude();
+                                    break;
+                                case DefineString:
+                                    HandleDefine();
+                                    break;
+                                case CommentString:
+                                    _lineIndex = HandleBlockComment();
+                                    break;
+                                case MacroString:
+                                    _lineIndex = HandleMacro();
+                                    break;
+                            }
                         }
                     }
 
@@ -133,9 +137,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
                     line = line.Remove(commentIndex);
                 }
 
-                if (line.Trim().StartsWith("#comment", options))
+                if (line.Trim().StartsWith("#" + CommentString, options))
                 {
-                    while (!line.Trim().StartsWith("#endcomment", options))
+                    while (!line.Trim().StartsWith("#" + EndCommentString, options))
                     {
                         line = lines[++i];
                     }
@@ -211,6 +215,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 return _lineIndex;
             }
 
+            int startLine = _lineIndex;
             string macroName = _tokensEnumerator.Current;
             List<string> args;
             if (_tokensEnumerator.MoveNext())
@@ -243,7 +248,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
             }
 
             string description = GetDescription();
-            Macro macroToAdd = new Macro(new DocLocation(_lineIndex, 0), macroName, args, contents, description, _parserInfo);
+            Macro macroToAdd = new Macro(new DocLocation(startLine, 0), macroName, args, contents, description, _parserInfo);
             _parserInfo.MacrosList.Add(macroToAdd);
 
             return newLineIndex;

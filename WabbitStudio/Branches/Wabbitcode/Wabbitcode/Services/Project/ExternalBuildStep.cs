@@ -1,6 +1,4 @@
-﻿using Revsoft.Wabbitcode.Services.Interfaces;
-
-namespace Revsoft.Wabbitcode.Services.Project
+﻿namespace Revsoft.Wabbitcode.Services.Project
 {
 	using System;
 	using System.Diagnostics;
@@ -71,7 +69,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 		}
 
-		public bool Build(IAssemblerService assemblerService, IProject project)
+		public bool Build(IProject project)
 		{
 			try
 			{

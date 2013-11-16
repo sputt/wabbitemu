@@ -6,11 +6,9 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 	public interface IDocumentService : IService
 	{
 		Editor ActiveDocument { get; }
-		string ActiveFileName { get; }
 		Editor CreateNewDocument();
 		Editor GotoFile(string file);
 		void GotoLabel(IParserData item);
-		void GotoLine(Editor editor, int line);
 		void GotoLine(string file, int scrollToLine);
 		void HighlightDebugLine(int newLineNumber);
 		void RemoveDebugHighlight();
