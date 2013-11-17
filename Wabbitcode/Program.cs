@@ -17,10 +17,10 @@ namespace Revsoft.Wabbitcode
 		{
 			try
 			{
-				if (Settings.Default.firstRun)
+				if (Settings.Default.FirstRun)
 				{
 					Settings.Default.Upgrade();
-					Settings.Default.firstRun = false;
+					Settings.Default.FirstRun = false;
 					Settings.Default.Save();
 				}
 			}
