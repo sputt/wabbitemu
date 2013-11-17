@@ -6,6 +6,7 @@ using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.GUI;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
@@ -14,7 +15,6 @@ using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
-using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
@@ -38,14 +38,15 @@ namespace Revsoft.Wabbitcode
 
 		#region Services
 
+        private IAssemblerService _assemblerService;
 		private IDockingService _dockingService;
+        private IDocumentService _documentService;
+        private IFileReaderService _fileReaderService;
 		private IProjectService _projectService;
-		private IAssemblerService _assemblerService;
 		private IParserService _parserService;
 		private ISymbolService _symbolService;
-		private IDocumentService _documentService;
-	    private IFileReaderService _fileReaderService;
 	    private IStatusBarService _statusBarService;
+	    private IToolBarService _toolBarService;
 
 	    #endregion
 
@@ -59,13 +60,9 @@ namespace Revsoft.Wabbitcode
 		{
 			InitializeComponent();
 			RestoreWindow();
-			InitiailzeToolbars();
 			InitializeService();
 			InitializeEvents();
-
-			_dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
-		    _projectService.ProjectOpened += ProjectService_OnProjectOpened;
-            _projectService.ProjectClosed += ProjectService_OnProjectClosed;
+            InitiailzeToolbars();
 		
 			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
 			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
@@ -101,7 +98,6 @@ namespace Revsoft.Wabbitcode
 
 			HandleArgs(args);
 			UpdateMenus(_dockingService.ActiveDocument != null);
-			UpdateChecks();
 
 			try
 			{
@@ -117,6 +113,16 @@ namespace Revsoft.Wabbitcode
 				DockingService.ShowError("Error getting recent files", ex);
 			}
 		}
+
+        private void ToolBarService_OnToolBarVisibilityChanged(object sender, ToolbarVisibilityChangedEventArgs e)
+        {
+            var menuItem = toolBarMenuItem.DropDownItems.Cast<ToolStripMenuItem>()
+                .FirstOrDefault(i => i.Tag != null &&  i.Tag.ToString() == e.ToolBarName);
+            if (menuItem != null)
+            {
+                menuItem.Checked = e.Visible;
+            }
+        }
 
 	    private void ProjectService_OnProjectClosed(object sender, EventArgs eventArgs)
 	    {
@@ -251,8 +257,7 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-		    mainToolMenuItem.Checked = mainToolBar.Visible;
-		    debugToolMenuItem.Checked = mainToolBar.Visible;
+		    debugToolMenuItem.Checked = debugToolStrip.Visible;
 			labelListMenuItem.Checked = _dockingService.LabelList.Visible;
 			projViewMenuItem.Checked = _dockingService.ProjectViewer.Visible;
 			findResultsMenuItem.Checked = _dockingService.FindResults.Visible;
@@ -553,10 +558,12 @@ namespace Revsoft.Wabbitcode
 
         private void InitializeEvents()
         {
-            /*Editor.OnEditorSelectionChanged += GetCodeInfo;
-            Editor.OnEditorSelectionChanged += UpdateAssembledInfo;
-            Editor.OnEditorSelectionChanged += SetLineAndColStatus;
-            Editor.OnEditorDragDrop += MainFormRedone_DragDrop;
+            _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+            _projectService.ProjectOpened += ProjectService_OnProjectOpened;
+            _projectService.ProjectClosed += ProjectService_OnProjectClosed;
+            _toolBarService.OnToolBarVisibilityChanged += ToolBarService_OnToolBarVisibilityChanged;
+            // TODO: fix
+            /*Editor.OnEditorDragDrop += MainFormRedone_DragDrop;
             Editor.OnEditorDragEnter += MainFormRedone_DragEnter;*/
         }
 
@@ -564,6 +571,7 @@ namespace Revsoft.Wabbitcode
         {
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>(dockPanel);
             _statusBarService = ServiceFactory.Instance.GetServiceInstance<IStatusBarService>(statusBar);
+            _toolBarService = ServiceFactory.Instance.GetServiceInstance<IToolBarService>(toolStripContainer.TopToolStripPanel);
             _assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
@@ -574,15 +582,7 @@ namespace Revsoft.Wabbitcode
 
         private void InitiailzeToolbars()
         {
-            if (Settings.Default.MainToolBar)
-            {
-                mainToolBar.Show();
-            }
-            else
-            {
-                mainToolBar.Hide();
-            }
-
+            _toolBarService.RegisterToolbar("MainToolBar", new MainToolBar());
             if (Settings.Default.DebugToolbar)
             {
                 debugToolStrip.Show();
@@ -952,7 +952,6 @@ namespace Revsoft.Wabbitcode
                 debugToolStrip.Visible = true;
             }
 
-            debugToolStrip.Height = mainToolBar.Height;
             UpdateChecks();
             _dockingService.ShowDockPanel(_dockingService.DebugPanel);
             _dockingService.ShowDockPanel(_dockingService.StackViewer);
@@ -1397,11 +1396,11 @@ namespace Revsoft.Wabbitcode
         {
             if (mainToolMenuItem.Checked)
             {
-                mainToolBar.Show();
+                _toolBarService.ShowToolBar("MainToolBar");
             }
             else
             {
-                mainToolBar.Hide();
+                _toolBarService.HideToolBar("MainToolBar");
             }
 
             Settings.Default.MainToolBar = mainToolMenuItem.Checked;

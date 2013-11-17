@@ -33,39 +33,44 @@ namespace Revsoft.Wabbitcode.GUI
         {
             Text = "&Save",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("saveToolStripButton.Image")))
+            Image = ((Image)(Resources.GetObject("saveToolStripButton.Image"))),
+            Enabled = false
         };
         private readonly ToolStripButton _saveAllToolButton = new ToolStripButton
         {
             Text = "Save All",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("saveAllToolButton.Image")))
+            Image = ((Image)(Resources.GetObject("saveAllToolButton.Image"))),
+            Enabled = false
         };
         private readonly ToolStripButton _printToolStripButton = new ToolStripButton
         {
             Text = "&Print",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Enabled = false,
-            Image = ((Image)(Resources.GetObject("printToolStripButton.Image")))
+            Image = ((Image)(Resources.GetObject("printToolStripButton.Image"))),
+            Enabled = false
         };
         private readonly ToolStripSeparator _toolStripSeparator = new ToolStripSeparator();
         private readonly ToolStripButton _cutToolStripButton = new ToolStripButton
         {
             Text = "C&ut",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("cutToolStripButton.Image")))
+            Image = ((Image)(Resources.GetObject("cutToolStripButton.Image"))),
+            Enabled = false
         };
         private readonly ToolStripButton _copyToolStripButton = new ToolStripButton
         {
             Text = "&Copy",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("copyToolStripButton.Image")))
+            Image = ((Image)(Resources.GetObject("copyToolStripButton.Image"))),
+            Enabled = false
         };
         private readonly ToolStripButton _pasteToolStripButton = new ToolStripButton
         {
             Text = "&Paste",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("pasteToolStripButton.Image")))
+            Image = ((Image)(Resources.GetObject("pasteToolStripButton.Image"))),
+            Enabled = false
         };
         private readonly ToolStripSeparator _toolStripSeparator3 = new ToolStripSeparator();
         private readonly ToolStripComboBox _findBox = new ToolStripComboBox
@@ -121,6 +126,7 @@ namespace Revsoft.Wabbitcode.GUI
             _cutToolStripButton.Click += cutToolButton_Click;
             _copyToolStripButton.Click += copyToolButton_Click;
             _pasteToolStripButton.Click += pasteToolButton_Click;
+            _runToolButton.Click += RunToolButton_Click;
             _configBox.SelectedIndexChanged += configBox_SelectedIndexChanged;
             _findBox.KeyPress += findBox_KeyPress;
         }
@@ -130,7 +136,7 @@ namespace Revsoft.Wabbitcode.GUI
             _projectService.Project.BuildSystem.CurrentConfigIndex = _configBox.SelectedIndex;
         }
 
-        void Instance_OnServiceInitialized(object sender, ServiceInitializedEventArgs e)
+        private void Instance_OnServiceInitialized(object sender, ServiceInitializedEventArgs e)
         {
             if (e.ServiceType == typeof (IProjectService))
             {
@@ -152,7 +158,7 @@ namespace Revsoft.Wabbitcode.GUI
             }
         }
 
-        void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
+        private void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
         {
             bool enabled = _dockingService.Documents.Any();
             _saveToolStripButton.Enabled = enabled;
@@ -163,7 +169,7 @@ namespace Revsoft.Wabbitcode.GUI
             _findBox.Enabled = enabled;
         }
 
-        void _projectService_ProjectOpened(object sender, EventArgs e)
+        private void _projectService_ProjectOpened(object sender, EventArgs e)
         {
 			IProject project = _projectService.Project;
 			if (project.IsInternal)
@@ -212,6 +218,11 @@ namespace Revsoft.Wabbitcode.GUI
         private void pasteToolButton_Click(object sender, EventArgs e)
         {
             RunCommand(new PasteAction(_dockingService.ActiveDocument as IClipboardOperation));
+        }
+
+        private void RunToolButton_Click(object sender, EventArgs e)
+        {
+
         }
 
         private static void RunCommand(AbstractUiAction action)

@@ -32,7 +32,6 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             WeifenLuo.WinFormsUI.Docking.DockPanelSkin dockPanelSkin1 = new WeifenLuo.WinFormsUI.Docking.DockPanelSkin();
             WeifenLuo.WinFormsUI.Docking.AutoHideStripSkin autoHideStripSkin1 = new WeifenLuo.WinFormsUI.Docking.AutoHideStripSkin();
@@ -49,9 +48,7 @@
             WeifenLuo.WinFormsUI.Docking.DockPanelGradient dockPanelGradient3 = new WeifenLuo.WinFormsUI.Docking.DockPanelGradient();
             WeifenLuo.WinFormsUI.Docking.TabGradient tabGradient6 = new WeifenLuo.WinFormsUI.Docking.TabGradient();
             WeifenLuo.WinFormsUI.Docking.TabGradient tabGradient7 = new WeifenLuo.WinFormsUI.Docking.TabGradient();
-            this.statusBar = new Revsoft.Wabbitcode.GUI.WabbitcodeStatusBar();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.toolBarIcons = new System.Windows.Forms.ImageList(this.components);
             this.mainMenu1 = new System.Windows.Forms.MenuStrip();
             this.fileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -201,41 +198,18 @@
             this.toolStripButton7 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton8 = new System.Windows.Forms.ToolStripButton();
             this.dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
-            this.mainToolBar = new Revsoft.Wabbitcode.GUI.MainToolBar();
+            this.statusBar = new Revsoft.Wabbitcode.GUI.WabbitcodeStatusBar();
             this.mainMenu1.SuspendLayout();
-            this.toolStripContainer.ContentPanel.SuspendLayout();
-            this.toolStripContainer.TopToolStripPanel.SuspendLayout();
             this.toolStripContainer.SuspendLayout();
             this.debugToolStrip.SuspendLayout();
             this.editorToolStrip.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // statusBar
-            // 
-            this.statusBar.Location = new System.Drawing.Point(0, 536);
-            this.statusBar.Name = "statusBar";
-            this.statusBar.Size = new System.Drawing.Size(990, 22);
-            this.statusBar.TabIndex = 3;
             // 
             // saveFileDialog1
             // 
             this.saveFileDialog1.DefaultExt = "*.asm";
             this.saveFileDialog1.Filter = "Assembly Files (*.asm)|*.asm|Z80 Assembly Files (*.z80)|*.z80|All Files(*.*)|*.*";
             this.saveFileDialog1.Title = "Save File";
-            // 
-            // toolBarIcons
-            // 
-            this.toolBarIcons.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("toolBarIcons.ImageStream")));
-            this.toolBarIcons.TransparentColor = System.Drawing.Color.Transparent;
-            this.toolBarIcons.Images.SetKeyName(0, "new_document_16.png");
-            this.toolBarIcons.Images.SetKeyName(1, "new_document_16_d.png");
-            this.toolBarIcons.Images.SetKeyName(2, "new_document_16_h.png");
-            this.toolBarIcons.Images.SetKeyName(3, "open_document_16.png");
-            this.toolBarIcons.Images.SetKeyName(4, "open_document_16_d.png");
-            this.toolBarIcons.Images.SetKeyName(5, "open_document_16_h.png");
-            this.toolBarIcons.Images.SetKeyName(6, "save_16.png");
-            this.toolBarIcons.Images.SetKeyName(7, "save_16_d.png");
-            this.toolBarIcons.Images.SetKeyName(8, "save_16_h.png");
             // 
             // mainMenu1
             // 
@@ -752,7 +726,7 @@
             this.mainToolMenuItem.CheckOnClick = true;
             this.mainToolMenuItem.Name = "mainToolMenuItem";
             this.mainToolMenuItem.Size = new System.Drawing.Size(153, 22);
-            this.mainToolMenuItem.Tag = "mainToolBar";
+            this.mainToolMenuItem.Tag = "MainToolBar";
             this.mainToolMenuItem.Text = "Main Toolbar";
             this.mainToolMenuItem.Click += new System.EventHandler(this.mainToolMenuItem_Click);
             // 
@@ -761,7 +735,7 @@
             this.debugToolMenuItem.CheckOnClick = true;
             this.debugToolMenuItem.Name = "debugToolMenuItem";
             this.debugToolMenuItem.Size = new System.Drawing.Size(153, 22);
-            this.debugToolMenuItem.Tag = "debugToolBar";
+            this.debugToolMenuItem.Tag = "DebugToolBar";
             this.debugToolMenuItem.Text = "Debug Toolbar";
             this.debugToolMenuItem.Click += new System.EventHandler(this.debugToolMenuItem_Click);
             // 
@@ -770,7 +744,7 @@
             this.editorToolBarMenuItem.CheckOnClick = true;
             this.editorToolBarMenuItem.Name = "editorToolBarMenuItem";
             this.editorToolBarMenuItem.Size = new System.Drawing.Size(153, 22);
-            this.editorToolBarMenuItem.Tag = "editorToolbar";
+            this.editorToolBarMenuItem.Tag = "EditorToolbar";
             this.editorToolBarMenuItem.Text = "Editor Toolbar";
             this.editorToolBarMenuItem.Click += new System.EventHandler(this.editorToolBarMenuItem_Click);
             // 
@@ -1290,8 +1264,7 @@
             // 
             // toolStripContainer.ContentPanel
             // 
-            this.toolStripContainer.ContentPanel.Controls.Add(this.debugToolStrip);
-            this.toolStripContainer.ContentPanel.Size = new System.Drawing.Size(990, 0);
+            this.toolStripContainer.ContentPanel.Size = new System.Drawing.Size(990, 25);
             this.toolStripContainer.Dock = System.Windows.Forms.DockStyle.Top;
             this.toolStripContainer.LeftToolStripPanelVisible = false;
             this.toolStripContainer.Location = new System.Drawing.Point(0, 24);
@@ -1300,10 +1273,6 @@
             this.toolStripContainer.Size = new System.Drawing.Size(990, 25);
             this.toolStripContainer.TabIndex = 9;
             this.toolStripContainer.Text = "toolStripContainer1";
-            // 
-            // toolStripContainer.TopToolStripPanel
-            // 
-            this.toolStripContainer.TopToolStripPanel.Controls.Add(this.mainToolBar);
             // 
             // debugToolStrip
             // 
@@ -1321,7 +1290,7 @@
             this.stepToolButton,
             this.stepOverToolButton,
             this.stepOutToolButton});
-            this.debugToolStrip.Location = new System.Drawing.Point(556, 0);
+            this.debugToolStrip.Location = new System.Drawing.Point(556, 24);
             this.debugToolStrip.Name = "debugToolStrip";
             this.debugToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.debugToolStrip.Size = new System.Drawing.Size(193, 25);
@@ -1582,16 +1551,12 @@
             this.dockPanel.SkinStyle = WeifenLuo.WinFormsUI.Docking.Skins.Style.VisualStudio2005;
             this.dockPanel.TabIndex = 0;
             // 
-            // mainToolBar
+            // statusBar
             // 
-            this.mainToolBar.AllowItemReorder = true;
-            this.mainToolBar.Dock = System.Windows.Forms.DockStyle.None;
-            this.mainToolBar.Location = new System.Drawing.Point(3, 0);
-            this.mainToolBar.Name = "mainToolBar";
-            this.mainToolBar.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.mainToolBar.Size = new System.Drawing.Size(483, 25);
-            this.mainToolBar.TabIndex = 1;
-            this.mainToolBar.Text = "Main Toolbar";
+            this.statusBar.Location = new System.Drawing.Point(0, 536);
+            this.statusBar.Name = "statusBar";
+            this.statusBar.Size = new System.Drawing.Size(990, 22);
+            this.statusBar.TabIndex = 3;
             // 
             // MainForm
             // 
@@ -1599,6 +1564,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(990, 558);
+            this.Controls.Add(this.debugToolStrip);
             this.Controls.Add(this.editorToolStrip);
             this.Controls.Add(this.dockPanel);
             this.Controls.Add(this.statusBar);
@@ -1614,10 +1580,6 @@
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainFormRedone_DragEnter);
             this.mainMenu1.ResumeLayout(false);
             this.mainMenu1.PerformLayout();
-            this.toolStripContainer.ContentPanel.ResumeLayout(false);
-            this.toolStripContainer.ContentPanel.PerformLayout();
-            this.toolStripContainer.TopToolStripPanel.ResumeLayout(false);
-            this.toolStripContainer.TopToolStripPanel.PerformLayout();
             this.toolStripContainer.ResumeLayout(false);
             this.toolStripContainer.PerformLayout();
             this.debugToolStrip.ResumeLayout(false);
@@ -1632,8 +1594,7 @@
 		#endregion
 
         private Revsoft.Wabbitcode.GUI.WabbitcodeStatusBar statusBar;
-		private System.Windows.Forms.SaveFileDialog saveFileDialog1;
-		private System.Windows.Forms.ImageList toolBarIcons;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private WeifenLuo.WinFormsUI.Docking.DockPanel dockPanel;
 		private System.Windows.Forms.MenuStrip mainMenu1;
 		private System.Windows.Forms.ToolStripMenuItem fileMenuItem;
@@ -1782,7 +1743,6 @@
 		private System.Windows.Forms.ToolStripButton stepToolButton;
 		private System.Windows.Forms.ToolStripButton stepOverToolButton;
 		private System.Windows.Forms.ToolStripButton stepOutToolButton;
-		private System.Windows.Forms.ToolStripButton restartToolStripButton;
-        private GUI.MainToolBar mainToolBar;
+        private System.Windows.Forms.ToolStripButton restartToolStripButton;
 	}
 }

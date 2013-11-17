@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Services.Interfaces;
-using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
@@ -74,7 +73,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
                         break;
                     }
                     // handle label other xx = 22 type define
-                    if (TextUtils.IsValidLabelChar(firstChar))
+                    if (IsValidLabelChar(firstChar))
                     {
                         HandleLabelOrDefine();
                     }
@@ -530,7 +529,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 {
                     description = line + "\n" + description;
                 }
-                else if (!TextUtils.IsValidLabelChar(lineStartChar))
+                else if (!IsValidLabelChar(lineStartChar))
                 {
                     break;
                 }
@@ -580,5 +579,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
             return args;
         }
 
+        private static bool IsValidLabelChar(char c)
+        {
+            return char.IsLetterOrDigit(c) || c == '_';
+        }
     }
 }

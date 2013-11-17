@@ -285,7 +285,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
         private static string GetRowAddress(DataGridViewRow row)
         {
-            return row.Cells[AddressIndex].Value != null ? row.Cells[AddressIndex].Value.ToString() : null;
+            return row.Cells[AddressIndex].Value != null ? row.Cells[AddressIndex].Value.ToString() : string.Empty;
         }
 
         private static string GetRowNumBytes(DataGridViewRow row)

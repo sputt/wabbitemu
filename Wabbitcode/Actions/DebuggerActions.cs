@@ -30,4 +30,12 @@ namespace Revsoft.Wabbitcode.Actions
             }
         }
     }
+
+    public class StartDebug : AbstractUiAction
+    {
+        public override void Execute()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
 }
