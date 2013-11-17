@@ -700,18 +700,10 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			int offset = editorBox.ActiveTextAreaControl.Caret.Offset;
-			if (TextUtils.DefaultDelimiters.Contains(editorBox.Document.GetCharAt(offset)))
-			{
-				offset--;
-			}
-
-			while (!TextUtils.DefaultDelimiters.Contains(editorBox.Document.GetCharAt(offset)))
-			{
-				offset--;
-			}
-			offset++;
-			editorBox.Document.Replace(offset, item.Text.Length, item.Text);
+            var caret = editorBox.ActiveTextAreaControl.Caret;
+            var segment = editorBox.Document.GetLineSegment(caret.Line);
+            var word = segment.GetWord(caret.Column);
+			editorBox.Document.Replace(segment.Offset + word.Offset, item.Text.Length, item.Text);
 		}
 
 		private void findRefContext_Click(object sender, EventArgs e)
@@ -1064,14 +1056,14 @@ namespace Revsoft.Wabbitcode
 			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
 		}
 
-	    internal void HighlightLine(int newLineNumber, Color foregroundColor)
+	    internal void HighlightLine(int newLineNumber, Color foregroundColor, string tag)
 		{
 			int lineNum = newLineNumber - 1;
 		    string line = GetLineText(lineNum);
 
 	        Match match = LineRegex.Match(line);
             Group group = match.Groups["line"];
-		    int start = group.Index + editorBox.Document.GetLineSegmentForOffset(lineNum).Offset;
+		    int start = group.Index + editorBox.Document.GetLineSegment(lineNum).Offset;
             int length = group.Length;
             if (length == 0)
             {
@@ -1080,7 +1072,7 @@ namespace Revsoft.Wabbitcode
 
 		    TextMarker highlight = new TextMarker(start, length, TextMarkerType.SolidBlock, foregroundColor, Color.Black)
 		    {
-		        Tag = FileName
+		        Tag = tag
 		    };
 		    editorBox.Document.MarkerStrategy.AddMarker(highlight);
 		    editorBox.Refresh();
@@ -1109,15 +1101,9 @@ namespace Revsoft.Wabbitcode
             return line;
         }
 
-        internal void RemoveHighlight(int line)
+        internal void RemoveHighlight(int line, string tag)
 		{
-			editorBox.Document.MarkerStrategy.RemoveAll(marker => editorBox.Document.GetLineNumberForOffset(marker.Offset) == line - 1);
-			UpdateDocument(line);
-		}
-
-		internal void RemoveDebugHighlight(int line)
-		{
-			editorBox.Document.MarkerStrategy.RemoveAll(marker => editorBox.Document.GetLineNumberForOffset(marker.Offset) == line - 1 && marker.Color == Color.Yellow);
+			editorBox.Document.MarkerStrategy.RemoveAll(marker => editorBox.Document.GetLineNumberForOffset(marker.Offset) == line - 1 && tag == marker.Tag);
 			UpdateDocument(line);
 		}
 

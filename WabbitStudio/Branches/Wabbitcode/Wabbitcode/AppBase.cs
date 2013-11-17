@@ -33,7 +33,7 @@ namespace Revsoft.Wabbitcode
 				{ typeof(IBackgroundAssemblerService), typeof(BackgroundAssemblerService) },
                 { typeof(IFileReaderService), typeof(FileReaderService) },
                 { typeof(IStatusBarService), typeof(StatusBarService) },
-
+                { typeof(IToolBarService), typeof(ToolBarService) },
 			};
 
 			ServiceFactory.Instance = new ServiceFactory(dictionary);

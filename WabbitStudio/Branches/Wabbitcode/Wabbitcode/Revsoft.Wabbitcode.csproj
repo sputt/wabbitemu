@@ -632,6 +632,7 @@
     <Compile Include="EditorExtensions\EditorSelectionEventArgs.cs" />
     <Compile Include="EditorExtensions\EditorEventArgs.cs" />
     <Compile Include="EditorExtensions\RegionFoldingStrategy.cs" />
+    <Compile Include="GUI\EditorToolBar.cs" />
     <Compile Include="Interface\IClipboardOperation.cs" />
     <Compile Include="Interface\ISelectable.cs" />
     <Compile Include="Interface\ITextEditor.cs" />
@@ -662,6 +663,7 @@
     <Compile Include="Services\Interfaces\IParserService.cs" />
     <Compile Include="Services\Interfaces\IProjectService.cs" />
     <Compile Include="Services\Interfaces\ISymbolService.cs" />
+    <Compile Include="Services\Interfaces\IToolBarService.cs" />
     <Compile Include="Services\ParserEventArgs.cs" />
     <Compile Include="Services\ParserProgressEventArgs.cs" />
     <Compile Include="Services\ParserService.cs" />
@@ -670,6 +672,7 @@
     <Compile Include="Services\ServiceInitializedEventArgs.cs" />
     <Compile Include="Services\StatusBarService.cs" />
     <Compile Include="Services\Symbols\CalcLocation.cs" />
+    <Compile Include="Services\ToolBarService.cs" />
     <Compile Include="Utils\WabbitcodeBreakpointManager.cs" />
     <Compile Include="Utils\DocumentLocation.cs" />
     <Compile Include="Utils\FileLocations.cs" />
@@ -877,7 +880,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Utils\TextEditorSearcher.cs" />
-    <Compile Include="Utils\TextUtils.cs" />
     <Compile Include="Utils\WabbitcodeBreakpointEventArgs.cs" />
     <Compile Include="GUI\WabbitcodeStatusBar.cs">
       <SubType>Component</SubType>

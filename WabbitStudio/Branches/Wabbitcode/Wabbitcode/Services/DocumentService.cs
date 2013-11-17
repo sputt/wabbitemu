@@ -76,7 +76,7 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			DocumentLocation value = new DocumentLocation(ActiveDocument.FileName, newLineNumber);
 			_highlights.Add(value);
-			ActiveDocument.HighlightLine(newLineNumber, foregroundColor);
+			ActiveDocument.HighlightLine(newLineNumber, foregroundColor, "Debug Highlight");
 		}
 
 		public void RemoveDebugHighlight()
@@ -85,20 +85,19 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				return;
 			}
-			DocumentLocation key = _highlights[_debugIndex];
-			GotoFile(key.FileName).RemoveDebugHighlight(key.LineNumber);
-			_highlights.Remove(key);
+			RemoveHighlight(_debugIndex, "Debug Highlight");
 		    _debugIndex = -1;
 		}
 
-		private void RemoveHighlight(int index)
+		private void RemoveHighlight(int index, string tag)
 		{
 			if (ActiveDocument == null || _highlights.Count == 0)
 			{
 				return;
 			}
+
 			DocumentLocation key = _highlights[index];
-			GotoFile(key.FileName).RemoveHighlight(key.LineNumber);
+			GotoFile(key.FileName).RemoveHighlight(key.LineNumber, tag);
 			_highlights.Remove(key);
 			if (index <= _debugIndex)
 			{
@@ -128,7 +127,7 @@ namespace Revsoft.Wabbitcode.Services
 		public void HighlightCall()
 		{
 			GotoFile(_highlights[_debugIndex].FileName)
-                .HighlightLine(_highlights[_debugIndex].LineNumber, Color.LightGreen);
+                .HighlightLine(_highlights[_debugIndex].LineNumber, Color.LightGreen, "Call Highlight");
 		}
 
 		public Editor OpenDocument(string filename)
