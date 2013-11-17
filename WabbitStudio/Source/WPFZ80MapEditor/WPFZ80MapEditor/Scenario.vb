@@ -94,15 +94,17 @@ Public Class Scenario
     Private _FileName As String
 
     Public Sub LoadScenario(FileName As String)
-
         ClearMaps()
 
-        LoadImages(Directory.GetCurrentDirectory() & "\Scenario\graphics.asm")
+        Dim Path As String = Directory.GetParent(FileName).FullName
+        SPASMHelper.Initialize(Path)
+        LoadImages(Path & "\graphics.asm")
 
         _FileName = FileName
+        SPASMHelper.Assembler.Defines.Add("INCLUDE_ALL", 1)
         Dim Data = SPASMHelper.AssembleFile(FileName)
 
-        LoadObjectDefs(Directory.GetCurrentDirectory() & "\Scenario\objectdef.inc")
+        LoadObjectDefs(Path & "\objectdef.inc")
 
         Dim Reader As New StreamReader(FileName)
         Dim ScenarioContents As String = Reader.ReadToEnd()
@@ -144,18 +146,6 @@ Public Class Scenario
             End If
         Next
 
-        'For Each Map In Maps.Values
-        '    Dim Obj As New ZObject("pot", "48", 48)
-        '    Map.ZObjects.Add(Obj)
-
-        '    Dim Obj2 As New ZObject("doortoph", 128, 128)
-        '    Map.ZObjects.Add(Obj2)
-
-        '    Dim Obj3 As New ZObject("plant", 200, 200)
-        '    Map.ZObjects.Add(Obj3)
-
-        'Next
-
         For x = 0 To MaxX
             For y = 0 To MaxY
                 Dim CurX = x, CurY = y
@@ -178,6 +168,7 @@ Public Class Scenario
                 Stream.Write(String.Format("${0:X2}", Data(Index)))
                 Index += 1
                 If Index = Data.Count Then
+                    If i <> 16 Then Stream.Write(vbCrLf)
                     Exit Sub
                 End If
                 If i <> 16 Then Stream.Write(",")
@@ -188,49 +179,121 @@ Public Class Scenario
     End Sub
 
 
+    Private Class MapHierarchy
+        Private _Maps(0 To 15, 0 To 15) As Integer
+        Private _MaxX As Integer = -1, _MaxY As Integer = -1
+
+        Public Sub AddMap(X As Integer, Y As Integer, MapIndex As Integer)
+            _MaxX = Math.Max(_MaxX, X)
+            _MaxY = Math.Max(_MaxY, Y)
+            _Maps(X, Y + 1) = MapIndex
+        End Sub
+
+        Public Sub Write(Stream As StreamWriter)
+            Dim Width = _MaxX + 1
+            Stream.WriteLine("#ifdef INCLUDE_MAP_HIERARCHY")
+            Stream.WriteLine("#ifndef __MAP_HIERARCHY_WIDTH_DEFINED")
+            Stream.WriteLine("#define __MAP_HIERARCHY_WIDTH_DEFINED")
+            Stream.WriteLine("map_hierarchy_width = " & Width)
+            Stream.WriteLine("#endif")
+
+            Dim Data(0 To Width * (_MaxY + 2) - 1) As Byte
+            For Y = 0 To _MaxY + 1
+                For X = 0 To _MaxX
+                    Data(Y * Width + X) = _Maps(X, Y)
+                Next
+            Next
+
+            WriteAssemblyData(Stream, Data)
+            Stream.WriteLine("#endif")
+        End Sub
+    End Class
+
     Public Sub SaveScenario()
         Dim Stream = New StreamWriter(_FileName)
 
-        For Each MapIndex In Maps.Keys
-            Dim MapData = Maps(MapIndex)
+        Stream.WriteLine("#ifdef INCLUDE_ALL")
+        Stream.WriteLine("#define INCLUDE_MAPS")
+        Stream.WriteLine("#define INCLUDE_DEFAULTS")
+        Stream.WriteLine("#define INCLUDE_MAPS_TABLE")
+        Stream.WriteLine("#define INCLUDE_DEFAULTS_TABLE")
+        Stream.WriteLine("#define INCLUDE_MAP_HIERARCHY")
+        Stream.WriteLine("#endif")
+
+        Dim MapHierarchy As New MapHierarchy
+        Dim DefaultsTable As String = ""
+        Dim MapsTable As String = ""
+
+        Dim MapIndex As Integer = 0
+        Dim PossibleViews = From v In MainWindow.Instance.LayerContainer.Children
+                            Where TypeOf v Is MapContainer AndAlso CType(v, MapContainer).MapData IsNot Nothing
+                            Order By Grid.GetRow(v), Grid.GetColumn(v)
+        For Each View In PossibleViews
+            Dim Container As MapContainer = View
+            Dim MapData = Container.MapData
 
             Dim MapId = String.Format("{0:D2}", MapIndex)
             Dim MapPrefix = ScenarioName & "_MAP_" & MapId
 
-            If Not MapData Is Nothing Then
-                Dim PossibleViews = From v In MainWindow.Instance.LayerContainer.Children Where TypeOf v Is MapContainer AndAlso CType(v, MapContainer).MapData Is MapData
-                If PossibleViews.Count > 0 Then
-                    Dim MapView = PossibleViews.First()
+            Dim X = Grid.GetColumn(Container)
+            Dim Y = Grid.GetRow(Container)
+            Stream.WriteLine("#ifdef INCLUDE_MAPS")
+            MapsTable &= vbTab & ".dw " & MapPrefix & vbCrLf
 
-                    Stream.WriteLine(MapPrefix & ":")
-                    Stream.WriteLine(MapPrefix & "_X = " & Grid.GetColumn(MapView))
-                    Stream.WriteLine(MapPrefix & "_Y = " & Grid.GetRow(MapView))
-                    Stream.WriteLine(MapPrefix & "_TILESET = 0")
+            Stream.WriteLine(MapPrefix & ":")
+            Stream.WriteLine(MapPrefix & "_X = " & X)
+            Stream.WriteLine(MapPrefix & "_Y = " & Y)
+            Stream.WriteLine(MapPrefix & "_TILESET = 0")
 
-                    Dim CompressedMap = MapCompressor.Compress(Maps(MapIndex).TileData)
-                    WriteAssemblyData(Stream, CompressedMap)
+            Dim CompressedMap = MapCompressor.Compress(MapData.TileData)
+            WriteAssemblyData(Stream, CompressedMap)
+            Stream.WriteLine("#endif")
+            Stream.WriteLine("")
 
-                    Stream.WriteLine("")
-                End If
+            Dim DefaultsLabel = MapPrefix & "_DEFAULTS"
+            DefaultsTable &= vbTab & ".dw " & DefaultsLabel & vbCrLf
 
-                Stream.WriteLine("")
+            Stream.WriteLine("#ifdef INCLUDE_DEFAULTS")
+            Stream.WriteLine(DefaultsLabel & ":")
 
-                Stream.WriteLine(MapPrefix & "_DEFAULTS:")
-                ' Write out animates
-                Stream.WriteLine("animate_section()")
-                Stream.WriteLine("object_section()")
+            Stream.WriteLine("animate_section()")
+            Stream.WriteLine("object_section()")
 
-                For Each Obj In MapData.ZObjects
-                    Stream.WriteLine(vbTab & Obj.ToMacro())
-                Next
+            For Each Obj In MapData.ZObjects
+                Stream.WriteLine(vbTab & Obj.ToMacro())
+            Next
 
-                Stream.WriteLine("enemy_section()")
-                Stream.WriteLine("misc_section()")
-                Stream.WriteLine("end_section()")
+            Stream.WriteLine("enemy_section()")
+            Stream.WriteLine("misc_section()")
+            Stream.WriteLine("end_section()")
+            Stream.WriteLine("#endif")
+            Stream.WriteLine("")
 
-                Stream.WriteLine("")
-            End If
+            MapHierarchy.AddMap(X, Y, MapIndex)
+            MapIndex = MapIndex + 1
         Next
+
+        MapHierarchy.Write(Stream)
+
+        Stream.WriteLine("")
+
+        Stream.WriteLine("#ifdef INCLUDE_MAPS_TABLE")
+        Stream.Write(MapsTable)
+        Stream.WriteLine("#endif")
+
+        Stream.WriteLine("")
+
+        Stream.WriteLine("#ifdef INCLUDE_DEFAULTS_TABLE")
+        Stream.Write(DefaultsTable)
+        Stream.WriteLine("#endif")
+
+        Stream.WriteLine("")
+
+        Stream.WriteLine("#undefine INCLUDE_MAPS")
+        Stream.WriteLine("#undefine INCLUDE_DEFAULTS")
+        Stream.WriteLine("#undefine INCLUDE_MAPS_TABLE")
+        Stream.WriteLine("#undefine INCLUDE_DEFAULTS_TABLE")
+        Stream.WriteLine("#undefine INCLUDE_MAP_HIERARCHY")
 
         Stream.Close()
     End Sub

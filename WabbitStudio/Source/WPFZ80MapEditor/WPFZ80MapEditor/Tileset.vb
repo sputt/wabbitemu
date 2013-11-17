@@ -10,7 +10,7 @@ Public Class Tileset
     Sub New(FileName As String)
         Name = Path.GetFileNameWithoutExtension(FileName)
 
-        Dim Image As New BitmapImage(New Uri(Directory.GetCurrentDirectory() & "\" & FileName, UriKind.Absolute))
+        Dim Image As New BitmapImage(New Uri(FileName, UriKind.Absolute))
         For i = 0 To (Image.Height / Image.Width) - 1
 
             'Dim Brush As New ImageBrush

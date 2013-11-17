@@ -8,6 +8,7 @@ Partial Public Class Scenario
     "^#include\s+""(?<FileName>.+)""\s*" & _
     "(^\s*|(?<ExtraDefines>(^[a-z0-9_]+\s*=\s*[a-z0-9_]+\s*)+))$", RegexOptions.Multiline Or RegexOptions.Compiled)
 
+        Dim Path As String = Directory.GetParent(FileName).FullName
         Dim Stream = New StreamReader(FileName)
         Dim Matches = Rx.Matches(Stream.ReadToEnd())
         Stream.Close()
@@ -25,7 +26,7 @@ Partial Public Class Scenario
             SPASMHelper.Assembler.Defines.Add(Replace(LabelName, "_gfx", "_anim"), Index)
 
             Dim Image As ImageSource = Nothing
-            Uri = New Uri(Directory.GetCurrentDirectory() & "\Scenario\" & Groups("FileName").Value, UriKind.Absolute)
+            Uri = New Uri(Path & "\images\" & Groups("FileName").Value, UriKind.Absolute)
             If File.Exists(Uri.LocalPath) Then
                 Image = New BitmapImage(Uri)
                 Image = BitmapUtils.Mask(Image, Color.FromArgb(255, 168, 230, 29))

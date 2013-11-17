@@ -5,17 +5,23 @@ Public Class SPASMHelper
 
     Public Shared Labels As New Dictionary(Of String, Integer)
 
-    Shared Sub New()
+    Public Shared Sub Initialize(Path As String)
         Try
             Assembler = New Z80Assembler
         Catch e As System.Runtime.InteropServices.COMException
             Exit Sub
         End Try
 
+        Assembler.CurrentDirectory = Path
+
         Assembler.Defines.Add("_MAPEDITOR", "1")
         Assembler.IncludeDirectories.Add(Environment.CurrentDirectory)
-        Assembler.IncludeDirectories.Add(Environment.CurrentDirectory & "\Scenario")
+        Assembler.IncludeDirectories.Add(Environment.CurrentDirectory & "\Images")
+        Assembler.IncludeDirectories.Add(Environment.CurrentDirectory & "\Defaults")
+        Assembler.IncludeDirectories.Add(Environment.CurrentDirectory & "\Maps")
         Assembler.Assemble("#include ""objectdef.inc""")
+        Dim StdOutput = Assembler.StdOut.ReadAll()
+
     End Sub
 
     Public Shared Function Eval(ByVal Expr As String) As Integer
@@ -30,6 +36,7 @@ Public Class SPASMHelper
         Dim Output = Assembler.Assemble(Code)
 
         Dim StdOutput = Assembler.StdOut.ReadAll()
+        Debug.Write(StdOutput)
 
         Dim Data As New List(Of Byte)
 

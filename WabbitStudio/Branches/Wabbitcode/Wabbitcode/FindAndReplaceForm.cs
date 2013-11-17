@@ -121,12 +121,18 @@ namespace Revsoft.Wabbitcode
 		    {
                 case SearchMode.Find:
                     findTabs.SelectTab(findPage);
+                    findFindBox.Focus();
+                    findFindBox.SelectAll();
 		            break;
                 case SearchMode.Replace:
                     findTabs.SelectTab(replacePage);
+                    replaceFindBox.Focus();
+                    replaceFindBox.SelectAll();
                     break;
                 case SearchMode.FindInFiles:
                     findTabs.SelectTab(findInFilesPage);
+                    findFilesBox.Focus();
+                    findFilesBox.SelectAll();
                     break;
 		    }
 		}
@@ -241,6 +247,7 @@ namespace Revsoft.Wabbitcode
             bool matchWholeWord = matchWholeWordFilesCheckbox.Checked;
             string textToFind = findFilesBox.Text;
             FindInFiles(textToFind, matchCase, matchWholeWord);
+            Close();
         }
 
         private void replaceButton_Click(object sender, EventArgs e)
@@ -336,6 +343,11 @@ namespace Revsoft.Wabbitcode
             {
                 _editor.Refresh(); // must repaint manually
             }
+        }
+
+        private void cancelButton_Click(object sender, EventArgs e)
+        {
+            Close();
         }
 	}
 

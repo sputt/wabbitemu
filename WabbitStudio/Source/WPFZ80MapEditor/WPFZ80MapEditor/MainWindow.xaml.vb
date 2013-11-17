@@ -14,10 +14,10 @@ Public Class MainWindow
     End Sub
 
     Private Sub Window_Loaded(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles MyBase.Loaded
-        Scenario.Instance.Tilesets.Add("dungeon", New Tileset("Scenario\dungeon.bmp"))
+        Scenario.Instance.Tilesets.Add("dungeon", New Tileset("C:\users\spencer\desktop\zelda\images\dungeon.bmp"))
         TileSelectorPanel.Initialize(0)
 
-        Scenario.Instance.LoadScenario("Scenario\hill.asm")
+        Scenario.Instance.LoadScenario("C:\users\spencer\desktop\zelda\hill.asm")
 
 
         'Dim MapData As New MapData(New Tileset("dungeon.bmp"))

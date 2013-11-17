@@ -61,6 +61,7 @@
             this.replaceFilesBox = new System.Windows.Forms.TextBox();
             this.findInFilesButton = new System.Windows.Forms.Button();
             this.replaceInFilesButton = new System.Windows.Forms.Button();
+            this.cancelButton = new System.Windows.Forms.Button();
             this.findTabs.SuspendLayout();
             this.findPage.SuspendLayout();
             this.replacePage.SuspendLayout();
@@ -360,12 +361,26 @@
             this.replaceInFilesButton.Text = "&Replace in files";
             this.replaceInFilesButton.Visible = false;
             // 
+            // cancelButton
+            // 
+            this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.cancelButton.Location = new System.Drawing.Point(12, 126);
+            this.cancelButton.Name = "cancelButton";
+            this.cancelButton.Size = new System.Drawing.Size(0, 0);
+            this.cancelButton.TabIndex = 11;
+            this.cancelButton.TabStop = false;
+            this.cancelButton.Text = "Cancel";
+            this.cancelButton.UseVisualStyleBackColor = true;
+            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
+            // 
             // FindAndReplaceForm
             // 
             this.AcceptButton = this.findNextFindButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(393, 153);
+            this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.findTabs);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -409,5 +424,6 @@
         private System.Windows.Forms.Button replaceInFilesButton;
         private System.Windows.Forms.CheckBox matchCaseFindCheckbox;
         private System.Windows.Forms.CheckBox matchWholeWordFindCheckbox;
+        private System.Windows.Forms.Button cancelButton;
     }
 }

@@ -129,8 +129,10 @@ int run_assembly()
 	{
 		printf ("Pass two... \n");
 
+		int session = StartSPASMErrorSession();
 		run_second_pass ();
-
+		ReplaySPASMErrorSession(session);
+		EndSPASMErrorSession(session);
 		printf ("Done\n");
 		
 		//run the output through the appropriate program export and write it to a file
