@@ -39,11 +39,16 @@ public:
 			VARIANT_BOOL isFlash;
 			pPage->get_IsFlash(&isFlash);
 			waddr.is_ram = isFlash == VARIANT_TRUE ? FALSE : TRUE;
-			int nPage;
-			pPage->get_Index(&nPage);
-			waddr.page = nPage;
+			int nPage = 0;
+			if (SUCCEEDED(pPage->get_Index(&nPage)))
+			{
+				waddr.page = nPage;
+			}
 
-			if (memcmp(&waddrRef, &waddr, sizeof(waddr)) == 0)
+
+			if (waddrRef.addr == waddr.addr &&
+				waddrRef.is_ram == waddr.is_ram &&
+				waddrRef.page == waddr.page)
 			{
 				return it->m_T->QueryInterface(ppBP);
 			}
