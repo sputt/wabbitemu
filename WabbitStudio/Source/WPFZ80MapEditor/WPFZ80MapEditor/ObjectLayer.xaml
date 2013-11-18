@@ -40,6 +40,8 @@
                 <Image.ContextMenu>
                     <ContextMenu HasDropShadow="True">
                         <MenuItem Command="ApplicationCommands.Properties"/>
+                        <MenuItem Header="Test!"/>
+                        <MenuItem Header="_Copy" Command="ApplicationCommands.Copy"/>
                     </ContextMenu>
                 </Image.ContextMenu>
             </Image>
