@@ -59,6 +59,7 @@
                 <Button Name="Button1">
                     <Image Source="Toolbar/save.bmp"/>
                 </Button>
+                <Button Name="TestButton">Test</Button>
                 <Separator></Separator>
                 <RadioButton IsChecked="True" Name="RadioMapSet">Mapset</RadioButton>
                 <RadioButton IsChecked="False" Name="RadioMapView">Map</RadioButton>

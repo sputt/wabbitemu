@@ -265,4 +265,9 @@ Public Class MainWindow
             Grid.SetRow(Child, Grid.GetRow(Child) - 1)
         Next
     End Sub
+
+    Private Sub TestButton_Click(sender As Object, e As RoutedEventArgs) Handles TestButton.Click
+        Dim GameWindow As New GameWindow()
+        GameWindow.Show()
+    End Sub
 End Class
