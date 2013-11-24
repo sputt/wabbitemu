@@ -1,10 +1,10 @@
 ﻿using System.Windows.Forms;
 
-namespace Revsoft.Wabbitcode.Utils
+namespace Revsoft.Wabbitcode.Services.Assembler
 {
-    public class Errors
+    public class BuildError
     {
-        public Errors(string file, int lineNum, string description, bool isWarning)
+        public BuildError(string file, int lineNum, string description, bool isWarning)
         {
             File = file;
             LineNum = lineNum;

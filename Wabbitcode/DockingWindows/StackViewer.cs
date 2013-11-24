@@ -7,11 +7,14 @@ using Revsoft.Wabbitcode.Services.Debugger;
 using System;
 using System.Globalization;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.DockingWindows
 {
     public partial class StackViewer : ToolWindow
     {
+        public const string WindowName = "Stack Viewer";
+
         private IWabbitcodeDebugger _debugger;
         private const int StackDataColIndex = 1;
 
@@ -19,15 +22,24 @@ namespace Revsoft.Wabbitcode.DockingWindows
         {
             InitializeComponent();
 
-            WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
-            WabbitcodeDebugger.OnDebuggingEnded += mainForm_OnDebuggingEnded;
+            IDebuggerService debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            debuggerService.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+            debuggerService.OnDebuggingEnded += mainForm_OnDebuggingEnded;
         }
 
         void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
             _debugger = e.Debugger;
-            _debugger.OnDebuggerStep += (o, args) => this.Invoke(UpdateStack);
-            _debugger.OnDebuggerRunningChanged += (o, args) => this.Invoke(UpdateStack);
+            _debugger.OnDebuggerStep += (o, args) =>
+            {
+                this.Invoke(UpdateStack);
+                EnablePanel(true);
+            };
+            _debugger.OnDebuggerRunningChanged += (o, args) =>
+            {
+                this.Invoke(UpdateStack);
+                EnablePanel(!args.Running);
+            };
         }
 
         void mainForm_OnDebuggingEnded(object sender, DebuggingEventArgs e)

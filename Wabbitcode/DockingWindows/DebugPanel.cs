@@ -1,9 +1,11 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using System;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using WabbitemuLib;
 
 
@@ -11,6 +13,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class DebugPanel : ToolWindow
 	{
+	    public const string WindowName = "Debug Panel";
 		private bool _updating;
 		private IWabbitcodeDebugger _debugger;
 
@@ -30,15 +33,42 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			iyBox.ContextMenu = contextMenu1;
 			pcBox.ContextMenu = contextMenu1;
 			spBox.ContextMenu = contextMenu1;
-            WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+		    IDebuggerService debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
 		}
 
-		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
+		private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
 		{
 			_debugger = e.Debugger;
+		    _debugger.OnDebuggerRunningChanged += (o, args) =>
+		    {
+		        EnablePanel(!args.Running);
+		        if (!args.Running)
+		        {
+                    UpdatePanel();
+		        }
+		    };
+		    _debugger.OnDebuggerStep += (o, args) =>
+		    {
+		        EnablePanel(true);
+                UpdatePanel();
+		    };
 		}
 
-		public override void Copy()
+	    private void UpdatePanel()
+	    {
+	        if (InvokeRequired)
+	        {
+	            this.Invoke(UpdatePanel);
+	            return;
+	        }
+
+	        UpdateFlags();
+	        UpdateRegisters();
+	        UpdateScreen();
+	    }
+
+	    public override void Copy()
 		{
 			var textBox = ActiveControl as TextBox;
 			if (textBox != null)
@@ -81,7 +111,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			}
 		}
 
-		public void UpdateFlags()
+	    private void UpdateFlags()
 		{
 			_updating = true;
 			IZ80 cpu = _debugger.CPU;
@@ -101,7 +131,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			_updating = false;
 		}
 
-		public void UpdateRegisters()
+	    private void UpdateRegisters()
 		{
 			IZ80 cpu = _debugger.CPU;
 			afBox.Text = cpu.AF.ToString("X4");
@@ -118,7 +148,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			spBox.Text = cpu.SP.ToString("X4");
 		}
 
-		public void UpdateScreen()
+	    private void UpdateScreen()
 		{
 			Image image = _debugger.ScreenImage;
 			Image scaledImage = new Bitmap(image.Width * 2, image.Height * 2);

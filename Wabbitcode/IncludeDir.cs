@@ -5,6 +5,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 
 namespace Revsoft.Wabbitcode
@@ -13,11 +15,12 @@ namespace Revsoft.Wabbitcode
 	{
 		private readonly IProject _project;
 
-		public IncludeDir(IProject project)
+		public IncludeDir()
 		{
 			InitializeComponent();
 
-			_project = project;
+		    IProjectService projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+			_project = projectService.Project;
 
 			var directories = _project.IsInternal ?
 									   Settings.Default.IncludeDirs.Cast<string>() :

@@ -79,7 +79,7 @@ namespace Revsoft.Wabbitcode.Services
 		//		if (string.Equals(item.File, _fileName, StringComparison.OrdinalIgnoreCase))
 		//		{
 		//			Color underlineColor = item.IsWarning ? Color.Yellow : Color.Red;
-		//			Errors errors = item;
+		//			BuildError errors = item;
 		//			_mainForm.Invoke(() =>
 		//			{
 		//				AddSquiggleLine(this, errors.LineNum, underlineColor, errors.Description);
@@ -96,7 +96,7 @@ namespace Revsoft.Wabbitcode.Services
 		//				{
 		//					Color underlineColor = item.IsWarning ? Color.Yellow : Color.Red;
 		//					Editor newEditor = doc;
-		//					Errors errors = item;
+		//					BuildError errors = item;
 		//					_mainForm.Invoke(() =>
 		//					{
 		//						AddSquiggleLine(newEditor, errors.LineNum, underlineColor, errors.Description);

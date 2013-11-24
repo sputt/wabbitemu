@@ -12,6 +12,7 @@ namespace Revsoft.Wabbitcode.Services
         private readonly Dictionary<string, ToolStrip> _toolBars = new Dictionary<string, ToolStrip>();
         private ToolStripPanel _panel;
 
+        public event EventHandler<ToolbarEventArgs> OnToolbarRegistered;
         public event EventHandler<ToolbarVisibilityChangedEventArgs> OnToolBarVisibilityChanged;
 
         public void RegisterToolbar(string toolBarName, ToolStrip toolBar)
@@ -21,10 +22,25 @@ namespace Revsoft.Wabbitcode.Services
                 throw new ArgumentException("Toolbar is already registered");
             }
 
-            _toolBars.Add(toolBarName, toolBar);
-            _panel.Controls.Add(toolBar);
+            if (OnToolbarRegistered != null)
+            {
+                OnToolbarRegistered(this, new ToolbarEventArgs(toolBarName));
+            }
 
-            if (Settings.Default[toolBarName] == null || ((bool) Settings.Default[toolBarName]))
+            _toolBars.Add(toolBarName, toolBar);
+            _panel.Join(toolBar, 1);
+
+            bool showToolbar;
+            try
+            {
+                showToolbar = ((bool) Settings.Default[toolBarName.Replace(" ", string.Empty)]);
+            }
+            catch (Exception)
+            {
+                showToolbar = false;
+            }
+
+            if (showToolbar)
             {
                 ShowToolBar(toolBarName);
             }

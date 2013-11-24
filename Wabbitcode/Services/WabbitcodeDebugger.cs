@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using System.Threading;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -22,7 +21,7 @@ namespace Revsoft.Wabbitcode.Services
 	    private ushort _oldSP;
 		private IWabbitemuDebugger _debugger;
 	    private bool _disposed;
-		private List<KeyValuePair<ushort, ushort>> _memoryAllocations;
+		private readonly List<KeyValuePair<ushort, ushort>> _memoryAllocations;
 		
         private IBreakpoint _stepOverBreakpoint;
         private IBreakpoint _stepOutBreakpoint;
@@ -35,7 +34,7 @@ namespace Revsoft.Wabbitcode.Services
         private readonly IFileReaderService _fileReaderService;
 		private readonly IDocumentService _documentService;
 
-        #endregion
+	    #endregion
 
         #region Constants
 
@@ -46,8 +45,6 @@ namespace Revsoft.Wabbitcode.Services
 	    #endregion
 
         #region Public Properties
-
-	    public static IWabbitcodeDebugger Instance { get; private set; }
 
 	    private string CurrentDebuggingFile { get; set; }
 
@@ -84,19 +81,33 @@ namespace Revsoft.Wabbitcode.Services
 
 	    public event DebuggerRunning OnDebuggerRunningChanged;
 	    public event DebuggerStep OnDebuggerStep;
-        public static event DebuggerEventHandler OnDebuggingStarted;
-        public static event DebuggerEventHandler OnDebuggingEnded;
 
 		#endregion
 
-		public WabbitcodeDebugger(IDocumentService documentService,
-            IFileReaderService fileReaderService, ISymbolService symbolService)
+		public WabbitcodeDebugger(string outputFile)
 		{
 		    _disposed = false;
 
-			_documentService = documentService;
-		    _fileReaderService = fileReaderService;
-			_symbolService = symbolService;
+			_documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
+		    _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
+			_symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
+
+            WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
+            WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
+
+            _debugger = new WabbitemuDebugger();
+            _debugger.LoadFile(outputFile);
+            _debugger.Visible = true;
+            _debugger.OnBreakpoint += BreakpointHit;
+            _debugger.OnClose += DebuggerOnClose;
+
+            CurrentDebuggingFile = outputFile;
+            IsAnApp = outputFile.EndsWith(".8xk");
+            _memoryAllocations = new List<KeyValuePair<ushort, ushort>>();
+            CallStack = new Stack<CallStackEntry>();
+            MachineStack = new Stack<StackEntry>();
+            _oldSP = IsAnApp ? TopStackApp : (ushort)0xFFFF;
+            SetupInternalBreakpoints();
 		}
 
         #region Memory and Paging
@@ -199,25 +210,7 @@ namespace Revsoft.Wabbitcode.Services
 
         #region Startup
 
-        public void InitDebugger(string outputFile)
-		{
-			_debugger = new WabbitemuDebugger();
-			_debugger.LoadFile(outputFile);
-			_debugger.Visible = true;
-			_debugger.OnBreakpoint += BreakpointHit;
-			_debugger.OnClose += DebuggerOnClose;
-
-            CurrentDebuggingFile = outputFile;
-            IsAnApp = outputFile.EndsWith(".8xk");
-			_memoryAllocations = new List<KeyValuePair<ushort, ushort>>();
-            CallStack = new Stack<CallStackEntry>();
-            MachineStack = new Stack<StackEntry>();
-            _oldSP = IsAnApp ? TopStackApp : (ushort) 0xFFFF;
-            SetupInternalBreakpoints();
-            Instance = this;
-		}
-
-        public void CancelDebug()
+        public void EndDebug()
         {
             IsAnApp = false;
 
@@ -225,19 +218,14 @@ namespace Revsoft.Wabbitcode.Services
             {
                 return;
             }
-            _debugger.CancelDebug();
-            _debugger = null;
-            Instance = null;
 
-            if (OnDebuggingEnded != null)
-            {
-                OnDebuggingEnded(this, new DebuggingEventArgs(this));
-            }
+            _debugger.EndDebug();
+            _debugger = null;
         }
 
         private void DebuggerOnClose(object sender, EventArgs eventArgs)
         {
-            CancelDebug();
+            EndDebug();
         }
 
 
@@ -314,12 +302,13 @@ namespace Revsoft.Wabbitcode.Services
 
 	    public void StartDebug()
 	    {
-	        if (OnDebuggingStarted != null)
-	        {
-	            OnDebuggingStarted(this, new DebuggingEventArgs(this));
-	        }
-
 	        var app = VerifyApp(CurrentDebuggingFile);
+            // once we have the app we can add breakpoints
+            var breakpoints = WabbitcodeBreakpointManager.Breakpoints.ToList();
+            foreach (WabbitcodeBreakpoint breakpoint in breakpoints)
+            {
+                SetBreakpoint(breakpoint);
+            }
 
 	        if (app != null)
 	        {
@@ -327,39 +316,29 @@ namespace Revsoft.Wabbitcode.Services
 	        }
 	    }
 
-	    public void RestartDebug()
-        {
-            ResetRom();
-	        var app = VerifyApp(CurrentDebuggingFile);
-            if (app != null)
-            {
-                LaunchApp(app.Value.Name);
-            }
-	    }
-
 	    public void Step()
-        {
-            // need to clear the old breakpoint so lets save it
-            ushort currentPC = _debugger.CPU.PC;
-            byte oldPage = GetRelativePageNum(currentPC);
-            DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
-            DocumentLocation newKey = key;
-            while (newKey == null || newKey.LineNumber == key.LineNumber)
-            {
-                _debugger.Step();
-                newKey = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(_debugger.CPU.PC), _debugger.CPU.PC, _debugger.CPU.PC >= 0x8000);
-                // we are safe to check this here, because we are stepping one at a time meaning if the stack did change, it can't have changed much
-                if (_oldSP != _debugger.CPU.SP)
-                {
-                    UpdateStack();
-                }
-            }
+	    {
+	        // need to clear the old breakpoint so lets save it
+	        ushort currentPC = _debugger.CPU.PC;
+	        byte oldPage = GetRelativePageNum(currentPC);
+	        DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
+	        DocumentLocation newKey = key;
+	        while (newKey == null || newKey.LineNumber == key.LineNumber)
+	        {
+	            _debugger.Step();
+	            newKey = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(_debugger.CPU.PC), _debugger.CPU.PC, _debugger.CPU.PC >= 0x8000);
+	            // we are safe to check this here, because we are stepping one at a time meaning if the stack did change, it can't have changed much
+	            if (_oldSP != _debugger.CPU.SP)
+	            {
+	                UpdateStack();
+	            }
+	        }
 
-            ushort address = _debugger.CPU.PC;
-            byte page = GetRelativePageNum(address);
-            key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
+	        ushort address = _debugger.CPU.PC;
+	        byte page = GetRelativePageNum(address);
+	        key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
 
-            if (OnDebuggerStep != null)
+	        if (OnDebuggerStep != null)
             {
                 OnDebuggerStep(this, new DebuggerStepEventArgs(key));
             }
@@ -707,17 +686,14 @@ namespace Revsoft.Wabbitcode.Services
             _delMemBreakpoint = _debugger.SetBreakpoint(location.IsRam, location.Page, location.Address);
         }
 
-	    private void RemoveInternalBreakpoints()
+	    private void WabbitcodeBreakpointManager_OnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
         {
-            if (_debugger == null)
-            {
-                return;
-            }
+            ClearBreakpoint(e.Breakpoint);
+        }
 
-            _debugger.ClearBreakpoint(_jforceBreakpoint);
-            _debugger.ClearBreakpoint(_ramClearBreakpoint);
-            _debugger.ClearBreakpoint(_insertMemBreakpoint);
-            _debugger.ClearBreakpoint(_delMemBreakpoint);
+        void WabbitcodeBreakpointManager_OnBreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e)
+        {
+            e.Cancel = SetBreakpoint(e.Breakpoint);
         }
 
         #endregion
@@ -830,18 +806,7 @@ namespace Revsoft.Wabbitcode.Services
 			_debugger.Running = true;
 		}
 
-	    private void ResetRom()
-        {
-            RemoveInternalBreakpoints();
-            _debugger.CPU.PC = 0x0000;
-            Thread.Sleep(1000);
-            _debugger.Keypad.PressKey(Calc_Key.KEY_ON);
-            Thread.Sleep(200);
-            _debugger.Keypad.ReleaseKey(Calc_Key.KEY_ON);
-            SetupInternalBreakpoints();
-        }
-
-        #endregion
+	    #endregion
 
         #region IDisposable
 
@@ -856,7 +821,10 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				if (disposing)
 				{
-					_debugger.Dispose();
+                    if (_debugger != null)
+                    {
+                        _debugger.Dispose();
+                    }
 				}
 			}
 			_disposed = true;

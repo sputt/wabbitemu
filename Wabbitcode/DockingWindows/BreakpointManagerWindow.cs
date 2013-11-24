@@ -13,8 +13,8 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class BreakpointManagerWindow : ToolWindow
 	{
+	    public const string WindowName = "Breakpoint Manager";
 		// TODO: this entire class looks nasty
-		private IWabbitcodeDebugger _debugger;
 		private readonly IDocumentService _documentService;
 		private readonly IProjectService _projectService;
 
@@ -22,22 +22,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		{
 			InitializeComponent();
 
-            WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
             _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
 		}
 
-		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
-		{
-			_debugger = e.Debugger;
-		}
-
 		private void UpdateManager()
 		{
-			if (_debugger == null)
-			{
-				return;
-			}
 			breakpointGridView.Rows.Clear();
 			var breakpoints = WabbitcodeBreakpointManager.Breakpoints.ToArray();
 			foreach (var breakpoint in breakpoints)

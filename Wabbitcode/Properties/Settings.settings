@@ -26,7 +26,7 @@
     <Setting Name="SendFileEmu" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="MainToolBar" Type="System.Boolean" Scope="User">
+    <Setting Name="MainToolbar" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="StatusBar" Type="System.Boolean" Scope="User">

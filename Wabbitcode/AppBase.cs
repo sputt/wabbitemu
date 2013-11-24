@@ -34,6 +34,8 @@ namespace Revsoft.Wabbitcode
                 { typeof(IFileReaderService), typeof(FileReaderService) },
                 { typeof(IStatusBarService), typeof(StatusBarService) },
                 { typeof(IToolBarService), typeof(ToolBarService) },
+                { typeof(IDebuggerService), typeof(DebuggerService) },
+                { typeof(IMenuService), typeof(MenuService) },
 			};
 
 			ServiceFactory.Instance = new ServiceFactory(dictionary);

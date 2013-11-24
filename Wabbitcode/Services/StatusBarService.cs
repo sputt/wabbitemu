@@ -48,6 +48,16 @@ namespace Revsoft.Wabbitcode.Services
         {
             _statusBar.SetCodeCountInfo(info);
         }
+
+        public void ShowStatusBar()
+        {
+            _statusBar.Show();
+        }
+
+        public void HideStatusBar()
+        {
+            _statusBar.Hide();
+        }
     }
 
     public interface IStatusBarService : IService
@@ -68,5 +78,8 @@ namespace Revsoft.Wabbitcode.Services
         /// </summary>
         /// <param name="info">Code count information containing min runtime, max runtime and size. If null the field will be hidden</param>
         void SetCodeCountInfo(CodeCountInfo info);
+
+        void ShowStatusBar();
+        void HideStatusBar();
     }
 }

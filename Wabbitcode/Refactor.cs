@@ -21,18 +21,12 @@ namespace Revsoft.Wabbitcode
 		private TextEditorControl[] _editors;
 		private bool _isPreviewed;
 
-		public RefactorForm(IDockingService dockingService, IProjectService projectService)
+		public RefactorForm(ITextEditor editor, IProjectService projectService)
 		{
 			_projectService = projectService;
 		    InitializeComponent();
-		    ITextEditor document = dockingService.ActiveDocument as ITextEditor;
-		    if (document == null)
-		    {
-		        Close();
-		        return;
-		    }
 
-			_word = document.GetWordAtCaret();
+			_word = editor.GetWordAtCaret();
 			Text = string.Format("Refactor '{0}'", _word);
 			nameBox.Text = _word;
 		}

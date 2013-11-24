@@ -122,12 +122,12 @@ namespace Revsoft.Wabbitcode.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool MainToolBar {
+        public bool MainToolbar {
             get {
-                return ((bool)(this["MainToolBar"]));
+                return ((bool)(this["MainToolbar"]));
             }
             set {
-                this["MainToolBar"] = value;
+                this["MainToolbar"] = value;
             }
         }
         

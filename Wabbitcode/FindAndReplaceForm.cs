@@ -26,6 +26,12 @@ namespace Revsoft.Wabbitcode
 
 	public partial class FindAndReplaceForm : Form
 	{
+	    private static FindAndReplaceForm _instance;
+	    public static FindAndReplaceForm Instance
+	    {
+	        get { return _instance ?? (_instance = new FindAndReplaceForm()); }
+	    }
+
         private const int FindTabIndex = 0;
         private const int ReplaceTabIndex = 1;
         private const int FindFilesTabIndex = 2;
@@ -33,6 +39,7 @@ namespace Revsoft.Wabbitcode
 		private bool _lastSearchLoopedAround;
 		private bool _lastSearchWasBackward;
 
+	    private readonly FindResultsWindow _results;
 		private TextEditorControl _editor;
 		private TextEditorSearcher _search;
 		private readonly IDockingService _dockingService;
@@ -43,6 +50,8 @@ namespace Revsoft.Wabbitcode
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+
+            _results = _dockingService.GetDockingWindow(FindResultsWindow.WindowName) as FindResultsWindow;
 
 			InitializeComponent();
 		}
@@ -153,12 +162,11 @@ namespace Revsoft.Wabbitcode
 
 	    private void FindInFiles(string textToFind, bool matchCase, bool matchWholeWord)
 	    {
-            FindResultsWindow results = _dockingService.FindResults;
             IProject project = _projectService.Project;
             if (!project.IsInternal)
             {
                 IEnumerable<ProjectFile> files = project.GetProjectFiles();
-                results.NewFindResults(findFindBox.Text, project.ProjectName);
+                _results.NewFindResults(findFindBox.Text, project.ProjectName);
                 foreach (ProjectFile file in files)
                 {
                     if (!File.Exists(file.FileFullPath))
@@ -171,8 +179,8 @@ namespace Revsoft.Wabbitcode
                 }
             }
 
-            results.DoneSearching();
-            _dockingService.ShowDockPanel(results);
+            _results.DoneSearching();
+            _dockingService.ShowDockPanel(_results);
 	    }
 
 		private void FindTextInFile(string fileName, string fileText, string textToFind, bool matchWholeWord, bool matchCase)
@@ -183,7 +191,7 @@ namespace Revsoft.Wabbitcode
 			foreach (Match match in matches)
 			{
 				int lineNumber = fileText.Substring(0, match.Index).Count(c => c == '\n');
-				_dockingService.FindResults.AddFindResult(fileName, lineNumber, match.Groups["line"].Value);
+				_results.AddFindResult(fileName, lineNumber, match.Groups["line"].Value);
 			}
 		}
 

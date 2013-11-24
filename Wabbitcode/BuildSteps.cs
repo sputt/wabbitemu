@@ -1,5 +1,7 @@
 ﻿using System.Linq;
 using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.IO;
@@ -14,10 +16,11 @@ namespace Revsoft.Wabbitcode
 		private bool _needsSave;
 		private readonly IProject _project;
 
-		public BuildSteps(IProject project)
+		public BuildSteps()
 		{
 			_currentIndex = 0;
-			_project = project;
+		    IProjectService projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+			_project = projectService.Project;
 
 			InitializeComponent();
 			

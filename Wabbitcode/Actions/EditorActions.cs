@@ -1,9 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
+using Revsoft.Wabbitcode.DockingWindows;
+using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using IFileReaderService = Revsoft.Wabbitcode.Services.Interfaces.IFileReaderService;
 
 namespace Revsoft.Wabbitcode.Actions
 {
@@ -17,6 +22,7 @@ namespace Revsoft.Wabbitcode.Actions
         private readonly IParserService _parserService;
         private readonly IProjectService _projectService;
         private readonly IFileReaderService _fileReaderService;
+        private readonly FindResultsWindow _findResults;
 
         public GotoLabelAction(string fileName, string text, int currentLine)
         {
@@ -28,6 +34,7 @@ namespace Revsoft.Wabbitcode.Actions
             _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
             _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowName) as FindResultsWindow;
         }
 
         public override void Execute()
@@ -62,15 +69,56 @@ namespace Revsoft.Wabbitcode.Actions
             }
             else
             {
-                _dockingService.FindResults.NewFindResults(_text, _projectService.Project.ProjectName);
+                _findResults.NewFindResults(_text, _projectService.Project.ProjectName);
                 foreach (IParserData data in parserData)
                 {
                     string line = _fileReaderService.GetLine(data.Parent.SourceFile, data.Location.Line + 1);
-                    _dockingService.FindResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, line);
+                    _findResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, line);
                 }
-                _dockingService.FindResults.DoneSearching();
-                _dockingService.ShowDockPanel(_dockingService.FindResults);
+                _findResults.DoneSearching();
+                _dockingService.ShowDockPanel(_findResults);
             }
+        }
+
+        public static void FromDialog()
+        {
+            GotoSymbol gotoSymbolBox = new GotoSymbol();
+            if (gotoSymbolBox.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            string symbolString = gotoSymbolBox.inputBox.Text;
+            new GotoLabelAction(string.Empty, symbolString, 0).Execute();
+        }
+    }
+
+    public class GotoLineAction : AbstractUiAction
+    {
+        private readonly IDockingService _dockingService;
+
+        public GotoLineAction()
+        {
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+        }
+
+        public override void Execute()
+        {
+            var editor = _dockingService.ActiveDocument as ITextEditor;
+            if (editor == null)
+            {
+                return;
+            }
+
+            GotoLine gotoBox = new GotoLine(editor.TotalLines);
+            DialogResult gotoResult = gotoBox.ShowDialog();
+            if (gotoResult != DialogResult.OK)
+            {
+                return;
+            }
+
+            int line = Convert.ToInt32(gotoBox.inputBox.Text);
+            editor.GotoLine(line);
         }
     }
 }

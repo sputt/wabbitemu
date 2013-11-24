@@ -1,4 +1,6 @@
 ﻿using System.Linq;
+using System.Windows.Forms;
+using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -9,9 +11,10 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly IClipboardOperation _activeContent;
 
-        public CutAction(IClipboardOperation activeContent)
+        public CutAction()
         {
-            _activeContent = activeContent;
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _activeContent = dockingService.ActiveContent as IClipboardOperation;
         }
 
         public override void Execute()
@@ -27,9 +30,10 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly IClipboardOperation _activeContent;
 
-        public CopyAction(IClipboardOperation activeContent)
+        public CopyAction()
         {
-            _activeContent = activeContent;
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _activeContent = dockingService.ActiveContent as IClipboardOperation;
         }
 
         public override void Execute()
@@ -45,9 +49,10 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly IClipboardOperation _activeContent;
 
-        public PasteAction(IClipboardOperation activeContent)
+        public PasteAction()
         {
-            _activeContent = activeContent;
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _activeContent = dockingService.ActiveContent as IClipboardOperation;
         }
 
         public override void Execute()
@@ -63,9 +68,10 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly ISelectable _activeContent;
 
-        public SelectAllAction(ISelectable activeContent)
+        public SelectAllAction()
         {
-            _activeContent = activeContent;
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _activeContent = dockingService.ActiveContent as ISelectable;
         }
 
         public override void Execute()
@@ -81,9 +87,10 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly IUndoable _activeContent;
 
-        public UndoAction(IUndoable activeContent)
+        public UndoAction()
         {
-            _activeContent = activeContent;
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _activeContent = dockingService.ActiveContent as IUndoable;
         }
 
         public override void Execute()
@@ -99,9 +106,10 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly IUndoable _activeContent;
 
-        public RedoAction(IUndoable activeContent)
+        public RedoAction()
         {
-            _activeContent = activeContent;
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _activeContent = dockingService.ActiveContent as IUndoable;
         }
 
         public override void Execute()
@@ -113,17 +121,83 @@ namespace Revsoft.Wabbitcode.Actions
         }
     }
 
-    public class FindAllReferencesCommand : AbstractUiAction
+    public class FindAction : AbstractUiAction
+    {
+        public override void Execute()
+        {
+            var dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.ShowFindForm(activeTextEditor.Parent as Form, SearchMode.Find);
+        }
+    }
+
+    public class FindInFilesAction : AbstractUiAction
+    {
+        public override void Execute()
+        {
+            var dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
+            if (activeTextEditor == null)
+            {
+                FindAndReplaceForm.Instance.ShowFor(null, null, SearchMode.FindInFiles);
+            }
+            else
+            {
+                activeTextEditor.ShowFindForm(activeTextEditor.Parent as Form, SearchMode.FindInFiles);
+            }
+        }
+    }
+
+    public class ReplaceAction : AbstractUiAction
+    {
+        public override void Execute()
+        {
+            var dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.ShowFindForm(activeTextEditor.Parent as Form, SearchMode.Replace);
+        }
+    }
+
+    public class ReplaceInFilesAction : AbstractUiAction
+    {
+        public override void Execute()
+        {
+            var dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
+            if (activeTextEditor == null)
+            {
+                FindAndReplaceForm.Instance.ShowFor(null, null, SearchMode.FindInFiles);
+            }
+            else
+            {
+                activeTextEditor.ShowFindForm(activeTextEditor.Parent as Form, SearchMode.FindInFiles);
+            }
+        }
+    }
+
+    public class FindAllReferencesAction : AbstractUiAction
     {
         private readonly ITextEditor _activeTextEditor;
         private readonly IDockingService _dockingService;
         private readonly IProjectService _projectService;
+        private readonly FindResultsWindow _findResults;
 
-        public FindAllReferencesCommand()
+        public FindAllReferencesAction()
         {
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             _activeTextEditor = _dockingService.ActiveDocument as ITextEditor;
+            _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowName) as FindResultsWindow;
         }
 
         public override void Execute()
@@ -139,15 +213,191 @@ namespace Revsoft.Wabbitcode.Actions
                 return;
             }
 
-            _dockingService.FindResults.NewFindResults(word, _projectService.Project.ProjectName);
+            _findResults.NewFindResults(word, _projectService.Project.ProjectName);
             var refs = _projectService.FindAllReferences(word);
             foreach (var fileRef in refs.SelectMany(reference => reference))
             {
-                _dockingService.FindResults.AddFindResult(fileRef);
+                _findResults.AddFindResult(fileRef);
             }
 
-            _dockingService.FindResults.DoneSearching();
-            _dockingService.ShowDockPanel(_dockingService.FindResults);
+            _findResults.DoneSearching();
+            _dockingService.ShowDockPanel(_findResults);
+        }
+    }
+
+    public class ToUpperAction : AbstractUiAction
+    {
+        public override void Execute()
+        {
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.SelectedTextToUpper();
+        }
+    }
+
+    public class ToLowerAction : AbstractUiAction
+    {
+        public override void Execute()
+        {
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.SelectedTextToLower();
+        }
+    }
+
+    public class InvertCaseAction : AbstractUiAction
+    {
+        public override void Execute()
+        {
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.SelectedTextInvertCase();
+        }
+    }
+
+    public class ToSentenceCaseAction : AbstractUiAction
+    {
+        public override void Execute()
+        {
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.SelectedTextToSentenceCase();
+        }
+    }
+
+    public class FormatDocumentAction : AbstractUiAction
+    {
+        private readonly IDockingService _dockingService;
+
+        public FormatDocumentAction()
+        {
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+        }
+
+        public override void Execute()
+        {
+            var activeTextEditor = _dockingService.ActiveDocument as ITextEditor;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.FormatLines();
+        }
+    }
+
+    public class ConvertSpacesToTabsAction : AbstractUiAction
+    {
+        private readonly IDockingService _dockingService;
+
+        public ConvertSpacesToTabsAction()
+        {
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+        }
+
+        public override void Execute()
+        {
+            var activeTextEditor = _dockingService.ActiveDocument as ITextEditor;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.ConvertSpacesToTabs();
+        }
+    }
+
+    public class ToggleBookmark : AbstractUiAction
+    {
+        private readonly IDockingService _dockingService;
+
+        public ToggleBookmark()
+        {
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+        }
+
+        public override void Execute()
+        {
+            var activeTextEditor = _dockingService.ActiveDocument as IBookmarkable;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.ToggleBookmark();
+        }
+    }
+
+    public class GotoNextBookmark : AbstractUiAction
+    {
+        private readonly IDockingService _dockingService;
+
+        public GotoNextBookmark()
+        {
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+        }
+
+        public override void Execute()
+        {
+            var activeTextEditor = _dockingService.ActiveDocument as IBookmarkable;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.GotoNextBookmark();
+        }
+    }
+
+    public class GotoPreviousBookmark : AbstractUiAction
+    {
+        private readonly IDockingService _dockingService;
+
+        public GotoPreviousBookmark()
+        {
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+        }
+
+        public override void Execute()
+        {
+            var activeTextEditor = _dockingService.ActiveDocument as IBookmarkable;
+            if (activeTextEditor == null)
+            {
+                return;
+            }
+
+            activeTextEditor.GotoPrevBookmark();
+        }
+    }
+
+    public class EditPreferencesAction : AbstractUiAction
+    {
+        public override void Execute()
+        {
+            using (Preferences prefs = new Preferences())
+            {
+                prefs.ShowDialog();
+            }
         }
     }
 }
