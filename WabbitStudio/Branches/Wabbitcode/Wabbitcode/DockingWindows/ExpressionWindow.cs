@@ -8,6 +8,8 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class ExpressionWindow : ToolWindow
 	{
+	    public const string WindowName = "Expression Window";
+
 	    private int _lineStartIndex;
 	    private string _currentLine;
 	    private readonly SpasmComAssembler _assembler;

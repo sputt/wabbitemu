@@ -91,10 +91,9 @@ namespace Revsoft.Wabbitcode.GUI
             FlatStyle = FlatStyle.Flat,
         };
 
-        private IDockingService _dockingService;
-        private IDocumentService _documentService;
-        private IFileReaderService _fileReaderService;
-        private IProjectService _projectService;
+        private readonly IDockingService _dockingService;
+        private readonly IFileReaderService _fileReaderService;
+        private readonly IProjectService _projectService;
 
         public MainToolBar()
         {
@@ -114,11 +113,15 @@ namespace Revsoft.Wabbitcode.GUI
             _toolStripSeparator2,
             _runToolButton,
             _configBox});
+            Dock = DockStyle.Left;
             RenderMode = ToolStripRenderMode.System;
             GripStyle = ToolStripGripStyle.Hidden;
             Text = "Main Toolbar";
 
-            ServiceFactory.Instance.OnServiceInitialized += Instance_OnServiceInitialized;
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
+            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+
             _newToolStripButton.Click += newToolButton_Click;
             _openToolStripButton.Click += openToolButton_Click;
             _saveToolStripButton.Click += saveToolButton_Click;
@@ -129,33 +132,13 @@ namespace Revsoft.Wabbitcode.GUI
             _runToolButton.Click += RunToolButton_Click;
             _configBox.SelectedIndexChanged += configBox_SelectedIndexChanged;
             _findBox.KeyPress += findBox_KeyPress;
+            _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+            _projectService.ProjectOpened += ProjectService_ProjectOpened;
         }
 
         private void configBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             _projectService.Project.BuildSystem.CurrentConfigIndex = _configBox.SelectedIndex;
-        }
-
-        private void Instance_OnServiceInitialized(object sender, ServiceInitializedEventArgs e)
-        {
-            if (e.ServiceType == typeof (IProjectService))
-            {
-                _projectService = (IProjectService) e.Service;
-                _projectService.ProjectOpened += _projectService_ProjectOpened;
-            }
-            else if (e.ServiceType == typeof (IDockingService))
-            {
-                _dockingService = (IDockingService) e.Service;
-                _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
-            }
-            else if (e.ServiceType == typeof (IDocumentService))
-            {
-                _documentService = (IDocumentService) e.Service;
-            }
-            else if (e.ServiceType == typeof (IFileReaderService))
-            {
-                _fileReaderService = (IFileReaderService) e.Service;
-            }
         }
 
         private void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
@@ -169,7 +152,7 @@ namespace Revsoft.Wabbitcode.GUI
             _findBox.Enabled = enabled;
         }
 
-        private void _projectService_ProjectOpened(object sender, EventArgs e)
+        private void ProjectService_ProjectOpened(object sender, EventArgs e)
         {
 			IProject project = _projectService.Project;
 			if (project.IsInternal)
@@ -185,9 +168,9 @@ namespace Revsoft.Wabbitcode.GUI
 			_configBox.SelectedIndex = _projectService.Project.BuildSystem.CurrentConfigIndex;
         }
 
-        private void newToolButton_Click(object sender, EventArgs e)
+        private static void newToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new CreateNewDocumentAction(_dockingService, _documentService));
+            RunCommand(new CreateNewDocumentAction());
         }
 
         private static void openToolButton_Click(object sender, EventArgs e)
@@ -197,7 +180,7 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void saveToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new SaveCommand(_dockingService.ActiveDocument as AbstractFileEditor));
+            RunCommand(new SaveCommand());
         }
 
         private static void saveAllToolButton_Click(object sender, EventArgs e)
@@ -207,22 +190,22 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void cutToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new CutAction(_dockingService.ActiveDocument as IClipboardOperation));
+            RunCommand(new CutAction());
         }
 
         private void copyToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new CopyAction(_dockingService.ActiveDocument as IClipboardOperation));
+            RunCommand(new CopyAction());
         }
 
         private void pasteToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new PasteAction(_dockingService.ActiveDocument as IClipboardOperation));
+            RunCommand(new PasteAction());
         }
 
-        private void RunToolButton_Click(object sender, EventArgs e)
+        private static void RunToolButton_Click(object sender, EventArgs e)
         {
-
+            RunCommand(new StartDebuggerAction());
         }
 
         private static void RunCommand(AbstractUiAction action)

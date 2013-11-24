@@ -15,6 +15,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class ErrorList : ToolWindow
 	{
+	    public const string WindowName = "Error List";
 		private int _errors;
 		private int _warnings;
 		private readonly IDocumentService _documentService;
@@ -45,12 +46,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		#endregion
 
-	    private void ParseOutput(IEnumerable<Errors> parsedErrors)
+	    private void ParseOutput(IEnumerable<BuildError> parsedErrors)
 		{
 			_errors = 0;
 			_warnings = 0;
 			errorGridView.Rows.Clear();
-			foreach (Errors error in parsedErrors)
+			foreach (BuildError error in parsedErrors)
 			{
 				if (error.IsWarning)
 				{
@@ -62,7 +63,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 				}
 			}
 
-			errorToolButton.Text = _errors + " Errors";
+			errorToolButton.Text = _errors + " BuildError";
 			warnToolButton.Text = _warnings + " Warnings";
 		}
 
@@ -152,17 +153,32 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private void Instance_AssemblerFileFinished(object sender, AssemblyFinishFileEventArgs e)
 		{
+            // TODO: when assembler service gets finalized this should change
 			if (!_projectService.Project.IsInternal)
 			{
 				return;
 			}
 
-			this.Invoke(() => ParseOutput(e.Output.ParsedErrors));
+			this.Invoke(() =>
+			{
+			    ParseOutput(e.Output.ParsedErrors);
+			    if (!e.AssemblySucceeded)
+			    {
+			        Show();
+			    }
+			});
 		}
 
 		private void Instance_AssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
 		{
-			this.Invoke(() => ParseOutput(e.Output.ParsedErrors));
+			this.Invoke(() =>
+			{
+			    ParseOutput(e.Output.ParsedErrors);
+                if (!e.AssemblySucceeded)
+                {
+                    Show();
+                }
+			});
 		}
 
 		private void warnToolButton_CheckedChanged(object sender, EventArgs e)

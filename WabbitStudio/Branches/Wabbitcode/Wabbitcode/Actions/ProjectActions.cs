@@ -1,27 +1,41 @@
 ﻿using System.Windows.Forms;
 using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Actions
 {
     public class CreateNewProjectAction : AbstractUiAction
     {
-        private readonly IDockingService _dockingService;
         private readonly IDocumentService _documentService;
         private readonly IProjectService _projectService;
 
-        public CreateNewProjectAction(IDockingService dockingService, IDocumentService documentService, IProjectService projectService)
+        public CreateNewProjectAction()
         {
-            _dockingService = dockingService;
-            _documentService = documentService;
-            _projectService = projectService;
+            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
+            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
         }
 
         public override void Execute()
         {
-            NewProjectDialog template = new NewProjectDialog(_dockingService, _documentService, _projectService);
+            NewProjectDialog template = new NewProjectDialog(_documentService, _projectService);
             template.ShowDialog();
+        }
+    }
+
+    public class SaveProjectAction : AbstractUiAction
+    {
+        private readonly IProjectService _projectService;
+
+        public SaveProjectAction()
+        {
+            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+        }
+
+        public override void Execute()
+        {
+            _projectService.SaveProject();
         }
     }
 
@@ -29,9 +43,9 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly IProjectService _projectService;
 
-        public CloseProjectAction(IProjectService projectService)
+        public CloseProjectAction()
         {
-            _projectService = projectService;
+            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
         }
 
         public override void Execute()

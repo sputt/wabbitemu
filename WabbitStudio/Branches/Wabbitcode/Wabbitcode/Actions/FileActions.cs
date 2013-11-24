@@ -13,10 +13,10 @@ namespace Revsoft.Wabbitcode.Actions
         private readonly IDocumentService _documentService;
         private readonly IDockingService _dockingService;
 
-        public CreateNewDocumentAction(IDockingService dockingService, IDocumentService documentService)
+        public CreateNewDocumentAction()
         {
-            _dockingService = dockingService;
-            _documentService = documentService;
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
         }
 
         public override void Execute()
@@ -152,9 +152,9 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly AbstractFileEditor _editor;
 
-        public SaveCommand(AbstractFileEditor editor)
+        public SaveCommand()
         {
-            _editor = editor;
+            _editor = ServiceFactory.Instance.GetServiceInstance<IDockingService>().ActiveDocument as AbstractFileEditor;
         }
 
         public override void Execute()
@@ -174,9 +174,9 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly AbstractFileEditor _editor;
 
-        public SaveAsCommand(AbstractFileEditor editor)
+        public SaveAsCommand()
         {
-            _editor = editor;
+            _editor = ServiceFactory.Instance.GetServiceInstance<IDockingService>().ActiveDocument as AbstractFileEditor;
         }
 
         public override void Execute()
@@ -226,9 +226,9 @@ namespace Revsoft.Wabbitcode.Actions
     {
         private readonly AbstractFileEditor _editor;
 
-        public CloseCommand(AbstractFileEditor editor)
+        public CloseCommand()
         {
-            _editor = editor;
+            _editor = ServiceFactory.Instance.GetServiceInstance<IDockingService>().ActiveDocument as AbstractFileEditor;
         }
 
         public override void Execute()

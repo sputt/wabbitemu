@@ -1,4 +1,5 @@
 ﻿using System;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -38,8 +39,14 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			// no-op
 		}
 
-	    public void EnablePanel(bool enabled)
+	    protected void EnablePanel(bool enabled)
 	    {
+	        if (InvokeRequired)
+	        {
+	            this.Invoke(() => EnablePanel(enabled));
+	            return;
+	        }
+
 	        Enabled = enabled;
 	    }
 

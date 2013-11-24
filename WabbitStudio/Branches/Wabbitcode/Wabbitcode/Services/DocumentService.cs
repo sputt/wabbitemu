@@ -13,7 +13,7 @@ using System.Linq;
 namespace Revsoft.Wabbitcode.Services
 {
 	[ServiceDependency(typeof (IDockingService))]
-	public class DocumentService : IDocumentService
+	internal class DocumentService : IDocumentService
 	{
 		private int _debugIndex;
 		private readonly List<DocumentLocation> _highlights = new List<DocumentLocation>();

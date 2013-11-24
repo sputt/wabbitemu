@@ -276,7 +276,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             }
         }
 
-	    public void CancelDebug()
+	    public void EndDebug()
 	    {
 		    if (_debugger == null)
 		    {

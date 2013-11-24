@@ -14,15 +14,12 @@ namespace Revsoft.Wabbitcode
 	public partial class NewProjectDialog
 	{
 		private bool _cancelQuit;
-		private readonly IDockingService _dockingService;
-		private readonly IDocumentService _documentService;
+	    private readonly IDocumentService _documentService;
 		private readonly IProjectService _projectService;
 
-		public NewProjectDialog(IDockingService dockingService, IDocumentService documentService,
-			IProjectService projectService)
+		public NewProjectDialog(IDocumentService documentService, IProjectService projectService)
 		{
-			_dockingService = dockingService;
-			_documentService = documentService;
+		    _documentService = documentService;
 			_projectService = projectService;
 
 			InitializeComponent();
@@ -217,7 +214,6 @@ namespace Revsoft.Wabbitcode
 			}
 
 			_projectService.CreateNewProject(projectFile, projectName);
-			_dockingService.ShowDockPanel(_dockingService.ProjectViewer);
 
 			var folder = _projectService.Project.MainFolder;
 			if (projFromDirBox.Checked)

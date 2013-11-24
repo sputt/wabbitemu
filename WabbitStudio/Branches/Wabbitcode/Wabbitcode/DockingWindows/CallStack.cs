@@ -13,6 +13,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class CallStack : ToolWindow
 	{
+        public const string WindowName = "Call Stack";
 		private IWabbitcodeDebugger _debugger;
 
         private readonly IDocumentService _documentService;
@@ -23,15 +24,24 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		{
 			InitializeComponent();
 
-            WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+		    IDebuggerService debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            debuggerService.OnDebuggingStarted += mainForm_OnDebuggingStarted;
             _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 		}
 
-		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
+	    void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
 		{
 			_debugger = e.Debugger;
-			_debugger.OnDebuggerStep += (o, args) => this.Invoke(UpdateStack);
-			_debugger.OnDebuggerRunningChanged += (o, args) => this.Invoke(UpdateStack);
+			_debugger.OnDebuggerStep += (o, args) =>
+			{
+			    this.Invoke(UpdateStack);
+                EnablePanel(true);
+			};
+			_debugger.OnDebuggerRunningChanged += (o, args) =>
+			{
+			    this.Invoke(UpdateStack);
+                EnablePanel(!args.Running);
+			};
 		}
 
 		private void UpdateStack()

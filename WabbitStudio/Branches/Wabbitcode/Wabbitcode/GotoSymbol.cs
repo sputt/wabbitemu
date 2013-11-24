@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 
@@ -13,11 +14,11 @@ namespace Revsoft.Wabbitcode
     {
 	    private readonly IParserService _parserService;
 
-        public GotoSymbol(IParserService parserService)
+        public GotoSymbol()
         {
-	        _parserService = parserService;
+	        _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
 	        InitializeComponent();
-	        IEnumerable<IParserData> parserData = parserService.GetAllParserData();
+	        IEnumerable<IParserData> parserData = _parserService.GetAllParserData();
 	        foreach (IParserData data in parserData)
 	        {
 		        inputBox.AutoCompleteCustomSource.Add(data.Name);

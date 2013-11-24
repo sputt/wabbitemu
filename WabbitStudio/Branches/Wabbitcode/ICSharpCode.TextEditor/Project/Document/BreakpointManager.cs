@@ -147,6 +147,11 @@ namespace Revsoft.TextEditor.Document
 		{
 			int thisLineOffset = document.GetOffsetForLineNumber(mark.LineNumber);
 			int nextLineOffset = document.GetOffsetForLineNumber(mark.LineNumber + 1);
+		    if (nextLineOffset == -1)
+		    {
+		        nextLineOffset = document.TextLength;
+		    }
+
 			document.MarkerStrategy.RemoveAll(b => b.Offset >= thisLineOffset && b.Offset < nextLineOffset  && b.Tag == "Breakpoint");
 
 			document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, mark.LineNumber));

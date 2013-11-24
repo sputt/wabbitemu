@@ -4,6 +4,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class MacroManager : ToolWindow
 	{
+	    public const string WindowName = "Macro Manager";
 		public MacroManager()
 		{
 			InitializeComponent();

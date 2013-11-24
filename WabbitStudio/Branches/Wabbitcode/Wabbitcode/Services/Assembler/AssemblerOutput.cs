@@ -10,7 +10,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 		{
 			OutputText = outputText;
 			Succeeded = succeeded;
-			ParsedErrors = new List<Errors>();
+			ParsedErrors = new List<BuildError>();
 			ParseOutput();
 		}
 
@@ -20,7 +20,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 			private set;
 		}
 
-		public List<Errors> ParsedErrors
+		public List<BuildError> ParsedErrors
 		{
 			get;
 			private set;
@@ -61,7 +61,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 						}
 
 						description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-						ParsedErrors.Add(new Errors(file, lineNumber, description, false));
+						ParsedErrors.Add(new BuildError(file, lineNumber, description, false));
 					}
 				}
 
@@ -82,7 +82,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 					file = line.Substring(0, firstColon);
 					lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
 					description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-					ParsedErrors.Add(new Errors(file, Convert.ToInt32(lineNum), description, true));
+					ParsedErrors.Add(new BuildError(file, Convert.ToInt32(lineNum), description, true));
 				}
 			}
 		}

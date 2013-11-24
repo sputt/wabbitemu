@@ -15,6 +15,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class TrackingWindow : ToolWindow
 	{
+	    public const string WindowName = "Tracking Window";
 	    private const int AddressIndex = 1;
 	    private const int NumBytesIndex = 2;
 	    private const int VarTypeIndex = 3;
@@ -50,14 +51,20 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		{
 			InitializeComponent();
 
-            WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+		    IDebuggerService debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
             _symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
 		}
 
-		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
+		void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
 		{
 			_debugger = e.Debugger;
-		    _debugger.OnDebuggerStep += (o, args) => UpdateAllRows();
+		    _debugger.OnDebuggerStep += (o, args) =>
+		    {
+		        UpdateAllRows();
+                EnablePanel(true);
+		    };
+		    _debugger.OnDebuggerRunningChanged += (o, args) => EnablePanel(!args.Running);
 		}
 
         #region Clipboard Operation

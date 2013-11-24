@@ -316,6 +316,11 @@ namespace Revsoft.TextEditor.Document
 
         public int GetOffsetForLineNumber(int lineNumber)
         {
+            if (lineNumber < 0 || lineNumber >= lineTrackingStrategy.TotalNumberOfLines)
+            {
+                return -1;
+            }
+
             var segment = lineTrackingStrategy.GetLineSegment(lineNumber);
             return segment.Offset;
         }

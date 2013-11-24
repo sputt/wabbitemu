@@ -16,25 +16,13 @@ namespace Revsoft.Wabbitcode.Services
 		#region Private Members
 
 		private DockPanel _dockPanel;
+        private readonly Dictionary<string, ToolWindow> _registeredDockingWindows = new Dictionary<string, ToolWindow>(); 
 
 		#endregion
 
 		#region Public Properties
-		public BreakpointManagerWindow BreakManagerWindow { get; private set; }
-		public CallStack CallStack { get; private set; }
-		public DebugPanel DebugPanel { get; private set; }
-		public ErrorList ErrorList { get; private set; }
-		public FindAndReplaceForm FindForm { get; private set; }
-		public FindResultsWindow FindResults { get; private set; }
-		public OutputWindow OutputWindow { get; private set; }
-		public ProjectViewer ProjectViewer { get; private set; }
-		public StackViewer StackViewer { get; private set; }
-		public TrackingWindow TrackWindow { get; private set; }
-		public LabelList LabelList { get; private set; }
-		public MacroManager MacroManager { get; private set; }
-        public ExpressionWindow ExpressionWindow { get; private set; }
 
-		public IDockContent ActiveContent
+	    public IDockContent ActiveContent
 		{
 			get
 			{
@@ -81,12 +69,13 @@ namespace Revsoft.Wabbitcode.Services
 		internal static DialogResult ShowMessageBox(Form parent, string text, string caption,
 						MessageBoxButtons messageBoxButtons, MessageBoxIcon messageBoxIcon)
 		{
-			if (parent.InvokeRequired)
-			{
-				Func<DialogResult> invokeBox = () => ShowMessageBox(parent, text, caption, messageBoxButtons, messageBoxIcon);
-				return (DialogResult)parent.Invoke(invokeBox);
-			}
-			return MessageBox.Show(parent, text, caption, messageBoxButtons, messageBoxIcon);
+		    if (parent == null || !parent.InvokeRequired)
+		    {
+		        return MessageBox.Show(parent, text, caption, messageBoxButtons, messageBoxIcon);
+		    }
+
+		    Func<DialogResult> invokeBox = () => ShowMessageBox(parent, text, caption, messageBoxButtons, messageBoxIcon);
+		    return (DialogResult)parent.Invoke(invokeBox);
 		}
 
 		#endregion
@@ -105,6 +94,23 @@ namespace Revsoft.Wabbitcode.Services
 
 		#endregion
 
+        public void RegisterDockingWindow(string name, ToolWindow dockingWindow)
+        {
+            if (_registeredDockingWindows.ContainsKey(name))
+            {
+                throw new ArgumentException("This docking window name is already registered");
+            }
+
+            _registeredDockingWindows.Add(name, dockingWindow);
+        }
+
+        public ToolWindow GetDockingWindow(string name)
+        {
+            ToolWindow window;
+            _registeredDockingWindows.TryGetValue(name, out window);
+            return window;
+        }
+
 		public void HideDockPanel(DockContent panel)
 		{
 			if (panel == null)
@@ -115,7 +121,23 @@ namespace Revsoft.Wabbitcode.Services
 			panel.Hide();
 		}
 
-		public void ShowDockPanel(DockContent panel)
+	    public void HideDockPanel(string panelName)
+	    {
+            if (string.IsNullOrEmpty(panelName))
+            {
+                return;
+            }
+
+            ToolWindow window;
+            _registeredDockingWindows.TryGetValue(panelName, out window);
+
+            if (window != null)
+            {
+                window.Hide();
+            }
+	    }
+
+	    public void ShowDockPanel(DockContent panel)
 		{
 			if (panel == null)
 			{
@@ -145,6 +167,56 @@ namespace Revsoft.Wabbitcode.Services
 	        panel.Show(beforeContent.DockHandler.Pane, alignment, .5);
 	    }
 
+        public void ShowDockPanel(string panelName)
+        {
+            if (string.IsNullOrEmpty(panelName))
+            {
+                return;
+            }
+
+            ToolWindow window;
+            _registeredDockingWindows.TryGetValue(panelName, out window);
+
+            if (window != null)
+            {
+                window.Show(_dockPanel);
+            }
+        }
+
+        public void ShowDockPanel(string panelName, string beforeContentName)
+        {
+            if (string.IsNullOrEmpty(panelName) || string.IsNullOrEmpty(beforeContentName))
+            {
+                return;
+            }
+
+            ToolWindow window, beforeContent;
+            _registeredDockingWindows.TryGetValue(panelName, out window);
+            _registeredDockingWindows.TryGetValue(beforeContentName, out beforeContent);
+
+            if (window != null && beforeContent != null)
+            {
+                window.Show(beforeContent.DockHandler.Pane, beforeContent);
+            }
+        }
+
+        public void ShowDockPanel(string panelName, string beforeContentName, DockAlignment alignment)
+        {
+            if (string.IsNullOrEmpty(panelName) || string.IsNullOrEmpty(beforeContentName))
+            {
+                return;
+            }
+
+            ToolWindow window, beforeContent;
+            _registeredDockingWindows.TryGetValue(panelName, out window);
+            _registeredDockingWindows.TryGetValue(beforeContentName, out beforeContent);
+
+            if (window != null && beforeContent != null)
+            {
+                window.Show(beforeContent.DockHandler.Pane, alignment, .5);
+            }
+        }
+
 		public void LoadConfig(DeserializeDockContent dockContent)
 		{
 			try
@@ -162,19 +234,19 @@ namespace Revsoft.Wabbitcode.Services
 
 	    public void InitPanels()
 	    {
-            ProjectViewer = new ProjectViewer();
-            ErrorList = new ErrorList();
-            TrackWindow = new TrackingWindow();
-            DebugPanel = new DebugPanel();
-            CallStack = new CallStack();
-            LabelList = new LabelList();
-            OutputWindow = new OutputWindow();
-            FindForm = new FindAndReplaceForm();
-            FindResults = new FindResultsWindow();
-            MacroManager = new MacroManager();
-            BreakManagerWindow = new BreakpointManagerWindow();
-            StackViewer = new StackViewer();
-            ExpressionWindow = new ExpressionWindow();
+            RegisterDockingWindow(ProjectViewer.WindowName, new ProjectViewer());
+            RegisterDockingWindow(ErrorList.WindowName, new ErrorList());
+            RegisterDockingWindow(TrackingWindow.WindowName, new TrackingWindow());
+            RegisterDockingWindow(DebugPanel.WindowName, new DebugPanel());
+            RegisterDockingWindow(CallStack.WindowName, new CallStack());
+            RegisterDockingWindow(LabelList.WindowName, new LabelList());
+            RegisterDockingWindow(OutputWindow.WindowName, new OutputWindow());
+            //RegisterDockingWindow(FindForm = new FindAndReplaceForm());
+            RegisterDockingWindow(FindResultsWindow.WindowName, new FindResultsWindow());
+            RegisterDockingWindow(MacroManager.WindowName, new MacroManager());
+            RegisterDockingWindow(BreakpointManagerWindow.WindowName, new BreakpointManagerWindow());
+            RegisterDockingWindow(StackViewer.WindowName, new StackViewer());
+            RegisterDockingWindow(ExpressionWindow.WindowName, new ExpressionWindow());
 	    }
 
 	    #region IService

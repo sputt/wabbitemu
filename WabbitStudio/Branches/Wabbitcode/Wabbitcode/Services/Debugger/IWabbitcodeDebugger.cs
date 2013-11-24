@@ -34,7 +34,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         }
     }
 
-    public delegate void DebuggerEventHandler(object sender, DebuggingEventArgs e);
     public delegate void DebuggerRunning(object sender, DebuggerRunningEventArgs e);
     public delegate void DebuggerStep(object sender, DebuggerStepEventArgs e);
 
@@ -49,9 +48,8 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         IZ80 CPU { get; }
         Image ScreenImage { get; }
         
-
-        void InitDebugger(string outputFile);
-        void CancelDebug();
+        void StartDebug();
+        void EndDebug();
 
         void GotoAddress(ushort address);
 
@@ -59,9 +57,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         void ClearBreakpoint(WabbitcodeBreakpoint newBreakpoint);
 
         void SetPCToSelect(string fileName, int lineNumber);
-
-        void StartDebug();
-        void RestartDebug();
 
         void Step();
         void StepOut();

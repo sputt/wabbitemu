@@ -592,11 +592,14 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Actions\AbstractUiAction.cs" />
+    <Compile Include="Actions\BuildActions.cs" />
     <Compile Include="Actions\DebuggerActions.cs" />
     <Compile Include="Actions\EditActions.cs" />
     <Compile Include="Actions\EditorActions.cs" />
     <Compile Include="Actions\FileActions.cs" />
+    <Compile Include="Actions\HelpActions.cs" />
     <Compile Include="Actions\ProjectActions.cs" />
+    <Compile Include="Actions\RefactorActions.cs" />
     <Compile Include="AppBase.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -632,7 +635,16 @@
     <Compile Include="EditorExtensions\EditorSelectionEventArgs.cs" />
     <Compile Include="EditorExtensions\EditorEventArgs.cs" />
     <Compile Include="EditorExtensions\RegionFoldingStrategy.cs" />
-    <Compile Include="GUI\EditorToolBar.cs" />
+    <Compile Include="GUI\DebugToolBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\EditorToolBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\MainMenuStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Interface\IBookmarkable.cs" />
     <Compile Include="Interface\IClipboardOperation.cs" />
     <Compile Include="Interface\ISelectable.cs" />
     <Compile Include="Interface\ITextEditor.cs" />
@@ -646,10 +658,12 @@
     <Compile Include="Services\Assembler\AssemblerFactory.cs" />
     <Compile Include="Services\Assembler\AssemblerHelper.cs" />
     <Compile Include="Services\Assembler\AssemblerOutput.cs" />
+    <Compile Include="Services\Assembler\BuildError.cs" />
     <Compile Include="Services\Assembler\CodeCountInfo.cs" />
     <Compile Include="Services\Assembler\SpasmComAssembler.cs" />
     <Compile Include="Services\Assembler\SpasmDllAssembler.cs" />
     <Compile Include="Services\BackgroundAssemblerService.cs" />
+    <Compile Include="Services\DebuggerService.cs" />
     <Compile Include="Services\Debugger\DebuggerBreakpointHitEventArgs.cs" />
     <Compile Include="Services\Debugger\DebuggerRunningEventArgs.cs" />
     <Compile Include="Services\Debugger\DebuggerEventArgs.cs" />
@@ -657,13 +671,16 @@
     <Compile Include="Services\FileReaderService.cs" />
     <Compile Include="Services\Interfaces\IAssemblerService.cs" />
     <Compile Include="Services\Interfaces\IBackgroundAssemblerService.cs" />
+    <Compile Include="Services\Interfaces\IDebuggerService.cs" />
     <Compile Include="Services\Interfaces\IDockingService.cs" />
     <Compile Include="Services\Interfaces\IDocumentService.cs" />
     <Compile Include="Services\Interfaces\IFileReaderService.cs" />
+    <Compile Include="Services\Interfaces\IMenuService.cs" />
     <Compile Include="Services\Interfaces\IParserService.cs" />
     <Compile Include="Services\Interfaces\IProjectService.cs" />
     <Compile Include="Services\Interfaces\ISymbolService.cs" />
     <Compile Include="Services\Interfaces\IToolBarService.cs" />
+    <Compile Include="Services\MenuService.cs" />
     <Compile Include="Services\ParserEventArgs.cs" />
     <Compile Include="Services\ParserProgressEventArgs.cs" />
     <Compile Include="Services\ParserService.cs" />
@@ -715,7 +732,6 @@
     <Compile Include="Services\ServiceFactory.cs" />
     <Compile Include="Services\SymbolService.cs" />
     <Compile Include="Services\WabbitcodeDebugger.cs" />
-    <Compile Include="Utils\Errors.cs" />
     <Compile Include="Utils\HighlightingUtils.cs" />
     <Compile Include="Services\Parser\Equate.cs" />
     <Compile Include="Services\Parser\Define.cs" />
@@ -899,6 +915,11 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DockingWindows\MacroManager.resx">
       <DependentUpon>MacroManager.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\DebugToolBar.resx">
+      <DependentUpon>DebugToolBar.cs</DependentUpon>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>DebugToolBar.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainToolBar.resx">
       <DependentUpon>MainToolBar.cs</DependentUpon>

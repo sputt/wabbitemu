@@ -13,6 +13,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class LabelList : ToolWindow
 	{
+	    public const string WindowName = "Label List";
 		#region Private Properties
 
 		private readonly IDocumentService _documentService;

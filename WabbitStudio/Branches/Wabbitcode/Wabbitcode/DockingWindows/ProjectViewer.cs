@@ -16,6 +16,8 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class ProjectViewer : ToolWindow
 	{
+	    public const string WindowName = "Project Viewer";
+
 		#region Private Members
 
 		private readonly IDocumentService _documentService;
@@ -60,7 +62,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			}
 		}
 
-		public void BuildProjTree()
+	    private void BuildProjTree()
 		{
 			projViewer.Nodes.Clear();
 			projViewer.TreeViewNodeSorter = new NodeSorter();
@@ -269,17 +271,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private void newFileContextItem_Click(object sender, EventArgs e)
 		{
-			RenameForm newNameForm = new RenameForm
-			{
-				Text = "New File"
-			};
-			if (newNameForm.ShowDialog() != DialogResult.OK)
-			{
-				return;
-			}
-
-			string name = newNameForm.NewText;
-			AddNewFile(name);
+			new AddNewFileAction(this).Execute();
 		}
 
 		private void newFolderContextItem_Click(object sender, EventArgs e)

@@ -1,9 +1,11 @@
 ﻿using System.Text.RegularExpressions;
 using System;
 using System.Drawing;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 
@@ -11,18 +13,34 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class OutputWindow : ToolWindow, ISelectable
 	{
-		private readonly IDocumentService _documentService;
+	    public const string WindowName = "Output";
+
+	    private readonly IDocumentService _documentService;
+	    
 		public OutputWindow()
 		{
-			InitializeComponent();
+		    InitializeComponent();
 
+		    IAssemblerService assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
             _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 
 			outputWindowBox.ContextMenu = contextMenu1;
             Settings.Default.SettingChanging += Default_SettingChanging;
+
+            assemblerService.AssemblerProjectFinished += AssemblerService_OnAssemblerProjectFinished;
 		}
 
-        void Default_SettingChanging(object sender, System.Configuration.SettingChangingEventArgs e)
+	    private void AssemblerService_OnAssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
+	    {
+	        this.Invoke(() =>
+	        {
+	            ClearOutput();
+	            AddText(e.Output.OutputText);
+	            HighlightOutput();
+	        });
+	    }
+
+	    private void Default_SettingChanging(object sender, System.Configuration.SettingChangingEventArgs e)
         {
             if (e.SettingName == "OutputFont")
             {
@@ -35,7 +53,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			outputWindowBox.Copy();
 		}
 
-		public void HighlightOutput()
+	    private void HighlightOutput()
 		{
 			int i = 0;
 			foreach (String line in outputWindowBox.Lines)
@@ -62,12 +80,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			}
 		}
 
-		internal void AddText(string outputText)
+	    private void AddText(string outputText)
 		{
 			outputWindowBox.Text += outputText;
 		}
 
-		internal void ClearOutput()
+	    private void ClearOutput()
 		{
 			outputWindowBox.Clear();
 		}

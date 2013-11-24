@@ -9,27 +9,21 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 	{
         event EventHandler OnActiveDocumentChanged;
 
-		BreakpointManagerWindow BreakManagerWindow { get; }
-		CallStack CallStack { get; }
-		DebugPanel DebugPanel { get; }
-		ErrorList ErrorList { get; }
-		FindAndReplaceForm FindForm { get; }
-		FindResultsWindow FindResults { get; }
-		OutputWindow OutputWindow { get; }
-		ProjectViewer ProjectViewer { get; }
-		StackViewer StackViewer { get; }
-		TrackingWindow TrackWindow { get; }
-		LabelList LabelList { get; }
-		MacroManager MacroManager { get; }
-        ExpressionWindow ExpressionWindow { get; }
+	    void RegisterDockingWindow(string name, ToolWindow dockingWindow);
+	    ToolWindow GetDockingWindow(string name);
+
 		IDockContent ActiveContent { get; }
 		IDockContent ActiveDocument { get; }
 		IEnumerable<IDockContent> Documents { get; }
 
-		void HideDockPanel(DockContent panel);
-		void ShowDockPanel(DockContent panel);
+        void HideDockPanel(DockContent panel);
+		void HideDockPanel(string panelName);
+        void ShowDockPanel(DockContent panel);
+        void ShowDockPanel(string panelName);
         void ShowDockPanel(DockContent panel, IDockContent beforeContent);
+        void ShowDockPanel(string panelName, string beforeContentName);
 	    void ShowDockPanel(DockContent panel, IDockContent beforeContent, DockAlignment alignment);
+        void ShowDockPanel(string panelName, string beforeContentName, DockAlignment alignment);
 		void LoadConfig(DeserializeDockContent handleDeserializeDockContent);
 	    void InitPanels();
 	}
