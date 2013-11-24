@@ -30,6 +30,11 @@ int g_nErrorSession = 0;
 
 static void PrintSPASMError(const LPERRORINSTANCE lpError)
 {
+	if (mode & MODE_CODE_COUNTER)
+	{
+		return;
+	}
+
 	assert(lpError != NULL);
 	if ((lpError->dwErrorCode != SPASM_ERR_SUCCESS) || (lpError->lpszErrorText != NULL))
 	{

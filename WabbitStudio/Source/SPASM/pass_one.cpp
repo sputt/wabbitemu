@@ -234,16 +234,16 @@ char *run_first_pass_line_sec (char *ptr) {
 		int value;
 		char value_str[256];
 
-		if (last_label == NULL)
-		{
-			SetLastSPASMError(SPASM_ERR_EQUATE_MISSING_LABEL);
-		}
 		ptr++;
 		read_expr (&ptr, value_str, "");
 
 		if (parse_num (value_str, &value) == true)
 		{
-			last_label->value = value;
+			if (last_label == NULL) {
+				SetLastSPASMError(SPASM_ERR_EQUATE_MISSING_LABEL);
+			} else {
+				last_label->value = value;
+			}
 		}
 		return ptr;
 

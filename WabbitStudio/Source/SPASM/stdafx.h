@@ -10,7 +10,8 @@
 
 #include "targetver.h"
 
-#define _ATL_APARTMENT_THREADED
+//#define _ATL_APARTMENT_THREADED
+#define _ATL_FREE_THREADED
 
 #define _ATL_NO_AUTOMATIC_NAMESPACE
 
@@ -60,7 +61,7 @@ using namespace ATL;
 #include <vector>
 #include <map>
 
-#include <vld.h>
+//#include <vld.h>
 
 #import <scrrun.dll> rename("FreeSpace", "FreeSpace2") no_namespace, raw_interfaces_only
 

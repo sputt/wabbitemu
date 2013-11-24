@@ -1,7 +1,7 @@
 #pragma once
 
 class ATL_NO_VTABLE CTextStream :
-	public CComObjectRootEx<CComSingleThreadModel>,
+	public CComObjectRootEx<CComObjectThreadModel>,
 	public IDispatchImpl<ITextStream, &__uuidof(ITextStream), &__uuidof(__Scripting), 1, 0>
 {
 public:

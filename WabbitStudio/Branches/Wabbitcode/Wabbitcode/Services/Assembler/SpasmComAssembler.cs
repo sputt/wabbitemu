@@ -1,14 +1,36 @@
-﻿namespace Revsoft.Wabbitcode.Services.Assembler
+﻿using System;
+using System.Threading;
+namespace Revsoft.Wabbitcode.Services.Assembler
 {
     class SpasmComAssembler : IAssembler
     {
         private static SPASM.Z80Assembler _spasm;
+        private static Thread _stdoutReader;
+        private static string _accumulatedOutput = "";
 
         public SpasmComAssembler()
         {
             if (_spasm == null)
             {
-                _spasm = new SPASM.Z80Assembler();
+                _stdoutReader = new Thread(readerThread);
+                _stdoutReader.SetApartmentState(ApartmentState.MTA);
+                _stdoutReader.Start();
+            }
+        }
+
+        [MTAThread]
+        private static void readerThread()
+        {
+            _spasm = new SPASM.Z80Assembler();
+            try
+            {
+                while (true)
+                {
+                    _accumulatedOutput += _spasm.StdOut.ReadAll();
+                }
+            }
+            catch (Exception e)
+            {
             }
         }
 
@@ -32,8 +54,9 @@
         {
             lock (_spasm)
             {
+                _accumulatedOutput = "";
                 _spasm.Assemble();
-                return _spasm.StdOut.ReadAll();
+                return _accumulatedOutput;
             }
         }
 
@@ -41,8 +64,9 @@
         {
             lock (_spasm)
             {
+                _accumulatedOutput = "";
                 _spasm.Assemble(code);
-                return _spasm.StdOut.ReadAll();
+                return _accumulatedOutput;
             }
         }
 
@@ -105,6 +129,9 @@
         public void Dispose()
         {
             _spasm = null;
+            _stdoutReader.Interrupt();
+            _stdoutReader.Join();
+            _stdoutReader = null;
         }
     }
 }

@@ -11,7 +11,7 @@
 #include "Module.h"
 
 class ATL_NO_VTABLE CZ80Assembler :
-	public CComObjectRootEx<CComSingleThreadModel>,
+	public CComObjectRootEx<CComObjectThreadModel>,
 	public CComCoClass<CZ80Assembler, &__uuidof(Z80Assembler)>,
 	public IDispatchImpl<IZ80Assembler, &__uuidof(IZ80Assembler), &LIBID_SPASM, 1, 2>
 {
