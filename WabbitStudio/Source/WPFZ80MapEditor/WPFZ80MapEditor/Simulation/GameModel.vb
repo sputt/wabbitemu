@@ -50,15 +50,6 @@ Public Class GameModel
         ScreenX = ScreenPos(0)
         ScreenY = ScreenPos(1)
 
-
-        Dim NowTime = DateTime.Now()
-
-        If LastFrameTime IsNot Nothing Then
-            Dim TimeDiff = NowTime - LastFrameTime
-            FrameTimeError += TimeDiff.TotalMilliseconds
-        End If
-        LastFrameTime = NowTime
-
     End Sub
 
 End Class

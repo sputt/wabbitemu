@@ -174,7 +174,7 @@ int run_assembly()
 
 	//if there's info to be dumped, do that
 	if (mode & MODE_CODE_COUNTER) {
-		fprintf (stderr, "Size: %u\nMin. execution time: %u\nMax. execution time: %u\n",
+		fprintf (stdout, "Size: %u\nMin. execution time: %u\nMax. execution time: %u\n",
 		         stats_codesize, stats_mintime, stats_maxtime);
 	}
 	

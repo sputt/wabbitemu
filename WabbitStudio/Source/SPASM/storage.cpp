@@ -533,6 +533,11 @@ label_t *add_label (char *name, int value) {
 	label_t *new_label;
 	define_t *conflict_define;
 
+	if (mode & MODE_CODE_COUNTER) {
+		free(name);
+		return NULL;
+	}
+
 	if (!case_sensitive) {
 		char *new_name = strup (name);
 		free (name);
