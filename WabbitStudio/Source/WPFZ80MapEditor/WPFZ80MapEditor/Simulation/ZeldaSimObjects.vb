@@ -11,7 +11,10 @@ End Structure
 Public Class ZDrawEntry
     Inherits ZBaseObject
 
-    'TODO: Add flags
+    Public Shared ReadOnly ImageSourceProperty As DependencyProperty =
+        DependencyProperty.Register("ImageSource", GetType(ImageSource), GetType(ZDrawEntry))
+
+    Public Flags As Byte
 
     Public Shared Function FromData(Data() As Byte) As ZDrawEntry
         Dim h = GCHandle.Alloc(Data, GCHandleType.Pinned)
@@ -25,6 +28,7 @@ Public Class ZDrawEntry
             DrawEntry.Z = .Z : DrawEntry.D = .D
         End With
         DrawEntry.Image = Obj.Image
+        DrawEntry.Flags = Obj.Flags
         Return DrawEntry
     End Function
 End Class

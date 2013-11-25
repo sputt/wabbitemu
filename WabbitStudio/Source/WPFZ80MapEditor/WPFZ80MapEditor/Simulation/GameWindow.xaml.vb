@@ -82,6 +82,8 @@ Public Class GameWindow
 
         Calc.Run()
         Calc.Visible = True
+
+        DataContext = Model
     End Sub
 
     Private Sub Calc_Breakpoint(Calc As Wabbitemu, Breakpoint As IBreakpoint)

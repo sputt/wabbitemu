@@ -1,8 +1,50 @@
 ﻿<Window x:Class="GameWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="GameWindow" Height="300" Width="300" Loaded="Window_Loaded">
-    <Grid>
-        
-    </Grid>
+    xmlns:local="clr-namespace:WPFZ80MapEditor"
+    Title="GameWindow" Height="353" Width="313" Loaded="Window_Loaded">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type local:ZDrawEntry}">
+            <Image>
+                <Image.Source>
+                    <Binding Path="ImageSource"/>
+                </Image.Source>
+            </Image>
+        </DataTemplate>
+    </Window.Resources>
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
+            <Label Content="Total entries:"/>
+            <Label Content="{Binding DrawEntries.Count}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Content="Screen X:"/>
+            <Label Content="{Binding ScreenX}"/>
+            <Label Content="{Binding ScreenY}"/>
+        </StackPanel>
+        <Canvas x:Name="CurrentMap" Width="256" Height="256">
+            <local:MapView DataContext="{Binding Map}" Canvas.Left="0" Canvas.Top="0" Width="256" Height="256"/>
+            <ItemsControl ItemsSource="{Binding Path=DrawEntries}" Canvas.Left="0" Canvas.Top="0" Width="256" Height="256" Panel.ZIndex="2">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas Width="256" Height="256"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Canvas.Left">
+                            <Setter.Value>
+                                <Binding Path="X"/>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Canvas.Top">
+                            <Setter.Value>
+                                <Binding Path="Y"/>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+            </ItemsControl>
+        </Canvas>
+    </StackPanel>
 </Window>
