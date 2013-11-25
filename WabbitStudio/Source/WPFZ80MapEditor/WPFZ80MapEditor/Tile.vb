@@ -3,6 +3,8 @@
 Public Class Tile
     Inherits Grid
 
+    Private _InEditor As Boolean
+
     Private Sub SetImageSource(NewIndex As Integer)
         If NewIndex <> -1 Then
             _Image.Source = Scenario.Instance.Tilesets.Values(Tileset)(NewIndex Mod 128)
@@ -57,17 +59,19 @@ Public Class Tile
             End If
         End Get
         Set(value As Color)
-            If _Overlay Is Nothing Then
-                _Overlay = New Rectangle
-                _Overlay.Stretch = Stretch.Fill
-                Canvas.SetZIndex(_Overlay, 1)
-                Children.Add(_Overlay)
-            End If
-            If value.A = 0 Then
-                _Overlay.Visibility = Windows.Visibility.Hidden
-            Else
-                _Overlay.Visibility = Windows.Visibility.Visible
-                _Overlay.Fill = New SolidColorBrush(value)
+            If _InEditor Then
+                If _Overlay Is Nothing Then
+                    _Overlay = New Rectangle
+                    _Overlay.Stretch = Stretch.Fill
+                    Canvas.SetZIndex(_Overlay, 1)
+                    Children.Add(_Overlay)
+                End If
+                If value.A = 0 Then
+                    _Overlay.Visibility = Windows.Visibility.Hidden
+                Else
+                    _Overlay.Visibility = Windows.Visibility.Visible
+                    _Overlay.Fill = New SolidColorBrush(value)
+                End If
             End If
         End Set
 
@@ -78,8 +82,10 @@ Public Class Tile
 
     Private Shared _BoolToVis As New BooleanToVisibilityConverter()
 
-    Public Sub New()
+    Public Sub New(Optional InEditor As Boolean = True)
         MyBase.New()
+
+        _InEditor = InEditor
 
         _Image = New Image
         '_Image.Width = 16
@@ -90,19 +96,21 @@ Public Class Tile
         Children.Add(_Image)
         Canvas.SetZIndex(_Image, 0)
 
-        Dim HotOverlay As New Rectangle
-        HotOverlay.Stretch = Stretch.Fill
-        HotOverlay.Fill = New SolidColorBrush(Color.FromArgb(40, 255, 255, 255))
-        Canvas.SetZIndex(HotOverlay, 99)
+        If InEditor Then
+            Dim HotOverlay As New Rectangle
+            HotOverlay.Stretch = Stretch.Fill
+            HotOverlay.Fill = New SolidColorBrush(Color.FromArgb(40, 255, 255, 255))
+            Canvas.SetZIndex(HotOverlay, 99)
 
-        HotOverlay.DataContext = Me
-        Dim b As New Binding()
-        b.Path = New PropertyPath(Tile.IsMouseOverProperty)
-        b.Converter = _BoolToVis
+            HotOverlay.DataContext = Me
+            Dim b As New Binding()
+            b.Path = New PropertyPath(Tile.IsMouseOverProperty)
+            b.Converter = _BoolToVis
 
-        HotOverlay.SetBinding(Rectangle.VisibilityProperty, b)
+            HotOverlay.SetBinding(Rectangle.VisibilityProperty, b)
 
-        Children.Add(HotOverlay)
+            Children.Add(HotOverlay) '
+        End If
         'Background = New SolidColorBrush(Colors.Black)
 
     End Sub

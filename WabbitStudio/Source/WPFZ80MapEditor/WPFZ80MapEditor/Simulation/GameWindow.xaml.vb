@@ -53,10 +53,11 @@ Public Class GameWindow
         Model = New GameModel(Asm, Calc)
 
         For Each Define As String In SPASMHelper.Assembler.Defines
-            If Define.ToUpper() Like "*_GFX" Then
+            Dim DefineKey As String = Define.ToUpper()
+            If DefineKey Like "*_GFX?" Or DefineKey Like "*_GFX" Then
                 Dim Address As UShort = Asm.Labels(Define.ToUpper()) And &HFFFF
                 If Not Model.ImageMap.ContainsKey(Address) Then
-                    Model.ImageMap.Add(Address, Scenario.Instance.Images(SPASMHelper.Assembler.Defines(Define)).Image)
+                    Model.ImageMap.Add(Address, SPASMHelper.Assembler.Defines(Define))
                 End If
             End If
         Next
@@ -82,6 +83,8 @@ Public Class GameWindow
 
         Calc.Run()
         Calc.Visible = True
+
+        RenderOptions.SetBitmapScalingMode(Me, BitmapScalingMode.NearestNeighbor)
 
         DataContext = Model
     End Sub

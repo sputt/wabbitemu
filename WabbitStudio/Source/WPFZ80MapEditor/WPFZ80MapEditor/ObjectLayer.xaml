@@ -82,6 +82,8 @@
                             <MultiBinding Converter="{StaticResource ZConverter}">
                                 <Binding Path="Y"/>
                                 <Binding Path="H"/>
+                                <Binding Path="Z"/>
+                                <Binding Path="D"/>
                             </MultiBinding>
                         </Setter.Value>
                     </Setter>

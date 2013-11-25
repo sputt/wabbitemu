@@ -34,7 +34,7 @@ Public Class MapView
         End If
     End Sub
 
-    Public Sub New()
+    Public Sub New(Optional InEditor As Boolean = True)
         MyBase.New()
 
         For x = 1 To LayerContainer.MapSize.Width
@@ -52,14 +52,15 @@ Public Class MapView
 
         For x = 0 To LayerContainer.MapSize.Width - 1
             For y = 0 To LayerContainer.MapSize.Height - 1
-                Dim Tile As New Tile
+                Dim Tile As New Tile(InEditor)
 
                 Dim Index As Integer = (y * LayerContainer.MapSize.Width + x)
                 Tile.SetBinding(Tile.IndexProperty, New Binding("TileData[" & Index & "]"))
                 Tile.SetBinding(Tile.TilesetProperty, New Binding("Tileset"))
 
-                AddHandler Tile.MouseDown, AddressOf HandleMouseUp
-
+                If InEditor Then
+                    AddHandler Tile.MouseDown, AddressOf HandleMouseUp
+                End If
                 Children.Add(Tile)
                 Grid.SetColumn(Tile, x)
                 Grid.SetRow(Tile, y)
@@ -67,7 +68,13 @@ Public Class MapView
         Next
         CacheMode = New BitmapCache()
 
-        Effect = New DropShadowEffect With {.Opacity = 0.4}
+        If InEditor Then
+            Effect = New DropShadowEffect With {.Opacity = 0.4}
+        End If
+    End Sub
+
+    Public Sub New()
+        Me.New(False)
     End Sub
 
     Public Sub DeselectAll() Implements IMapLayer.DeselectAll

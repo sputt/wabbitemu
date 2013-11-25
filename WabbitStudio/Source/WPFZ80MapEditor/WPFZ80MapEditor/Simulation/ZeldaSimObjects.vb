@@ -11,8 +11,8 @@ End Structure
 Public Class ZDrawEntry
     Inherits ZBaseObject
 
-    Public Shared ReadOnly ImageSourceProperty As DependencyProperty =
-        DependencyProperty.Register("ImageSource", GetType(ImageSource), GetType(ZDrawEntry))
+    'Public Shared ReadOnly ImageSourceProperty As DependencyProperty =
+    '    DependencyProperty.Register("ImageSource", GetType(ImageSource), GetType(ZDrawEntry))
 
     Public Flags As Byte
 

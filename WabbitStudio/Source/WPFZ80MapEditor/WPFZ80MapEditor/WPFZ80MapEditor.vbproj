@@ -127,7 +127,6 @@
     <Compile Include="Simulation\GameWindow.xaml.vb">
       <DependentUpon>GameWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Simulation\DrawEntry.vb" />
     <Compile Include="Simulation\GameModel.vb" />
     <Compile Include="MapCompressor.vb" />
     <Compile Include="MapContainer.vb" />

@@ -60,7 +60,7 @@ Public Class Scenario
         Grid.SetRow(ObjLayer, y)
         Panel.SetZIndex(ObjLayer, 2)
 
-        Dim MapView As New MapView
+        Dim MapView As New MapView(True)
         Container.Children.Add(MapView)
         Grid.SetColumn(MapView, x)
         Grid.SetRow(MapView, y)

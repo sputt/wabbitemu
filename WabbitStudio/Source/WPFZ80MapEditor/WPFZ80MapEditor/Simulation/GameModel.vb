@@ -6,6 +6,7 @@ Imports System.Threading
 
 Public Class GameModel
     Inherits DependencyObject
+    Implements IDisposable
 
     Public Shared ReadOnly ScreenXProperty As DependencyProperty =
         DependencyProperty.Register("ScreenX", GetType(Byte), GetType(GameModel))
@@ -42,7 +43,7 @@ Public Class GameModel
         End Set
     End Property
 
-    Public ImageMap As New Dictionary(Of UShort, ImageSource)
+    Public ImageMap As New Dictionary(Of UShort, Integer)
 
     Private DrawQueueAddr As UShort
     Private DrawEntrySize As Byte
@@ -64,7 +65,7 @@ Public Class GameModel
 
         Map = New MapData(0)
 
-        DrawEntries = New ObservableCollection(Of ZDrawEntry)()
+        DrawEntries = New ObservableCollection(Of ZDrawEntry)
         FrameProcessThread.Start()
     End Sub
 
@@ -72,17 +73,20 @@ Public Class GameModel
         While ProcessEvent.WaitOne()
             Me.Dispatcher.Invoke(
                 Sub()
-                    DrawEntries.Clear()
+                    Dim FrameDrawEntries As New ObservableCollection(Of ZDrawEntry)
                     While DrawEntryRawData.Any()
                         Dim Entry = ZDrawEntry.FromData(DrawEntryRawData.Take(DrawEntrySize).ToArray())
 
                         If ImageMap.ContainsKey(Entry.Image) Then
-                            Entry.SetValue(ZDrawEntry.ImageSourceProperty, ImageMap(Entry.Image))
+                            Entry.Image = ImageMap(Entry.Image)
+                        Else
+                            Entry.Image = 0
                         End If
-                        DrawEntries.Add(Entry)
+                        FrameDrawEntries.Add(Entry)
                         DrawEntryRawData = DrawEntryRawData.Skip(DrawEntrySize)
                     End While
 
+                    DrawEntries = FrameDrawEntries
                     SetValue(ScreenXProperty, ScreenX)
                     SetValue(ScreenYProperty, ScreenY)
 
@@ -110,5 +114,36 @@ Public Class GameModel
 
         ProcessEvent.Set()
     End Sub
+
+#Region "IDisposable Support"
+    Private disposedValue As Boolean ' To detect redundant calls
+
+    ' IDisposable
+    Protected Overridable Sub Dispose(disposing As Boolean)
+        If Not Me.disposedValue Then
+            If disposing Then
+                ' TODO: dispose managed state (managed objects).
+            End If
+
+            ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+            ' TODO: set large fields to null.
+        End If
+        Me.disposedValue = True
+    End Sub
+
+    ' TODO: override Finalize() only if Dispose(ByVal disposing As Boolean) above has code to free unmanaged resources.
+    'Protected Overrides Sub Finalize()
+    '    ' Do not change this code.  Put cleanup code in Dispose(ByVal disposing As Boolean) above.
+    '    Dispose(False)
+    '    MyBase.Finalize()
+    'End Sub
+
+    ' This code added by Visual Basic to correctly implement the disposable pattern.
+    Public Sub Dispose() Implements IDisposable.Dispose
+        ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+        Dispose(True)
+        GC.SuppressFinalize(Me)
+    End Sub
+#End Region
 
 End Class

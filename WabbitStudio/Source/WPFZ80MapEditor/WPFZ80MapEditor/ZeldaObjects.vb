@@ -1,5 +1,6 @@
 ﻿Imports System.Runtime.InteropServices
 Imports System.Collections.ObjectModel
+Imports System.ComponentModel
 
 <StructLayout(LayoutKind.Sequential, Pack:=1)>
 Structure AZPosition

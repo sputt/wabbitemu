@@ -127,8 +127,13 @@ Namespace ValueConverters
 
             Dim ObjY As Double = values(0)
             Dim ObjHeight As Double = values(1)
+            Dim ObjZ As Byte = values(2)
+            Dim ObjDepth As Byte = values(3)
 
             Dim Result = ObjY + (ObjHeight / 2)
+            If ObjZ = 0 And ObjDepth = 0 Then
+                Result = 0
+            End If
             Return CInt(Math.Min(255, Math.Max(0, Math.Floor(Result))))
         End Function
 
