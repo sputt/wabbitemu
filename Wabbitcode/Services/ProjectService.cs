@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -199,7 +201,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void InitService(params object[] objects)
 		{
-			
+            FileTypeMethodFactory.RegisterFileType(".wcodeproj", OpenProject);
 		}
 		#endregion
 	}

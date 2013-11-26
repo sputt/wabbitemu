@@ -10,6 +10,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Utils;
 
 
 namespace Revsoft.Wabbitcode.DockingWindows
@@ -338,7 +339,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			string filePath = file.FileFullPath;
 			if (File.Exists(filePath))
 			{
-				_documentService.GotoFile(filePath);
+			    FileTypeMethodFactory.OpenRegisteredFile(filePath);
 			}
 			else
 			{

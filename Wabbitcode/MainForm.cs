@@ -36,6 +36,7 @@ namespace Revsoft.Wabbitcode
 	    private IToolBarService _toolBarService;
 	    private IMenuService _menuService;
 	    private IDebuggerService _debuggerService;
+	    private IPluginService _pluginService;
 
 	    #endregion
 
@@ -56,6 +57,8 @@ namespace Revsoft.Wabbitcode
 
 		    _dockingService.InitPanels();
 			_dockingService.LoadConfig(GetContentFromPersistString);
+
+		    InitializePlugins();
 
 			if (args.Count == 0)
 			{
@@ -83,7 +86,7 @@ namespace Revsoft.Wabbitcode
 			HandleArgs(args);
 		}
 
-        // TODO: generalize this
+	    // TODO: generalize this
 	    private IDockContent GetContentFromPersistString(string persistString)
         {
             if (persistString == typeof(OutputWindow).ToString())
@@ -228,9 +231,10 @@ namespace Revsoft.Wabbitcode
             _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
             _debuggerService.OnDebuggingEnded += (sender, args) => EndDebug();
+            _projectService.ProjectOpened += ProjectService_OnProjectOpened;
         }
 
-        private void InitializeService()
+	    private void InitializeService()
         {
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>(dockPanel);
             _statusBarService = ServiceFactory.Instance.GetServiceInstance<IStatusBarService>(statusBar);
@@ -243,6 +247,7 @@ namespace Revsoft.Wabbitcode
             _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
             ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
             _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            _pluginService = ServiceFactory.Instance.GetServiceInstance<IPluginService>();
         }
 
         private void InitializeToolbars()
@@ -255,6 +260,11 @@ namespace Revsoft.Wabbitcode
 	    {
 	        _menuService.RegisterMenu(MainMenuName, new MainMenuStrip());
 	    }
+
+        private void InitializePlugins()
+        {
+            _pluginService.LoadPlugins();
+        }
 
         private void HandleArgs(ICollection<string> args)
         {
@@ -350,6 +360,22 @@ namespace Revsoft.Wabbitcode
                 {
                     Settings.Default.StartupProject = string.Empty;
                 }
+            }
+        }
+
+        private void ProjectService_OnProjectOpened(object sender, EventArgs eventArgs)
+        {
+            if (_projectService.Project.IsInternal || Settings.Default.StartupProject == _projectService.Project.ProjectFile)
+            {
+                return;
+            }
+
+            if (MessageBox.Show("Would you like to make this your default project?",
+                    "Startup Project",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                Settings.Default.StartupProject = _projectService.Project.ProjectFile;
             }
         }
 
@@ -477,6 +503,8 @@ namespace Revsoft.Wabbitcode
 			{
 				new CloseProjectAction().Execute();
 			}
+
+            _pluginService.UnloadPlugins();
 
 			try
 			{

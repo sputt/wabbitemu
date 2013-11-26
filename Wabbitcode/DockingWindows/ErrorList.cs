@@ -2,7 +2,6 @@
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
-using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -16,6 +15,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	public partial class ErrorList : ToolWindow
 	{
 	    public const string WindowName = "Error List";
+	    private const string FcreateFile = "Built-in fcreate";
 		private int _errors;
 		private int _warnings;
 		private readonly IDocumentService _documentService;
@@ -107,7 +107,10 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 			int line = (int)errorGridView.Rows[e.RowIndex].Cells[4].Value;
 			string file = errorGridView.Rows[e.RowIndex].Cells[3].Tag.ToString();
-			_documentService.GotoLine(file, line);
+		    if (file != FcreateFile)
+		    {
+		        _documentService.GotoLine(file, line);
+		    }
 		}
 
 		private void errorGridView_MouseClick(object sender, MouseEventArgs e)
@@ -117,6 +120,8 @@ namespace Revsoft.Wabbitcode.DockingWindows
 				return;
 			}
 
+            string file = errorGridView.SelectedRows[0].Cells[3].Tag.ToString();
+		    gotoMenuItem.Enabled = file != FcreateFile;
 			contextMenu1.Show(errorGridView, new Point(e.X, e.Y));
 		}
 
@@ -136,11 +141,13 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
 			string error = errorGridView.Rows[row].Cells[2].Value.ToString();
 			_documentService.GotoLine(file, line);
-			if (error.Contains("Relative jump"))
-			{
-				_documentService.ActiveDocument.FixError(line, DocumentService.FixableErrorType.RelativeJump);
-				errorGridView.Rows.RemoveAt(row);
-			}
+	        if (!error.Contains("Relative jump"))
+	        {
+	            return;
+	        }
+
+	        _documentService.ActiveDocument.FixError(line, DocumentService.FixableErrorType.RelativeJump);
+	        errorGridView.Rows.RemoveAt(row);
 		}
 
 		private void gotoMenuItem_Click(object sender, EventArgs e)

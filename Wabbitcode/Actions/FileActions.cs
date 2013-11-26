@@ -1,10 +1,10 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Actions
 {
@@ -60,30 +60,9 @@ namespace Revsoft.Wabbitcode.Actions
 
             try
             {
-                // TODO: generalize this for all file types
                 foreach (var fileName in openFileDialog.FileNames)
                 {
-                    string extCheck = Path.GetExtension(fileName);
-                    if (string.Equals(extCheck, ".wcodeproj", StringComparison.OrdinalIgnoreCase))
-                    {
-                        _projectService.OpenProject(fileName);
-                        if (Settings.Default.StartupProject == fileName)
-                        {
-                            continue;
-                        }
-
-                        if (MessageBox.Show("Would you like to make this your default project?",
-                                "Startup Project",
-                                MessageBoxButtons.YesNo,
-                                MessageBoxIcon.Question) == DialogResult.Yes)
-                        {
-                            Settings.Default.StartupProject = fileName;
-                        }
-                    }
-                    else
-                    {
-                        _documentService.OpenDocument(fileName);
-                    }
+                    FileTypeMethodFactory.OpenRegisteredFile(fileName);
                 }
             }
             catch (Exception ex)
