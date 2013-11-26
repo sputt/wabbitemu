@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualBasic.ApplicationServices;
 using System;
 using Revsoft.Wabbitcode.Extensions;
@@ -36,6 +37,7 @@ namespace Revsoft.Wabbitcode
                 { typeof(IToolBarService), typeof(ToolBarService) },
                 { typeof(IDebuggerService), typeof(DebuggerService) },
                 { typeof(IMenuService), typeof(MenuService) },
+                { typeof(IPluginService), typeof(PluginService) },
 			};
 
 			ServiceFactory.Instance = new ServiceFactory(dictionary);
@@ -62,8 +64,7 @@ namespace Revsoft.Wabbitcode
 		private void SIApp_StartupNextInstance(object sender, StartupNextInstanceEventArgs eventArgs)
 		{
 			// Copy the arguments to a string array
-			string[] args = new string[eventArgs.CommandLine.Count];
-			eventArgs.CommandLine.CopyTo(args, 0);
+		    string[] args = eventArgs.CommandLine.ToArray();
 
 			MainForm form = MainForm as MainForm;
 			if (form == null)

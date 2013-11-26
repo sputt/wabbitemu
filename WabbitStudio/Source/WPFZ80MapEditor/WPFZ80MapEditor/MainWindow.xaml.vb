@@ -2,6 +2,7 @@
 Imports System.Linq
 Imports System.ComponentModel
 Imports System.Collections.ObjectModel
+Imports WPFZ80MapEditor.ValueConverters
 
 Public Class MainWindow
 
@@ -13,11 +14,11 @@ Public Class MainWindow
         InitializeComponent()
     End Sub
 
-    Private Sub Window_Loaded(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles MyBase.Loaded
-        Scenario.Instance.Tilesets.Add("dungeon", New Tileset("C:\users\spencer\desktop\zelda\images\dungeon.bmp"))
+    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs) Handles MyBase.Loaded
+        Scenario.Instance.Tilesets.Add("dungeon", New Tileset("C:\Users\Chris\Documents\Wabbitcode\Projects\Zelda\images\dungeon.bmp"))
         TileSelectorPanel.Initialize(0)
 
-        Scenario.Instance.LoadScenario("C:\users\spencer\desktop\zelda\hill.asm")
+        Scenario.Instance.LoadScenario("C:\Users\Chris\Documents\Wabbitcode\Projects\Zelda\hill.zmap")
 
 
         'Dim MapData As New MapData(New Tileset("dungeon.bmp"))
@@ -35,7 +36,7 @@ Public Class MainWindow
         'ObjLayer.SetBinding(ObjectLayer.ItemsSourceProperty, New Binding("ZObjects"))
     End Sub
 
-    Private Sub Background_MouseWheel(sender As System.Object, e As System.Windows.Input.MouseWheelEventArgs) Handles Background.MouseWheel
+    Private Sub Background_MouseWheel(sender As Object, e As MouseWheelEventArgs) Handles Background.MouseWheel
         Dim DefaultZoomFactor = 1.4
         Dim zoomFactor = DefaultZoomFactor
 
@@ -49,7 +50,7 @@ Public Class MainWindow
         If e.Delta <= 0 Then zoomFactor = 1.0 / DefaultZoomFactor
         Dim currentZoom = st.ScaleX
 
-        Dim conv = New ValueConverters.DoubleToZoomLevelConverter
+        Dim conv = New DoubleToZoomLevelConverter
         CurrentZoomLevelItem.Content = conv.Convert(currentZoom, GetType(String), Nothing, Nothing)
         ZoomLevelCombo.SelectedIndex = 0
 
@@ -73,7 +74,7 @@ Public Class MainWindow
     Private StartPoint As Point
     Private Origin As Point
 
-    Private Sub Background_MouseDown(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs) Handles Background.MouseRightButtonDown
+    Private Sub Background_MouseDown(sender As Object, e As MouseButtonEventArgs) Handles Background.MouseRightButtonDown
         Dim tt As TranslateTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is TranslateTransform)
 
         StartPoint = e.GetPosition(Background)
@@ -81,11 +82,11 @@ Public Class MainWindow
         Background.CaptureMouse()
     End Sub
 
-    Private Sub Background_MouseUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs) Handles Background.MouseRightButtonUp
+    Private Sub Background_MouseUp(sender As Object, e As MouseButtonEventArgs) Handles Background.MouseRightButtonUp
         Background.ReleaseMouseCapture()
     End Sub
 
-    Private Sub Background_Click(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs) Handles Background.MouseLeftButtonUp
+    Private Sub Background_Click(sender As Object, e As MouseButtonEventArgs) Handles Background.MouseLeftButtonUp
         Scenario.Instance.ActiveLayer.DeselectAll()
     End Sub
 
@@ -94,7 +95,7 @@ Public Class MainWindow
 
         If clock.CurrentState <> ClockState.Active Then
             Dim st As ScaleTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is ScaleTransform)
-            Dim conv = New ValueConverters.DoubleToZoomLevelConverter
+            Dim conv = New DoubleToZoomLevelConverter
             CurrentZoomLevelItem.Content = conv.Convert(st.ScaleX, GetType(String), Nothing, Nothing)
         End If
     End Sub
@@ -109,7 +110,7 @@ Public Class MainWindow
         Return da
     End Function
 
-    Private Sub Background_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs) Handles Background.MouseMove
+    Private Sub Background_MouseMove(sender As Object, e As MouseEventArgs) Handles Background.MouseMove
         If Background.IsMouseCaptured Then
             Dim tt As TranslateTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is TranslateTransform)
 
@@ -128,7 +129,7 @@ Public Class MainWindow
         End If
     End Sub
 
-    Private Sub ZoomLevelCombo_SelectionChanged(sender As System.Object, e As System.Windows.Controls.SelectionChangedEventArgs) Handles ZoomLevelCombo.SelectionChanged
+    Private Sub ZoomLevelCombo_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles ZoomLevelCombo.SelectionChanged
         Dim combo As ComboBox = sender
 
         Dim newzoom As Double
@@ -158,17 +159,17 @@ Public Class MainWindow
         End Try
     End Sub
 
-    Private Sub ZoomLevelCombo_DropDownClosed(sender As System.Object, e As System.EventArgs) Handles ZoomLevelCombo.DropDownClosed
-        CurrentZoomLevelItem.ClearValue(ComboBoxItem.HeightProperty)
+    Private Sub ZoomLevelCombo_DropDownClosed(sender As Object, e As EventArgs) Handles ZoomLevelCombo.DropDownClosed
+        CurrentZoomLevelItem.ClearValue(HeightProperty)
     End Sub
 
-    Private Sub ZoomLevelCombo_DropDownOpened(sender As System.Object, e As System.EventArgs) Handles ZoomLevelCombo.DropDownOpened
+    Private Sub ZoomLevelCombo_DropDownOpened(sender As Object, e As EventArgs) Handles ZoomLevelCombo.DropDownOpened
         CurrentZoomLevelItem.Height = 0
     End Sub
 
-    Private Sub LayerRadioButton_Checked(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles RadioMapSet.Checked, RadioMapView.Checked, RadioObjectLayer.Checked
+    Private Sub LayerRadioButton_Checked(sender As Object, e As RoutedEventArgs) Handles RadioMapSet.Checked, RadioMapView.Checked, RadioObjectLayer.Checked
         If Not LayerContainer Is Nothing Then
-            Dim ActivateLayer = Sub(t As System.Type, rb As RadioButton)
+            Dim ActivateLayer = Sub(t As Type, rb As RadioButton)
                                     Dim AllLayers = (From s As MapContainer In LayerContainer.Children
                                                       From m In s.Children
                                                       Where m.GetType() = t
@@ -190,7 +191,7 @@ Public Class MainWindow
         End If
     End Sub
 
-    Private Sub MapsetNew_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles MapsetNew.Click
+    Private Sub MapsetNew_Click(sender As Object, e As RoutedEventArgs) Handles MapsetNew.Click
         Dim x = Grid.GetColumn(MapSet.CurrentlySelected)
         Dim y = Grid.GetRow(MapSet.CurrentlySelected)
 
@@ -200,15 +201,15 @@ Public Class MainWindow
 
     End Sub
 
-    Private Sub MenuItem1_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles MenuItem1.Click
+    Private Sub MenuItem1_Click(sender As Object, e As RoutedEventArgs) Handles MenuItem1.Click
         Scenario.Instance.SaveScenario()
     End Sub
 
-    Private Sub Button1_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles Button1.Click
+    Private Sub Button1_Click(sender As Object, e As RoutedEventArgs) Handles Button1.Click
         Scenario.Instance.SaveScenario()
     End Sub
 
-    Private Sub AddColumnLeft_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles AddColumnLeft.Click
+    Private Sub AddColumnLeft_Click(sender As Object, e As RoutedEventArgs) Handles AddColumnLeft.Click
         LayerContainer.AddLeftColumn()
         For Each Child In LayerContainer.Children
             Grid.SetColumn(Child, Grid.GetColumn(Child) + 1)
@@ -218,7 +219,7 @@ Public Class MainWindow
         Next
     End Sub
 
-    Private Sub DeleteMapColumn_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles DeleteMapColumn.Click
+    Private Sub DeleteMapColumn_Click(sender As Object, e As RoutedEventArgs) Handles DeleteMapColumn.Click
         Dim CurCol = Grid.GetColumn(MapSet.CurrentlySelected)
 
         Dim LayersInColumn = (From m In LayerContainer.Children Where Grid.GetColumn(m) = CurCol).ToList()
@@ -230,14 +231,14 @@ Public Class MainWindow
         Next
     End Sub
 
-    Private Sub AddColumnRight_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles AddColumnRight.Click
+    Private Sub AddColumnRight_Click(sender As Object, e As RoutedEventArgs) Handles AddColumnRight.Click
         LayerContainer.AddRightColumn()
         For i = 0 To LayerContainer.RowDefinitions.Count - 1
             Scenario.Instance.AddMap(LayerContainer.ColumnDefinitions.Count - 1, i, Nothing)
         Next
     End Sub
 
-    Private Sub AddRowTop_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles AddRowTop.Click
+    Private Sub AddRowTop_Click(sender As Object, e As RoutedEventArgs) Handles AddRowTop.Click
         LayerContainer.AddTopRow()
         For Each Child In LayerContainer.Children
             Grid.SetRow(Child, Grid.GetRow(Child) + 1)
@@ -247,14 +248,14 @@ Public Class MainWindow
         Next
     End Sub
 
-    Private Sub AddRowBottom_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles AddRowBottom.Click
+    Private Sub AddRowBottom_Click(sender As Object, e As RoutedEventArgs) Handles AddRowBottom.Click
         LayerContainer.AddBottomRow()
         For i = 0 To LayerContainer.ColumnDefinitions.Count - 1
             Scenario.Instance.AddMap(i, LayerContainer.RowDefinitions.Count - 1, Nothing)
         Next
     End Sub
 
-    Private Sub DeleteMapRow_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles DeleteMapRow.Click
+    Private Sub DeleteMapRow_Click(sender As Object, e As RoutedEventArgs) Handles DeleteMapRow.Click
         Dim CurRow = Grid.GetRow(MapSet.CurrentlySelected)
 
         Dim LayersInRow = (From m In LayerContainer.Children Where Grid.GetRow(m) = CurRow).ToList()

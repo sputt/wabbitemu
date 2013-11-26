@@ -26,10 +26,10 @@ Public Class GameWindow
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
-        Asm.CurrentDirectory = "C:\users\spencer\desktop\zelda"
+        Asm.CurrentDirectory = "C:\Users\Chris\Documents\Wabbitcode\Projects\Zelda"
 
         Asm.InputFile = "zelda_all.asm"
-        Asm.OutputFile = "C:\users\spencer\desktop\zelda\zelda.8xk"
+        Asm.OutputFile = "C:\Users\Chris\Documents\Wabbitcode\Projects\Zelda\zelda.8xk"
 
         Asm.IncludeDirectories.Add("defaults")
         Asm.IncludeDirectories.Add("images")
@@ -39,7 +39,7 @@ Public Class GameWindow
         Asm.Assemble()
         Debug.Write(Asm.StdOut.ReadAll())
 
-        Calc.LoadFile("C:\Users\Spencer\Documents\test.sav")
+        Calc.LoadFile("C:\Users\Chris\Documents\Asm\Roms\ti84pse.rom")
         Calc.LoadFile(Asm.OutputFile)
 
         Calc.Run()

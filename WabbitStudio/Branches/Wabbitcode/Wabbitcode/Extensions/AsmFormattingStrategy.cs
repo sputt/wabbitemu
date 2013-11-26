@@ -7,7 +7,7 @@ namespace Revsoft.Wabbitcode.Extensions
         public override void FormatLine(TextEditor.TextArea textArea, int line, int cursorOffset, char ch)
         {
             base.FormatLine(textArea, line, cursorOffset, ch);
-	        if (ch != '#' && ch != '.')
+	        if (ch != '#')
 	        {
 		        return;
 	        }

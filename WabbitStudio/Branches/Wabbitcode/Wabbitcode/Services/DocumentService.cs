@@ -13,6 +13,7 @@ using System.Linq;
 namespace Revsoft.Wabbitcode.Services
 {
 	[ServiceDependency(typeof (IDockingService))]
+    [Obsolete]
 	internal class DocumentService : IDocumentService
 	{
 		private int _debugIndex;
@@ -21,7 +22,7 @@ namespace Revsoft.Wabbitcode.Services
 		private readonly IDockingService _dockingService;
 
 		/// <summary>
-		/// Each string is the path to a recently opened file. Is also stored in properties as a big long string.
+		/// Each string is the path to a recently opened file.
 		/// </summary>
 		private readonly string[] _recentFileList = new string[10];
 
@@ -194,6 +195,10 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void InitService(params object[] objects)
 		{
+            FileTypeMethodFactory.RegisterFileType(".asm", path => OpenDocument(path) != null);
+            FileTypeMethodFactory.RegisterFileType(".z80", path => OpenDocument(path) != null);
+            FileTypeMethodFactory.RegisterFileType(".inc", path => OpenDocument(path) != null);
+            FileTypeMethodFactory.RegisterDefaultHandler(path => OpenDocument(path) != null);
 		}
 
 		public void DestroyService()
