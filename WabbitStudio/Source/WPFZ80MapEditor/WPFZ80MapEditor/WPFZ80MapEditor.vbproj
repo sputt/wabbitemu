@@ -124,6 +124,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DragAdorner.vb" />
+    <Compile Include="ScenarioMiscDefs.vb" />
     <Compile Include="Simulation\GameWindow.xaml.vb">
       <DependentUpon>GameWindow.xaml</DependentUpon>
     </Compile>

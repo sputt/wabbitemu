@@ -4,11 +4,11 @@
     Public Shared MapDataProperty As DependencyProperty =
         DependencyProperty.Register("MapData", GetType(MapData), GetType(MapContainer))
 
-    Public Property MapData
+    Public Property MapData As MapData
         Get
             Return GetValue(MapDataProperty)
         End Get
-        Set(value)
+        Set(value As MapData)
             SetValue(MapDataProperty, value)
         End Set
     End Property

@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:WPFZ80MapEditor"
     xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
-    Title="GameWindow" Height="600" Width="524" Loaded="Window_Loaded">
+    Title="GameWindow" Height="600" Width="524" Loaded="Window_Loaded" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
     <Window.Resources>
         <localconverters:ImageIndexConverter x:Key="convertImageIndex"/>
         <localconverters:YConverter x:Key="YConverter"/>

@@ -132,7 +132,7 @@
                     <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
                     <Label Content=":" Height="28" Padding="0,5,5,5" />
                 </StackPanel>
-                <TextBox Text="{Binding Path=Value}" Margin="10,0,0,0" Height="23" Tag="ObjProp"/>
+                <TextBox Text="{Binding Path=Value}" Margin="10,0,0,0" Height="23" Width="40" Tag="ObjProp"/>
             </StackPanel>
         </DataTemplate>
     </Window.Resources>

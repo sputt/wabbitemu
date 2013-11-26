@@ -94,4 +94,18 @@ Public Class GameWindow
         Calc.Step()
         Calc.Run()
     End Sub
+
+    Private Sub Window_KeyDown(sender As Object, e As KeyEventArgs)
+        If e.Key = Key.LeftAlt Then
+            Exit Sub
+        End If
+        Calc.Keypad.PressVirtKey(KeyInterop.VirtualKeyFromKey(e.Key))
+    End Sub
+
+    Private Sub Window_KeyUp(sender As Object, e As KeyEventArgs)
+        If e.Key = Key.LeftAlt Then
+            Exit Sub
+        End If
+        Calc.Keypad.ReleaseVirtKey(KeyInterop.VirtualKeyFromKey(e.Key))
+    End Sub
 End Class

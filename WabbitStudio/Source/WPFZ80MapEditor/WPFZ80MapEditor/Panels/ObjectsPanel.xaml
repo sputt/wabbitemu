@@ -52,19 +52,35 @@
         </DataTemplate>
     </UserControl.Resources>
     <Grid >
-        
-        <ScrollViewer Margin="0,0,0,0" VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical">
-            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=ObjectDefs}" Name="ObjProperties" IsTabStop="False" Padding="0,0,0,0" 
+        <TabControl>
+            <TabItem Header="Objects" Name="TilesTab">
+                <ScrollViewer Margin="0,0,0,0" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Orientation="Vertical">
+                        <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=ObjectDefs}" Name="ObjProperties" IsTabStop="False" Padding="0,0,0,0" 
                           Background="#FFF9F9F9">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical" Margin="0"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
-            </StackPanel>
-        </ScrollViewer>
-        
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Vertical" Margin="0"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Misc">
+                <ScrollViewer Margin="0,0,0,0" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Orientation="Vertical">
+                        <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=MiscDefs}" IsTabStop="False" Padding="0,0,0,0" 
+                          Background="#FFF9F9F9">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Vertical" Margin="0"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

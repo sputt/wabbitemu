@@ -20,6 +20,9 @@ Public Class Scenario
     Public Shared ReadOnly ObjectDefsProperty As DependencyProperty =
         DependencyProperty.Register("ObjectDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
         New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
+    Public Shared ReadOnly MiscDefsProperty As DependencyProperty =
+        DependencyProperty.Register("MiscDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
+        New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
 
     Public Shared ReadOnly TilesetsProperty As DependencyProperty =
         DependencyProperty.Register("Tilesets", GetType(ObservableCollection(Of Tileset)), GetType(Scenario))
@@ -47,6 +50,15 @@ Public Class Scenario
         End Get
         Set(value As ObservableDictionary(Of String, ZDef))
             SetValue(ObjectDefsProperty, value)
+        End Set
+    End Property
+
+    Public Property MiscDefs As ObservableDictionary(Of String, ZDef)
+        Get
+            Return GetValue(MiscDefsProperty)
+        End Get
+        Set(value As ObservableDictionary(Of String, ZDef))
+            SetValue(MiscDefsProperty, value)
         End Set
     End Property
 
@@ -105,6 +117,7 @@ Public Class Scenario
         Dim Data = SPASMHelper.AssembleFile(FileName)
 
         LoadObjectDefs(Path & "\objectdef.inc")
+        LoadMiscDefs(Path & "\miscdef.inc")
 
         Dim Reader As New StreamReader(FileName)
         Dim ScenarioContents As String = Reader.ReadToEnd()

@@ -64,6 +64,7 @@
                 <RadioButton IsChecked="True" Name="RadioMapSet">Mapset</RadioButton>
                 <RadioButton IsChecked="False" Name="RadioMapView">Map</RadioButton>
                 <RadioButton IsChecked="False" Name="RadioObjectLayer">Objects</RadioButton>
+                <RadioButton IsChecked="False" Name="RadioMiscLayer">Misc</RadioButton>
             </ToolBar>
         </WrapPanel>
 

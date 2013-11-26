@@ -22,15 +22,15 @@ Public Class MapView
         Dim y = Grid.GetRow(tile)
 
         If Keyboard.IsKeyDown(Key.LeftCtrl) Then
-            'MainWindow.Instance.TileSelectorPanel.Index = tile.Index
+            MainWindow.Instance.TileSelectorPanel.Index = tile.Index
         Else
             If e.ChangedButton = MouseButton.Left Then
-                'If MainWindow.Instance.TileSelectorPanel.Index <> -1 Then
-                'tile.Index = MainWindow.Instance.TileSelectorPanel.Index
-                'End If
+                If MainWindow.Instance.TileSelectorPanel.Index <> -1 Then
+                    tile.Index = MainWindow.Instance.TileSelectorPanel.Index
+                End If
             ElseIf e.ChangedButton = MouseButton.Middle Then
-            tile.Index = (tile.Index Xor &H80)
-        End If
+                tile.Index = (tile.Index Xor &H80)
+            End If
         End If
     End Sub
 
@@ -55,7 +55,11 @@ Public Class MapView
                 Dim Tile As New Tile(InEditor)
 
                 Dim Index As Integer = (y * LayerContainer.MapSize.Width + x)
-                Tile.SetBinding(Tile.IndexProperty, New Binding("TileData[" & Index & "]"))
+
+                Dim TileBinding As New Binding("TileData[" & Index & "]")
+                TileBinding.Mode = BindingMode.TwoWay
+                Tile.SetBinding(Tile.IndexProperty, TileBinding)
+
                 Tile.SetBinding(Tile.TilesetProperty, New Binding("Tileset"))
 
                 If InEditor Then

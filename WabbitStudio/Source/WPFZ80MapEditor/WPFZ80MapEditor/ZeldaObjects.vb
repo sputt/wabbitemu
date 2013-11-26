@@ -3,7 +3,7 @@ Imports System.Collections.ObjectModel
 Imports System.ComponentModel
 
 <StructLayout(LayoutKind.Sequential, Pack:=1)>
-Structure AZPosition
+Public Structure AZPosition
     Public X As Byte
     Public W As Byte
     Public Y As Byte
@@ -13,30 +13,170 @@ Structure AZPosition
 End Structure
 
 <StructLayout(LayoutKind.Sequential, Pack:=1)>
-Structure AZExoc
+Public Structure AZExoc
     Public Count As Byte
     Public Pointer As UShort
 End Structure
 
 <StructLayout(LayoutKind.Sequential, Pack:=1)>
-Structure AZObject
+Public Structure AZObject
     Public ID As Byte
     Public Flags As Byte
     Public Position As AZPosition
     Public Anim As AZExoc
 End Structure
 
-Public Class ZBaseObject
+<StructLayout(LayoutKind.Sequential, Pack:=1)>
+Public Structure AZMisc
+    Public Alive As Byte
+    Public X As Byte
+    Public W As Byte
+    Public Y As Byte
+    Public H As Byte
+    Public Code As UShort
+    Public Aux As UShort
+End Structure
+
+Public Interface IGeneralObject(Of ZBase)
+    Sub FromStruct(Obj As ZBase)
+    Property Definition As ZDef
+    Property Args As ArgsCollection
+End Interface
+
+Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)})
     Inherits DependencyObject
+    Implements IGeneralObject(Of ZBase)
 
+
+#Region "Definition/Arguments"
+    Public Shared ReadOnly DefinitionProperty = DependencyProperty.Register("Definition", GetType(ZDef), GetType(ZBaseObject(Of ZBase, Base)))
+    Public Shared ReadOnly ArgsProperty = DependencyProperty.Register("Args", GetType(ArgsCollection), GetType(ZBaseObject(Of ZBase, Base)))
+
+    Protected _Name As String
+
+    Public Property Definition As ZDef Implements IGeneralObject(Of ZBase).Definition
+        Get
+            Return GetValue(DefinitionProperty)
+        End Get
+        Set(value As ZDef)
+            SetValue(DefinitionProperty, value)
+        End Set
+    End Property
+
+    Public Property Args As ArgsCollection Implements IGeneralObject(Of ZBase).Args
+        Get
+            Return GetValue(ArgsProperty)
+        End Get
+        Set(value As ArgsCollection)
+            SetValue(ArgsProperty, value)
+        End Set
+    End Property
+
+    Public Function ToMacro() As String
+        Dim Result As String = Me._Name
+        Result &= "("
+        Dim NewArgs = (From a In Args Select a.GetValue(ZDefArg.ValueProperty)).ToList()
+        For i = 0 To NewArgs.Count - 1
+            Result &= NewArgs(i)
+
+            If i <> NewArgs.Count - 1 Then
+                Dim RestAreEmpty As Boolean = False
+                Dim j As Integer = i + 1
+                Do Until j = NewArgs.Count OrElse Not (NewArgs(j) = "" Or NewArgs(j) Is Nothing)
+                    j = j + 1
+                Loop
+                If j = NewArgs.Count Then
+                    Exit For
+                End If
+                Result &= ","
+            End If
+        Next
+        Result &= ")"
+        Return Result
+    End Function
+
+    Protected Overridable Sub FromStruct(Obj As ZBase) Implements IGeneralObject(Of ZBase).FromStruct
+    End Sub
+
+    Private Shared Function BaseFromZBase(ZBase As ZBase) As Base
+        Dim ZObj As New Base()
+        ZObj.FromStruct(ZBase)
+        Return ZObj
+    End Function
+
+    Public Shared Function FromMacro(Scenario As Scenario, Macro As String) As Base
+        Dim Obj As New ZBase
+        ZType.FromMacro(Macro, Obj)
+
+        Dim ZObj = BaseFromZBase(Obj)
+
+        ZObj.Definition = Scenario.ObjectDefs(Split(Macro, "(")(0))
+        ZObj.Args = ZObj.Definition.Args.Clone
+        Dim Args = Split(Split(Split(Macro, "(")(1), ")")(0), ",")
+
+        For i = 0 To Args.Count - 1
+            ZObj.Args(i).Value = Args(i)
+        Next
+        Return ZObj
+    End Function
+
+    Public Shared Function FromData(Data() As Byte) As Base
+        Dim h = GCHandle.Alloc(Data, GCHandleType.Pinned)
+        Dim Obj As ZBase = Marshal.PtrToStructure(h.AddrOfPinnedObject, GetType(ZBase))
+        h.Free()
+
+        Dim ZObj = BaseFromZBase(Obj)
+        Return ZObj
+    End Function
+
+    Public Sub UpdatePosition(X As Double, Y As Double)
+        X = Math.Min(255.0, Math.Max(0.0, X))
+        Y = Math.Min(255.0, Math.Max(0.0, Y))
+        Dim Obj As New ZBase
+        Dim NewArgs = (From a In Args Select a.GetValue(ZDefArg.ValueProperty)).Skip(2).ToList()
+        NewArgs.InsertRange(0, {CByte(X), CByte(Y)})
+        ZType.FromMacro(_Name, NewArgs.Cast(Of Object), Obj)
+        FromStruct(Obj)
+        Args(0).Value = CInt(Me.X)
+        Args(1).Value = CInt(Me.Y)
+    End Sub
+
+    Sub Jump(Dx As Integer, Dy As Integer)
+        Dim StartX = X
+        Dim StartY = Y
+
+        Dim NumAttempts = 1
+        While StartX = X And StartY = Y And NumAttempts < 32
+            UpdatePosition(X + Dx * NumAttempts, Y + Dy * NumAttempts)
+            NumAttempts = NumAttempts + 1
+        End While
+    End Sub
+
+    Public Sub New()
+    End Sub
+
+    Public Sub New(Def As ZDef, Args() As Object)
+        Definition = Def
+        _Name = Def.Macro
+        Me.Args = Def.Args.Clone
+        For i = 0 To Args.Count - 1
+            Me.Args(i).Value = Args(i).ToString().ToUpper()
+        Next
+        Definition = Def
+        Dim Obj As New ZBase
+        ZType.FromMacro(Def.Macro, Args, Obj)
+        FromStruct(Obj)
+    End Sub
+
+#End Region
 #Region "Position/Size"
-    Public Shared ReadOnly XProperty As DependencyProperty = DependencyProperty.Register("X", GetType(Byte), GetType(ZBaseObject))
-    Public Shared ReadOnly YProperty As DependencyProperty = DependencyProperty.Register("Y", GetType(Byte), GetType(ZBaseObject))
-    Public Shared ReadOnly ZProperty As DependencyProperty = DependencyProperty.Register("Z", GetType(Byte), GetType(ZBaseObject))
+    Public Shared ReadOnly XProperty As DependencyProperty = DependencyProperty.Register("X", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
+    Public Shared ReadOnly YProperty As DependencyProperty = DependencyProperty.Register("Y", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
+    Public Shared ReadOnly ZProperty As DependencyProperty = DependencyProperty.Register("Z", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
 
-    Public Shared ReadOnly WProperty As DependencyProperty = DependencyProperty.Register("W", GetType(Byte), GetType(ZBaseObject))
-    Public Shared ReadOnly HProperty As DependencyProperty = DependencyProperty.Register("H", GetType(Byte), GetType(ZBaseObject))
-    Public Shared ReadOnly DProperty As DependencyProperty = DependencyProperty.Register("D", GetType(Byte), GetType(ZBaseObject))
+    Public Shared ReadOnly WProperty As DependencyProperty = DependencyProperty.Register("W", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
+    Public Shared ReadOnly HProperty As DependencyProperty = DependencyProperty.Register("H", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
+    Public Shared ReadOnly DProperty As DependencyProperty = DependencyProperty.Register("D", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
 
     Public Property X As Byte
         Get
@@ -100,7 +240,7 @@ Public Class ZBaseObject
 #End Region
 #Region "Image"
     Public Shared ReadOnly ImageProperty As DependencyProperty =
-        DependencyProperty.Register("Image", GetType(Integer), GetType(ZBaseObject))
+        DependencyProperty.Register("Image", GetType(Integer), GetType(ZBaseObject(Of ZBase, Base)))
 
     Public Property Image As Integer
         Get
@@ -116,8 +256,10 @@ Public Class ZBaseObject
     Sub Move(Dx As Integer, Dy As Integer, Optional Dz As Integer = 0)
         X += Dx : Y += Dy : Z += Dz
     End Sub
+
 End Class
 
+#Region "Args collection and types"
 Public Class ArgsCollection
     Inherits ObservableCollection(Of Object)
     Implements ICloneable
@@ -268,6 +410,7 @@ Public Class ZDefArg
         Return Copy
     End Function
 End Class
+#End Region
 
 Public Class ZDef
     Inherits DependencyObject
@@ -303,9 +446,9 @@ Public Class ZDef
         SetValue(ArgsProperty, New ArgsCollection)
 
         ' Assemble it when you created it to determine some properties
-        Dim Obj As AZObject
-        ZType.FromMacro(Macro & "(0, 0)", Obj)
-        SetValue(DefaultImageProperty, CInt(Obj.Anim.Pointer))
+        'Dim Obj As AZObject
+        'ZType.FromMacro(Macro & "(0, 0)", Obj)
+        'SetValue(DefaultImageProperty, CInt(Obj.Anim.Pointer))
     End Sub
 
     Public Sub AddArg(Name As String, Description As String, Optional IsOptional As Boolean = False)
@@ -355,33 +498,10 @@ Class ZType
 End Class
 
 Public Class ZObject
-    Inherits ZBaseObject
+    Inherits ZBaseObject(Of AZObject, ZObject)
     Implements ICloneable
 
-    Public Shared ReadOnly DefinitionProperty = DependencyProperty.Register("Definition", GetType(ZDef), GetType(ZObject))
-    Public Shared ReadOnly ArgsProperty = DependencyProperty.Register("Args", GetType(ArgsCollection), GetType(ZObject))
-
-    Private _Name As String
-
-    Public Property Definition As ZDef
-        Get
-            Return GetValue(DefinitionProperty)
-        End Get
-        Set(value As ZDef)
-            SetValue(DefinitionProperty, value)
-        End Set
-    End Property
-
-    Public Property Args As ArgsCollection
-        Get
-            Return GetValue(ArgsProperty)
-        End Get
-        Set(value As ArgsCollection)
-            SetValue(ArgsProperty, value)
-        End Set
-    End Property
-
-    Private Sub FromStruct(Obj As AZObject)
+    Protected Overrides Sub FromStruct(Obj As AZObject)
         With Obj.Position
             X = .X : W = .W
             Y = .Y : H = .H
@@ -394,78 +514,7 @@ Public Class ZObject
     End Sub
 
     Public Sub New(Def As ZDef, ParamArray Args() As Object)
-        Dim Obj As New AZObject
-        ZType.FromMacro(Def.Macro, Args, Obj)
-        FromStruct(Obj)
-        _Name = Def.Macro
-        Me.Args = Def.Args.Clone
-        For i = 0 To Args.Count - 1
-            Me.Args(i).Value = Args(i).ToString().ToUpper()
-        Next
-        Definition = Def
-    End Sub
-
-    Public Function ToMacro() As String
-        Dim Result As String = Me._Name
-        Result &= "("
-        Dim NewArgs = (From a In Args Select a.GetValue(ZDefArg.ValueProperty)).ToList()
-        For i = 0 To NewArgs.Count - 1
-            Result &= NewArgs(i)
-
-            If i <> NewArgs.Count - 1 Then
-                Dim RestAreEmpty As Boolean = False
-                Dim j As Integer = i + 1
-                Do Until j = NewArgs.Count OrElse Not (NewArgs(j) = "" Or NewArgs(j) Is Nothing)
-                    j = j + 1
-                Loop
-                If j = NewArgs.Count Then
-                    Exit For
-                End If
-                Result &= ","
-            End If
-        Next
-        Result &= ")"
-        Return Result
-    End Function
-
-    Public Shared Function FromMacro(Scenario As Scenario, Macro As String) As ZObject
-        Dim Obj As New AZObject
-        ZType.FromMacro(Macro, Obj)
-        Dim ZObj As New ZObject()
-        ZObj.FromStruct(Obj)
-        ZObj._Name = Split(Macro, "(")(0)
-
-        ZObj.Definition = Scenario.ObjectDefs(ZObj._Name)
-        ZObj.Args = ZObj.Definition.Args.Clone
-        Dim Args = Split(Split(Split(Macro, "(")(1), ")")(0), ",")
-
-        For i = 0 To Args.Count - 1
-            ZObj.Args(i).Value = Args(i)
-        Next
-        Return ZObj
-    End Function
-
-    Public Sub UpdatePosition(X As Double, Y As Double)
-        X = Math.Min(255.0, Math.Max(0.0, X))
-        Y = Math.Min(255.0, Math.Max(0.0, Y))
-        Dim Obj As New AZObject
-        Dim NewArgs = (From a In Args Select a.GetValue(ZDefArg.ValueProperty)).Skip(2).ToList()
-        NewArgs.InsertRange(0, {CByte(X), CByte(Y)})
-        ZType.FromMacro(_Name, NewArgs.Cast(Of Object), Obj)
-        FromStruct(Obj)
-        Args(0).Value = CInt(Me.X)
-        Args(1).Value = CInt(Me.Y)
-    End Sub
-
-    Sub Jump(Dx As Integer, Dy As Integer)
-        Dim StartX = X
-        Dim StartY = Y
-
-        Dim NumAttempts = 1
-        While StartX = X And StartY = Y And NumAttempts < 32
-            UpdatePosition(X + Dx * NumAttempts, Y + Dy * NumAttempts)
-            NumAttempts = NumAttempts + 1
-        End While
+        MyBase.New(Def, Args)
     End Sub
 
     Public Function Clone() As Object Implements System.ICloneable.Clone
@@ -481,4 +530,15 @@ Public Class ZObject
         End With
         Return Copy
     End Function
+
+End Class
+
+Public Class ZMisc
+    Inherits ZBaseObject(Of AZMisc, ZMisc)
+
+    Protected Overrides Sub FromStruct(Obj As AZMisc)
+        X = Obj.X : W = Obj.W
+        Y = Obj.Y : H = Obj.H
+    End Sub
+
 End Class
