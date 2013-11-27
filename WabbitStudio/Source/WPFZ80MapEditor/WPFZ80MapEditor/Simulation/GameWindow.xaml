@@ -36,7 +36,7 @@
                 </TransformGroup>
             </Canvas.RenderTransform>
             <local:MapView DataContext="{Binding Map}" Canvas.Left="0" Canvas.Top="0"/>
-            <ItemsControl ItemsSource="{Binding Path=DrawEntries}" Canvas.Left="2" Canvas.Top="2" Panel.ZIndex="2">
+            <ItemsControl ItemsSource="{Binding Path=DrawEntries}" Panel.ZIndex="2">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas Width="256" Height="256"/>

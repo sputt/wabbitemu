@@ -20,10 +20,10 @@ Public Class TilesPanel
                     SelectedTile = Tile
                 End If
             Case MouseButton.Middle
-                If Tile.Index = Index Then
+                If (Tile.Index Mod &H80) = (Index Mod &H80) Then
                     Index = Index Xor &H80
                 Else
-                    Index = Tile.Index Xor &H80
+                    Index = Tile.Index Or &H80
                 End If
                 SelectedTile = Tile
         End Select
@@ -39,25 +39,26 @@ Public Class TilesPanel
             Dim IsOneSelected As Boolean = False
             _Index = value
 
-            Dim SelectedTile As Tile = Nothing
+            Me.SelectedTile = Nothing
+
             Dim Tiles As List(Of PanelTile) = Utils.FindChildren(Of PanelTile)(Me).ToList()
             Tiles.ForEach(Sub(t)
                               t.Index = (t.Index Mod 128)
                               t.IsSelected = t.Index = (_Index Mod 128)
+                              ' It used to be selected
                               If t.IsSelected Then
-                                  SelectedTile = t
+                                  t.Index = value
+                                  IsOneSelected = True
+                                  t.BringIntoView()
                               End If
                           End Sub)
 
-            IsOneSelected = (Not SelectedTile Is Nothing)
-            If IsOneSelected Then
-                SelectedTile.Index = value
-                SelectedTile.BringIntoView()
-            Else
-                Tiles.ForEach(Sub(t) t.OverlayColor = Color.FromArgb(0, 255, 255, 255))
+            If Not IsOneSelected Then
+                Tiles.ForEach(Sub(t)
+                                  t.OverlayColor = Color.FromArgb(0, 255, 255, 255)
+                              End Sub)
             End If
 
-            Me.SelectedTile = Nothing
             RaiseEvent PropertyChanged(Me, New ComponentModel.PropertyChangedEventArgs("Index"))
 
         End Set

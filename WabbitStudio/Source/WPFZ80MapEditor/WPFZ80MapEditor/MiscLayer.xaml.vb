@@ -1,11 +1,20 @@
-﻿Public Class ObjectLayer
+﻿Public Class MiscLayer
     Implements IMapLayer
 
     Public Shared ReadOnly LeftProperty As DependencyProperty =
-        DependencyProperty.RegisterAttached("Left", GetType(Double), GetType(ObjectLayer), New UIPropertyMetadata(CDbl(-1)))
+        DependencyProperty.RegisterAttached("Left", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(-1)))
 
     Public Shared ReadOnly TopProperty As DependencyProperty =
-        DependencyProperty.RegisterAttached("Top", GetType(Double), GetType(ObjectLayer), New UIPropertyMetadata(CDbl(-1)))
+        DependencyProperty.RegisterAttached("Top", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(-1)))
+
+    Public Shared ReadOnly MiscWidthProperty As DependencyProperty =
+        DependencyProperty.RegisterAttached("Width", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(-1)))
+
+    Public Shared ReadOnly MiscHeightProperty As DependencyProperty =
+        DependencyProperty.RegisterAttached("Height", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(-1)))
+
+    Public Shared ReadOnly SelectionOpacityProperty As DependencyProperty =
+        DependencyProperty.RegisterAttached("SelectionOpacity", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(1.0)))
 
     Public Shared Sub SetLeft(d As DependencyObject, value As Double)
         d.SetValue(LeftProperty, value)
@@ -44,203 +53,63 @@
     End Property
 
     Public Sub DeselectAll() Implements IMapLayer.DeselectAll
-        ObjectItemsControl.SelectedItems.Clear()
+        ItemsControl.SelectedItems.Clear()
     End Sub
 
-    Private _StartDrag As New Point
-#Region "Object events"
-    Private _IsDraggingObjects As Boolean = False
+    Private Sub UserControl_MouseDown(sender As Object, e As MouseButtonEventArgs)
+        If e.ChangedButton = MouseButton.Left Then
+            DeselectAll()
+        End If
+    End Sub
 
-    Private Sub Object_MouseLeftButtonDown(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
+    Private _IsDraggingMisc As Boolean = False
+    Private _StartDrag As New Point
+
+    Private Sub Misc_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
         Dim Obj As FrameworkElement = sender
-        Dim ZObj As ZObject = Obj.DataContext
+
+        Obj.ReleaseMouseCapture()
+        _IsDraggingMisc = False
+        e.Handled = True
+
+        SetValue(SelectionOpacityProperty, 0.6)
+    End Sub
+
+    Private Sub Misc_MouseLeftButtonDown(sender As Object, e As MouseButtonEventArgs)
+        Dim Obj As FrameworkElement = sender
+        Dim ZMisc As ZMisc = Obj.DataContext
 
         Obj.CaptureMouse()
         _StartDrag = e.GetPosition(Me)
-        If Not ObjectItemsControl.SelectedItems.Contains(ZObj) Then
+        If Not ItemsControl.SelectedItems.Contains(ZMisc) Then
             DeselectAll()
-            ObjectItemsControl.SelectedItems.Add(ZObj)
+            ItemsControl.SelectedItems.Add(ZMisc)
         End If
 
-        For Each ZObj2 As ZObject In ObjectItemsControl.SelectedItems
-            ObjectLayer.SetLeft(ZObj2, ZObj2.X)
-            ObjectLayer.SetTop(ZObj2, ZObj2.Y)
+        For Each ZMisc2 As ZMisc In ItemsControl.SelectedItems
+            MiscLayer.SetLeft(ZMisc2, ZMisc2.X)
+            MiscLayer.SetTop(ZMisc2, ZMisc2.Y)
         Next
-        _IsDraggingObjects = True
+        _IsDraggingMisc = True
         e.Handled = True
     End Sub
 
-    Private Sub Object_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
-        Dim Obj As FrameworkElement = sender
-        Dim ZObj As ZObject = Obj.DataContext
-
-        Obj.ReleaseMouseCapture()
-        _IsDraggingObjects = False
-        e.Handled = True
-    End Sub
-
-    Private Sub Object_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs)
-        If _IsDraggingObjects Then
+    Private Sub Misc_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs)
+        If _IsDraggingMisc Then
             Dim CurPoint As Point = e.GetPosition(Me)
             Dim DragDelta = CurPoint - _StartDrag
 
-            _StartDrag = CurPoint
-            For Each ZObj As ZObject In ObjectItemsControl.SelectedItems
+            '_StartDrag = CurPoint
+            For Each ZMisc As ZMisc In ItemsControl.SelectedItems
+                Dim NewX = MiscLayer.GetLeft(ZMisc) + DragDelta.X
+                Dim NewY = MiscLayer.GetTop(ZMisc) + DragDelta.Y
 
-                ObjectLayer.SetLeft(ZObj, ObjectLayer.GetLeft(ZObj) + DragDelta.X)
-                ObjectLayer.SetTop(ZObj, ObjectLayer.GetTop(ZObj) + DragDelta.Y)
-
-                ZObj.UpdatePosition(ObjectLayer.GetLeft(ZObj), ObjectLayer.GetTop(ZObj))
+                ZMisc.UpdatePosition(NewX, NewY, False)
             Next
-            e.Handled = True
-        End If
-    End Sub
-#End Region
 
-#Region "Canvas events"
-    Private Sub ObjectCanvas_MouseLeftButtonDown(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
-        sender.CaptureMouse()
-
-        _StartDrag = Mouse.GetPosition(ObjectCanvas)
-
-        SelectionRect.Width = 0
-        SelectionRect.Height = 0
-        SelectionRect.Visibility = Windows.Visibility.Visible
-
-        DeselectAll()
-
-        e.Handled = True
-    End Sub
-
-    Private Sub ObjectCanvas_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
-        sender.ReleaseMouseCapture()
-        SelectionRect.Visibility = Windows.Visibility.Hidden
-
-        e.Handled = True
-    End Sub
-
-    Private Sub ObjectCanvas_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs)
-        If Mouse.Captured Is sender Then
-            Dim CurPoint = Mouse.GetPosition(ObjectCanvas)
-            CurPoint.X = Math.Max(0, Math.Min(Me.Width, CurPoint.X))
-            CurPoint.Y = Math.Max(0, Math.Min(Me.Height, CurPoint.Y))
-
-            Canvas.SetLeft(SelectionRect, Math.Min(CurPoint.X, _StartDrag.X))
-            Canvas.SetTop(SelectionRect, Math.Min(CurPoint.Y, _StartDrag.Y))
-            SelectionRect.Width = Math.Abs(CurPoint.X - _StartDrag.X)
-            SelectionRect.Height = Math.Abs(CurPoint.Y - _StartDrag.Y)
-
-            Dim SelRect As New Rect
-            SelRect.X = Canvas.GetLeft(SelectionRect)
-            SelRect.Y = Canvas.GetTop(SelectionRect)
-            SelRect.Width = SelectionRect.Width
-            SelRect.Height = SelectionRect.Height
-
-            SelectObjectsInRect(SelRect)
+            SetValue(SelectionOpacityProperty, 0.25)
 
             e.Handled = True
         End If
-    End Sub
-
-    Private Sub SelectObjectsInRect(SelRect As Rect)
-        ObjectItemsControl.SelectedItems.Clear()
-
-        For Each ZObj As ZObject In CType(ObjectCanvas.DataContext, MapData).ZObjects
-            Dim IntersectResult As Rect = Rect.Intersect(ZObj.Bounds, SelRect)
-            If Not IntersectResult.IsEmpty() Then
-                If (IntersectResult.Width * IntersectResult.Height) > (ZObj.Bounds.Width * ZObj.Bounds.Height * 0.75) Then
-                    ObjectItemsControl.SelectedItems.Add(ZObj)
-                End If
-            End If
-        Next
-    End Sub
-#End Region
-
-    Private Sub ObjectItemsControl_MouseDoubleClick(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs) Handles ObjectItemsControl.MouseDoubleClick
-        Dim Frm = New ObjectProperties()
-        Frm.Owner = Window.GetWindow(Me)
-
-        Dim ObjClone As ZObject = ObjectItemsControl.SelectedItem.Clone
-        Frm.DataContext = ObjClone
-        If Frm.ShowDialog() = True Then
-            ObjClone.UpdatePosition(ObjClone.Args(0).Value, ObjClone.Args(1).Value)
-            Me.DataContext.ZObjects(ObjectItemsControl.SelectedIndex) = ObjClone
-            ObjectItemsControl.SelectedItem = ObjClone
-        End If
-        _IsDraggingObjects = False
-        Mouse.Capture(Nothing)
-    End Sub
-
-    Private Sub ObjectLayer_DragEnter(sender As System.Object, e As System.Windows.DragEventArgs)
-        Debug.WriteLine("ObjectLayer_DragEnter!")
-        If e.Data.GetDataPresent(GetType(ZDef)) Then
-            e.Effects = DragDropEffects.Move
-        Else
-            Debug.WriteLine("Setting effects to none")
-            e.Effects = DragDropEffects.None
-        End If
-        e.Handled = True
-    End Sub
-
-    Private Sub ObjectLayer_DragOver(sender As System.Object, e As System.Windows.DragEventArgs)
-        Debug.WriteLine("ObjectLayer_DragOver!")
-        If e.Data.GetDataPresent(GetType(ZDef)) Then
-            e.Effects = DragDropEffects.Move
-        Else
-            Debug.WriteLine("Setting effects to none")
-            e.Effects = DragDropEffects.None
-        End If
-        e.Handled = True
-    End Sub
-
-    Private Sub ObjectLayer_Drop(sender As System.Object, e As System.Windows.DragEventArgs)
-        If e.Data.GetDataPresent(GetType(ZDef)) Then
-            Debug.WriteLine("ObjectLayer_Drop")
-            Dim Pos As Point = e.GetPosition(sender)
-            Dim Def As ZDef = e.Data.GetData(GetType(ZDef))
-
-            Dim ObjTest As New ZObject(Def, CInt(Pos.X), CInt(Pos.Y))
-
-            Pos.X = Pos.X - ObjTest.W / 2
-            Pos.Y = Pos.Y - ObjTest.H / 2
-
-            Dim Obj As New ZObject(Def, CInt(Pos.X), CInt(Pos.Y))
-
-            If Not Me.DataContext Is Nothing Then
-                CType(Me.DataContext, MapData).ZObjects.Add(Obj)
-            End If
-        End If
-        e.Handled = True
-    End Sub
-
-    Private Sub ObjectItemsControl_PreviewKeyDown(sender As System.Object, e As System.Windows.Input.KeyEventArgs) Handles ObjectItemsControl.PreviewKeyDown
-        Dim Objs = New List(Of ZObject)(CType(sender, ListBox).SelectedItems.Cast(Of ZObject))
-        Select Case e.Key
-            Case Key.Delete
-                For Each Obj In Objs
-                    CType(Me.DataContext, MapData).ZObjects.Remove(Obj)
-                Next
-            Case Key.Down
-                For Each Obj In Objs
-                    Obj.Jump(0, 1)
-                Next
-            Case Key.Left
-                For Each Obj In Objs
-                    Obj.Jump(-1, 0)
-                Next
-            Case Key.Right
-                For Each Obj In Objs
-                    Obj.Jump(1, 0)
-                Next
-            Case Key.Up
-                For Each Obj In Objs
-                    Obj.Jump(0, -1)
-                Next
-        End Select
-        e.Handled = True
-    End Sub
-
-    Private Sub ObjectItemsControl_SelectionChanged(sender As System.Object, e As System.Windows.Controls.SelectionChangedEventArgs) Handles ObjectItemsControl.SelectionChanged
-        sender.Focus()
     End Sub
 End Class

@@ -14,11 +14,11 @@ Public Class MainWindow
         InitializeComponent()
     End Sub
 
-    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs) Handles MyBase.Loaded
-        Scenario.Instance.Tilesets.Add("dungeon", New Tileset("C:\Users\Chris\Documents\Wabbitcode\Projects\Zelda\images\dungeon.bmp"))
+    Private Sub Window_Loaded(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles MyBase.Loaded
+        Scenario.Instance.Tilesets.Add("dungeon", New Tileset("C:\users\spencer\desktop\zelda\images\dungeon.bmp"))
         TileSelectorPanel.Initialize(0)
 
-        Scenario.Instance.LoadScenario("C:\Users\Chris\Documents\Wabbitcode\Projects\Zelda\hill.zmap")
+        Scenario.Instance.LoadScenario("C:\users\spencer\desktop\zelda\hill.asm")
 
 
         'Dim MapData As New MapData(New Tileset("dungeon.bmp"))
@@ -167,7 +167,7 @@ Public Class MainWindow
         CurrentZoomLevelItem.Height = 0
     End Sub
 
-    Private Sub LayerRadioButton_Checked(sender As Object, e As RoutedEventArgs) Handles RadioMapSet.Checked, RadioMapView.Checked, RadioObjectLayer.Checked
+    Private Sub LayerRadioButton_Checked(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles RadioMapSet.Checked, RadioMapView.Checked, RadioObjectLayer.Checked, RadioMiscLayer.Checked
         If Not LayerContainer Is Nothing Then
             Dim ActivateLayer = Sub(t As Type, rb As RadioButton)
                                     Dim AllLayers = (From s As MapContainer In LayerContainer.Children
@@ -180,6 +180,7 @@ Public Class MainWindow
             ActivateLayer(GetType(MapSet), RadioMapSet)
             ActivateLayer(GetType(MapView), RadioMapView)
             ActivateLayer(GetType(ObjectLayer), RadioObjectLayer)
+            ActivateLayer(GetType(MiscLayer), RadioMiscLayer)
 
             If RadioMapSet.IsChecked Then
                 Scenario.Instance.ActiveLayerType = GetType(MapSet)
@@ -187,6 +188,8 @@ Public Class MainWindow
                 Scenario.Instance.ActiveLayerType = GetType(MapView)
             ElseIf RadioObjectLayer.IsChecked Then
                 Scenario.Instance.ActiveLayerType = GetType(ObjectLayer)
+            ElseIf RadioMiscLayer.IsChecked Then
+                Scenario.Instance.ActiveLayerType = GetType(MiscLayer)
             End If
         End If
     End Sub

@@ -36,4 +36,17 @@
             End Try
         End If
     End Function
+
+    Public Shared Function FindVisualParent(Of T As DependencyObject)(Child As DependencyObject) As T
+        Dim ParentObj = VisualTreeHelper.GetParent(Child)
+
+        If ParentObj Is Nothing Then Return Nothing
+
+        Dim Parent As T = TryCast(ParentObj, T)
+        If Parent IsNot Nothing Then
+            Return Parent
+        Else
+            Return FindVisualParent(Of T)(ParentObj)
+        End If
+    End Function
 End Class

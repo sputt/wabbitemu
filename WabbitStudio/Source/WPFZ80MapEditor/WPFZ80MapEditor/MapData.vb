@@ -23,6 +23,10 @@ Public Class MapData
         DependencyProperty.Register("ZObjects",
                                     GetType(ObservableCollection(Of ZObject)), GetType(MapData))
 
+    Public Shared ReadOnly ZMiscProperty As DependencyProperty =
+        DependencyProperty.Register("ZMisc",
+                                    GetType(ObservableCollection(Of ZMisc)), GetType(MapData))
+
     Public Shared ReadOnly ScenarioProperty As DependencyProperty =
         DependencyProperty.Register("Scenario", GetType(Scenario), GetType(MapData))
 
@@ -53,6 +57,15 @@ Public Class MapData
         End Set
     End Property
 
+    Public Property ZMisc As ObservableCollection(Of ZMisc)
+        Get
+            Return GetValue(ZMiscProperty)
+        End Get
+        Set(value As ObservableCollection(Of ZMisc))
+            SetValue(ZMiscProperty, value)
+        End Set
+    End Property
+
     Public Property Tileset As Integer
         Get
             Return GetValue(TilesetProperty)
@@ -76,6 +89,7 @@ Public Class MapData
         Tileset = NewTileset
         ZAnims = New ObservableCollection(Of ZAnim)
         ZObjects = New ObservableCollection(Of ZObject)
+        ZMisc = New ObservableCollection(Of ZMisc)
     End Sub
 
 

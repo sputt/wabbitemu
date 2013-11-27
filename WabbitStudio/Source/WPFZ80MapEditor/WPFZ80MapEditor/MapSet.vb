@@ -16,7 +16,8 @@
             If Not value Is Nothing Then
                 value._SelectionBorder = New Border
                 value._SelectionBorder.BorderThickness = New Thickness(4)
-                value._SelectionBorder.BorderBrush = New SolidColorBrush(Colors.CadetBlue)
+                value._SelectionBorder.BorderBrush = New SolidColorBrush(Color.FromRgb(&H40, &H40, &HFF))
+                value._SelectionBorder.Opacity = 0.6
                 value.Children.Add(value._SelectionBorder)
             End If
             _CurrentlySelected = value

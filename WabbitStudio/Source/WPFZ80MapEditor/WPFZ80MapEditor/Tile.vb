@@ -14,9 +14,17 @@ Public Class Tile
     Protected Overrides Sub OnPropertyChanged(e As System.Windows.DependencyPropertyChangedEventArgs)
         MyBase.OnPropertyChanged(e)
 
-        If e.Property Is Tile.IndexProperty Then
-            SetImageSource(e.NewValue)
-            If e.NewValue >= 128 Then
+        If e.Property Is Tile.IndexProperty Or e.Property Is Tile.AnimProperty Then
+            Dim TileIndex As Integer
+            If e.Property Is Tile.IndexProperty Then
+                SetImageSource(e.NewValue)
+                TileIndex = e.NewValue
+            Else
+                TileIndex = Index
+            End If
+
+
+            If TileIndex >= 128 Then
                 If ShowCollidable Then
                     OverlayColor = Color.FromArgb(64, 255, 0, 0)
                 End If

@@ -70,15 +70,18 @@ Namespace ValueConverters
         Public Function Convert(values() As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IMultiValueConverter.Convert
             On Error Resume Next
 
-            Dim Index = values(0)
+            Dim Index As Object = values(0)
             Dim ObjY As Double = values(1)
             Dim ObjHeight As Double = values(2)
-            Dim ObjZ As Double = values(3)
+            Dim ObjZRaw As Object = values(3)
 
             Dim Images = Scenario.Instance.Images
 
             Dim ImgSource As ImageSource = Nothing
-            Dim ZImg = Images(Index)
+            Dim ZImg As ZeldaImage = Nothing
+            If Not Index.Equals(DependencyProperty.UnsetValue) Then
+                ZImg = Images(Index)
+            End If
             If ZImg IsNot Nothing Then
                 ImgSource = ZImg.Image
             End If
@@ -89,8 +92,14 @@ Namespace ValueConverters
             Else
                 ImgHeight = ImgSource.Height
             End If
-            Dim Result = ObjY + ObjHeight - ImgHeight - ObjZ - 2
-            Return Math.Min(253, Math.Max(-2, Math.Floor(Result)))
+
+            Dim ObjZ As Double = 0.0
+            If Not ObjZRaw.Equals(DependencyProperty.UnsetValue) Then
+                ObjZ = ObjZRaw
+            End If
+
+            Dim Result = ObjY + ObjHeight - ImgHeight - ObjZ
+            Return Math.Min(255, Math.Max(0, Math.Floor(Result)))
         End Function
 
         Public Function ConvertBack(value As Object, targetTypes() As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object() Implements System.Windows.Data.IMultiValueConverter.ConvertBack
@@ -104,13 +113,16 @@ Namespace ValueConverters
         Public Function Convert(values() As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IMultiValueConverter.Convert
             On Error Resume Next
 
-            Dim Index = values(0)
+            Dim Index As Object = values(0)
             Dim ObjX As Double = values(1)
             Dim ObjWidth As Double = values(2)
             Dim Images = Scenario.Instance.Images
 
             Dim ImgSource As ImageSource = Nothing
-            Dim ZImg = Images(Index)
+            Dim ZImg As ZeldaImage = Nothing
+            If Not Index.Equals(DependencyProperty.UnsetValue) Then
+                ZImg = Images(Index)
+            End If
             If ZImg IsNot Nothing Then
                 ImgSource = ZImg.Image
             End If
@@ -121,8 +133,8 @@ Namespace ValueConverters
             Else
                 ImgWidth = ImgSource.Width
             End If
-            Dim Result = ObjX + (ObjWidth - ImgWidth) / 2 - 2
-            Return Math.Min(253, Math.Max(-2, Math.Floor(Result)))
+            Dim Result = ObjX + (ObjWidth - ImgWidth) / 2
+            Return Math.Min(255, Math.Max(0, Math.Floor(Result)))
         End Function
 
         Public Function ConvertBack(value As Object, targetTypes() As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object() Implements System.Windows.Data.IMultiValueConverter.ConvertBack

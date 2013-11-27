@@ -100,7 +100,13 @@ Public Class Scenario
         Container.Children.Add(ObjLayer)
         Grid.SetColumn(ObjLayer, x)
         Grid.SetRow(ObjLayer, y)
-        Panel.SetZIndex(ObjLayer, 2)
+        Panel.SetZIndex(ObjLayer, 3)
+
+        Dim MiscLayer As New MiscLayer
+        Container.Children.Add(MiscLayer)
+        Grid.SetColumn(MiscLayer, x)
+        Grid.SetRow(MiscLayer, y)
+        Panel.SetZIndex(MiscLayer, 2)
 
         Dim MapView As New MapView(Map, True)
         Container.Children.Add(MapView)
@@ -172,11 +178,13 @@ Public Class Scenario
                     "^" & Label & "_DEFAULTS:" & vbCrLf & _
                     "^animate_section\(\)" & vbCrLf & _
                     "(^\s+(?<AnimName>[a-z_]+)\((?<AnimArgs>.*)\)\s*)*\s*" & _
-                    "^object_section\(\)\" & vbCrLf & _
+                    "^object_section\(\)" & vbCrLf & _
                     "(^\s+(?<ObjectName>[a-z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
-                    "^enemy_section\(\)\" & vbCrLf & _
+                    "^enemy_section\(\)" & vbCrLf & _
                     "(^\s+(?<EnemyName>[a-z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
-                    "^misc_section\(\)", RegexOptions.Multiline Or RegexOptions.Compiled)
+                    "^misc_section\(\)" & vbCrLf & _
+                    "(^\s+(?<MiscName>[a-z_]+)\((?<MiscArgs>.*)\)\s*)*\s*" & _
+                    "end_section\(\)", RegexOptions.Multiline Or RegexOptions.Compiled)
 
                 Dim Matches = Rx.Matches(ScenarioContents)
                 If Matches.Count = 1 Then
@@ -192,6 +200,12 @@ Public Class Scenario
                         Dim Params = Split(Groups("ObjectArgs").Captures(i).Value, ",")
                         Dim Obj As New ZObject(ObjectDefs(Groups("ObjectName").Captures(i).Value), Params)
                         MapData.ZObjects.Add(Obj)
+                    Next
+
+                    For i = 0 To Groups("MiscName").Captures.Count - 1
+                        Dim Params = Split(Groups("MiscArgs").Captures(i).Value, ",")
+                        Dim Misc As New ZMisc(MiscDefs(Groups("MiscName").Captures(i).Value), Params)
+                        MapData.ZMisc.Add(Misc)
                     Next
                 End If
 
@@ -324,6 +338,11 @@ Public Class Scenario
 
             Stream.WriteLine("enemy_section()")
             Stream.WriteLine("misc_section()")
+
+            For Each Misc In MapData.ZMisc
+                Stream.WriteLine(vbTab & Misc.ToMacro())
+            Next
+
             Stream.WriteLine("end_section()")
             Stream.WriteLine("#endif")
             Stream.WriteLine("")

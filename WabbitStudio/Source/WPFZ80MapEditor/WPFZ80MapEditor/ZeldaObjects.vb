@@ -152,16 +152,23 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Return ZObj
     End Function
 
-    Public Sub UpdatePosition(X As Double, Y As Double)
+    Public Sub UpdatePosition(X As Double, Y As Double, Optional Assemble As Boolean = True)
         X = Math.Min(255.0, Math.Max(0.0, X))
         Y = Math.Min(255.0, Math.Max(0.0, Y))
-        Dim Obj As New ZBase
-        Dim NewArgs = (From a In Args Select a.GetValue(ZDefArg.ValueProperty)).Skip(2).ToList()
-        NewArgs.InsertRange(0, {CByte(X), CByte(Y)})
-        ZType.FromMacro(_Name, NewArgs.Cast(Of Object), Obj)
-        FromStruct(Obj)
-        Args(0).Value = CInt(Me.X)
-        Args(1).Value = CInt(Me.Y)
+        If Assemble Then
+            Dim Obj As New ZBase
+            Dim NewArgs = (From a In Args Select a.GetValue(ZDefArg.ValueProperty)).Skip(2).ToList()
+            NewArgs.InsertRange(0, {CByte(X), CByte(Y)})
+            ZType.FromMacro(_Name, NewArgs.Cast(Of Object), Obj)
+            FromStruct(Obj)
+            Args(0).Value = CInt(Me.X)
+            Args(1).Value = CInt(Me.Y)
+        Else
+            Me.X = X
+            Me.Y = Y
+            Args(0).Value = CInt(Math.Round(X))
+            Args(1).Value = CInt(Math.Round(Y))
+        End If
     End Sub
 
     Sub Jump(Dx As Integer, Dy As Integer)
@@ -573,6 +580,12 @@ Public Class ZMisc
         Y = Obj.Y : H = Obj.H
     End Sub
 
+    Public Sub New()
+    End Sub
+
+    Public Sub New(Def As ZDef, ParamArray Args() As Object)
+        MyBase.New(Def, Args)
+    End Sub
 End Class
 
 Public Class ZEnemy
