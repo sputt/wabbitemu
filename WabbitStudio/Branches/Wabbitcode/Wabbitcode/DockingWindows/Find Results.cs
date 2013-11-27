@@ -44,6 +44,24 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		public void AddFindResult(string file, int lineNum, string line)
 		{
+		    int newLineIndex = line.IndexOf('\n');
+		    int zeroIndex = line.IndexOf('\0');
+		    if (newLineIndex == -1)
+		    {
+		        newLineIndex = line.Length;
+		    }
+
+		    if (zeroIndex == -1)
+		    {
+		        zeroIndex = line.Length;
+		    }
+
+		    int removeIndex = Math.Min(newLineIndex, zeroIndex);
+		    if (removeIndex != line.Length)
+		    {
+		        line = line.Remove(removeIndex);
+		    }
+
 			_stringBuilder.Append(string.Format("{0} ({1}): {2}\n", file, lineNum + 1, line));
 			_numResults++;
 		}
@@ -71,7 +89,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 			string file = match.Groups["fileName"].Value;
 			int lineNumber = Convert.ToInt32(match.Groups["lineNum"].Value);
-			_documentService.GotoLine(file, lineNumber);
+			_documentService.GotoLine(file, lineNumber - 1);
 		}
 	}
 }

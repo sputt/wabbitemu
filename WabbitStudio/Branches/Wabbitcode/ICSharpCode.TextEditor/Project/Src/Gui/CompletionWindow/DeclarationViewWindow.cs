@@ -110,19 +110,21 @@ namespace Revsoft.TextEditor.Gui.CompletionWindow
 		{
             if (newToolTip != null)
                 newToolTip.RemoveAll();
-			if (description != null && description.Length > 0) {
-				if (fixedWidth) {
-                    newToolTip = new ToolTip();
-                    newToolTip.SetToolTip(this, description);
-                    newToolTip.Show(description, this, pe.ClipRectangle.X, pe.ClipRectangle.Y);
-                    //TipPainterTools.DrawFixedWidthHelpTipFromCombinedDescription(this, pe.Graphics, Font, null, description);
-				} else {
-                    newToolTip = new ToolTip();
-                    newToolTip.SetToolTip(this, description);
-                    newToolTip.Show(description, this, pe.ClipRectangle.X, pe.ClipRectangle.Y);
-					//TipPainterTools.DrawHelpTipFromCombinedDescription(this, pe.Graphics, Font, null, description);
-				}
-			}
+		    if (string.IsNullOrEmpty(description))
+		    {
+		        return;
+		    }
+
+
+		    if (fixedWidth) {
+		        newToolTip = new ToolTip();
+		        newToolTip.SetToolTip(this, description);
+		        newToolTip.Show(description, this, pe.ClipRectangle.X, pe.ClipRectangle.Y);
+		    } else {
+		        newToolTip = new ToolTip();
+		        newToolTip.SetToolTip(this, description);
+		        newToolTip.Show(description, this, pe.ClipRectangle.X, pe.ClipRectangle.Y);
+		    }
 		}
 		
 		protected override void OnPaintBackground(PaintEventArgs pe)

@@ -17,7 +17,8 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 {
 	public class InsightWindow : AbstractCompletionWindow
 	{
-        
+	    private ToolTip toolTip;
+
 		public InsightWindow(Form parentForm, TextEditorControl control) : base(parentForm, control)
 		{
 			SetStyle(ControlStyles.UserPaint, true);
@@ -128,8 +129,10 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 				description = DataProvider.GetInsightData(CurrentData);
 			}
 			
-			drawingSize = TipPainterTools.GetDrawingSizeHelpTipFromCombinedDescription(this, pe.Graphics,
-			                                                                           Font, methodCountMessage,
+			drawingSize = TipPainterTools.GetDrawingSizeHelpTipFromCombinedDescription(this,
+			                                                                           pe.Graphics,
+			                                                                           Font,
+			                                                                           methodCountMessage,
 			                                                                           description);
 			if (drawingSize != Size) {
 				SetLocation();

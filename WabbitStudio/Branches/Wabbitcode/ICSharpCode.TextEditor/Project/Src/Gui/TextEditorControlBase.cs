@@ -658,10 +658,10 @@ namespace Revsoft.TextEditor
 			}
 			
 			this.FileName = fileName;
-			OptionsChanged();
 			Document.UpdateQueue.Clear();
 			EndUpdate();
 			
+			OptionsChanged();
 			Refresh();
 		}
 		

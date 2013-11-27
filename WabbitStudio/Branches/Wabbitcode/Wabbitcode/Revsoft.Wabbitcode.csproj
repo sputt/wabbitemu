@@ -624,6 +624,10 @@
     </Compile>
     <Compile Include="EditorExtensions\EditorToolTipRequestEventArgs.cs" />
     <Compile Include="EditorExtensions\FoldingItem.cs" />
+    <Compile Include="EditorExtensions\MacroInsightProvider.cs" />
+    <Compile Include="EditorExtensions\WabbitcodeTextEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Exceptions\InvalidProjectVersionException.cs" />
     <Compile Include="GotoSymbol.cs">
       <SubType>Form</SubType>

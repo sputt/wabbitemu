@@ -35,7 +35,7 @@ namespace Revsoft.Wabbitcode
 		{
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Editor));
-			this.editorBox = new Revsoft.TextEditor.TextEditorControl();
+            this.editorBox = new Revsoft.Wabbitcode.EditorExtensions.WabbitcodeTextEditor();
 			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.contextMenu = new System.Windows.Forms.ContextMenu();
 			this.cutContext = new System.Windows.Forms.MenuItem();
@@ -60,41 +60,25 @@ namespace Revsoft.Wabbitcode
 			this.copyPathMenuItem = new System.Windows.Forms.MenuItem();
 			this.openFolderMenuItem = new System.Windows.Forms.MenuItem();
 			this.SuspendLayout();
-			// 
-			// editorBox
-			// 
-			this.editorBox.AllowDrop = true;
-			this.editorBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.editorBox.Font = Revsoft.Wabbitcode.Properties.Settings.Default.EditorFont;
-			this.editorBox.IsIconBarVisible = true;
-			this.editorBox.IsReadOnly = false;
-            this.editorBox.LineViewerStyle = Revsoft.Wabbitcode.Properties.Settings.Default.LineEnabled ?
-                Revsoft.TextEditor.Document.LineViewerStyle.FullRow : Revsoft.TextEditor.Document.LineViewerStyle.None;
-			this.editorBox.Location = new System.Drawing.Point(2, 2);
-			this.editorBox.Name = "editorBox";
-            this.editorBox.ShowLineNumbers = Revsoft.Wabbitcode.Properties.Settings.Default.LineNumbers;
-			this.editorBox.ShowVRuler = false;
-			this.editorBox.Size = new System.Drawing.Size(560, 336);
-			this.editorBox.TabIndex = 1;
-            this.editorBox.TextEditorProperties.MouseWheelScrollDown = !Revsoft.Wabbitcode.Properties.Settings.Default.InverseScrolling;
-            this.editorBox.TextRenderingHint = Revsoft.Wabbitcode.Properties.Settings.Default.AntiAlias ?
-                System.Drawing.Text.TextRenderingHint.ClearTypeGridFit : System.Drawing.Text.TextRenderingHint.SingleBitPerPixel;
+            //
+            // editorBox
+            //
             this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += TextArea_ToolTipRequest;
-			this.editorBox.TextChanged += new System.EventHandler(this.editorBox_TextChanged);
-			this.editorBox.DragDrop += new System.Windows.Forms.DragEventHandler(this.editorBox_DragDrop);
-			this.editorBox.DragEnter += new System.Windows.Forms.DragEventHandler(this.editorBox_DragEnter);
-			this.editorBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.editorBox_MouseClick);
-			this.editorBox.ActiveTextAreaControl.TextArea.DragDrop += editorBox_DragDrop;
-			this.editorBox.ActiveTextAreaControl.TextArea.DragEnter += editorBox_DragEnter;
-			this.editorBox.ActiveTextAreaControl.TextArea.KeyPress += editorBox_KeyPress;
-			this.editorBox.ActiveTextAreaControl.TextArea.Caret.PositionChanged += Caret_PositionChanged;
-			this.editorBox.ActiveTextAreaControl.TextArea.MouseClick += editorBox_MouseClick;
-			this.editorBox.ActiveTextAreaControl.TextArea.AllowDrop = true;
-			this.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
-			this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += new TextEditor.ToolTipRequestEventHandler(TextArea_ToolTipRequest);
-			this.editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
-			this.editorBox.Document.BreakpointManager.Removed += BreakpointManager_Removed;
-		    this.editorBox.Document.BreakpointManager.HighlightRegex = LineRegex;
+            this.editorBox.TextChanged += this.editorBox_TextChanged;
+            this.editorBox.DragDrop += this.editorBox_DragDrop;
+            this.editorBox.DragEnter += this.editorBox_DragEnter;
+            this.editorBox.MouseClick += this.editorBox_MouseClick;
+            this.editorBox.ActiveTextAreaControl.TextArea.DragDrop += editorBox_DragDrop;
+            this.editorBox.ActiveTextAreaControl.TextArea.DragEnter += editorBox_DragEnter;
+            this.editorBox.ActiveTextAreaControl.TextArea.KeyPress += editorBox_KeyPress;
+            this.editorBox.ActiveTextAreaControl.TextArea.Caret.PositionChanged += Caret_PositionChanged;
+            this.editorBox.ActiveTextAreaControl.TextArea.MouseClick += editorBox_MouseClick;
+            this.editorBox.ActiveTextAreaControl.TextArea.AllowDrop = true;
+            this.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
+            this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += TextArea_ToolTipRequest;
+            this.editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
+            this.editorBox.Document.BreakpointManager.Removed += BreakpointManager_Removed;
+            this.editorBox.Document.BreakpointManager.HighlightRegex = LineRegex;
 			// 
 			// imageList1
 			// 
@@ -283,7 +267,7 @@ namespace Revsoft.Wabbitcode
 		}
 
 		#endregion
-		private Revsoft.TextEditor.TextEditorControl editorBox;
+		private Revsoft.Wabbitcode.EditorExtensions.WabbitcodeTextEditor editorBox;
 		internal ImageList imageList1;
 		private ContextMenu contextMenu;
 		private MenuItem cutContext;

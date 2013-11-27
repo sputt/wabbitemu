@@ -246,7 +246,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 return _lines.Length;
             }
 
-            string description = GetDescription();
+            string description = GetDescription(startLine);
             Macro macroToAdd = new Macro(new DocLocation(startLine, 0), macroName, args, contents, description, _parserInfo);
             _parserInfo.MacrosList.Add(macroToAdd);
 
@@ -276,12 +276,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
             string description;
             if (_tokensEnumerator.MoveNext())
             {
-                hasNext = SkipWhitespace();
-                if (!hasNext)
-                {
-                    contents = string.Empty;
-                }
-                else if (_tokensEnumerator.Current == "(")
+                if (_tokensEnumerator.Current == "(")
                 {
                     // its really a macro
                     List<string> args = GetMacroArgs();
@@ -290,6 +285,12 @@ namespace Revsoft.Wabbitcode.Services.Parser
                     Macro macroToAdd = new Macro(new DocLocation(_lineIndex, 0), defineName, args, contents, description, _parserInfo);
                     _parserInfo.MacrosList.Add(macroToAdd);
                     return;
+                }
+
+                hasNext = SkipWhitespace();
+                if (!hasNext)
+                {
+                    contents = string.Empty;
                 }
                 else
                 {
@@ -517,7 +518,11 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
         private string GetDescription()
         {
-            int lineIndex = _lineIndex;
+            return GetDescription(_lineIndex);
+        }
+
+        private string GetDescription(int lineIndex)
+        {
             // we expect a description to be before whatever line we start on
             lineIndex--;
             string description = string.Empty;

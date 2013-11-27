@@ -3,6 +3,7 @@ using System.Text;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
+using Revsoft.TextEditor.Gui.InsightWindow;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.EditorExtensions;
@@ -448,6 +449,10 @@ namespace Revsoft.Wabbitcode
 			TextAreaControl activeTextAreaControl = editorBox.ActiveTextAreaControl;
 			activeTextAreaControl.Document.FormattingStrategy.FormatLine(
 				activeTextAreaControl.TextArea, activeTextAreaControl.Caret.Line, 0, e.KeyChar);
+            if (e.KeyChar == '(')
+            {
+                ShowInsightWindow(new MacroInsightProvider());
+            }
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -863,7 +868,6 @@ namespace Revsoft.Wabbitcode
 
 		#endregion
 
-
 		public void GotoLine(int line)
 		{
 			editorBox.ActiveTextAreaControl.ScrollTo(line);
@@ -1133,9 +1137,10 @@ namespace Revsoft.Wabbitcode
 
         public override void SaveFile()
         {
-            if (_projectService.Project.ProjectWatcher != null)
+            var watcher = _projectService.Project.ProjectWatcher;
+            if (watcher != null && !string.IsNullOrEmpty(watcher.Path))
             {
-                _projectService.Project.ProjectWatcher.EnableRaisingEvents = false;
+                watcher.EnableRaisingEvents = false;
             }
             if (string.IsNullOrEmpty(FileName))
             {
@@ -1153,13 +1158,38 @@ namespace Revsoft.Wabbitcode
                 DockingService.ShowError("Error saving the file", ex);
             }
 
-            if (_projectService.Project.ProjectWatcher != null)
+            if (watcher != null && !string.IsNullOrEmpty(watcher.Path))
             {
-                _projectService.Project.ProjectWatcher.EnableRaisingEvents = true;
+                watcher.EnableRaisingEvents = true;
             }
 
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
             base.SaveFile();
+        }
+
+        InsightWindow _insightWindow;
+
+        public void ShowInsightWindow(IInsightDataProvider insightDataProvider)
+        {
+            if (_insightWindow == null || _insightWindow.IsDisposed)
+            {
+                _insightWindow = new InsightWindow(this, editorBox);
+                _insightWindow.Closed += CloseInsightWindow;
+            }
+            _insightWindow.AddInsightDataProvider(insightDataProvider, this.FileName);
+            _insightWindow.ShowInsightWindow();
+        }
+
+        private void CloseInsightWindow(object sender, EventArgs e)
+        {
+            if (_insightWindow == null)
+            {
+                return;
+            }
+
+            _insightWindow.Closed -= CloseInsightWindow;
+            _insightWindow.Dispose();
+            _insightWindow = null;
         }
 
         #region IUndoable

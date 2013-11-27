@@ -63,7 +63,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 				}
 			}
 
-			errorToolButton.Text = _errors + " BuildError";
+			errorToolButton.Text = _errors + " Errors";
 			warnToolButton.Text = _warnings + " Warnings";
 		}
 
