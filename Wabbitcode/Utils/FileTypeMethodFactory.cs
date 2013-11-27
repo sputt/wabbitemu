@@ -10,7 +10,7 @@ namespace Revsoft.Wabbitcode.Utils
         public delegate bool FileHandlerDelegate(string fileName);
 
         private static readonly Dictionary<string, FileHandlerDelegate> FileMethods = new Dictionary<string, FileHandlerDelegate>();
-        private static FileHandlerDelegate DefaultHandler;
+        private static FileHandlerDelegate _defaultHandler;
 
         public static void RegisterFileType(string extension, FileHandlerDelegate handler)
         {
@@ -34,7 +34,7 @@ namespace Revsoft.Wabbitcode.Utils
                 throw new ArgumentNullException("handler");
             }
 
-            DefaultHandler = handler;
+            _defaultHandler = handler;
         }
 
         public static bool OpenRegisteredFile(string fileName)
@@ -47,7 +47,7 @@ namespace Revsoft.Wabbitcode.Utils
 
             if (!FileMethods.ContainsKey(extension))
             {
-                return DefaultHandler != null && DefaultHandler(fileName);
+                return _defaultHandler != null && _defaultHandler(fileName);
             }
 
             FileHandlerDelegate handler;

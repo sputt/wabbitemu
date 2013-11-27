@@ -29,15 +29,6 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class OpenFileAction : AbstractUiAction
     {
-        private readonly IDocumentService _documentService;
-        private readonly IProjectService _projectService;
-
-        public OpenFileAction()
-        {
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
-        }
-
         public override void Execute()
         {
             var openFileDialog = new OpenFileDialog

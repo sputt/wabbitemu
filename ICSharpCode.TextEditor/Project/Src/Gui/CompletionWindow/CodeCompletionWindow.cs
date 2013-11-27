@@ -279,7 +279,7 @@ namespace Revsoft.TextEditor.Gui.CompletionWindow
 					InsertSelectedItem('\t');
 					return true;
                 case Keys.Return:
-                    InsertSelectedItem('\n');
+                    InsertSelectedItem(' ');
                     return true;
 			}
 			return base.ProcessTextAreaKey(keyData);

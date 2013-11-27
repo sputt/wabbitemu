@@ -525,14 +525,8 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                         default:
                             {
                                 var macros = _parserService.GetAllParserData().Where(s => s is IMacro);
-                                bool foundMacro = macros.Any(macro => command.StartsWith(macro.Name));
-
-                                if (!foundMacro)
-                                {
-                                    break;
-                                }
-
-                                AddParserData(resultList);
+                                resultList = new List<ICompletionData>(macros.Select(m => 
+                                    new CodeCompletionData(m.Name, CodeCompletionType.Define, m.Description)));
                                 return resultList.ToArray();
                             }
                     }
@@ -749,37 +743,24 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 			{
 				// If completion window is open and wants to handle the key, don't let the text area
 				// handle it
-				if (_codeCompletionWindow.ProcessKeyEvent(key))
-					return true;
+			    if (_codeCompletionWindow.ProcessKeyEvent(key))
+			    {
+			        return true;
+			    }
 			}
 
-		    if ((_codeCompletionWindow != null || (!Settings.Default.EnableAutoTrigger || ",( .#\t".IndexOf(key) == -1)) && (key != ' ' || Control.ModifierKeys != Keys.Control))
+		    if (!Settings.Default.EnableAutoTrigger)
 		    {
-		        return Control.ModifierKeys == Keys.Control;
+		        return false;
+		    }
+
+		    Keys enumKey = (Keys) key;
+		    if (!(key == '#' || enumKey == Keys.Tab || key == ',' || key == ' '))
+		    {
+		        return false;
 		    }
 
 		    ICompletionDataProvider completionDataProvider = new CodeCompletionProvider(_mainForm, _editor, _parserService);
-
-		    if (Control.ModifierKeys == Keys.Control && _editor.ActiveTextAreaControl.Caret.Offset != 0)
-		    {
-		        //editor.ActiveTextAreaControl.Caret.Column -= 1;
-		        int startOffset = _editor.ActiveTextAreaControl.Caret.Offset;
-		        if (startOffset == _editor.Text.Length)
-		        {
-		            startOffset--;
-		        }
-
-		        while (startOffset >= 0 && ",( .#\t\n\r+-*/".IndexOf(_editor.Text[startOffset]) == -1)
-		        {
-		            startOffset--;
-		        }
-
-		        if (startOffset == -1)
-		        {
-		            return false;
-		        }
-		        key = _editor.Document.TextContent[startOffset];
-		    }
 		    _codeCompletionWindow = CodeCompletionWindow.ShowCompletionWindow(
 		        _mainForm,					// The parent window for the completion window
 		        _editor, 					// The text editor to show the window for
