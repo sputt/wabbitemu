@@ -16,25 +16,39 @@ Public Class MapView
     Public ShowCollidable As Boolean = True
 
     Private Sub HandleMouseUp(sender As Object, e As MouseButtonEventArgs)
-        Dim tile As Tile = sender
+        Dim Tile As Tile = sender
 
-        Dim x = Grid.GetColumn(tile)
-        Dim y = Grid.GetRow(tile)
+        Dim x = Grid.GetColumn(Tile)
+        Dim y = Grid.GetRow(Tile)
 
         If Keyboard.IsKeyDown(Key.LeftCtrl) Then
-            MainWindow.Instance.TileSelectorPanel.Index = tile.Index
+            MainWindow.Instance.TileSelectorPanel.Index = Tile.Index
         Else
             If e.ChangedButton = MouseButton.Left Then
+                Dim MapData As MapData = DataContext
+
+                Dim SelectedTile = MainWindow.Instance.TileSelectorPanel.SelectedTile
+                For Each Anim In MapData.ZAnims
+                    If Anim.X = x * 16 And Anim.Y = y * 16 Then
+                        MapData.ZAnims.Remove(Anim)
+                        Exit For
+                    End If
+                Next
+                Tile.Anim = Nothing
+                If SelectedTile IsNot Nothing AndAlso SelectedTile.AnimDef IsNot Nothing Then
+                    Tile.Anim = New ZAnim(SelectedTile.AnimDef, x * 16, y * 16)
+                    MapData.ZAnims.Add(Tile.Anim)
+                End If
                 If MainWindow.Instance.TileSelectorPanel.Index <> -1 Then
-                    tile.Index = MainWindow.Instance.TileSelectorPanel.Index
+                    Tile.Index = MainWindow.Instance.TileSelectorPanel.Index
                 End If
             ElseIf e.ChangedButton = MouseButton.Middle Then
-                tile.Index = (tile.Index Xor &H80)
+                Tile.Index = (Tile.Index Xor &H80)
             End If
         End If
     End Sub
 
-    Public Sub New(Optional InEditor As Boolean = True)
+    Public Sub New(MapData As MapData, Optional InEditor As Boolean = True)
         MyBase.New()
 
         For x = 1 To LayerContainer.MapSize.Width
@@ -62,6 +76,15 @@ Public Class MapView
 
                 Tile.SetBinding(Tile.TilesetProperty, New Binding("Tileset"))
 
+                If MapData IsNot Nothing Then
+                    For Each Anim In MapData.ZAnims
+                        If Anim.X = x * 16 And Anim.Y = y * 16 Then
+                            Tile.Anim = Anim
+                            Exit For
+                        End If
+                    Next
+                End If
+
                 If InEditor Then
                     AddHandler Tile.MouseDown, AddressOf HandleMouseUp
                 End If
@@ -78,7 +101,7 @@ Public Class MapView
     End Sub
 
     Public Sub New()
-        Me.New(False)
+        Me.New(Nothing, False)
     End Sub
 
     Public Sub DeselectAll() Implements IMapLayer.DeselectAll

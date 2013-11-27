@@ -27,6 +27,27 @@ Public Structure AZObject
 End Structure
 
 <StructLayout(LayoutKind.Sequential, Pack:=1)>
+Public Structure AZEnemy
+    Public ID As Byte
+    Public Flags As Byte
+    Public Position As AZPosition
+    Public Gen As Byte
+    Public Com As AZExoc
+    Public Anim As AZExoc
+End Structure
+
+<StructLayout(LayoutKind.Sequential, Pack:=1)>
+Public Structure AZAnim
+    Public Alive As Byte
+    Public X As Byte
+    Public W As Byte
+    Public Y As Byte
+    Public H As Byte
+    Public Anim As AZExoc
+    Public AnimData As UShort
+End Structure
+
+<StructLayout(LayoutKind.Sequential, Pack:=1)>
 Public Structure AZMisc
     Public Alive As Byte
     Public X As Byte
@@ -104,19 +125,21 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Return ZObj
     End Function
 
-    Public Shared Function FromMacro(Scenario As Scenario, Macro As String) As Base
+    Public Shared Function FromMacro(Defs As Dictionary(Of String, ZDef), Macro As String) As Base
         Dim Obj As New ZBase
         ZType.FromMacro(Macro, Obj)
 
         Dim ZObj = BaseFromZBase(Obj)
 
-        ZObj.Definition = Scenario.ObjectDefs(Split(Macro, "(")(0))
+        ZObj.Definition = Defs(Split(Macro, "(")(0))
         ZObj.Args = ZObj.Definition.Args.Clone
         Dim Args = Split(Split(Split(Macro, "(")(1), ")")(0), ",")
 
-        For i = 0 To Args.Count - 1
-            ZObj.Args(i).Value = Args(i)
-        Next
+        If ZObj.Args.Count > 0 Then
+            For i = 0 To Args.Count - 1
+                ZObj.Args(i).Value = Args(i)
+            Next
+        End If
         Return ZObj
     End Function
 
@@ -439,16 +462,25 @@ Public Class ZDef
         End Set
     End Property
 
-    Public Sub New(Name As String, Macro As String, Description As String)
+    Public Sub New(Name As String, Macro As String, Description As String, ObjType As Type)
         SetValue(NameProperty, Name)
         SetValue(MacroProperty, Macro)
         SetValue(DescriptionProperty, Description)
         SetValue(ArgsProperty, New ArgsCollection)
 
-        ' Assemble it when you created it to determine some properties
-        'Dim Obj As AZObject
-        'ZType.FromMacro(Macro & "(0, 0)", Obj)
-        'SetValue(DefaultImageProperty, CInt(Obj.Anim.Pointer))
+        Dim M = ObjType.BaseType.GetMethod("FromMacro")
+
+        Dim Defs As New Dictionary(Of String, ZDef)
+        Defs.Add(Macro, Me)
+        Dim ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0)"})
+        If ObjectInstance.Image = 0 Then
+            ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0)"})
+            If ObjectInstance.Image = 0 Then
+                ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0, 0)"})
+            End If
+        End If
+
+        SetValue(DefaultImageProperty, ObjectInstance.Image)
     End Sub
 
     Public Sub AddArg(Name As String, Description As String, Optional IsOptional As Boolean = False)
@@ -539,6 +571,46 @@ Public Class ZMisc
     Protected Overrides Sub FromStruct(Obj As AZMisc)
         X = Obj.X : W = Obj.W
         Y = Obj.Y : H = Obj.H
+    End Sub
+
+End Class
+
+Public Class ZEnemy
+    Inherits ZBaseObject(Of AZEnemy, ZEnemy)
+
+    Protected Overrides Sub FromStruct(Obj As AZEnemy)
+        With Obj.Position
+            X = .X : W = .W
+            Y = .Y : H = .H
+            Z = .Z : D = .D
+        End With
+        Image = Obj.Anim.Pointer
+    End Sub
+
+    Public Sub New()
+    End Sub
+
+    Public Sub New(Def As ZDef, ParamArray Args() As Object)
+        MyBase.New(Def, Args)
+    End Sub
+
+End Class
+
+Public Class ZAnim
+    Inherits ZBaseObject(Of AZAnim, ZAnim)
+
+    Protected Overrides Sub FromStruct(Obj As AZAnim)
+        X = Obj.X : W = Obj.W
+        Y = Obj.Y : H = Obj.H
+
+        Image = Obj.AnimData / 32
+    End Sub
+
+    Public Sub New()
+    End Sub
+
+    Public Sub New(Def As ZDef, X As Byte, Y As Byte)
+        MyBase.New(Def, {X, Y})
     End Sub
 
 End Class

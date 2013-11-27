@@ -14,42 +14,18 @@
 
     <UserControl.Resources>
         <localconverters:ImageIndexScenarioConverter x:Key="convertImageIndex"/>
-
-        <DataTemplate DataType="{x:Type local:ZDef}">
-            <Border Name="Border" BorderThickness="1" Background="#FFF9F9F9" Margin="3,0">
-                <Border.Style>
-                    <Style TargetType="Border">
-                        <Setter Property="BorderBrush" Value="Transparent"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="BorderBrush">
-                                    <Setter.Value>
-                                        <SolidColorBrush Color="Gray"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-                <StackPanel Name="ObjectContainer" Orientation="Horizontal" Height="20" VerticalAlignment="Center" SnapsToDevicePixels="True" 
-                            MouseMove="Object_MouseMove" 
-                            MouseLeftButtonUp="Object_MouseUp"
-                            GiveFeedback="Object_GiveFeedback"
-                            Background="#FFF9F9F9"
-                            >
-                    <StackPanel.Triggers>
-                    </StackPanel.Triggers>
-                    <Image Stretch="None" Width="40" x:Name="ObjectImage" UseLayoutRounding="True">
-                        <Image.Source>
-                            <MultiBinding Converter="{StaticResource convertImageIndex}">
-                                <Binding Path="DefaultImage"/>
-                            </MultiBinding>
-                        </Image.Source>
-                    </Image>
-                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Name="TextBlock1"/>
-                </StackPanel>
-            </Border>
-        </DataTemplate>
+        <Style x:Key="BorderStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush">
+                        <Setter.Value>
+                            <SolidColorBrush Color="Gray"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
     <Grid >
         <TabControl>
@@ -63,8 +39,61 @@
                                     <StackPanel Orientation="Vertical" Margin="0"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type local:ZDef}">
+                                    <Border Name="Border" BorderThickness="1" Background="#FFF9F9F9" Margin="3,0" Style="{StaticResource BorderStyle}">
+                                        <StackPanel Name="ObjectContainer" Orientation="Horizontal" Height="20" VerticalAlignment="Center" SnapsToDevicePixels="True" 
+                                            MouseMove="Object_MouseMove" 
+                                            MouseLeftButtonUp="Object_MouseUp"
+                                            GiveFeedback="Object_GiveFeedback"
+                                            Background="#FFF9F9F9"
+                                            >
+                                            <StackPanel.Triggers>
+                                            </StackPanel.Triggers>
+                                            <Image Stretch="None" Width="40" x:Name="ObjectImage" UseLayoutRounding="True">
+                                                <Image.Source>
+                                                    <MultiBinding Converter="{StaticResource convertImageIndex}">
+                                                        <Binding Path="DefaultImage"/>
+                                                    </MultiBinding>
+                                                </Image.Source>
+                                            </Image>
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Name="TextBlock1"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Enemies">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=EnemyDefs}" IsTabStop="False" Padding="0,0,0,0" 
+                          Background="#FFF9F9F9">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" Margin="0"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type local:ZDef}">
+                                <Border Name="Border" BorderThickness="1" Background="#FFF9F9F9" Margin="3,0" Style="{StaticResource BorderStyle}">
+                                    <StackPanel Name="ObjectContainer" Orientation="Horizontal" Height="20" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                                        <StackPanel.Triggers>
+                                        </StackPanel.Triggers>
+                                        <Image Stretch="None" Width="40" x:Name="ObjectImage" UseLayoutRounding="True">
+                                            <Image.Source>
+                                                <MultiBinding Converter="{StaticResource convertImageIndex}">
+                                                    <Binding Path="DefaultImage"/>
+                                                </MultiBinding>
+                                            </Image.Source>
+                                        </Image>
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="Misc">
@@ -77,6 +106,13 @@
                                     <StackPanel Orientation="Vertical" Margin="0"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Height="20" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Name="TextBlock1"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
                 </ScrollViewer>

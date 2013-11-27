@@ -43,7 +43,6 @@ Namespace ValueConverters
 
         Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
             Dim Index = value
-
             Return Scenario.Instance.Images(Index).Image
         End Function
 
@@ -52,6 +51,18 @@ Namespace ValueConverters
         End Function
     End Class
 
+    Public Class TileIndexImageConverter
+        Implements IValueConverter
+
+        Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+            Dim TileIndex = value
+            Return Scenario.Instance.Tilesets.Values(0)(TileIndex)
+        End Function
+
+        Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+            Return Nothing
+        End Function
+    End Class
 
     Public Class YConverter
         Implements IMultiValueConverter

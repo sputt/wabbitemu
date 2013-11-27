@@ -6,27 +6,25 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:s="clr-namespace:System;assembly=mscorlib"
+             xmlns:local="clr-namespace:WPFZ80MapEditor"
+             xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
              mc:Ignorable="d" 
              d:DesignHeight="429" d:DesignWidth="165" xmlns:my="clr-namespace:WPFZ80MapEditor">
     <UserControl.Resources>
         <s:Double x:Key="TilesZoomLevel">24.0</s:Double>
         <Color x:Key="InactiveTilesColor">Transparent</Color>
+        <localconverters:TileIndexImageConverter x:Key="TileConverter"/>
     </UserControl.Resources>
-    <TabControl>
-        <TabItem Header="Tiles" Name="TilesTab">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <WrapPanel Grid.Row="0" VerticalAlignment="Center">
-                    <Label>Zoom:</Label>
-                    <Slider Height="23" Name="TileZoomSlider"  Width="97" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" IsSnapToTickEnabled="True" Maximum="32" Minimum="16" SmallChange="1" TickFrequency="4" TickPlacement="TopLeft" LargeChange="8" Value="24.0" IsMoveToPointEnabled="False" />
-                </WrapPanel>
+    <DockPanel>
+        <WrapPanel VerticalAlignment="Top" Margin="0,5" DockPanel.Dock="Top">
+            <Label>Zoom:</Label>
+            <Slider Height="23" Name="TileZoomSlider"  Width="97" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" IsSnapToTickEnabled="True" Maximum="32" Minimum="16" SmallChange="1" TickFrequency="4" TickPlacement="TopLeft" LargeChange="8" Value="24.0" IsMoveToPointEnabled="False" />
+        </WrapPanel>
+        <TabControl x:Name="TileTabs">
+            <TabItem Header="Tiles" Name="TilesTab">
                 <Border
-                    Grid.Row="1" 
-                    BorderBrush="Gray"
-                    BorderThickness="1">
+                BorderBrush="Gray"
+                BorderThickness="1">
 
                     <ScrollViewer Margin="0,0,0,0">
 
@@ -35,24 +33,35 @@
                         </WrapPanel>
 
                         <!--<Grid Grid.Row="1" x:Name="TilesGrid" HorizontalAlignment="Center" VerticalAlignment="Top">
-                        <Rectangle x:Name="TilesOverlay" Panel.ZIndex="1" IsHitTestVisible="False">
-                            <Rectangle.Fill>
-                                <SolidColorBrush x:Name="TilesOverlayBrush" Color="Transparent"/>
-                            </Rectangle.Fill>
-                        </Rectangle>
-                        <Rectangle Width="{Binding Source={StaticResource TilesZoomLevel}}"></Rectangle>
-                    </Grid>-->
+                    <Rectangle x:Name="TilesOverlay" Panel.ZIndex="1" IsHitTestVisible="False">
+                        <Rectangle.Fill>
+                            <SolidColorBrush x:Name="TilesOverlayBrush" Color="Transparent"/>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <Rectangle Width="{Binding Source={StaticResource TilesZoomLevel}}"></Rectangle>
+                </Grid>-->
 
                     </ScrollViewer>
                 </Border>
-            </Grid>
-        </TabItem>
-        <TabItem Header="Animated Tiles" Name="AnimatedTilesTab">
-            <StackPanel>
-                <Button Height="30">
-                    Hello
-                </Button>
-            </StackPanel>
-        </TabItem>
-    </TabControl>
+            </TabItem>
+            <TabItem Header="Animated Tiles" Name="AnimatedTilesTab">
+                <Grid>
+                    <ItemsControl ItemsSource="{Binding Path=AnimDefs.Values}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel ItemWidth="{Binding ElementName=TileZoomSlider, Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" ItemHeight="{Binding ElementName=TileZoomSlider, Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Margin="4">
+
+                                </WrapPanel>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <local:PanelTile Index="{Binding DefaultImage}" Margin="2" TileSelected="OnTileSelect" AnimDef="{Binding .}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
 </UserControl>

@@ -15,6 +15,8 @@ Public Class SPASMHelper
         Assembler.CurrentDirectory = Path
 
         Assembler.Defines.Add("_MAPEDITOR", "1")
+        Assembler.Defines.Add("TILE_TABLE", 0)
+
         Assembler.IncludeDirectories.Add(Environment.CurrentDirectory)
         Assembler.IncludeDirectories.Add(Environment.CurrentDirectory & "\Images")
         Assembler.IncludeDirectories.Add(Environment.CurrentDirectory & "\Defaults")

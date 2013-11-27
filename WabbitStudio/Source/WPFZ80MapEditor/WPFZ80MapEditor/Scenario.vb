@@ -16,9 +16,14 @@ Public Class Scenario
     Public Shared ReadOnly ImagesProperty As DependencyProperty =
         DependencyProperty.Register("Images", GetType(ObservableCollection(Of ZeldaImage)), GetType(Scenario),
         New PropertyMetadata(New ObservableCollection(Of ZeldaImage)))
-
+    Public Shared ReadOnly AnimDefsProperty As DependencyProperty =
+        DependencyProperty.Register("AnimDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
+        New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
     Public Shared ReadOnly ObjectDefsProperty As DependencyProperty =
         DependencyProperty.Register("ObjectDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
+        New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
+    Public Shared ReadOnly EnemyDefsProperty As DependencyProperty =
+        DependencyProperty.Register("EnemyDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
         New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
     Public Shared ReadOnly MiscDefsProperty As DependencyProperty =
         DependencyProperty.Register("MiscDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
@@ -44,12 +49,30 @@ Public Class Scenario
         End Set
     End Property
 
+    Public Property AnimDefs As ObservableDictionary(Of String, ZDef)
+        Get
+            Return GetValue(AnimDefsProperty)
+        End Get
+        Set(value As ObservableDictionary(Of String, ZDef))
+            SetValue(AnimDefsProperty, value)
+        End Set
+    End Property
+
     Public Property ObjectDefs As ObservableDictionary(Of String, ZDef)
         Get
             Return GetValue(ObjectDefsProperty)
         End Get
         Set(value As ObservableDictionary(Of String, ZDef))
             SetValue(ObjectDefsProperty, value)
+        End Set
+    End Property
+
+    Public Property EnemyDefs As ObservableDictionary(Of String, ZDef)
+        Get
+            Return GetValue(EnemyDefsProperty)
+        End Get
+        Set(value As ObservableDictionary(Of String, ZDef))
+            SetValue(EnemyDefsProperty, value)
         End Set
     End Property
 
@@ -62,6 +85,13 @@ Public Class Scenario
         End Set
     End Property
 
+    Public ReadOnly Property AllDefs As Dictionary(Of String, ZDef)
+        Get
+            Return ObjectDefs.Values.Union(EnemyDefs.Values).Union(MiscDefs.Values).Union(AnimDefs.Values)
+        End Get
+    End Property
+
+
     Public Sub AddMap(x As Integer, y As Integer, Map As MapData)
 
         Dim Container = MainWindow.Instance.LayerContainer.AddMap(x, y, Map)
@@ -72,7 +102,7 @@ Public Class Scenario
         Grid.SetRow(ObjLayer, y)
         Panel.SetZIndex(ObjLayer, 2)
 
-        Dim MapView As New MapView(True)
+        Dim MapView As New MapView(Map, True)
         Container.Children.Add(MapView)
         Grid.SetColumn(MapView, x)
         Grid.SetRow(MapView, y)
@@ -116,8 +146,10 @@ Public Class Scenario
         SPASMHelper.Assembler.Defines.Add("INCLUDE_ALL", 1)
         Dim Data = SPASMHelper.AssembleFile(FileName)
 
-        LoadObjectDefs(Path & "\objectdef.inc")
-        LoadMiscDefs(Path & "\miscdef.inc")
+        LoadDefs(Path & "\animatedef.inc", AnimDefsProperty, GetType(ZAnim))
+        LoadDefs(Path & "\objectdef.inc", ObjectDefsProperty, GetType(ZObject))
+        LoadDefs(Path & "\miscdef.inc", MiscDefsProperty, GetType(ZMisc))
+        LoadDefs(Path & "\enemydef.inc", EnemyDefsProperty, GetType(ZEnemy))
 
         Dim Reader As New StreamReader(FileName)
         Dim ScenarioContents As String = Reader.ReadToEnd()
@@ -137,19 +169,28 @@ Public Class Scenario
                 Dim MapData = New MapData(Data.Skip(SPASMHelper.Labels(Label)), Tileset)
 
                 Dim Rx As New Regex(
-                    "^" & Label & "_DEFAULTS:\s*" & _
-                    "^.*\s*" & _
-                    "^object_section\(\)\s*" & _
-                    "(^\s+(?<MacroName>[a-z_]+)\((?<MacroArgs>.*)\)\s*)*" & _
-                    "^enemy_section\(\)\s*$", RegexOptions.Multiline Or RegexOptions.Compiled)
+                    "^" & Label & "_DEFAULTS:" & vbCrLf & _
+                    "^animate_section\(\)" & vbCrLf & _
+                    "(^\s+(?<AnimName>[a-z_]+)\((?<AnimArgs>.*)\)\s*)*\s*" & _
+                    "^object_section\(\)\" & vbCrLf & _
+                    "(^\s+(?<ObjectName>[a-z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
+                    "^enemy_section\(\)\" & vbCrLf & _
+                    "(^\s+(?<EnemyName>[a-z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
+                    "^misc_section\(\)", RegexOptions.Multiline Or RegexOptions.Compiled)
 
                 Dim Matches = Rx.Matches(ScenarioContents)
                 If Matches.Count = 1 Then
                     Dim Groups = Matches(0).Groups
 
-                    For i = 0 To Groups("MacroName").Captures.Count - 1
-                        Dim Params = Split(Groups("MacroArgs").Captures(i).Value, ",")
-                        Dim Obj As New ZObject(ObjectDefs(Groups("MacroName").Captures(i).Value), Params)
+                    For i = 0 To Groups("AnimName").Captures.Count - 1
+                        Dim Params = Split(Groups("AnimArgs").Captures(i).Value, ",")
+                        Dim Anim As New ZAnim(AnimDefs(Groups("AnimName").Captures(i).Value), Params(0), Params(1))
+                        MapData.ZAnims.Add(Anim)
+                    Next
+
+                    For i = 0 To Groups("ObjectName").Captures.Count - 1
+                        Dim Params = Split(Groups("ObjectArgs").Captures(i).Value, ",")
+                        Dim Obj As New ZObject(ObjectDefs(Groups("ObjectName").Captures(i).Value), Params)
                         MapData.ZObjects.Add(Obj)
                     Next
                 End If
@@ -270,6 +311,11 @@ Public Class Scenario
             Stream.WriteLine(DefaultsLabel & ":")
 
             Stream.WriteLine("animate_section()")
+
+            For Each Anim In MapData.ZAnims
+                Stream.WriteLine(vbTab & Anim.ToMacro())
+            Next
+
             Stream.WriteLine("object_section()")
 
             For Each Obj In MapData.ZObjects

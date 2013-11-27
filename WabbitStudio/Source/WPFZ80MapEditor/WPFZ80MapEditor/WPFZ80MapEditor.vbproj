@@ -124,7 +124,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DragAdorner.vb" />
-    <Compile Include="ScenarioMiscDefs.vb" />
+    <Compile Include="Panels\PanelTile.vb" />
+    <Compile Include="ScenarioDefs.vb" />
     <Compile Include="Simulation\GameWindow.xaml.vb">
       <DependentUpon>GameWindow.xaml</DependentUpon>
     </Compile>
@@ -138,7 +139,6 @@
     <Compile Include="BitmapUtils.vb" />
     <Compile Include="ObservableDictionary.vb" />
     <Compile Include="ScenarioImages.vb" />
-    <Compile Include="ScenarioObjectDefs.vb" />
     <Compile Include="ObjectLayer.xaml.vb">
       <DependentUpon>ObjectLayer.xaml</DependentUpon>
     </Compile>
@@ -155,6 +155,7 @@
     <Compile Include="SPASMHelper.vb" />
     <Compile Include="Tile.vb" />
     <Compile Include="Tileset.vb" />
+    <Compile Include="Utils.vb" />
     <Compile Include="ZeldaImage.vb" />
     <Compile Include="ZeldaObjects.vb" />
     <Compile Include="ValueConverters.vb" />

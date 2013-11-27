@@ -23,6 +23,10 @@ Public Class Tile
             Else
                 OverlayColor = Color.FromArgb(0, 255, 255, 255)
             End If
+            If Anim IsNot Nothing Then
+                'OverlayColor
+                OverlayColor = Color.Add(OverlayColor, Color.FromArgb(64, 80, 0, 80))
+            End If
         ElseIf e.Property Is Tile.TilesetProperty Then
             SetImageSource(Index)
         End If
@@ -37,9 +41,33 @@ Public Class Tile
     Public Shared ReadOnly TilesetProperty As DependencyProperty =
         DependencyProperty.Register("Tileset", GetType(Integer), GetType(Tile))
 
+    Public Shared ReadOnly AnimDefProperty As DependencyProperty =
+        DependencyProperty.Register("AnimDef", GetType(ZDef), GetType(Tile))
+
+    Public Shared ReadOnly AnimProperty As DependencyProperty =
+        DependencyProperty.Register("Anim", GetType(ZAnim), GetType(Tile))
+
     Public IsCollidable As Boolean
 
     Public ShowCollidable As Boolean = True
+
+    Public Property Anim As ZAnim
+        Get
+            Return GetValue(AnimProperty)
+        End Get
+        Set(value As ZAnim)
+            SetValue(AnimProperty, value)
+        End Set
+    End Property
+
+    Public Property AnimDef As ZDef
+        Get
+            Return GetValue(AnimDefProperty)
+        End Get
+        Set(value As ZDef)
+            SetValue(AnimDefProperty, value)
+        End Set
+    End Property
 
     Public Property Tileset As Integer
         Get
