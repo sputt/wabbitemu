@@ -185,7 +185,7 @@ int run_assembly()
 	}
 
 	if (mode & MODE_STATS) {
-		fprintf (stderr, "Number of labels: %u\nNumber of defines: %u\nCode size: %u\nData size: %u\nTotal size: %u\n",
+		fprintf(stdout, "Number of labels: %u\nNumber of defines: %u\nCode size: %u\nData size: %u\nTotal size: %u\n",
 		         get_num_labels (), get_num_defines (), stats_codesize, stats_datasize, stats_codesize + stats_datasize);
 	}
 	

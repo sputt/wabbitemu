@@ -425,14 +425,20 @@ char *handle_opcode_or_macro (char *ptr) {
 				//see if any code is left on the line
 				if (!is_end_of_code_line (skip_whitespace (ptr))) {
 					char *line_end = skip_to_line_end (ptr);
-					char *full_line = (char *) malloc (strlen (define->contents) + line_end - ptr + 1);
-				
-					strcpy (full_line, define->contents);
-					strncat (full_line, ptr, line_end - ptr);
+					if (define->contents == NULL)
+					{
+						SetLastSPASMError(SPASM_ERR_ARG_USED_WITHOUT_VALUE, define->name);
+					}
+					else
+					{
+						char *full_line = (char *)malloc(strlen(define->contents) + line_end - ptr + 1);
 
-					run_first_pass_line (full_line);
-					free(full_line);
+						strcpy(full_line, define->contents);
+						strncat(full_line, ptr, line_end - ptr);
 
+						run_first_pass_line(full_line);
+						free(full_line);
+					}
 				} else {
 					if (define->contents == NULL)
 					{
