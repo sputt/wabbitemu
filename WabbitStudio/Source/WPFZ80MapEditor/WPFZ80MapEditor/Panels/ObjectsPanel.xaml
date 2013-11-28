@@ -108,7 +108,7 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Height="20" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                                    <StackPanel Orientation="Horizontal" Height="20" VerticalAlignment="Center" SnapsToDevicePixels="True" MouseMove="Object_MouseMove">
                                         <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Name="TextBlock1"/>
                                     </StackPanel>
                                 </DataTemplate>

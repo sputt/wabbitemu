@@ -14,7 +14,7 @@
         DependencyProperty.RegisterAttached("Height", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(-1)))
 
     Public Shared ReadOnly SelectionOpacityProperty As DependencyProperty =
-        DependencyProperty.RegisterAttached("SelectionOpacity", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(1.0)))
+        DependencyProperty.RegisterAttached("SelectionOpacity", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(0.6)))
 
     Public Shared Sub SetLeft(d As DependencyObject, value As Double)
         d.SetValue(LeftProperty, value)
@@ -53,7 +53,7 @@
     End Property
 
     Public Sub DeselectAll() Implements IMapLayer.DeselectAll
-        ItemsControl.SelectedItems.Clear()
+        ItemsControl.SelectedItem = Nothing
     End Sub
 
     Private Sub UserControl_MouseDown(sender As Object, e As MouseButtonEventArgs)
@@ -81,15 +81,13 @@
 
         Obj.CaptureMouse()
         _StartDrag = e.GetPosition(Me)
-        If Not ItemsControl.SelectedItems.Contains(ZMisc) Then
-            DeselectAll()
-            ItemsControl.SelectedItems.Add(ZMisc)
-        End If
 
-        For Each ZMisc2 As ZMisc In ItemsControl.SelectedItems
-            MiscLayer.SetLeft(ZMisc2, ZMisc2.X)
-            MiscLayer.SetTop(ZMisc2, ZMisc2.Y)
-        Next
+        ItemsControl.SelectedItem = ZMisc
+        ItemsControl.Focus()
+
+        MiscLayer.SetLeft(ZMisc, ZMisc.X)
+        MiscLayer.SetTop(ZMisc, ZMisc.Y)
+
         _IsDraggingMisc = True
         e.Handled = True
     End Sub
@@ -99,17 +97,40 @@
             Dim CurPoint As Point = e.GetPosition(Me)
             Dim DragDelta = CurPoint - _StartDrag
 
-            '_StartDrag = CurPoint
-            For Each ZMisc As ZMisc In ItemsControl.SelectedItems
-                Dim NewX = MiscLayer.GetLeft(ZMisc) + DragDelta.X
-                Dim NewY = MiscLayer.GetTop(ZMisc) + DragDelta.Y
+            Dim NewX = MiscLayer.GetLeft(ItemsControl.SelectedValue) + DragDelta.X
+            Dim NewY = MiscLayer.GetTop(ItemsControl.SelectedValue) + DragDelta.Y
 
-                ZMisc.UpdatePosition(NewX, NewY, False)
-            Next
+            ItemsControl.SelectedValue.UpdatePosition(NewX, NewY, False)
 
             SetValue(SelectionOpacityProperty, 0.25)
 
             e.Handled = True
         End If
     End Sub
+
+    Private Sub ItemsControl_KeyDown(sender As Object, e As Windows.Input.KeyEventArgs) Handles ItemsControl.KeyDown
+        Dim SelectedMisc As ZMisc = CType(sender, ListBox).SelectedItem
+        If SelectedMisc IsNot Nothing Then
+            Select Case e.Key
+                Case Key.Delete
+                    CType(Me.DataContext, MapData).ZMisc.Remove(SelectedMisc)
+            End Select
+        Else
+            e.Handled = False
+        End If
+    End Sub
+
+    'Private Sub ItemsControl_PreviewKeyDown(sender As System.Object, e As System.Windows.Input.KeyEventArgs) Handles ItemsControl.PreviewKeyDown
+    '    Dim SelectedMisc As ZMisc = CType(sender, ListBox).SelectedItem
+    '    Debug.WriteLine("Misc previewkeydown")
+    '    If SelectedMisc IsNot Nothing Then
+    '        Select Case e.Key
+    '            Case Key.Delete
+    '                CType(Me.DataContext, MapData).ZMisc.Remove(SelectedMisc)
+    '        End Select
+    '    Else
+    '        e.Handled = False
+    '    End If
+    'End Sub
+
 End Class

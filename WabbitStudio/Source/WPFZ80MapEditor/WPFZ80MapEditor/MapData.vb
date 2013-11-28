@@ -66,6 +66,22 @@ Public Class MapData
         End Set
     End Property
 
+    Public Sub AddFromDef(Def As ZDef, X As Byte, Y As Byte)
+        If Scenario.Instance.ObjectDefs.ContainsValue(Def) Then
+            Dim ObjTest As New ZObject(Def, X, Y)
+
+            X = X - ObjTest.W / 2
+            Y = Y - ObjTest.H / 2
+
+            Dim Obj As New ZObject(Def, X, Y)
+            ZObjects.Add(Obj)
+        ElseIf Scenario.Instance.MiscDefs.ContainsValue(Def) Then
+            Dim Misc As New ZMisc(Def, X, Y, 16, 16)
+
+            ZMisc.Add(Misc)
+        End If
+    End Sub
+
     Public Property Tileset As Integer
         Get
             Return GetValue(TilesetProperty)
@@ -76,14 +92,14 @@ Public Class MapData
         End Set
     End Property
 
-    Public Property Scenario As Scenario
-        Get
-            Return GetValue(ScenarioProperty)
-        End Get
-        Set(value As Scenario)
-            SetValue(ScenarioProperty, value)
-        End Set
-    End Property
+    'Public Property Scenario As Scenario
+    '    Get
+    '        Return GetValue(ScenarioProperty)
+    '    End Get
+    '    Set(value As Scenario)
+    '        SetValue(ScenarioProperty, value)
+    '    End Set
+    'End Property
 
     Private Sub Initialize(NewTileset As Integer)
         Tileset = NewTileset

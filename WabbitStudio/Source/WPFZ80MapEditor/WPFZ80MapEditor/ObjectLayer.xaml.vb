@@ -171,73 +171,36 @@
         Mouse.Capture(Nothing)
     End Sub
 
-    Private Sub ObjectLayer_DragEnter(sender As System.Object, e As System.Windows.DragEventArgs)
-        Debug.WriteLine("ObjectLayer_DragEnter!")
-        If e.Data.GetDataPresent(GetType(ZDef)) Then
-            e.Effects = DragDropEffects.Move
-        Else
-            Debug.WriteLine("Setting effects to none")
-            e.Effects = DragDropEffects.None
-        End If
-        e.Handled = True
-    End Sub
-
-    Private Sub ObjectLayer_DragOver(sender As System.Object, e As System.Windows.DragEventArgs)
-        Debug.WriteLine("ObjectLayer_DragOver!")
-        If e.Data.GetDataPresent(GetType(ZDef)) Then
-            e.Effects = DragDropEffects.Move
-        Else
-            Debug.WriteLine("Setting effects to none")
-            e.Effects = DragDropEffects.None
-        End If
-        e.Handled = True
-    End Sub
-
-    Private Sub ObjectLayer_Drop(sender As System.Object, e As System.Windows.DragEventArgs)
-        If e.Data.GetDataPresent(GetType(ZDef)) Then
-            Debug.WriteLine("ObjectLayer_Drop")
-            Dim Pos As Point = e.GetPosition(sender)
-            Dim Def As ZDef = e.Data.GetData(GetType(ZDef))
-
-            Dim ObjTest As New ZObject(Def, CInt(Pos.X), CInt(Pos.Y))
-
-            Pos.X = Pos.X - ObjTest.W / 2
-            Pos.Y = Pos.Y - ObjTest.H / 2
-
-            Dim Obj As New ZObject(Def, CInt(Pos.X), CInt(Pos.Y))
-
-            If Not Me.DataContext Is Nothing Then
-                CType(Me.DataContext, MapData).ZObjects.Add(Obj)
-            End If
-        End If
-        e.Handled = True
-    End Sub
-
     Private Sub ObjectItemsControl_PreviewKeyDown(sender As System.Object, e As System.Windows.Input.KeyEventArgs) Handles ObjectItemsControl.PreviewKeyDown
         Dim Objs = New List(Of ZObject)(CType(sender, ListBox).SelectedItems.Cast(Of ZObject))
-        Select Case e.Key
-            Case Key.Delete
-                For Each Obj In Objs
-                    CType(Me.DataContext, MapData).ZObjects.Remove(Obj)
-                Next
-            Case Key.Down
-                For Each Obj In Objs
-                    Obj.Jump(0, 1)
-                Next
-            Case Key.Left
-                For Each Obj In Objs
-                    Obj.Jump(-1, 0)
-                Next
-            Case Key.Right
-                For Each Obj In Objs
-                    Obj.Jump(1, 0)
-                Next
-            Case Key.Up
-                For Each Obj In Objs
-                    Obj.Jump(0, -1)
-                Next
-        End Select
-        e.Handled = True
+        Debug.WriteLine("Objects previewkeydown")
+        If Objs.Count > 0 Then
+            Select Case e.Key
+                Case Key.Delete
+                    For Each Obj In Objs
+                        CType(Me.DataContext, MapData).ZObjects.Remove(Obj)
+                    Next
+                Case Key.Down
+                    For Each Obj In Objs
+                        Obj.Jump(0, 1)
+                    Next
+                Case Key.Left
+                    For Each Obj In Objs
+                        Obj.Jump(-1, 0)
+                    Next
+                Case Key.Right
+                    For Each Obj In Objs
+                        Obj.Jump(1, 0)
+                    Next
+                Case Key.Up
+                    For Each Obj In Objs
+                        Obj.Jump(0, -1)
+                    Next
+            End Select
+            e.Handled = True
+        Else
+            e.Handled = False
+        End If
     End Sub
 
     Private Sub ObjectItemsControl_SelectionChanged(sender As System.Object, e As System.Windows.Controls.SelectionChangedEventArgs) Handles ObjectItemsControl.SelectionChanged

@@ -11,11 +11,11 @@
              MouseLeftButtonUp="ObjectCanvas_MouseLeftButtonUp"
              MouseMove="ObjectCanvas_MouseMove"
              Background="#01FFFFFF"
-             DragEnter="ObjectLayer_DragEnter"
-             DragOver="ObjectLayer_DragOver"
-             Drop="ObjectLayer_Drop"
-             AllowDrop="True"
+            
              >
+    <!--             DragEnter="ObjectLayer_DragEnter"
+             DragOver="ObjectLayer_DragOver"
+             Drop="ObjectLayer_Drop"  AllowDrop="True"-->
     <UserControl.Resources>
         <ControlTemplate x:Key="NoScroll">
             <ItemsPresenter></ItemsPresenter>
