@@ -13,7 +13,15 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class DebugPanel : ToolWindow
 	{
-	    public const string WindowName = "Debug Panel";
+	    public const string WindowIdentifier = "Debug Panel";
+        public override string WindowName
+        {
+            get
+            {
+                return WindowIdentifier;
+            }
+        }
+
 		private bool _updating;
 		private IWabbitcodeDebugger _debugger;
 

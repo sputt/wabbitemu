@@ -45,13 +45,13 @@ namespace Revsoft.Wabbitcode
 		private readonly IDockingService _dockingService;
 		private readonly IProjectService _projectService;
 
-		public FindAndReplaceForm()
+	    private FindAndReplaceForm()
 		{
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
 
-            _results = _dockingService.GetDockingWindow(FindResultsWindow.WindowName) as FindResultsWindow;
+            _results = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
 
 			InitializeComponent();
 		}

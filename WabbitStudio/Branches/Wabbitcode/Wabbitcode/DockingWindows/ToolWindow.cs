@@ -17,12 +17,25 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
         protected readonly IDockingService DockingService;
 
-		protected ToolWindow()
+	    public virtual string WindowName
+	    {
+	        get
+	        {
+	            return "ToolWindow";
+	        }
+	    }
+
+	    protected ToolWindow()
 		{
 			InitializeComponent();
 
 			DockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
 		}
+
+        protected override string GetPersistString()
+        {
+            return WindowName;
+        }
 
 		public virtual void Copy()
 		{

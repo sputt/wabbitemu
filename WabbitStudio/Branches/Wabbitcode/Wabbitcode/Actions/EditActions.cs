@@ -197,7 +197,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             _activeTextEditor = _dockingService.ActiveDocument as ITextEditor;
-            _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowName) as FindResultsWindow;
+            _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
         }
 
         public override void Execute()

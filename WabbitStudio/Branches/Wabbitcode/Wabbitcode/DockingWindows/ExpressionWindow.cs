@@ -8,7 +8,14 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class ExpressionWindow : ToolWindow
 	{
-	    public const string WindowName = "Expression Window";
+        public const string WindowIdentifier = "Expression Window";
+        public override string WindowName
+        {
+            get
+            {
+                return WindowIdentifier;
+            }
+        }
 
 	    private int _lineStartIndex;
 	    private string _currentLine;

@@ -15,7 +15,15 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class TrackingWindow : ToolWindow
 	{
-	    public const string WindowName = "Tracking Window";
+	    public const string WindowIdentifier = "Tracking Window";
+        public override string WindowName
+        {
+            get
+            {
+                return WindowIdentifier;
+            }
+        }
+
 	    private const int AddressIndex = 1;
 	    private const int NumBytesIndex = 2;
 	    private const int VarTypeIndex = 3;

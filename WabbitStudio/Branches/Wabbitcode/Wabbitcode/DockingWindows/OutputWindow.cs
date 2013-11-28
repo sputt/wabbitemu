@@ -13,7 +13,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class OutputWindow : ToolWindow, ISelectable
 	{
-	    public const string WindowName = "Output";
+	    public const string WindowIdentifier = "Output";
+
+	    public override string WindowName
+	    {
+            get { return WindowIdentifier; }
+	    }
 
 	    private readonly IDocumentService _documentService;
 	    
@@ -32,6 +37,11 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 	    private void AssemblerService_OnAssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
 	    {
+	        if (!IsHandleCreated)
+	        {
+	            return;
+	        }
+
 	        this.Invoke(() =>
 	        {
 	            ClearOutput();

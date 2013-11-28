@@ -34,7 +34,7 @@ namespace Revsoft.Wabbitcode.Actions
             _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
             _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
-            _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowName) as FindResultsWindow;
+            _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
         }
 
         public override void Execute()
