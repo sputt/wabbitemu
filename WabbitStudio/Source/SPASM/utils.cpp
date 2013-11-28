@@ -500,11 +500,16 @@ char *escape_string(const char *input)
 	unsigned int i;
 	for (i = 0; i < strlen(input); i++)
 	{
-		switch (*input)
+		switch (input[i])
 		{
 		case '"':
 			{
 				eb_append(escape_string, "\\\"", -1);
+				break;
+			}
+		case '\\': 
+			{
+				eb_append(escape_string, "\\\\", -1);
 				break;
 			}
 		default:

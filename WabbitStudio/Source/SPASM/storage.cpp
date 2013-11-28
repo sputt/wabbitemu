@@ -393,19 +393,32 @@ define_t *search_defines (const char *name, bool search_local) {
 
 	curr_hash = murmur_hash (search_name, strlen (search_name));
 	// Search all SPASM predefined values
-	if (curr_hash == MHASH("__LINE")) {
+	if (!strcmp(search_name, "__LINE")) {
 		
 		char line_buf[32];
 		sprintf (line_buf, "%d", line_num);
 		if (result)
 			set_define (result, line_buf, -1, false);
 		
-	} else if (curr_hash == MHASH("__FILE")) {
+	} else if (!strcmp(search_name, "__FILE")) {
 		
-		char fn_buf[MAX_PATH + 2];
-		sprintf (fn_buf, "\"%s\"", curr_input_file);
-		if (result)
-			set_define (result, fn_buf, -1, false);
+		char fn_buf[MAX_PATH * 2] = { 0 };
+		char *buf_ptr = fn_buf;
+		*buf_ptr++ = '"';
+		char *fn_ptr = curr_input_file;
+		if (fn_ptr != NULL) {
+			while (*fn_ptr != '\0') {
+				if (*fn_ptr == '\\') {
+					*buf_ptr++ = '\\';
+				}
+
+				*buf_ptr++ = *fn_ptr++;
+			}
+		}
+		*buf_ptr++ = '"';
+		if (result) {
+			set_define(result, fn_buf, -1, false);
+		}
 		
 	}
 	//printf("fail: %s %08x\n", search_name, murmur_hash(search_name, strlen(search_name)));
