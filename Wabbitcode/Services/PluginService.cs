@@ -35,8 +35,16 @@ namespace Revsoft.Wabbitcode.Services
             foreach (IWabbitcodePlugin plugin in 
                 pluginTypes.Select(type => (IWabbitcodePlugin)Activator.CreateInstance(type)))
             {
-                _plugins.Add(plugin);
-                plugin.Loaded();
+                try
+                {
+                    _plugins.Add(plugin);
+                    plugin.Loaded();
+                }
+                catch (Exception ex)
+                {
+                    string message = string.Format("There was an exception loading plugin {0}, it will not be available", plugin.Name);
+                    DockingService.ShowError(message, ex);
+                }
             }
         }
 
@@ -60,6 +68,8 @@ namespace Revsoft.Wabbitcode.Services
 
     public interface IWabbitcodePlugin
     {
+        string Name { get; }
+
         void Loaded();
 
         void Unloaded();

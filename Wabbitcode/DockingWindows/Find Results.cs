@@ -10,7 +10,11 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class FindResultsWindow : ToolWindow
 	{
-	    public const string WindowName = "Find Results";
+        public const string WindowIdentifier = "Find Results";
+        public override string WindowName
+        {
+            get { return WindowIdentifier; }
+        }
 
 		private readonly IDocumentService _documentService;
 		private readonly StringBuilder _stringBuilder;

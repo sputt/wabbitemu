@@ -94,14 +94,14 @@ namespace Revsoft.Wabbitcode.Services
 
 		#endregion
 
-        public void RegisterDockingWindow(string name, ToolWindow dockingWindow)
+        public void RegisterDockingWindow(ToolWindow dockingWindow)
         {
-            if (_registeredDockingWindows.ContainsKey(name))
+            if (_registeredDockingWindows.ContainsKey(dockingWindow.WindowName))
             {
                 throw new ArgumentException("This docking window name is already registered");
             }
 
-            _registeredDockingWindows.Add(name, dockingWindow);
+            _registeredDockingWindows.Add(dockingWindow.WindowName, dockingWindow);
         }
 
         public ToolWindow GetDockingWindow(string name)
@@ -234,19 +234,19 @@ namespace Revsoft.Wabbitcode.Services
 
 	    public void InitPanels()
 	    {
-            RegisterDockingWindow(ProjectViewer.WindowName, new ProjectViewer());
-            RegisterDockingWindow(ErrorList.WindowName, new ErrorList());
-            RegisterDockingWindow(TrackingWindow.WindowName, new TrackingWindow());
-            RegisterDockingWindow(DebugPanel.WindowName, new DebugPanel());
-            RegisterDockingWindow(CallStack.WindowName, new CallStack());
-            RegisterDockingWindow(LabelList.WindowName, new LabelList());
-            RegisterDockingWindow(OutputWindow.WindowName, new OutputWindow());
+            RegisterDockingWindow(new ProjectViewer());
+            RegisterDockingWindow(new ErrorList());
+            RegisterDockingWindow(new TrackingWindow());
+            RegisterDockingWindow(new DebugPanel());
+            RegisterDockingWindow(new CallStack());
+            RegisterDockingWindow(new LabelList());
+            RegisterDockingWindow(new OutputWindow());
             //RegisterDockingWindow(FindForm = new FindAndReplaceForm());
-            RegisterDockingWindow(FindResultsWindow.WindowName, new FindResultsWindow());
-            RegisterDockingWindow(MacroManager.WindowName, new MacroManager());
-            RegisterDockingWindow(BreakpointManagerWindow.WindowName, new BreakpointManagerWindow());
-            RegisterDockingWindow(StackViewer.WindowName, new StackViewer());
-            RegisterDockingWindow(ExpressionWindow.WindowName, new ExpressionWindow());
+            RegisterDockingWindow(new FindResultsWindow());
+            RegisterDockingWindow(new MacroManager());
+            RegisterDockingWindow(new BreakpointManagerWindow());
+            RegisterDockingWindow(new StackViewer());
+            RegisterDockingWindow(new ExpressionWindow());
 	    }
 
 	    #region IService

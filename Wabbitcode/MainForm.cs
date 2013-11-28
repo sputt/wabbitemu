@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Actions;
+﻿using System.Reflection;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI;
@@ -72,37 +73,13 @@ namespace Revsoft.Wabbitcode
 			HandleArgs(args);
 		}
 
-	    // TODO: generalize this
 	    private IDockContent GetContentFromPersistString(string persistString)
         {
-            if (persistString == typeof(OutputWindow).ToString())
-            {
-                return _dockingService.GetDockingWindow(OutputWindow.WindowName);
-            }
-            if (persistString == typeof(LabelList).ToString())
-            {
-                return _dockingService.GetDockingWindow(LabelList.WindowName);
-            }
-            if (persistString == typeof(ErrorList).ToString())
-            {
-                return _dockingService.GetDockingWindow(ErrorList.WindowName);
-            }
-            if (persistString == typeof(DebugPanel).ToString())
-            {
-                return _dockingService.GetDockingWindow(DebugPanel.WindowName);
-            }
-            if (persistString == typeof(CallStack).ToString())
-            {
-                return _dockingService.GetDockingWindow(CallStack.WindowName);
-            }
-            if (persistString == typeof(TrackingWindow).ToString())
-            {
-                return _dockingService.GetDockingWindow(TrackingWindow.WindowName);
-            }
-            if (persistString == typeof(ProjectViewer).ToString())
-            {
-                return _dockingService.GetDockingWindow(ProjectViewer.WindowName);
-            }
+            ToolWindow window = _dockingService.GetDockingWindow(persistString);
+	        if (window != null)
+	        {
+	            return window;
+	        }
 
             string[] parsedStrings = persistString.Split(';');
 	        string type = parsedStrings[0];
@@ -203,7 +180,13 @@ namespace Revsoft.Wabbitcode
 
         private void InitializePlugins()
         {
-            _pluginService.LoadPlugins();
+            try
+            {
+                _pluginService.LoadPlugins();
+            }
+            catch (ReflectionTypeLoadException)
+            {
+            }
         }
 
         private void HandleArgs(ICollection<string> args)
@@ -386,11 +369,11 @@ namespace Revsoft.Wabbitcode
                 _toolBarService.ShowToolBar(DebugToolBarName);
             }
 
-            _dockingService.ShowDockPanel(DebugPanel.WindowName);
-            _dockingService.ShowDockPanel(StackViewer.WindowName);
-            _dockingService.ShowDockPanel(ExpressionWindow.WindowName, StackViewer.WindowName, DockAlignment.Left);
-            _dockingService.ShowDockPanel(CallStack.WindowName, StackViewer.WindowName);
-            _dockingService.ShowDockPanel(TrackingWindow.WindowName, ExpressionWindow.WindowName);
+            _dockingService.ShowDockPanel(DebugPanel.WindowIdentifier);
+            _dockingService.ShowDockPanel(StackViewer.WindowIdentifier);
+            _dockingService.ShowDockPanel(ExpressionWindow.WindowIdentifier, StackViewer.WindowIdentifier, DockAlignment.Left);
+            _dockingService.ShowDockPanel(CallStack.WindowIdentifier, StackViewer.WindowIdentifier);
+            _dockingService.ShowDockPanel(TrackingWindow.WindowIdentifier, ExpressionWindow.WindowIdentifier);
             UpdateTitle();
         }
 
@@ -402,11 +385,11 @@ namespace Revsoft.Wabbitcode
                 _toolBarService.HideToolBar(DebugToolBarName);
             }
 
-            _dockingService.HideDockPanel(DebugPanel.WindowName);
-            _dockingService.HideDockPanel(TrackingWindow.WindowName);
-            _dockingService.HideDockPanel(CallStack.WindowName);
-            _dockingService.HideDockPanel(StackViewer.WindowName);
-            _dockingService.HideDockPanel(ExpressionWindow.WindowName);
+            _dockingService.HideDockPanel(DebugPanel.WindowIdentifier);
+            _dockingService.HideDockPanel(TrackingWindow.WindowIdentifier);
+            _dockingService.HideDockPanel(CallStack.WindowIdentifier);
+            _dockingService.HideDockPanel(StackViewer.WindowIdentifier);
+            _dockingService.HideDockPanel(ExpressionWindow.WindowIdentifier);
         }
 
 	    #endregion

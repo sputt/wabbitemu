@@ -13,7 +13,15 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class LabelList : ToolWindow
 	{
-	    public const string WindowName = "Label List";
+	    public const string WindowIdentifier = "Label List";
+        public override string WindowName
+        {
+            get
+            {
+                return WindowIdentifier;
+            }
+        }
+
 		#region Private Properties
 
 		private readonly IDocumentService _documentService;
@@ -33,7 +41,8 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		        var document = DockingService.ActiveDocument as AbstractFileEditor;
 		        if (document == null || 
                     string.IsNullOrEmpty(document.FileName) ||
-                    !FileOperations.CompareFilePath(args.FileName, document.FileName))
+                    !FileOperations.CompareFilePath(args.FileName, document.FileName) ||
+                    !IsHandleCreated)
 		        {
 		            return;
 		        }

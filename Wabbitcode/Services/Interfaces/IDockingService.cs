@@ -9,7 +9,7 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 	{
         event EventHandler OnActiveDocumentChanged;
 
-	    void RegisterDockingWindow(string name, ToolWindow dockingWindow);
+	    void RegisterDockingWindow(ToolWindow dockingWindow);
 	    ToolWindow GetDockingWindow(string name);
 
 		IDockContent ActiveContent { get; }

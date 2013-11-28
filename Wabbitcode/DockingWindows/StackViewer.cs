@@ -13,7 +13,14 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
     public partial class StackViewer : ToolWindow
     {
-        public const string WindowName = "Stack Viewer";
+        public const string WindowIdentifier = "Stack Viewer";
+        public override string WindowName
+        {
+            get
+            {
+                return WindowIdentifier;
+            }
+        }
 
         private IWabbitcodeDebugger _debugger;
         private const int StackDataColIndex = 1;

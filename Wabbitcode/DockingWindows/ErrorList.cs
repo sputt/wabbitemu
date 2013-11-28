@@ -14,7 +14,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 {
 	public partial class ErrorList : ToolWindow
 	{
-	    public const string WindowName = "Error List";
+	    public const string WindowIdentifier = "Error List";
+        public override string WindowName
+        {
+            get { return WindowIdentifier; }
+        }
+
 	    private const string FcreateFile = "Built-in fcreate";
 		private int _errors;
 		private int _warnings;
@@ -179,6 +184,11 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private void Instance_AssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
 		{
+		    if (!IsHandleCreated)
+		    {
+		        return;
+		    }
+
 			this.Invoke(() =>
 			{
 			    ParseOutput(e.Output.ParsedErrors);

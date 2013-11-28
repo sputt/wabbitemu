@@ -204,42 +204,42 @@ namespace Revsoft.Wabbitcode.GUI
 
         private static readonly ToolStripMenuItem ToolBarMenuItem = new ToolStripMenuItem("Toolbars");
 
-        private static readonly ToolStripMenuItem LabelListMenuItem = new ToolStripMenuItem(LabelList.WindowName)
+        private static readonly ToolStripMenuItem LabelListMenuItem = new ToolStripMenuItem(LabelList.WindowIdentifier)
         {
             CheckOnClick = true
         };
 
-        private static readonly ToolStripMenuItem ProjViewMenuItem = new ToolStripMenuItem(ProjectViewer.WindowName)
+        private static readonly ToolStripMenuItem ProjViewMenuItem = new ToolStripMenuItem(ProjectViewer.WindowIdentifier)
         {
             CheckOnClick = true
         };
 
-        private static readonly ToolStripMenuItem MacroManagerMenuItem = new ToolStripMenuItem(MacroManager.WindowName)
+        private static readonly ToolStripMenuItem MacroManagerMenuItem = new ToolStripMenuItem(MacroManager.WindowIdentifier)
         {
             CheckOnClick = true
         };
 
-        private static readonly ToolStripMenuItem DebugPanelMenuItem = new ToolStripMenuItem(DebugPanel.WindowName)
+        private static readonly ToolStripMenuItem DebugPanelMenuItem = new ToolStripMenuItem(DebugPanel.WindowIdentifier)
         {
             CheckOnClick = true
         };
 
-        private static readonly ToolStripMenuItem CallStackMenuItem = new ToolStripMenuItem(CallStack.WindowName)
+        private static readonly ToolStripMenuItem CallStackMenuItem = new ToolStripMenuItem(CallStack.WindowIdentifier)
         {
             CheckOnClick = true
         };
 
-        private static readonly ToolStripMenuItem StackViewerMenuItem = new ToolStripMenuItem(StackViewer.WindowName)
+        private static readonly ToolStripMenuItem StackViewerMenuItem = new ToolStripMenuItem(StackViewer.WindowIdentifier)
         {
             CheckOnClick = true
         };
 
-        private static readonly ToolStripMenuItem VarTrackMenuItem = new ToolStripMenuItem(TrackingWindow.WindowName)
+        private static readonly ToolStripMenuItem VarTrackMenuItem = new ToolStripMenuItem(TrackingWindow.WindowIdentifier)
         {
             CheckOnClick = true
         };
 
-        private static readonly ToolStripMenuItem BreakManagerMenuItem = new ToolStripMenuItem(BreakpointManagerWindow.WindowName)
+        private static readonly ToolStripMenuItem BreakManagerMenuItem = new ToolStripMenuItem(BreakpointManagerWindow.WindowIdentifier)
         {
             CheckOnClick = true
         };
@@ -251,17 +251,17 @@ namespace Revsoft.Wabbitcode.GUI
                 VarTrackMenuItem, BreakManagerMenuItem
             });
 
-        private static readonly ToolStripMenuItem OutputWindowMenuItem = new ToolStripMenuItem(OutputWindow.WindowName)
+        private static readonly ToolStripMenuItem OutputWindowMenuItem = new ToolStripMenuItem(OutputWindow.WindowIdentifier)
         {
             CheckOnClick = true
         };
 
-        private static readonly ToolStripMenuItem ErrorListMenuItem = new ToolStripMenuItem(ErrorList.WindowName)
+        private static readonly ToolStripMenuItem ErrorListMenuItem = new ToolStripMenuItem(ErrorList.WindowIdentifier)
         {
             CheckOnClick = true
         };
 
-        private static readonly ToolStripMenuItem FindResultsMenuItem = new ToolStripMenuItem(FindResultsWindow.WindowName)
+        private static readonly ToolStripMenuItem FindResultsMenuItem = new ToolStripMenuItem(FindResultsWindow.WindowIdentifier)
         {
             CheckOnClick = true
         };
@@ -972,13 +972,13 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void addNewFileMenuItem_Click(object sender, EventArgs e)
         {
-            ProjectViewer projectViewer = _dockingService.GetDockingWindow(ProjectViewer.WindowName) as ProjectViewer;
+            ProjectViewer projectViewer = _dockingService.GetDockingWindow(ProjectViewer.WindowIdentifier) as ProjectViewer;
             RunCommand(new AddNewFileAction(projectViewer));
         }
 
         private void existingFileMenuItem_Click(object sender, EventArgs e)
         {
-            ProjectViewer projectViewer = _dockingService.GetDockingWindow(ProjectViewer.WindowName) as ProjectViewer;
+            ProjectViewer projectViewer = _dockingService.GetDockingWindow(ProjectViewer.WindowIdentifier) as ProjectViewer;
             RunCommand(new AddExistingFileAction(projectViewer));
         }
 
