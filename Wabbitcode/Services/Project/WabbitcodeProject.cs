@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Windows.Forms;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Extensions;
 using System;
@@ -16,32 +17,32 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		private ProjectFile _fileFound;
 		private ProjectFolder _mainFolder;
+	    private readonly FileSystemWatcher _watcher;
 
 	    public WabbitcodeProject()
 		{
 			IncludeDirs = new List<string>();
 		    BuildSystem = new BuildSystem(this);
-			ProjectWatcher = new FileSystemWatcher();
-			if (!string.IsNullOrEmpty(ProjectDirectory))
-			{
-				ProjectWatcher.Path = ProjectDirectory;
-			}
+			_watcher = new FileSystemWatcher();
+            _watcher.Changed += Watcher_OnChanged;
+            _watcher.Renamed += Watcher_OnRenamed;
 		}
 
-		public WabbitcodeProject(string projectFile)
+	    public WabbitcodeProject(string projectFile)
 			: this()
 		{
 			ProjectFile = projectFile;
 			ProjectDirectory = Path.GetDirectoryName(projectFile);
+            SetupWatcher();
 		}
 
 		#region Public Members
 
-		public bool IsInternal { get; set; }
+	    public event EventHandler<FileModifiedEventArgs> FileModifiedExternally;
+        
+        public bool IsInternal { get; set; }
 
-		public FileSystemWatcher ProjectWatcher { get; set; }
-
-		public IBuildSystem BuildSystem { get; private set; }
+	    public IBuildSystem BuildSystem { get; private set; }
 
 		public IList<string> IncludeDirs { get; private set; }
 
@@ -168,7 +169,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 					stream.Dispose();
 				}
 			}
-			ProjectWatcher.Path = ProjectDirectory;
+
+			SetupWatcher();
 		}
 
 		private static void RecurseAddFiles(ref List<ProjectFile> files, ProjectFolder folder)
@@ -250,19 +252,6 @@ namespace Revsoft.Wabbitcode.Services.Project
 			writer.WriteEndElement();
 		}
 
-		public void InitWatcher(FileSystemEventHandler changedHandler, RenamedEventHandler renamedHandler)
-		{
-			ProjectWatcher.Changed += changedHandler;
-			ProjectWatcher.Renamed += renamedHandler;
-		    if (IsInternal)
-		    {
-		        return;
-		    }
-
-		    ProjectWatcher.EnableRaisingEvents = true;
-		    ProjectWatcher.IncludeSubdirectories = true;
-		}
-
         /// <summary>
         /// Attempts to find an existing file in the set of include dirs,
         /// given the relative path.
@@ -288,6 +277,52 @@ namespace Revsoft.Wabbitcode.Services.Project
             return File.Exists(Path.Combine(ProjectDirectory, relativePath)) ?
                 Path.Combine(ProjectDirectory, relativePath) :
                 null;
-	    }
-	}
+        }
+
+        #region FileSystemWatcher
+
+        private void SetupWatcher()
+        {
+            if (string.IsNullOrEmpty(ProjectDirectory))
+            {
+                return;
+            }
+
+            _watcher.Path = ProjectDirectory;
+            _watcher.EnableRaisingEvents = true;
+            _watcher.IncludeSubdirectories = true;
+        }
+
+        private void Watcher_OnRenamed(object sender, RenamedEventArgs e)
+        {
+            if (e.OldFullPath != ProjectDirectory)
+            {
+                return;
+            }
+
+            if (MessageBox.Show("Project Folder was renamed, would you like to rename the project?",
+                    "Rename project",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Information) == DialogResult.Yes)
+            {
+                ProjectName = Path.GetFileNameWithoutExtension(e.FullPath);
+            }
+        }
+
+        private void Watcher_OnChanged(object sender, FileSystemEventArgs e)
+        {
+            if (FileModifiedExternally == null)
+            {
+                return;
+            }
+
+            var projectFile = FindFile(e.FullPath);
+            if (projectFile != null)
+            {
+                FileModifiedExternally(this, new FileModifiedEventArgs(projectFile));
+            }
+        }
+
+        #endregion
+    }
 }

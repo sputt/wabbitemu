@@ -1,12 +1,13 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
-	using System.Collections.Generic;
 
 	public interface IProject
 	{
+	    event EventHandler<FileModifiedEventArgs> FileModifiedExternally;
+
 		IBuildSystem BuildSystem
 		{
 			get;
@@ -43,15 +44,9 @@ namespace Revsoft.Wabbitcode.Services.Project
 			set;
 		}
 
-		bool IsInternal
-		{
-			get;
-			set;
-		}
+		bool IsInternal{ get; }
 
-		FileSystemWatcher ProjectWatcher { get; set; }
-
-		IEnumerable<ProjectFile> GetProjectFiles();
+	    IEnumerable<ProjectFile> GetProjectFiles();
 		bool ContainsFile(string file);
 		ProjectFile FindFile(string fullPath);
 	    string GetFilePathFromRelativePath(string relativePath);
@@ -60,7 +55,15 @@ namespace Revsoft.Wabbitcode.Services.Project
 		void CreateNewProject(string projectFile, string projectName);
 		void OpenProject(string projectFile);
 		void SaveProject();
-
-		void InitWatcher(FileSystemEventHandler changedHandler, RenamedEventHandler renamedHandler);
 	}
+
+    public class FileModifiedEventArgs : EventArgs
+    {
+        public ProjectFile File { get; set; }
+
+        public FileModifiedEventArgs(ProjectFile file)
+        {
+            File = file;
+        }
+    }
 }

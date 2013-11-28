@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 using IFileReaderService = Revsoft.Wabbitcode.Services.Interfaces.IFileReaderService;
@@ -70,19 +69,6 @@ namespace Revsoft.Wabbitcode
 				_projectService.CreateInternalProject();
 			}
 
-			try
-			{
-                // TOOD: why is this here
-				if (!_projectService.Project.IsInternal)
-				{
-					_projectService.Project.InitWatcher(projectWatcher_Changed, projectWatcher_Renamed);
-				}
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Error building project tree", ex);
-			}
-
 			HandleArgs(args);
 		}
 
@@ -139,52 +125,6 @@ namespace Revsoft.Wabbitcode
 	        doc.CaretColumn = column;
             return doc;
         }
-
-        private void projectWatcher_Changed(object sender, FileSystemEventArgs e)
-		{
-			switch (e.ChangeType)
-			{
-				case WatcherChangeTypes.Changed:
-					if (!string.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
-					{
-					    string path = e.FullPath;
-						foreach (var tempDoc in _dockingService.Documents.OfType<Editor>()
-							.Where(doc => FileOperations.CompareFilePath(doc.FileName, path)))
-						{
-						    Editor doc = tempDoc;
-						    this.Invoke(() =>
-                            {
-                                const string modifiedFormat = "{0} modified outside the editor.\nLoad changes?";
-                                DialogResult result = MessageBox.Show(string.Format(modifiedFormat, e.FullPath),
-                                    "File modified", MessageBoxButtons.YesNo);
-                                if (result == DialogResult.Yes)
-                                {
-                                    _documentService.OpenDocument(doc, e.FullPath);
-                                }
-                            });
-							break;
-						}
-					}
-
-					break;
-			}
-		}
-
-		private void projectWatcher_Renamed(object sender, RenamedEventArgs e)
-		{
-		    if (e.OldFullPath != _projectService.Project.ProjectDirectory)
-		    {
-		        return;
-		    }
-
-		    if (MessageBox.Show("Project Folder was renamed, would you like to rename the project?",
-		            "Rename project",
-		            MessageBoxButtons.YesNo,
-		            MessageBoxIcon.Information) == DialogResult.Yes)
-		    {
-		        _projectService.Project.ProjectName = Path.GetFileNameWithoutExtension(e.FullPath);
-		    }
-		}
 
 	    /// <summary>
 		/// Updates the title of the app with the filename.
@@ -475,16 +415,7 @@ namespace Revsoft.Wabbitcode
 
         private void MainFormRedone_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop) == false)
-            {
-                return;
-            }
-
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string file in files)
-            {
-                _documentService.OpenDocument(file);
-            }
+            new DragDropCommand(e.Data).Execute();
         }
 
         private void MainFormRedone_DragEnter(object sender, DragEventArgs e)

@@ -97,7 +97,7 @@ namespace Revsoft.Wabbitcode.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Courier New, 9pt")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Consolas, 10pt")]
         public global::System.Drawing.Font EditorFont {
             get {
                 return ((global::System.Drawing.Font)(this["EditorFont"]));

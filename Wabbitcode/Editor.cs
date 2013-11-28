@@ -1,4 +1,3 @@
-using System.Configuration;
 using System.Text;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
@@ -14,6 +13,7 @@ using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
 using System;
@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Text;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -59,6 +58,8 @@ namespace Revsoft.Wabbitcode
         private readonly IStatusBarService _statusBarService;
         private int _stackTop;
 		private bool _isUpdatingRefs;
+        private volatile bool _wasExternallyModified;
+        private bool _documentChanged;
 		#endregion
 
 		#region Properties
@@ -67,10 +68,11 @@ namespace Revsoft.Wabbitcode
         {
             get
             {
-                return _stackTop != editorBox.Document.UndoStack.UndoItemCount;
+                return _stackTop != editorBox.Document.UndoStack.UndoItemCount || _documentChanged;
             }
             set
             {
+                _documentChanged = value;
             }
         }
 
@@ -124,14 +126,6 @@ namespace Revsoft.Wabbitcode
 
         #endregion
 
-		#region Static Events
-
-        public static event EventHandler<EditorEventArgs> OnEditorUpdated;
-        public static event DragEventHandler OnEditorDragEnter;
-        public static event DragEventHandler OnEditorDragDrop;
-
-		#endregion
-
 		public Editor()
 		{
 		    InitializeComponent();
@@ -148,6 +142,9 @@ namespace Revsoft.Wabbitcode
 		    _textChangedTimer.Tick += textChangedTimer_Tick;
 
 			editorBox.Document.FormattingStrategy = new AsmFormattingStrategy();
+            editorBox.SetHighlighting("Z80 Assembly");
+            editorBox.ContextMenu = contextMenu;
+            contextMenu.Popup += contextMenu_Popup;
 
 			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
 			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
@@ -160,66 +157,133 @@ namespace Revsoft.Wabbitcode
 		    }
 
 		    _backgroundAssemblerService.OnBackgroundAssemblerComplete += (sender, args) => UpdateIcons(args.Output.ParsedErrors);
+		    if (_projectService.Project != null)
+		    {
+		        _projectService.Project.FileModifiedExternally += ProjectFileModifiedExternally;
+		    }
+            _projectService.ProjectOpened += (sender, args) => _projectService.Project.FileModifiedExternally += ProjectFileModifiedExternally;
 
-			CodeCompletionKeyHandler.Attach(this, editorBox, _parserService);
-            Settings.Default.SettingChanging += Default_SettingChanging;
+		    CodeCompletionKeyHandler.Attach(this, editorBox, _parserService);
 		}
+
+        private void ProjectFileModifiedExternally(object sender, FileModifiedEventArgs e)
+        {
+            if (!FileOperations.CompareFilePath(e.File.FileFullPath, FileName) || _wasExternallyModified)
+            {
+                return;
+            }
+
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(() => ProjectFileModifiedExternally(sender, e));
+                return;
+            }
+
+            _wasExternallyModified = true;
+            const string modifiedFormat = "{0} modified outside the editor.\nLoad changes?";
+            DialogResult result = MessageBox.Show(this, string.Format(modifiedFormat, e.File.FileFullPath),
+                "File modified", MessageBoxButtons.YesNo);
+            if (result == DialogResult.Yes)
+            {
+                editorBox.LoadFile(e.File.FileFullPath);
+            }
+            else
+            {
+                DocumentChanged = true;
+            }
+            _wasExternallyModified = false;
+        }
+
+        private void contextMenu_Popup(object sender, EventArgs e)
+        {
+            bool hasSelection = editorBox.ActiveTextAreaControl.SelectionManager.HasSomethingSelected;
+            cutContext.Enabled = hasSelection;
+            copyContext.Enabled = hasSelection;
+            renameContext.Enabled = !hasSelection;
+            extractMethodContext.Enabled = hasSelection;
+
+            if (!string.IsNullOrEmpty(editorBox.Text))
+            {
+                int lineNum = editorBox.ActiveTextAreaControl.Caret.Line;
+                fixCaseContext.Visible = false;
+                fixCaseContext.MenuItems.Clear();
+
+                string line = GetLineText(lineNum);
+                Match match = Regex.Match(line, "#include ((\"(?<includeFile>.*)(?<paren>\\)?)\")|((?!\")(?<includeFile>.*(?!\"))(?<paren>\\)?)))");
+                bool isInclude = match.Success;
+
+                var caret = editorBox.ActiveTextAreaControl.Caret;
+                var segment = editorBox.Document.GetLineSegment(caret.Line);
+                var word = segment.GetWord(caret.Column);
+                string text = word == null ? string.Empty : word.Word;
+                if (word != null && !string.IsNullOrEmpty(text) && !isInclude)
+                {
+                    IEnumerable<IParserData> parserData = _parserService.GetParserData(text, Settings.Default.CaseSensitive).ToList();
+                    if (parserData.Any())
+                    {
+                        foreach (IParserData data in parserData.Where(data => data.Name != text))
+                        {
+                            fixCaseContext.Visible = true;
+                            MenuItem item = new MenuItem(data.Name, fixCaseContext_Click);
+                            fixCaseContext.MenuItems.Add(item);
+                        }
+                        bgotoButton.Enabled = true;
+                    }
+                    else
+                    {
+                        bgotoButton.Enabled = false;
+                    }
+                }
+
+                string gotoLabel = isInclude ? match.Groups["includeFile"].Value.Replace('"', ' ').Trim() : text;
+                if (gotoLabel == "_")
+                {
+                    match = Regex.Match(line, "(?<offset>(\\+|\\-)*)_");
+                    gotoLabel = match.Groups["offset"].Value + gotoLabel;
+                }
+
+                int num;
+                if (!int.TryParse(gotoLabel, out num))
+                {
+                    if (isInclude)
+                    {
+                        bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : FindFileIncludes(gotoLabel);
+                        if (exists)
+                        {
+                            bgotoButton.Text = "Open " + gotoLabel;
+                            bgotoButton.Enabled = true;
+                        }
+                        else
+                        {
+                            bgotoButton.Text = "File " + gotoLabel + " doesn't exist";
+                            bgotoButton.Enabled = false;
+                        }
+                    }
+                    else
+                    {
+                        if (bgotoButton.Enabled)
+                        {
+                            bgotoButton.Text = "Goto " + gotoLabel;
+                            bgotoButton.Enabled = !string.IsNullOrEmpty(gotoLabel);
+                        }
+                        else
+                        {
+                            bgotoButton.Text = "Unable to find " + gotoLabel;
+                        }
+                    }
+                }
+                else
+                {
+                    bgotoButton.Text = "Goto ";
+                    bgotoButton.Enabled = false;
+                }
+            }
+        }
 
         private void SetDebugging(bool debugging)
         {
             setNextStateMenuItem.Visible = debugging;
             editorBox.Document.ReadOnly = debugging;
-        }
-
-        void Default_SettingChanging(object sender, SettingChangingEventArgs e)
-        {
-            if (e.NewValue == null)
-            {
-                return;
-            }
-            
-            switch (e.SettingName)
-            {
-                case "MouseWheelScrollDown":
-                    editorBox.TextEditorProperties.MouseWheelScrollDown = !((bool)e.NewValue);
-                    break;
-                case "EnableFolding":
-                    if ((bool)e.NewValue)
-                    {
-                        editorBox.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
-                        editorBox.Document.FoldingManager.UpdateFoldings(null, null);
-                    }
-                    else
-                    {
-                        editorBox.Document.FoldingManager.FoldingStrategy = null;
-                        editorBox.Document.FoldingManager.UpdateFoldings(new List<FoldMarker>());
-                    }
-                    break;
-                case "AutoIndent":
-                    editorBox.IndentStyle = (bool)e.NewValue ? IndentStyle.Smart : IndentStyle.None;
-                    break;
-                case "AntiAlias":
-                    editorBox.TextRenderingHint = (bool)e.NewValue ? TextRenderingHint.ClearTypeGridFit : TextRenderingHint.SingleBitPerPixel;
-                    break;
-                case "EditorFont":
-                    editorBox.Font = (Font) e.NewValue;
-                    break;
-                case "TabSize":
-                    editorBox.TabIndent = (int) e.NewValue;
-                    break;
-                case "ConvertTabs":
-                    editorBox.ConvertTabsToSpaces = (bool)e.NewValue;
-                    break;
-                case "ExternalHighlight":
-                    UpdateHighlighting();
-                    break;
-                case "IconBar":
-                    editorBox.IsIconBarVisible = (bool) e.NewValue;
-                    break;
-                case "LineNumbers":
-                    editorBox.ShowLineNumbers = (bool) e.NewValue;
-                    break;
-            }
         }
 
 		protected override string GetPersistString()
@@ -584,34 +648,12 @@ namespace Revsoft.Wabbitcode
 
 		private void editor_DragEnter(object sender, DragEventArgs e)
 		{
-		    if (OnEditorDragEnter != null)
-		    {
-		        OnEditorDragEnter(sender, e);
-		    }
+            e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
 		}
 
 		private void editor_DragDrop(object sender, DragEventArgs e)
 		{
-            if (OnEditorDragDrop != null)
-            {
-                OnEditorDragDrop(sender, e);
-            }
-		}
-
-		private void editorBox_DragDrop(object sender, DragEventArgs e)
-		{
-            if (OnEditorDragDrop != null)
-            {
-                OnEditorDragDrop(sender, e);
-            }
-		}
-
-		private void editorBox_DragEnter(object sender, DragEventArgs e)
-		{
-            if (OnEditorDragEnter != null)
-            {
-                OnEditorDragEnter(sender, e);
-            }
+            new DragDropCommand(e.Data).Execute();
 		}
 
 		#endregion
@@ -662,14 +704,8 @@ namespace Revsoft.Wabbitcode
 		{
 			CancellationTokenSource cancellationSource = new CancellationTokenSource();
 			_queuedFiles.Add(cancellationSource);
-            Task.Factory.StartNew(() =>
-            {
-                _parserService.ParseFile(editorText.GetHashCode(), FileName, editorText);
-                if (OnEditorUpdated != null)
-                {
-                    OnEditorUpdated(this, new EditorEventArgs(this));
-                }
-            }, cancellationSource.Token);
+            Task.Factory.StartNew(() => _parserService.ParseFile(editorText.GetHashCode(), FileName, editorText),
+                cancellationSource.Token);
 			_backgroundAssemblerService.RequestAssemble();
 		}
 
@@ -713,98 +749,6 @@ namespace Revsoft.Wabbitcode
 	    private void extractMethodContext_Click(object sender, EventArgs e)
 	    {
 	    }
-
-	    private void editorBox_MouseClick(object sender, MouseEventArgs e)
-		{
-			if (e.Button != MouseButtons.Right)
-			{
-				return;
-			}
-
-			bool hasSelection = editorBox.ActiveTextAreaControl.SelectionManager.HasSomethingSelected;
-			cutContext.Enabled = hasSelection;
-			copyContext.Enabled = hasSelection;
-            renameContext.Enabled = !hasSelection;
-            extractMethodContext.Enabled = hasSelection;
-
-			if (!string.IsNullOrEmpty(editorBox.Text))
-			{
-				int lineNum = editorBox.ActiveTextAreaControl.Caret.Line;
-				fixCaseContext.Visible = false;
-				fixCaseContext.MenuItems.Clear();
-
-			    string line = GetLineText(lineNum);
-				Match match = Regex.Match(line, "#include ((\"(?<includeFile>.*)(?<paren>\\)?)\")|((?!\")(?<includeFile>.*(?!\"))(?<paren>\\)?)))");
-				bool isInclude = match.Success;
-
-			    var caret = editorBox.ActiveTextAreaControl.Caret;
-			    var segment = editorBox.Document.GetLineSegment(caret.Line);
-			    var word = segment.GetWord(caret.Column);
-			    string text = word == null ? string.Empty : word.Word;
-				if (word != null && !string.IsNullOrEmpty(text) && !isInclude)
-				{
-					IEnumerable<IParserData> parserData =  _parserService.GetParserData(text, Settings.Default.CaseSensitive).ToList();
-					if (parserData.Any())
-					{
-						foreach (IParserData data in parserData.Where(data => data.Name != text))
-						{
-							fixCaseContext.Visible = true;
-							MenuItem item = new MenuItem(data.Name, fixCaseContext_Click);
-							fixCaseContext.MenuItems.Add(item);
-						}
-						bgotoButton.Enabled = true;
-					}
-					else
-					{
-						bgotoButton.Enabled = false;
-					}
-				}
-
-				string gotoLabel = isInclude ? match.Groups["includeFile"].Value.Replace('"', ' ').Trim() : text;
-				if (gotoLabel == "_")
-				{
-					match = Regex.Match(line, "(?<offset>(\\+|\\-)*)_");
-					gotoLabel = match.Groups["offset"].Value + gotoLabel;
-				}
-
-				int num;
-				if (!int.TryParse(gotoLabel, out num))
-				{
-					if (isInclude)
-					{
-						bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : FindFileIncludes(gotoLabel);
-						if (exists)
-						{
-							bgotoButton.Text = "Open " + gotoLabel;
-							bgotoButton.Enabled = true;
-						}
-						else
-						{
-							bgotoButton.Text = "File " + gotoLabel + " doesn't exist";
-							bgotoButton.Enabled = false;
-						}
-					}
-					else
-					{
-						if (bgotoButton.Enabled)
-						{
-							bgotoButton.Text = "Goto " + gotoLabel;
-							bgotoButton.Enabled = !string.IsNullOrEmpty(gotoLabel);
-						}
-						else
-						{
-							bgotoButton.Text = "Unable to find " + gotoLabel;
-						}
-					}
-				}
-				else
-				{
-					bgotoButton.Text = "Goto ";
-					bgotoButton.Enabled = false;
-				}
-			}
-			contextMenu.Show(editorBox, editorBox.PointToClient(MousePosition));
-		}
 
 		private bool FindFileIncludes(string gotoLabel)
 		{
@@ -874,42 +818,6 @@ namespace Revsoft.Wabbitcode
             editorBox.ActiveTextAreaControl.Caret.Line = line;
             editorBox.ActiveTextAreaControl.Caret.Column = 0;
 		}
-
-	    internal void FixError(int line, DocumentService.FixableErrorType type)
-		{
-			int offset = editorBox.Document.GetOffsetForLineNumber(line - 1);
-			int endline = offset;
-			while (endline < editorBox.Document.TextLength && editorBox.Document.GetCharAt(endline) != '\n')
-				endline++;
-			string lineContent = editorBox.Document.GetText(offset, endline - offset);
-			switch (type)
-			{
-				case DocumentService.FixableErrorType.RelativeJump:
-					lineContent = lineContent.Replace("jr", "jp");
-					int scroll = editorBox.ActiveTextAreaControl.VScrollBar.Value;
-					editorBox.Document.Remove(offset, endline - offset);
-					editorBox.Document.Insert(offset, lineContent);
-					editorBox.ActiveTextAreaControl.VScrollBar.Value = scroll;
-					break;
-			}
-		}
-
-		internal void SetHighlighting(string highlightString)
-		{
-			editorBox.SetHighlighting(highlightString);
-		}
-
-        private void UpdateHighlighting()
-        {
-            if (!string.IsNullOrEmpty(FileName))
-            {
-                editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
-            }
-            else
-            {
-                SetHighlighting("Z80 Assembly");
-            }
-        }
 
 		#region Modify Selected Text
 
@@ -1137,11 +1045,7 @@ namespace Revsoft.Wabbitcode
 
         public override void SaveFile()
         {
-            var watcher = _projectService.Project.ProjectWatcher;
-            if (watcher != null && !string.IsNullOrEmpty(watcher.Path))
-            {
-                watcher.EnableRaisingEvents = false;
-            }
+            _projectService.Project.FileModifiedExternally -= ProjectFileModifiedExternally;
             if (string.IsNullOrEmpty(FileName))
             {
                 new SaveAsCommand().Execute();
@@ -1158,25 +1062,22 @@ namespace Revsoft.Wabbitcode
                 DockingService.ShowError("Error saving the file", ex);
             }
 
-            if (watcher != null && !string.IsNullOrEmpty(watcher.Path))
-            {
-                watcher.EnableRaisingEvents = true;
-            }
+            _projectService.Project.FileModifiedExternally += ProjectFileModifiedExternally;
 
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
             base.SaveFile();
         }
 
-        InsightWindow _insightWindow;
+        private InsightWindow _insightWindow;
 
-        public void ShowInsightWindow(IInsightDataProvider insightDataProvider)
+        private void ShowInsightWindow(IInsightDataProvider insightDataProvider)
         {
             if (_insightWindow == null || _insightWindow.IsDisposed)
             {
                 _insightWindow = new InsightWindow(this, editorBox);
                 _insightWindow.Closed += CloseInsightWindow;
             }
-            _insightWindow.AddInsightDataProvider(insightDataProvider, this.FileName);
+            _insightWindow.AddInsightDataProvider(insightDataProvider, FileName);
             _insightWindow.ShowInsightWindow();
         }
 

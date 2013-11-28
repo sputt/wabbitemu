@@ -17,6 +17,11 @@ namespace Revsoft.Wabbitcode.Extensions
             control.Invoke(action);
         }
 
+        public static void BeginInvoke(this Control control, Action action)
+        {
+            control.BeginInvoke(action);
+        }
+
         public static bool MoveToNextElement(this XmlTextReader reader)
         {
             if (!reader.Read())

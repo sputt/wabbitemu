@@ -26,12 +26,7 @@ namespace Revsoft.Wabbitcode.Services
 		/// </summary>
 		private readonly string[] _recentFileList = new string[10];
 
-		public enum FixableErrorType
-		{
-			RelativeJump,
-		}
-
-		public Editor ActiveDocument
+	    public Editor ActiveDocument
 		{
 			get { return _dockingService.ActiveDocument as Editor; }
 		}
@@ -43,7 +38,6 @@ namespace Revsoft.Wabbitcode.Services
 				Text = "New Document",
 				TabText = "New Document"
 			};
-			doc.SetHighlighting("Z80 Assembly");
 			return doc;
 		}
 
