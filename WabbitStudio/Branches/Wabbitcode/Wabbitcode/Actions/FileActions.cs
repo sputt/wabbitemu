@@ -211,4 +211,28 @@ namespace Revsoft.Wabbitcode.Actions
             _editor.Close();
         }
     }
+
+    public class DragDropCommand : AbstractUiAction
+    {
+        private readonly IDataObject _dataObject;
+
+        public DragDropCommand(IDataObject dataObject)
+        {
+            _dataObject = dataObject;
+        }
+
+        public override void Execute()
+        {
+            if (_dataObject.GetDataPresent(DataFormats.FileDrop) == false)
+            {
+                return;
+            }
+
+            string[] files = (string[])_dataObject.GetData(DataFormats.FileDrop);
+            foreach (string file in files)
+            {
+                FileTypeMethodFactory.OpenRegisteredFile(file);
+            }
+        }
+    }
 }

@@ -29,7 +29,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             IParserService parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
             var parserData = parserService.GetParserData(word, Settings.Default.CaseSensitive).ToList();
             _data = new List<string>();
-            _data.AddRange(parserData.Where(d => !string.IsNullOrEmpty(d.Description))
+            _data.AddRange(parserData.Where(d => !string.IsNullOrEmpty(d.Description) || d is IMacro)
                 .Select(d =>
                 {
                     string description = d.Description;
@@ -37,7 +37,10 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                     if (macro != null)
                     {
                         string argDesc = macro.Arguments.Aggregate("(", (current, arg) => current + (arg + ", "));
-                        argDesc = argDesc.Remove(argDesc.Length - 2);
+                        if (argDesc.Length > 2)
+                        {
+                            argDesc = argDesc.Remove(argDesc.Length - 2);
+                        }
                         argDesc += ")";
                         description = argDesc + "\n" + description;
                     }

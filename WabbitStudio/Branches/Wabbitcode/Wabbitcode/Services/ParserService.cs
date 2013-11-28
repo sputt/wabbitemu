@@ -57,8 +57,9 @@ namespace Revsoft.Wabbitcode.Services
                 yield break;
             }
 
+            var parserData = _parserInfoDictionary.Values.ToList();
             StringComparison comparison = caseSensitive ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase;
-            foreach (var data in _parserInfoDictionary.Values.SelectMany(
+            foreach (var data in parserData.SelectMany(
                 info => info.Where(data => data.Name.Equals(referenceString, comparison)))
                 )
             {

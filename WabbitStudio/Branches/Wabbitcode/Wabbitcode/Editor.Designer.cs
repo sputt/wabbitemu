@@ -65,14 +65,12 @@ namespace Revsoft.Wabbitcode
             //
             this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += TextArea_ToolTipRequest;
             this.editorBox.TextChanged += this.editorBox_TextChanged;
-            this.editorBox.DragDrop += this.editorBox_DragDrop;
-            this.editorBox.DragEnter += this.editorBox_DragEnter;
-            this.editorBox.MouseClick += this.editorBox_MouseClick;
-            this.editorBox.ActiveTextAreaControl.TextArea.DragDrop += editorBox_DragDrop;
-            this.editorBox.ActiveTextAreaControl.TextArea.DragEnter += editorBox_DragEnter;
+            this.editorBox.DragDrop += this.editor_DragDrop;
+            this.editorBox.DragEnter += this.editor_DragEnter;
+            this.editorBox.ActiveTextAreaControl.TextArea.DragDrop += editor_DragDrop;
+            this.editorBox.ActiveTextAreaControl.TextArea.DragEnter += editor_DragEnter;
             this.editorBox.ActiveTextAreaControl.TextArea.KeyPress += editorBox_KeyPress;
             this.editorBox.ActiveTextAreaControl.TextArea.Caret.PositionChanged += Caret_PositionChanged;
-            this.editorBox.ActiveTextAreaControl.TextArea.MouseClick += editorBox_MouseClick;
             this.editorBox.ActiveTextAreaControl.TextArea.AllowDrop = true;
             this.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += TextArea_ToolTipRequest;

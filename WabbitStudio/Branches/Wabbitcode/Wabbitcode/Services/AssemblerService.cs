@@ -57,8 +57,6 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			lock (AssemblyLock)
 			{
-				project.ProjectWatcher.EnableRaisingEvents = false;
-
 				bool succeeded = project.BuildSystem.Build();
 
 				if (!string.IsNullOrEmpty(project.BuildSystem.ListOutput))
@@ -73,7 +71,6 @@ namespace Revsoft.Wabbitcode.Services
                     _symbolService.ParseSymbolFile(fileText);
 				}
 
-				project.ProjectWatcher.EnableRaisingEvents = true;
                 OnAssemblerProjectFinished(this, new AssemblyFinishProjectEventArgs(project, project.BuildSystem.OutputText, succeeded));
 			}
 		}

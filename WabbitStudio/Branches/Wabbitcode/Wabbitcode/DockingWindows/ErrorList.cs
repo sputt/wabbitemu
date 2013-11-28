@@ -146,7 +146,8 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	            return;
 	        }
 
-	        _documentService.ActiveDocument.FixError(line, DocumentService.FixableErrorType.RelativeJump);
+            // TODO: look at
+	        //_documentService.ActiveDocument.FixError(line, DocumentService.FixableErrorType.RelativeJump);
 	        errorGridView.Rows.RemoveAt(row);
 		}
 
