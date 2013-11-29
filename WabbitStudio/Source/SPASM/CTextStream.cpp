@@ -2,7 +2,7 @@
 
 #include "CTextStream.h"
 
-#define MAX_PIPE_SIZE (1024 * 16)
+#define MAX_PIPE_SIZE (1024 * 1024)
 
 HRESULT CTextStream::FinalConstruct()
 {

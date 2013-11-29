@@ -21,17 +21,21 @@ char *handle_directive (const char *ptr) {
 	static const char *dirs[] = {"db", "dw", "end", "org", "byte", "word", "fill", "block", "addinstr",
 		"echo", "error", "list", "nolist", "equ", "show", "option", "seek", NULL};
 	const char *name_end;
+	char name_buf[32];
 	char *name;
 	int dir;
 
 	//same deal as handle_preop, just with directives instead
 	name_end = ptr;
-	while (isalpha (*name_end))
+	while (isalpha(*name_end)) {
+		name_buf[name_end - ptr] = *name_end;
 		name_end++;
+	}
+	name_buf[name_end - ptr] = '\0';
 
 	dir = 0;
 	while (dirs[dir]) {
-		if (!strncasecmp (dirs[dir], ptr, name_end - ptr))
+		if (!strcasecmp (dirs[dir], name_buf))
 			break;
 		dir++;
 	}
@@ -216,7 +220,7 @@ addinstr_fail:
 			SetLastSPASMError(SPASM_ERR_INVALID_ADDINSTR);
 			if (instr && instr->args) free ((void *) instr->args);
 			if (instr) free (instr);
-			ptr = NULL;
+			ptr = skip_to_line_end(ptr);
 			break;
 		}
 		case 9: //ECHO
