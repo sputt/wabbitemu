@@ -257,6 +257,12 @@ define_t *add_define (char *name, bool *redefined, bool search_local) {
 	define_t *define;
 	label_t *conflict_label;
 
+	if (strlen(name) == 0) {
+		SetLastSPASMError(SPASM_ERR_NAME_EXPECTED);
+		free(name);
+		return NULL;
+	}
+
 	if (!case_sensitive) {
 		char *new_name = strup (name);
 		free (name);
