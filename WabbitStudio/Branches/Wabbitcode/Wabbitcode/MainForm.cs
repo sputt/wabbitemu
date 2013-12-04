@@ -195,6 +195,7 @@ namespace Revsoft.Wabbitcode
             {
                 return;
             }
+
             foreach (string arg in args)
             {
                 try
@@ -286,14 +287,20 @@ namespace Revsoft.Wabbitcode
             }
         }
 
-        private void ProjectService_OnProjectOpened(object sender, EventArgs eventArgs)
+        private void ProjectService_OnProjectOpened(object sender, EventArgs e)
         {
             if (_projectService.Project.IsInternal || Settings.Default.StartupProject == _projectService.Project.ProjectFile)
             {
                 return;
             }
 
-            if (MessageBox.Show("Would you like to make this your default project?",
+            if (InvokeRequired)
+            {
+                this.Invoke(() => ProjectService_OnProjectOpened(sender, e));
+                return;
+            }
+
+            if (MessageBox.Show(this, "Would you like to make this your default project?",
                     "Startup Project",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question) == DialogResult.Yes)
@@ -308,8 +315,6 @@ namespace Revsoft.Wabbitcode
 
         private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
-            e.Debugger.OnDebuggerStep += debugger_OnDebuggerStep;
-            e.Debugger.OnDebuggerRunningChanged += debugger_OnDebuggerRunningChanged;
             this.Invoke(ShowDebugPanels);
         }
 
@@ -325,39 +330,6 @@ namespace Revsoft.Wabbitcode
             HideDebugPanels();
 
             _documentService.RemoveDebugHighlight();
-        }
-
-        private void debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
-        {
-            this.Invoke(() =>
-            {
-                _documentService.RemoveDebugHighlight();
-                _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-                _documentService.HighlightDebugLine(e.Location.LineNumber);
-
-            });
-        }
-
-        private void debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
-        {
-            this.Invoke(() =>
-            {
-                _documentService.RemoveDebugHighlight();
-                if (e.Running)
-                {
-                    Form activeForm = _dockingService.ActiveDocument as Form;
-                    if (activeForm != null)
-                    {
-                        activeForm.Refresh();
-                    }
-                }
-                else
-                {
-                    Activate();
-                    _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-                    _documentService.HighlightDebugLine(e.Location.LineNumber);
-                }
-            });
         }
 
         private void ShowDebugPanels()

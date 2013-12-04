@@ -26,7 +26,7 @@ namespace Revsoft.Wabbitcode.Services
 		/// </summary>
 		private readonly string[] _recentFileList = new string[10];
 
-	    public Editor ActiveDocument
+	    private Editor ActiveDocument
 		{
 			get { return _dockingService.ActiveDocument as Editor; }
 		}
@@ -71,7 +71,7 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			DocumentLocation value = new DocumentLocation(ActiveDocument.FileName, newLineNumber);
 			_highlights.Add(value);
-			ActiveDocument.HighlightLine(newLineNumber, foregroundColor, "Debug Highlight");
+			//ActiveDocument.HighlightLine(newLineNumber, foregroundColor, "Debug Highlight");
 		}
 
 		public void RemoveDebugHighlight()
@@ -100,31 +100,6 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		/// <summary>
-		/// Sanity checks on the list of recent files
-		/// </summary>
-		/// <returns>A list of string representing the last open files</returns>
-		public IEnumerable<string> GetRecentFiles()
-		{
-		    if (Settings.Default.RecentFiles == null)
-		    {
-		        Settings.Default.RecentFiles = new StringCollection();
-		    }
-
-		    return Settings.Default.RecentFiles.Cast<string>().Where(s => !string.IsNullOrEmpty(s));
-		}
-
-		public void GotoCurrentDebugLine()
-		{
-			GotoLine(_highlights[_debugIndex].FileName, _highlights[_debugIndex].LineNumber);
-		}
-
-		public void HighlightCall()
-		{
-			GotoFile(_highlights[_debugIndex].FileName)
-                .HighlightLine(_highlights[_debugIndex].LineNumber, Color.LightGreen, "Call Highlight");
-		}
-
 		public Editor OpenDocument(string filename)
 		{
             var child = _dockingService.Documents.OfType<Editor>().SingleOrDefault(e => FileOperations.CompareFilePath(e.FileName, filename));
@@ -139,7 +114,7 @@ namespace Revsoft.Wabbitcode.Services
             return doc;
 		}
 
-		public void OpenDocument(Editor doc, string filename)
+	    private void OpenDocument(Editor doc, string filename)
 		{
 			doc.Text = Path.GetFileName(filename);
 			doc.TabText = Path.GetFileName(filename);
@@ -147,7 +122,6 @@ namespace Revsoft.Wabbitcode.Services
 			doc.OpenFile(filename);
 			AddRecentFile(filename);
 			SaveRecentFileList();
-			GetRecentFiles();
 			_dockingService.ShowDockPanel(doc);
 		}
 

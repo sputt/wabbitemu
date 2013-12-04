@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Revsoft.Wabbitcode.Services.Parser;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
@@ -24,5 +25,6 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 		void ParseFile(int hashCode, string filename);
 	    void ParseFile(int hashCode, string file, string fileText);
 		ParserInformation GetParserInfo(string fileName);
+	    IParserData TryResolveDefine(IDefine parserData, bool caseSensitive);
 	}
 }

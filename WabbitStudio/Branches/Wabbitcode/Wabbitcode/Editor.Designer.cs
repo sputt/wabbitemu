@@ -18,9 +18,6 @@ namespace Revsoft.Wabbitcode
 				if (components != null)
 				{
 					components.Dispose();
-
-					_errorBitmap.Dispose();
-					_warningBitmap.Dispose();
 				}
 			}
 			base.Dispose(disposing);
@@ -63,20 +60,13 @@ namespace Revsoft.Wabbitcode
             //
             // editorBox
             //
-            this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += TextArea_ToolTipRequest;
-            this.editorBox.TextChanged += this.editorBox_TextChanged;
+            this.editorBox.AllowDrop = true;
+            this.editorBox.Dock = DockStyle.Fill;
             this.editorBox.DragDrop += this.editor_DragDrop;
             this.editorBox.DragEnter += this.editor_DragEnter;
             this.editorBox.ActiveTextAreaControl.TextArea.DragDrop += editor_DragDrop;
             this.editorBox.ActiveTextAreaControl.TextArea.DragEnter += editor_DragEnter;
-            this.editorBox.ActiveTextAreaControl.TextArea.KeyPress += editorBox_KeyPress;
-            this.editorBox.ActiveTextAreaControl.TextArea.Caret.PositionChanged += Caret_PositionChanged;
-            this.editorBox.ActiveTextAreaControl.TextArea.AllowDrop = true;
-            this.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
-            this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += TextArea_ToolTipRequest;
-            this.editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
-            this.editorBox.Document.BreakpointManager.Removed += BreakpointManager_Removed;
-            this.editorBox.Document.BreakpointManager.HighlightRegex = LineRegex;
+            
 			// 
 			// imageList1
 			// 

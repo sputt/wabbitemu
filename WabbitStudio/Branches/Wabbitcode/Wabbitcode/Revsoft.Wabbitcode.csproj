@@ -622,9 +622,12 @@
     <Compile Include="DockingWindows\ExpressionWindow.designer.cs">
       <DependentUpon>ExpressionWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="EditorExtensions\CompletionProviderBase.cs" />
+    <Compile Include="EditorExtensions\CompletionProviders.cs" />
+    <Compile Include="EditorExtensions\DebugHighlightMarker.cs" />
     <Compile Include="EditorExtensions\EditorToolTipRequestEventArgs.cs" />
     <Compile Include="EditorExtensions\FoldingItem.cs" />
-    <Compile Include="EditorExtensions\MacroInsightProvider.cs" />
+    <Compile Include="EditorExtensions\InsightProviders.cs" />
     <Compile Include="EditorExtensions\WabbitcodeTextEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -683,6 +686,7 @@
     <Compile Include="Services\Interfaces\IParserService.cs" />
     <Compile Include="Services\Interfaces\IPluginService.cs" />
     <Compile Include="Services\Interfaces\IProjectService.cs" />
+    <Compile Include="Services\Interfaces\IStatusBarService.cs" />
     <Compile Include="Services\Interfaces\ISymbolService.cs" />
     <Compile Include="Services\Interfaces\IToolBarService.cs" />
     <Compile Include="Services\MenuService.cs" />

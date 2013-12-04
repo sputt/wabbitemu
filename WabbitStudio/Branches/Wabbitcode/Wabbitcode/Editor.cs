@@ -2,7 +2,6 @@ using System.Text;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
-using Revsoft.TextEditor.Gui.InsightWindow;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.EditorExtensions;
@@ -10,28 +9,21 @@ using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Assembler;
+using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
-using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using BreakpointEventArgs = Revsoft.TextEditor.Document.BreakpointEventArgs;
 using GotoNextBookmark = Revsoft.TextEditor.Actions.GotoNextBookmark;
-using Timer = System.Windows.Forms.Timer;
 using ToggleBookmark = Revsoft.TextEditor.Actions.ToggleBookmark;
 
 namespace Revsoft.Wabbitcode
@@ -42,22 +34,13 @@ namespace Revsoft.Wabbitcode
 	public partial class Editor : ITextEditor, IBookmarkable
     {
 		#region Private Memebers
-	    private static readonly Regex LineRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|\%|'|\\|\<|\>]*?)\s*(;.*)?$", RegexOptions.Compiled);
 
-	    private readonly Bitmap _warningBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.PNG.Warning16.png"));
-		private readonly Bitmap _errorBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.PNG.error.png"));
-		private readonly List<CancellationTokenSource> _queuedFiles = new List<CancellationTokenSource>();
-		private CancellationTokenSource _highlightRefsCancellationTokenSource;
-		private readonly IBackgroundAssemblerService _backgroundAssemblerService;
         private readonly IDebuggerService _debuggerService;
 		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
 		private readonly IParserService _parserService;
 		private readonly IProjectService _projectService;
-		private readonly ISymbolService _symbolService;
-        private readonly IStatusBarService _statusBarService;
         private int _stackTop;
-		private bool _isUpdatingRefs;
         private volatile bool _wasExternallyModified;
         private bool _documentChanged;
 		#endregion
@@ -130,19 +113,13 @@ namespace Revsoft.Wabbitcode
 		{
 		    InitializeComponent();
 
-			_backgroundAssemblerService = ServiceFactory.Instance.GetServiceInstance<IBackgroundAssemblerService>();
             _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
             _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
             _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
-            _symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
-		    _statusBarService = ServiceFactory.Instance.GetServiceInstance<IStatusBarService>();
 
-		    _textChangedTimer.Tick += textChangedTimer_Tick;
-
-			editorBox.Document.FormattingStrategy = new AsmFormattingStrategy();
-            editorBox.SetHighlighting("Z80 Assembly");
+            editorBox.TextChanged += editorBox_TextChanged;
             editorBox.ContextMenu = contextMenu;
             contextMenu.Popup += contextMenu_Popup;
 
@@ -156,14 +133,15 @@ namespace Revsoft.Wabbitcode
                 SetDebugging(true);
 		    }
 
-		    _backgroundAssemblerService.OnBackgroundAssemblerComplete += (sender, args) => UpdateIcons(args.Output.ParsedErrors);
 		    if (_projectService.Project != null)
 		    {
 		        _projectService.Project.FileModifiedExternally += ProjectFileModifiedExternally;
 		    }
             _projectService.ProjectOpened += (sender, args) => _projectService.Project.FileModifiedExternally += ProjectFileModifiedExternally;
 
-		    CodeCompletionKeyHandler.Attach(this, editorBox, _parserService);
+            CodeCompletionFactory.RegisterCodeCompletionBinding(".asm", new Z80CodeCompletionBinding());
+            CodeCompletionFactory.RegisterCodeCompletionBinding(".z80", new Z80CodeCompletionBinding());
+            CodeCompletionFactory.RegisterCodeCompletionBinding(".inc", new Z80CodeCompletionBinding());
 		}
 
         private void ProjectFileModifiedExternally(object sender, FileModifiedEventArgs e)
@@ -202,81 +180,83 @@ namespace Revsoft.Wabbitcode
             renameContext.Enabled = !hasSelection;
             extractMethodContext.Enabled = hasSelection;
 
-            if (!string.IsNullOrEmpty(editorBox.Text))
+            if (string.IsNullOrEmpty(editorBox.Text))
             {
-                int lineNum = editorBox.ActiveTextAreaControl.Caret.Line;
-                fixCaseContext.Visible = false;
-                fixCaseContext.MenuItems.Clear();
+                return;
+            }
 
-                string line = GetLineText(lineNum);
-                Match match = Regex.Match(line, "#include ((\"(?<includeFile>.*)(?<paren>\\)?)\")|((?!\")(?<includeFile>.*(?!\"))(?<paren>\\)?)))");
-                bool isInclude = match.Success;
+            int lineNum = editorBox.ActiveTextAreaControl.Caret.Line;
+            fixCaseContext.Visible = false;
+            fixCaseContext.MenuItems.Clear();
 
-                var caret = editorBox.ActiveTextAreaControl.Caret;
-                var segment = editorBox.Document.GetLineSegment(caret.Line);
-                var word = segment.GetWord(caret.Column);
-                string text = word == null ? string.Empty : word.Word;
-                if (word != null && !string.IsNullOrEmpty(text) && !isInclude)
+            string line = editorBox.GetLineText(lineNum);
+            Match match = Regex.Match(line, "#include ((\"(?<includeFile>.*)(?<paren>\\)?)\")|((?!\")(?<includeFile>.*(?!\"))(?<paren>\\)?)))");
+            bool isInclude = match.Success;
+
+            var caret = editorBox.ActiveTextAreaControl.Caret;
+            var segment = editorBox.Document.GetLineSegment(caret.Line);
+            var word = segment.GetWord(caret.Column);
+            string text = word == null ? string.Empty : word.Word;
+            if (word != null && !string.IsNullOrEmpty(text) && !isInclude)
+            {
+                IEnumerable<IParserData> parserData = _parserService.GetParserData(text, Settings.Default.CaseSensitive).ToList();
+                if (parserData.Any())
                 {
-                    IEnumerable<IParserData> parserData = _parserService.GetParserData(text, Settings.Default.CaseSensitive).ToList();
-                    if (parserData.Any())
+                    foreach (IParserData data in parserData.Where(data => data.Name != text))
                     {
-                        foreach (IParserData data in parserData.Where(data => data.Name != text))
-                        {
-                            fixCaseContext.Visible = true;
-                            MenuItem item = new MenuItem(data.Name, fixCaseContext_Click);
-                            fixCaseContext.MenuItems.Add(item);
-                        }
+                        fixCaseContext.Visible = true;
+                        MenuItem item = new MenuItem(data.Name, fixCaseContext_Click);
+                        fixCaseContext.MenuItems.Add(item);
+                    }
+                    bgotoButton.Enabled = true;
+                }
+                else
+                {
+                    bgotoButton.Enabled = false;
+                }
+            }
+
+            string gotoLabel = isInclude ? match.Groups["includeFile"].Value.Replace('"', ' ').Trim() : text;
+            if (gotoLabel == "_")
+            {
+                match = Regex.Match(line, "(?<offset>(\\+|\\-)*)_");
+                gotoLabel = match.Groups["offset"].Value + gotoLabel;
+            }
+
+            int num;
+            if (!int.TryParse(gotoLabel, out num))
+            {
+                if (isInclude)
+                {
+                    bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : FindFileIncludes(gotoLabel);
+                    if (exists)
+                    {
+                        bgotoButton.Text = "Open " + gotoLabel;
                         bgotoButton.Enabled = true;
                     }
                     else
                     {
+                        bgotoButton.Text = "File " + gotoLabel + " doesn't exist";
                         bgotoButton.Enabled = false;
-                    }
-                }
-
-                string gotoLabel = isInclude ? match.Groups["includeFile"].Value.Replace('"', ' ').Trim() : text;
-                if (gotoLabel == "_")
-                {
-                    match = Regex.Match(line, "(?<offset>(\\+|\\-)*)_");
-                    gotoLabel = match.Groups["offset"].Value + gotoLabel;
-                }
-
-                int num;
-                if (!int.TryParse(gotoLabel, out num))
-                {
-                    if (isInclude)
-                    {
-                        bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : FindFileIncludes(gotoLabel);
-                        if (exists)
-                        {
-                            bgotoButton.Text = "Open " + gotoLabel;
-                            bgotoButton.Enabled = true;
-                        }
-                        else
-                        {
-                            bgotoButton.Text = "File " + gotoLabel + " doesn't exist";
-                            bgotoButton.Enabled = false;
-                        }
-                    }
-                    else
-                    {
-                        if (bgotoButton.Enabled)
-                        {
-                            bgotoButton.Text = "Goto " + gotoLabel;
-                            bgotoButton.Enabled = !string.IsNullOrEmpty(gotoLabel);
-                        }
-                        else
-                        {
-                            bgotoButton.Text = "Unable to find " + gotoLabel;
-                        }
                     }
                 }
                 else
                 {
-                    bgotoButton.Text = "Goto ";
-                    bgotoButton.Enabled = false;
+                    if (bgotoButton.Enabled)
+                    {
+                        bgotoButton.Text = "Goto " + gotoLabel;
+                        bgotoButton.Enabled = !string.IsNullOrEmpty(gotoLabel);
+                    }
+                    else
+                    {
+                        bgotoButton.Text = "Unable to find " + gotoLabel;
+                    }
                 }
+            }
+            else
+            {
+                bgotoButton.Text = "Goto ";
+                bgotoButton.Enabled = false;
             }
         }
 
@@ -284,6 +264,14 @@ namespace Revsoft.Wabbitcode
         {
             setNextStateMenuItem.Visible = debugging;
             editorBox.Document.ReadOnly = debugging;
+
+            if (!debugging)
+            {
+                return;
+            }
+
+            _debuggerService.CurrentDebugger.DebuggerRunningChanged += Debugger_OnDebuggerRunningChanged;
+            _debuggerService.CurrentDebugger.DebuggerStep += Debugger_OnDebuggerStep;
         }
 
 		protected override string GetPersistString()
@@ -295,191 +283,56 @@ namespace Revsoft.Wabbitcode
 				   editorBox.ActiveTextAreaControl.Caret.Line;
 		}
 
-		private void TextArea_ToolTipRequest(object sender, ToolTipRequestEventArgs e)
-		{
-			if (!e.InDocument)
-			{
-				return;
-			}
-
-		    var segment = editorBox.Document.GetLineSegment(e.LogicalPosition.Line);
-		    var word = segment.GetWord(e.LogicalPosition.Column);
-		    if (word == null || string.IsNullOrEmpty(word.Word))
-		    {
-		        return;
-		    }
-
-		    string text = word.Word;
-			string tooltip;
-			try
-			{
-				IParserData data = _parserService.GetParserData(text, Settings.Default.CaseSensitive).FirstOrDefault();
-				tooltip = data == null ? _symbolService.SymbolTable.GetAddressFromLabel(text) : data.Description;
-			}
-			catch (Exception)
-			{
-				return;
-			}
-
-		    if (string.IsNullOrEmpty(tooltip))
-		    {
-                if (_debuggerService.CurrentDebugger == null)
-                {
-                    return;
-                }
-
-                ushort? regValue = _debuggerService.CurrentDebugger.GetRegisterValue(text);
-                if (!regValue.HasValue)
-                {
-                    return;
-                }
-
-                tooltip = "$" + regValue.Value.ToString("X");
-		    }
-
-            e.ShowToolTip(tooltip);
-		}
-
-		private void SelectionManager_SelectionChanged(object sender, EventArgs e)
-		{
-		    if (string.IsNullOrEmpty(editorBox.Text))
-			{
-				return;
-			}
-
-		    UpdateCodeCountInfo();
-		}
-
-        private void UpdateCodeCountInfo()
+        private void Debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
         {
-            int startLine;
-            int endLine;
-            var selection = editorBox.ActiveTextAreaControl.SelectionManager.SelectionCollection.FirstOrDefault();
-            if (selection != null)
+            this.Invoke(() =>
             {
-                endLine = editorBox.Document.GetLineNumberForOffset(selection.EndOffset);
-                startLine = editorBox.Document.GetLineNumberForOffset(selection.Offset);
-                if (startLine > endLine)
+                editorBox.RemoveDebugHighlight();
+                if (!FileOperations.CompareFilePath(e.Location.FileName, FileName))
                 {
-                    int temp = endLine;
-                    endLine = startLine;
-                    startLine = temp;
+                    return;
                 }
-            }
-            else
-            {
-                endLine = CaretLine;
-                startLine = endLine;
-            }
 
-            string codeInfoLines = string.Empty;
-            for (; startLine <= endLine; startLine++)
-            {
-                codeInfoLines += GetLineText(startLine) + Environment.NewLine;
-            }
-
-            _backgroundAssemblerService.CountCode(codeInfoLines);
+                _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+                editorBox.HighlightDebugLine(e.Location.LineNumber);
+            });
         }
 
-        private void Caret_PositionChanged(object sender, EventArgs e)
-		{
-			if (editorBox.Document.TextLength == 0)
-			{
-				return;
-			}
-
-			editorBox.Document.MarkerStrategy.RemoveAll(marker => marker != null && marker.Tag == "Reference");
-			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
-			if (!_isUpdatingRefs)
-			{
-				_isUpdatingRefs = true;
-				string word = GetWordAtCaret();
-				_highlightRefsCancellationTokenSource = new CancellationTokenSource();
-				var segments = editorBox.Document.LineSegmentCollection;
-				Task.Factory.StartNew(() => GetHighlightReferences(word, segments), _highlightRefsCancellationTokenSource.Token);
-			}
-
-		    _statusBarService.SetCaretPosition(CaretLine, CaretColumn);
-            UpdateCodeCountInfo();
-
-            CalcLocation label = _symbolService.ListTable.GetCalcLocation(FileName, CaretLine);
-            if (label == null)
+        private void Debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
+        {
+            this.Invoke(() =>
             {
-                return;
-            }
+                editorBox.RemoveDebugHighlight();
+                if (e.Running)
+                {
+                    Form activeForm = _dockingService.ActiveDocument as Form;
+                    if (activeForm != null)
+                    {
+                        activeForm.Refresh();
+                    }
+                }
+                else
+                {
+                    Activate();
+                    if (!FileOperations.CompareFilePath(e.Location.FileName, FileName))
+                    {
+                        return;
+                    }
 
-            string assembledInfo = string.Format("Page: {0} Address: {1}", label.Page, label.Address.ToString("X4"));
-            _statusBarService.SetText(assembledInfo);
-		}
-
-		private void GetHighlightReferences(string word, IEnumerable<LineSegment> segmentCollection)
-		{
-			var options = Settings.Default.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-			if (string.IsNullOrEmpty(word) || !Settings.Default.ReferencesHighlighter)
-			{
-				_isUpdatingRefs = false;
-				return;
-			}
-
-		    var references = from segment in segmentCollection
-		        from segmentWord in segment.Words
-		        where string.Equals(segmentWord.Word, word, options)
-		        select new TextMarker(segment.Offset + segmentWord.Offset, segmentWord.Length, TextMarkerType.SolidBlock, Color.LightGray)
-		        {
-		            Tag = "Reference"
-		        };
-		    if (InvokeRequired && !IsDisposed)
-		    {
-		        this.Invoke(() => AddMarkers(references));
-		    }
-		    _isUpdatingRefs = false;
-		}
-
-		private void UpdateIcons(IEnumerable<BuildError> errorsInFiles)
-		{
-		    IconManager iconManager = editorBox.Document.IconManager;
-		    iconManager.ClearIcons();
-			var errorWarnings = errorsInFiles.Where(issue => FileOperations.CompareFilePath(issue.File, editorBox.FileName));
-			foreach (MarginIcon marginIcon in errorWarnings.Select(issue => 
-                new MarginIcon(issue.IsWarning ? _warningBitmap : _errorBitmap, issue.LineNum - 1, issue.ToolTip)))
-			{
-			    iconManager.AddIcon(marginIcon);
-			}
-		}
+                    _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+                    editorBox.HighlightDebugLine(e.Location.LineNumber);
+                }
+            });
+        }
 
 		private void ClearIcons()
 		{
 			editorBox.Document.IconManager.ClearIcons();
 		}
 
-        /// <summary>
-		/// Synchronizes the breakpoints known by the Breakpoint manager with the breakpoint manager
-		/// contained within the text editor
-		/// </summary>
-		private void LoadBreakpoints()
-		{
-			editorBox.Document.BreakpointManager.Added -= BreakpointManager_Added;
-			var breakpoints = WabbitcodeBreakpointManager.Breakpoints.Where(
-				b => FileOperations.CompareFilePath(b.File, FileName));
-			foreach (var breakpoint in breakpoints)
-			{
-				editorBox.Document.BreakpointManager.AddMark(new Breakpoint(editorBox.Document, 
-					new TextLocation(0, breakpoint.LineNumber)));
-			}
-			editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
-		}
-
         private void editor_FormClosing(object sender, CancelEventArgs e)
 		{
-			_textChangedTimer.Enabled = false;
-
 			editorBox.Document.MarkerStrategy.RemoveAll(s => true);
-
-			// Cancel any tasks
-			foreach (CancellationTokenSource item in _queuedFiles)
-			{
-				item.Cancel();
-			}
 
             // TODO: save document foldings
 
@@ -506,17 +359,6 @@ namespace Revsoft.Wabbitcode
 					SaveFile();
 					break;
 			}
-		}
-
-        private void editorBox_KeyPress(object sender, KeyPressEventArgs e)
-		{
-			TextAreaControl activeTextAreaControl = editorBox.ActiveTextAreaControl;
-			activeTextAreaControl.Document.FormattingStrategy.FormatLine(
-				activeTextAreaControl.TextArea, activeTextAreaControl.Caret.Line, 0, e.KeyChar);
-            if (e.KeyChar == '(')
-            {
-                ShowInsightWindow(new MacroInsightProvider());
-            }
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -562,16 +404,6 @@ namespace Revsoft.Wabbitcode
 		}
 
 		#region Breakpoint Manager
-
-		void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
-		{
-			WabbitcodeBreakpointManager.RemoveBreakpoint(FileName, e.Breakpoint.LineNumber);
-		}
-
-		void BreakpointManager_Added(object sender, BreakpointEventArgs e)
-		{
-			WabbitcodeBreakpointManager.AddBreakpoint(FileName, e.Breakpoint.LineNumber);
-		}
 
 		void WabbitcodeBreakpointManager_OnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
 		{
@@ -658,55 +490,9 @@ namespace Revsoft.Wabbitcode
 
 		#endregion
 
-        private readonly Timer _textChangedTimer = new Timer
-		{
-			Interval = 5000,
-			Enabled = false
-		};
-
         private void editorBox_TextChanged(object sender, EventArgs e)
 		{
-			if (_textChangedTimer.Enabled)
-			{
-				_textChangedTimer.Stop();
-			}
-
-			_textChangedTimer.Start();
-			if (Settings.Default.EnableFolding)
-			{
-				editorBox.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
-				editorBox.Document.FoldingManager.UpdateFoldings(null, null);
-			}
-			else
-			{
-				editorBox.Document.FoldingManager.FoldingStrategy = null;
-				editorBox.Document.FoldingManager.UpdateFoldings(new List<FoldMarker>());
-			}
-			if (editorBox.Document.UndoStack.UndoItemCount != _stackTop)
-			{
-				DocumentChanged = true;
-				UpdateTabText();
-			}
-			else
-			{
-				DocumentChanged = false;
-				UpdateTabText();
-			}
-		}
-
-		void textChangedTimer_Tick(object sender, EventArgs e)
-		{
-			UpdateAll(editorBox.Text);
-			_textChangedTimer.Enabled = false;
-		}
-
-		void UpdateAll(string editorText)
-		{
-			CancellationTokenSource cancellationSource = new CancellationTokenSource();
-			_queuedFiles.Add(cancellationSource);
-            Task.Factory.StartNew(() => _parserService.ParseFile(editorText.GetHashCode(), FileName, editorText),
-                cancellationSource.Token);
-			_backgroundAssemblerService.RequestAssemble();
+            UpdateTabText();
 		}
 
 		private void UpdateTabText()
@@ -948,7 +734,7 @@ namespace Revsoft.Wabbitcode
 			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
 		}
 
-	    internal void HighlightLine(int newLineNumber, Color foregroundColor, string tag)
+	    /*internal void HighlightLine(int newLineNumber, Color foregroundColor, string tag)
 		{
 			int lineNum = newLineNumber - 1;
 		    string line = GetLineText(lineNum);
@@ -969,44 +755,12 @@ namespace Revsoft.Wabbitcode
 		    editorBox.Document.MarkerStrategy.AddMarker(highlight);
 		    editorBox.Refresh();
 		    GotoLine(lineNum);
-		}
-
-        private string GetLineText(int lineNum)
-        {
-            LineSegment segment = editorBox.Document.GetLineSegment(lineNum);
-            string line = string.Empty;
-            foreach (var word in segment.Words)
-            {
-                switch (word.Type)
-                {
-                    case TextWordType.Tab:
-                        line += '\t';
-                        break;
-                    case TextWordType.Space:
-                        line += ' ';
-                        break;
-                    default:
-                        line += word.Word;
-                        break;
-                }
-            }
-            return line;
-        }
+		}*/
 
         internal void RemoveHighlight(int line, string tag)
 		{
 			editorBox.Document.MarkerStrategy.RemoveAll(marker => editorBox.Document.GetLineNumberForOffset(marker.Offset) == line - 1 && tag == marker.Tag);
 			UpdateDocument(line);
-		}
-
-		private void AddMarkers(IEnumerable<TextMarker> markers)
-		{
-			foreach (TextMarker marker in markers)
-			{
-				editorBox.Document.MarkerStrategy.AddMarker(marker);
-			}
-			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
-			Refresh();
 		}
 
         public void ConvertSpacesToTabs()
@@ -1020,12 +774,9 @@ namespace Revsoft.Wabbitcode
 		}
 
         public string GetWordAtCaret()
-		{
-            var caret = editorBox.ActiveTextAreaControl.Caret;
-            var segment = editorBox.Document.GetLineSegment(caret.Line);
-		    var word = segment.GetWord(caret.Column);
-            return word == null ? string.Empty : word.Word;
-		}
+        {
+            return editorBox.GetWordAtCaret();
+        }
 
 	    public void ShowFindForm(Form owner, SearchMode mode)
 	    {
@@ -1035,17 +786,15 @@ namespace Revsoft.Wabbitcode
         public override void OpenFile(string filename)
         {
             editorBox.LoadFile(filename, true, true);
-            editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(filename);
             UpdateTabText();
             ClearIcons();
-            LoadBreakpoints();
 
             base.OpenFile(filename);
         }
 
         public override void SaveFile()
         {
-            _projectService.Project.FileModifiedExternally -= ProjectFileModifiedExternally;
+            _projectService.Project.EnableFileWatcher(false);
             if (string.IsNullOrEmpty(FileName))
             {
                 new SaveAsCommand().Execute();
@@ -1062,35 +811,10 @@ namespace Revsoft.Wabbitcode
                 DockingService.ShowError("Error saving the file", ex);
             }
 
-            _projectService.Project.FileModifiedExternally += ProjectFileModifiedExternally;
+            _projectService.Project.EnableFileWatcher(true);
 
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
             base.SaveFile();
-        }
-
-        private InsightWindow _insightWindow;
-
-        private void ShowInsightWindow(IInsightDataProvider insightDataProvider)
-        {
-            if (_insightWindow == null || _insightWindow.IsDisposed)
-            {
-                _insightWindow = new InsightWindow(this, editorBox);
-                _insightWindow.Closed += CloseInsightWindow;
-            }
-            _insightWindow.AddInsightDataProvider(insightDataProvider, FileName);
-            _insightWindow.ShowInsightWindow();
-        }
-
-        private void CloseInsightWindow(object sender, EventArgs e)
-        {
-            if (_insightWindow == null)
-            {
-                return;
-            }
-
-            _insightWindow.Closed -= CloseInsightWindow;
-            _insightWindow.Dispose();
-            _insightWindow = null;
         }
 
         #region IUndoable

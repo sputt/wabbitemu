@@ -522,6 +522,8 @@
     <Compile Include="Src\Document\ISegment.cs" />
     <Compile Include="Src\Document\LineManager\DeferredEventList.cs" />
     <Compile Include="Src\Document\LineManager\LineSegmentTree.cs" />
+    <Compile Include="Src\Document\MarkerStrategy\BreakpointTextMarker.cs" />
+    <Compile Include="Src\Document\MarkerStrategy\ReferenceMarker.cs" />
     <Compile Include="Src\Document\TextAnchor.cs" />
     <Compile Include="Src\Document\TextLocation.cs" />
     <Compile Include="Src\Document\TextUtilities.cs" />

@@ -67,12 +67,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
 		{
 			_debugger = e.Debugger;
-		    _debugger.OnDebuggerStep += (o, args) =>
+		    _debugger.DebuggerStep += (o, args) =>
 		    {
 		        UpdateAllRows();
                 EnablePanel(true);
 		    };
-		    _debugger.OnDebuggerRunningChanged += (o, args) => EnablePanel(!args.Running);
+		    _debugger.DebuggerRunningChanged += (o, args) => EnablePanel(!args.Running);
 		}
 
         #region Clipboard Operation

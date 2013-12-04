@@ -128,6 +128,19 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
+        public IParserData TryResolveDefine(IDefine parserData, bool caseSensitive)
+        {
+            string contents = parserData.Contents;
+            if (contents.EndsWith("("))
+            {
+                contents = contents.Remove(contents.Length - 1);
+            }
+
+            var possibleData = GetParserData(contents, caseSensitive).ToList();
+            var resolvedType = possibleData.FirstOrDefault();
+            return resolvedType;
+        }
+
         public ParserService(IFileReaderService fileReaderService)
         {
             _fileReaderService = fileReaderService;

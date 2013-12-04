@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Xml;
@@ -20,6 +21,14 @@ namespace Revsoft.Wabbitcode.Extensions
         public static void BeginInvoke(this Control control, Action action)
         {
             control.BeginInvoke(action);
+        }
+
+        public static void ForEach<T>(this IEnumerable<T> enumeration, Action<T> action)
+        {
+            foreach (T item in enumeration)
+            {
+                action(item);
+            }
         }
 
         public static bool MoveToNextElement(this XmlTextReader reader)

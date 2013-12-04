@@ -48,7 +48,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
 		{
 			_debugger = e.Debugger;
-		    _debugger.OnDebuggerRunningChanged += (o, args) =>
+		    _debugger.DebuggerRunningChanged += (o, args) =>
 		    {
 		        EnablePanel(!args.Running);
 		        if (!args.Running)
@@ -56,7 +56,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
                     UpdatePanel();
 		        }
 		    };
-		    _debugger.OnDebuggerStep += (o, args) =>
+		    _debugger.DebuggerStep += (o, args) =>
 		    {
 		        EnablePanel(true);
                 UpdatePanel();

@@ -90,21 +90,23 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
                         if (_tokensEnumerator.Current == "#")
                         {
-                            _tokensEnumerator.MoveNext();
-                            switch (_tokensEnumerator.Current.ToLower())
-                            {
-                                case IncludeString:
-                                    HandleInclude();
-                                    break;
-                                case DefineString:
-                                    HandleDefine();
-                                    break;
-                                case CommentString:
-                                    _lineIndex = HandleBlockComment();
-                                    break;
-                                case MacroString:
-                                    _lineIndex = HandleMacro();
-                                    break;
+                            if (_tokensEnumerator.MoveNext()) 
+                            { 
+                                switch (_tokensEnumerator.Current.ToLower())
+                                {
+                                    case IncludeString:
+                                        HandleInclude();
+                                        break;
+                                    case DefineString:
+                                        HandleDefine();
+                                        break;
+                                    case CommentString:
+                                        _lineIndex = HandleBlockComment();
+                                        break;
+                                    case MacroString:
+                                        _lineIndex = HandleMacro();
+                                        break;
+                                }
                             }
                         }
                     }
@@ -272,6 +274,12 @@ namespace Revsoft.Wabbitcode.Services.Parser
             }
 
             string defineName = _tokensEnumerator.Current;
+            if (defineName.Any(c => !IsValidNameChar(c)))
+            {
+                SkipToEndOfLine();
+                return;
+            }
+
             string contents;
             string description;
             if (_tokensEnumerator.MoveNext())
@@ -365,6 +373,12 @@ namespace Revsoft.Wabbitcode.Services.Parser
         {
             string description = GetDescription();
             string labelName = _tokensEnumerator.Current;
+            if (labelName.Any(c => !IsValidNameChar(c)))
+            {
+                SkipToEndOfLine();
+                return;
+            }
+
             if (!_tokensEnumerator.MoveNext() || _tokensEnumerator.Current == ":")
             {
                 // its definitely a label
@@ -423,7 +437,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
                 if (_tokensEnumerator.Current == CommentChar.ToString())
                 {
-                    hasNext = SkipToEndOfLine();
+                    string innerContents;
+                    hasNext = SkipToEndOfLine(out innerContents);
+                    contents += innerContents;
                     if (!hasNext)
                     {
                         break;
@@ -439,15 +455,17 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 {
                     _lineIndex++;
                 }
+
+                contents += _tokensEnumerator.Current;
             }
 
             return -1;
         }
 
-        private bool SkipToEndOfLine()
+        private void SkipToEndOfLine()
         {
             string contents;
-            return SkipToEndOfLine(out contents);
+            SkipToEndOfLine(out contents);
         }
 
         private bool SkipToEndOfLine(out string contents)
@@ -587,6 +605,12 @@ namespace Revsoft.Wabbitcode.Services.Parser
         private static bool IsValidLabelChar(char c)
         {
             return char.IsLetterOrDigit(c) || c == '_';
+        }
+
+        private static bool IsValidNameChar(char ch)
+        {
+            return IsValidLabelChar(ch) || ch == '_' || ch == '[' ||
+                ch == ']' || ch == '!' || ch == '?' || ch == '.';
         }
     }
 }

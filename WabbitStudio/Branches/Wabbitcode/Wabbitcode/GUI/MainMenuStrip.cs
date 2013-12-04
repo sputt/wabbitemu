@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
@@ -6,6 +8,7 @@ using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -602,8 +605,7 @@ namespace Revsoft.Wabbitcode.GUI
             AboutMenuItem.Click += aboutMenuItem_Click;
 
             ClearRecentItems();
-            var files = _documentService.GetRecentFiles();
-            foreach (string file in files)
+            foreach (string file in GetRecentFiles())
             {
                 AddRecentItem(file);
             }
@@ -724,6 +726,16 @@ namespace Revsoft.Wabbitcode.GUI
         private static void ClearRecentItems()
         {
             RecentFilesMenuItem.DropDownItems.Clear();
+        }
+
+        private static IEnumerable<string> GetRecentFiles()
+        {
+            if (Settings.Default.RecentFiles == null)
+            {
+                Settings.Default.RecentFiles = new StringCollection();
+            }
+
+            return Settings.Default.RecentFiles.Cast<string>().Where(s => !string.IsNullOrEmpty(s));
         }
 
         private static void exitMenuItem_Click(object sender, EventArgs e)
@@ -1022,8 +1034,8 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
-            e.Debugger.OnDebuggerRunningChanged += (o, args) => EnableDebugMenuItems();
-            e.Debugger.OnDebuggerStep += (o, args) => EnableDebugMenuItems();
+            e.Debugger.DebuggerRunningChanged += (o, args) => EnableDebugMenuItems();
+            e.Debugger.DebuggerStep += (o, args) => EnableDebugMenuItems();
         }
 
         private void EnableDebugMenuItems()

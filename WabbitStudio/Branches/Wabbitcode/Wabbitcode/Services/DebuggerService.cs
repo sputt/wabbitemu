@@ -59,6 +59,11 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
+        public void GotoCurrentDebugLine()
+        {
+            throw new NotImplementedException();
+        }
+
         private static string GetOutputFileDetails(IProject project)
         {
             if (string.IsNullOrEmpty(project.BuildSystem.ProjectOutput))

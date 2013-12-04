@@ -39,8 +39,8 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
     public interface IWabbitcodeDebugger : IDisposable
     {
-        event DebuggerRunning OnDebuggerRunningChanged;
-        event DebuggerStep OnDebuggerStep;
+        event DebuggerRunning DebuggerRunningChanged;
+        event DebuggerStep DebuggerStep;
 
         bool IsRunning { get; }
         Stack<StackEntry> MachineStack { get; }

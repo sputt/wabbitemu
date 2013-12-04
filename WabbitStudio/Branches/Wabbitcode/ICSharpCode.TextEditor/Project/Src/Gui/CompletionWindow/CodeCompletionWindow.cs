@@ -55,26 +55,12 @@ namespace Revsoft.TextEditor.Gui.CompletionWindow
 			this.fixedListViewWidth = fixedListViewWidth;
 
 			workingScreen = Screen.GetWorkingArea(Location);
-            //HACK: so this triggers by control space
-            if (ModifierKeys == Keys.Control)
-            {
-                endOffset = control.ActiveTextAreaControl.Caret.Offset;
-                startOffset = endOffset;
-                if (startOffset == control.Text.Length)
-                    startOffset--;
-                while (",( .#\t".IndexOf(control.Text[startOffset]) == -1)
-                    startOffset--;
-                startOffset++;
+            startOffset = control.ActiveTextAreaControl.Caret.Offset + 1;
+            endOffset   = startOffset;
+            if (completionDataProvider.PreSelection != null) {
+                startOffset -= completionDataProvider.PreSelection.Length + 1;
+                endOffset--;
             }
-            else
-            {
-                startOffset = control.ActiveTextAreaControl.Caret.Offset + 1;
-                endOffset = startOffset;
-            }
-		    if (completionDataProvider.PreSelection != null) {
-				startOffset -= completionDataProvider.PreSelection.Length + 1;
-				endOffset--;
-			}
 			
 			codeCompletionListView = new CodeCompletionListView(completionData);
 			codeCompletionListView.ImageList = completionDataProvider.ImageList;
@@ -279,7 +265,7 @@ namespace Revsoft.TextEditor.Gui.CompletionWindow
 					InsertSelectedItem('\t');
 					return true;
                 case Keys.Return:
-                    InsertSelectedItem(' ');
+                    InsertSelectedItem('\n');
                     return true;
 			}
 			return base.ProcessTextAreaKey(keyData);

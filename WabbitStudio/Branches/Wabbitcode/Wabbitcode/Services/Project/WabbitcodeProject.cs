@@ -124,7 +124,15 @@ namespace Revsoft.Wabbitcode.Services.Project
 			NeedsSave = false;
 		}
 
-		public void OpenProject(string projectFile)
+	    public void EnableFileWatcher(bool enabled)
+	    {
+	        if (!string.IsNullOrEmpty(_watcher.Path))
+	        {
+	            _watcher.EnableRaisingEvents = enabled;
+	        }
+	    }
+
+	    public void OpenProject(string projectFile)
 		{
 			FileStream stream = null;
 			try

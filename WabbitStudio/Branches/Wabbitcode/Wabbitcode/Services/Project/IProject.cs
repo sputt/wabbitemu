@@ -55,6 +55,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 		void CreateNewProject(string projectFile, string projectName);
 		void OpenProject(string projectFile);
 		void SaveProject();
+
+	    void EnableFileWatcher(bool enabled);
 	}
 
     public class FileModifiedEventArgs : EventArgs

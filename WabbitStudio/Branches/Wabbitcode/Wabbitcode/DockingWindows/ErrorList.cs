@@ -114,7 +114,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			string file = errorGridView.Rows[e.RowIndex].Cells[3].Tag.ToString();
 		    if (file != FcreateFile)
 		    {
-		        _documentService.GotoLine(file, line);
+		        _documentService.GotoLine(file, line - 1);
 		    }
 		}
 
