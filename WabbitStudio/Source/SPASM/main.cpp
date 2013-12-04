@@ -112,7 +112,10 @@ int run_assembly()
 
 	printf ("Pass one... \n");
 
+	int first_pass_session = StartSPASMErrorSession();
 	run_first_pass ((char *) input_contents);
+	ReplayFatalSPASMErrorSession(first_pass_session);
+	EndSPASMErrorSession(first_pass_session);
 
 	//free include dirs when done
 	if ((mode & MODE_COMMANDLINE) == 0)
@@ -128,7 +131,10 @@ int run_assembly()
 	if (mode & MODE_NORMAL || mode & MODE_LIST)
 	{
 		printf ("Pass two... \n");
+		int second_pass_session = StartSPASMErrorSession();
 		run_second_pass ();
+		ReplaySPASMErrorSession(second_pass_session);
+		EndSPASMErrorSession(second_pass_session);
 
 		//run the output through the appropriate program export and write it to a file
 		if (mode & MODE_NORMAL && output_filename != NULL)
@@ -407,10 +413,8 @@ int main (int argc, char **argv)
 	}
 	output_contents = (unsigned char *) malloc(output_buf_size);
 	ClearSPASMErrorSessions();
-	int session = StartSPASMErrorSession();
+
 	int error = run_assembly();
-	ReplaySPASMErrorSession(session);
-	EndSPASMErrorSession(session);
 
 	free(output_filename);
 	output_filename = NULL;

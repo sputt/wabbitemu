@@ -207,10 +207,7 @@ public:
 
 		AddDefines();
 
-		int session = StartSPASMErrorSession();
 		int error = run_assembly();
-		ReplaySPASMErrorSession(session);
-		EndSPASMErrorSession(session);
 
 		list_free(include_dirs, true, NULL);
 		include_dirs = NULL;
