@@ -19,6 +19,7 @@
         
         <localconverters:YConverter x:Key="YConverter"/>
         <localconverters:XConverter x:Key="XConverter"/>
+        <localconverters:VolumeConverter x:Key="VolumeConverter"/>
 
         <ControlTemplate x:Key="MoveThumbTemplate" TargetType="{x:Type Thumb}">
             <Rectangle Fill="Transparent"/>
@@ -60,6 +61,14 @@
                 <Style TargetType="ListBoxItem">
                     <Setter Property="Canvas.Left" Value="{Binding Args[0].Value}"/>
                     <Setter Property="Canvas.Top" Value="{Binding Args[1].Value}"/>
+                    <Setter Property="Panel.ZIndex">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource VolumeConverter}">
+                                <Binding Path="Args[2].Value"/>
+                                <Binding Path="Args[3].Value"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListBoxItem">

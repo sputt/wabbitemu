@@ -120,6 +120,21 @@
         End If
     End Sub
 
+    Private Sub ItemsControl_MouseDoubleClick(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs) Handles ItemsControl.MouseDoubleClick
+        Dim Frm = New ObjectProperties()
+        Frm.Owner = Window.GetWindow(Me)
+
+        Dim ObjClone As ZMisc = ItemsControl.SelectedItem.Clone
+        Frm.DataContext = ObjClone
+        If Frm.ShowDialog() = True Then
+            'ObjClone.UpdatePosition(ObjClone.Args(0).Value, ObjClone.Args(1).Value)
+            Me.DataContext.ZMisc(ItemsControl.SelectedIndex) = ObjClone
+            ItemsControl.SelectedItem = ObjClone
+        End If
+        _IsDraggingMisc = False
+        Mouse.Capture(Nothing)
+    End Sub
+
     'Private Sub ItemsControl_PreviewKeyDown(sender As System.Object, e As System.Windows.Input.KeyEventArgs) Handles ItemsControl.PreviewKeyDown
     '    Dim SelectedMisc As ZMisc = CType(sender, ListBox).SelectedItem
     '    Debug.WriteLine("Misc previewkeydown")

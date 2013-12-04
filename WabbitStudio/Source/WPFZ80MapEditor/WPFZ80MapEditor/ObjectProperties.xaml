@@ -67,6 +67,7 @@
                 <TextBox Text="{Binding Path=Value}" Margin="10,0,0,0" Height="23" Tag="ObjProp" MaxLength="3" Width="40" TextAlignment="Right" />
             </StackPanel>
         </DataTemplate>
+        
         <DataTemplate DataType="{x:Type local:ZDefArgObjectFlags}">
             <StackPanel Orientation="Horizontal" Height="60">
                 <StackPanel Orientation="Horizontal" Width="125">
@@ -126,6 +127,63 @@
                 </Grid>
             </StackPanel>
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type local:ZDefArgEnemyFlags}">
+            <StackPanel Orientation="Horizontal" Height="70">
+                <StackPanel Orientation="Horizontal" Width="125">
+                    <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
+                    <Label Content=":" Height="28" Padding="0,5,5,5" />
+                </StackPanel>
+                <Grid Width="200" Margin="10,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <CheckBox Content="Invulnerable" Grid.Row="0" Grid.Column="0">
+                        <CheckBox.IsChecked>
+                            <Binding Path="Value"
+                                     Converter="{StaticResource BitConverter}"
+                                     ConverterParameter="128">
+                            </Binding>
+                        </CheckBox.IsChecked>
+                    </CheckBox>
+                    <CheckBox Content="Inverted" Grid.Row="0" Grid.Column="1">
+                        <CheckBox.IsChecked>
+                            <Binding Path="Value"
+                                     Converter="{StaticResource BitConverter}"
+                                     ConverterParameter="64">
+                            </Binding>
+                        </CheckBox.IsChecked>
+                    </CheckBox>
+                    <CheckBox Content="4-Direction" Grid.Row="1" Grid.Column="0">
+                        <CheckBox.IsChecked>
+                            <Binding Path="Value"
+                                     Converter="{StaticResource BitConverter}"
+                                     ConverterParameter="32">
+                            </Binding>
+                        </CheckBox.IsChecked>
+                    </CheckBox>
+                    <CheckBox Content="Non-harming" Grid.Row="1" Grid.Column="1">
+                        <CheckBox.IsChecked>
+                            <Binding Path="Value"
+                                     Converter="{StaticResource BitConverter}"
+                                     ConverterParameter="16">
+                            </Binding>
+                        </CheckBox.IsChecked>
+                    </CheckBox>
+                    <Label Content="Type" Grid.Row="2" Grid.Column="0"/>
+                    <ComboBox  Grid.Row="2" Grid.Column="1">
+                        <ComboBoxItem Content="Test"/>
+                    </ComboBox>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type local:ZDefArg}">
             <StackPanel Orientation="Horizontal" Height="31">
                 <StackPanel Orientation="Horizontal" Width="125">

@@ -167,7 +167,7 @@ Public Class MainWindow
         CurrentZoomLevelItem.Height = 0
     End Sub
 
-    Private Sub LayerRadioButton_Checked(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles RadioMapSet.Checked, RadioMapView.Checked, RadioObjectLayer.Checked, RadioMiscLayer.Checked
+    Private Sub LayerRadioButton_Checked(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles RadioMapSet.Checked, RadioMapView.Checked, RadioObjectLayer.Checked, RadioMiscLayer.Checked, RadioEnemyLayer.Checked
         If Not LayerContainer Is Nothing Then
             Dim ActivateLayer = Sub(t As Type, rb As RadioButton)
                                     Dim AllLayers = (From s As MapContainer In LayerContainer.Children
@@ -180,6 +180,7 @@ Public Class MainWindow
             ActivateLayer(GetType(MapSet), RadioMapSet)
             ActivateLayer(GetType(MapView), RadioMapView)
             ActivateLayer(GetType(ObjectLayer), RadioObjectLayer)
+            ActivateLayer(GetType(EnemyLayer), RadioEnemyLayer)
             ActivateLayer(GetType(MiscLayer), RadioMiscLayer)
 
             If RadioMapSet.IsChecked Then
@@ -190,6 +191,8 @@ Public Class MainWindow
                 Scenario.Instance.ActiveLayerType = GetType(ObjectLayer)
             ElseIf RadioMiscLayer.IsChecked Then
                 Scenario.Instance.ActiveLayerType = GetType(MiscLayer)
+            ElseIf RadioEnemyLayer.IsChecked Then
+                Scenario.Instance.ActiveLayerType = GetType(EnemyLayer)
             End If
         End If
     End Sub

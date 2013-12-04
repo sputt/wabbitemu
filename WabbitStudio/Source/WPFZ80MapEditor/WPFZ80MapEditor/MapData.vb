@@ -23,6 +23,10 @@ Public Class MapData
         DependencyProperty.Register("ZObjects",
                                     GetType(ObservableCollection(Of ZObject)), GetType(MapData))
 
+    Public Shared ReadOnly ZEnemiesProperty As DependencyProperty =
+        DependencyProperty.Register("ZEnemies",
+                                    GetType(ObservableCollection(Of ZEnemy)), GetType(MapData))
+
     Public Shared ReadOnly ZMiscProperty As DependencyProperty =
         DependencyProperty.Register("ZMisc",
                                     GetType(ObservableCollection(Of ZMisc)), GetType(MapData))
@@ -57,6 +61,15 @@ Public Class MapData
         End Set
     End Property
 
+    Public Property ZEnemies As ObservableCollection(Of ZEnemy)
+        Get
+            Return GetValue(ZEnemiesProperty)
+        End Get
+        Set(value As ObservableCollection(Of ZEnemy))
+            SetValue(ZEnemiesProperty, value)
+        End Set
+    End Property
+
     Public Property ZMisc As ObservableCollection(Of ZMisc)
         Get
             Return GetValue(ZMiscProperty)
@@ -75,6 +88,14 @@ Public Class MapData
 
             Dim Obj As New ZObject(Def, X, Y)
             ZObjects.Add(Obj)
+        ElseIf Scenario.Instance.EnemyDefs.ContainsValue(Def) Then
+            Dim ObjTest As New ZEnemy(Def, X, Y)
+
+            X = X - ObjTest.W / 2
+            Y = Y - ObjTest.H / 2
+
+            Dim Obj As New ZEnemy(Def, X, Y)
+            ZEnemies.Add(Obj)
         ElseIf Scenario.Instance.MiscDefs.ContainsValue(Def) Then
             Dim Misc As New ZMisc(Def, X, Y, 16, 16)
 
@@ -105,6 +126,7 @@ Public Class MapData
         Tileset = NewTileset
         ZAnims = New ObservableCollection(Of ZAnim)
         ZObjects = New ObservableCollection(Of ZObject)
+        ZEnemies = New ObservableCollection(Of ZEnemy)
         ZMisc = New ObservableCollection(Of ZMisc)
     End Sub
 

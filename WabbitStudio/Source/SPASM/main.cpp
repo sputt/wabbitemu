@@ -128,13 +128,8 @@ int run_assembly()
 	if (mode & MODE_NORMAL || mode & MODE_LIST)
 	{
 		printf ("Pass two... \n");
-
-		int session = StartSPASMErrorSession();
 		run_second_pass ();
-		ReplaySPASMErrorSession(session);
-		EndSPASMErrorSession(session);
-		printf ("Done\n");
-		
+
 		//run the output through the appropriate program export and write it to a file
 		if (mode & MODE_NORMAL && output_filename != NULL)
 		{

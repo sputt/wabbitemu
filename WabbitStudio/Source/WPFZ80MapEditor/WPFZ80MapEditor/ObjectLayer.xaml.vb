@@ -47,6 +47,8 @@
         ObjectItemsControl.SelectedItems.Clear()
     End Sub
 
+
+
     Private _StartDrag As New Point
 #Region "Object events"
     Private _IsDraggingObjects As Boolean = False

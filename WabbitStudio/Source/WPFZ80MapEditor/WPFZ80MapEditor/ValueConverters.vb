@@ -224,4 +224,16 @@ Namespace ValueConverters
         End Function
     End Class
 
+    Public Class VolumeConverter
+        Implements IMultiValueConverter
+
+        Public Function Convert(values() As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
+            Return CInt((256) - ((values(0) * values(1)) / 256))
+        End Function
+
+        Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As Globalization.CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+            Return Nothing
+        End Function
+    End Class
+
 End Namespace

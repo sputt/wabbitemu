@@ -78,7 +78,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type local:ZDef}">
                                 <Border Name="Border" BorderThickness="1" Background="#FFF9F9F9" Margin="3,0" Style="{StaticResource BorderStyle}">
-                                    <StackPanel Name="ObjectContainer" Orientation="Horizontal" Height="20" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                                    <StackPanel Name="ObjectContainer" Orientation="Horizontal" Height="20" VerticalAlignment="Center" SnapsToDevicePixels="True"  MouseMove="Object_MouseMove">
                                         <StackPanel.Triggers>
                                         </StackPanel.Triggers>
                                         <Image Stretch="None" Width="40" x:Name="ObjectImage" UseLayoutRounding="True">

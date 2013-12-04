@@ -96,6 +96,12 @@ Public Class Scenario
 
         Dim Container = MainWindow.Instance.LayerContainer.AddMap(x, y, Map)
 
+        Dim EnemyLayer As New EnemyLayer
+        Container.Children.Add(EnemyLayer)
+        Grid.SetColumn(EnemyLayer, x)
+        Grid.SetRow(EnemyLayer, y)
+        Panel.SetZIndex(EnemyLayer, 4)
+
         Dim ObjLayer As New ObjectLayer
         Container.Children.Add(ObjLayer)
         Grid.SetColumn(ObjLayer, x)
@@ -200,6 +206,12 @@ Public Class Scenario
                         Dim Params = Split(Groups("ObjectArgs").Captures(i).Value, ",")
                         Dim Obj As New ZObject(ObjectDefs(Groups("ObjectName").Captures(i).Value), Params)
                         MapData.ZObjects.Add(Obj)
+                    Next
+
+                    For i = 0 To Groups("EnemyName").Captures.Count - 1
+                        Dim Params = Split(Groups("EnemyArgs").Captures(i).Value, ",")
+                        Dim Enemy As New ZEnemy(EnemyDefs(Groups("EnemyName").Captures(i).Value), Params)
+                        MapData.ZEnemies.Add(Enemy)
                     Next
 
                     For i = 0 To Groups("MiscName").Captures.Count - 1
@@ -337,6 +349,11 @@ Public Class Scenario
             Next
 
             Stream.WriteLine("enemy_section()")
+
+            For Each Enemy In MapData.ZEnemies
+                Stream.WriteLine(vbTab & Enemy.ToMacro())
+            Next
+
             Stream.WriteLine("misc_section()")
 
             For Each Misc In MapData.ZMisc

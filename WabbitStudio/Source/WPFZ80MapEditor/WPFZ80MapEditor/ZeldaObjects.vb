@@ -62,18 +62,35 @@ Public Interface IGeneralObject(Of ZBase)
     Sub FromStruct(Obj As ZBase)
     Property Definition As ZDef
     Property Args As ArgsCollection
+    Property Name As String
+    Property Image As Integer
+    Property X As Byte
+    Property Y As Byte
+    Property W As Byte
+    Property H As Byte
+    Property Z As Byte
+    Property D As Byte
 End Interface
 
 Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)})
     Inherits DependencyObject
     Implements IGeneralObject(Of ZBase)
-
+    Implements ICloneable
 
 #Region "Definition/Arguments"
     Public Shared ReadOnly DefinitionProperty = DependencyProperty.Register("Definition", GetType(ZDef), GetType(ZBaseObject(Of ZBase, Base)))
     Public Shared ReadOnly ArgsProperty = DependencyProperty.Register("Args", GetType(ArgsCollection), GetType(ZBaseObject(Of ZBase, Base)))
 
     Protected _Name As String
+
+    Public Property Name As String Implements IGeneralObject(Of ZBase).Name
+        Get
+            Return _Name
+        End Get
+        Set(value As String)
+            _Name = value
+        End Set
+    End Property
 
     Public Property Definition As ZDef Implements IGeneralObject(Of ZBase).Definition
         Get
@@ -208,7 +225,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
     Public Shared ReadOnly HProperty As DependencyProperty = DependencyProperty.Register("H", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
     Public Shared ReadOnly DProperty As DependencyProperty = DependencyProperty.Register("D", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
 
-    Public Property X As Byte
+    Public Property X As Byte Implements IGeneralObject(Of ZBase).X
         Get
             Return GetValue(XProperty)
         End Get
@@ -217,7 +234,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         End Set
     End Property
 
-    Public Property Y As Byte
+    Public Property Y As Byte Implements IGeneralObject(Of ZBase).Y
         Get
             Return GetValue(YProperty)
         End Get
@@ -226,7 +243,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         End Set
     End Property
 
-    Public Property Z As Byte
+    Public Property Z As Byte Implements IGeneralObject(Of ZBase).Z
         Get
             Return GetValue(ZProperty)
         End Get
@@ -235,7 +252,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         End Set
     End Property
 
-    Public Property W As Byte
+    Public Property W As Byte Implements IGeneralObject(Of ZBase).W
         Get
             Return GetValue(WProperty)
         End Get
@@ -244,7 +261,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         End Set
     End Property
 
-    Public Property H As Byte
+    Public Property H As Byte Implements IGeneralObject(Of ZBase).H
         Get
             Return GetValue(HProperty)
         End Get
@@ -253,7 +270,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         End Set
     End Property
 
-    Public Property D As Byte
+    Public Property D As Byte Implements IGeneralObject(Of ZBase).D
         Get
             Return GetValue(DProperty)
         End Get
@@ -272,7 +289,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
     Public Shared ReadOnly ImageProperty As DependencyProperty =
         DependencyProperty.Register("Image", GetType(Integer), GetType(ZBaseObject(Of ZBase, Base)))
 
-    Public Property Image As Integer
+    Public Property Image As Integer Implements IGeneralObject(Of ZBase).Image
         Get
             Return GetValue(ImageProperty)
         End Get
@@ -287,6 +304,19 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         X += Dx : Y += Dy : Z += Dz
     End Sub
 
+    Public Function Clone() As Object Implements ICloneable.Clone
+        Dim Copy As New Base
+        Copy.Name = _Name
+        Copy.Definition = Definition
+        Copy.Args = Args.Clone
+        Copy.Image = Image
+        With Copy
+            .X = X : .W = W
+            .Y = Y : .H = H
+            .Z = Z : .D = D
+        End With
+        Return Copy
+    End Function
 End Class
 
 #Region "Args collection and types"
@@ -377,6 +407,22 @@ Public Class ZDefArgObjectFlags
 
     Public Overloads Function Clone() As Object
         Dim Copy As New ZDefArgObjectFlags(GetValue(ZDefArg.NameProperty), GetValue(ZDefArg.DescriptionProperty))
+        Copy.SetValue(ZDefArg.ValueProperty, GetValue(ZDefArg.ValueProperty))
+        Return Copy
+    End Function
+End Class
+
+Public Class ZDefArgEnemyFlags
+    Inherits ZDefArg
+
+    Public Sub New(Name As String, Description As String)
+        SetValue(ZDefArg.NameProperty, Name)
+        SetValue(ZDefArg.DescriptionProperty, Description)
+        SetValue(ZDefArg.ValueProperty, "0")
+    End Sub
+
+    Public Overloads Function Clone() As Object
+        Dim Copy As New ZDefArgEnemyFlags(GetValue(ZDefArg.NameProperty), GetValue(ZDefArg.DescriptionProperty))
         Copy.SetValue(ZDefArg.ValueProperty, GetValue(ZDefArg.ValueProperty))
         Return Copy
     End Function
@@ -495,8 +541,10 @@ Public Class ZDef
         Select Case Name
             Case "x", "y", "z", "w", "h", "d", "ac", "cc"
                 NewArg = New ZDefArg8Bit(Name, Description)
-            Case "zflags"
+            Case "of"
                 NewArg = New ZDefArgObjectFlags(Name, Description)
+            Case "ef"
+                NewArg = New ZDefArgEnemyFlags(Name, Description)
             Case "type", "ztype"
                 NewArg = New ZDefArgObjectID(Name, Description)
             Case "ap"
@@ -538,7 +586,6 @@ End Class
 
 Public Class ZObject
     Inherits ZBaseObject(Of AZObject, ZObject)
-    Implements ICloneable
 
     Protected Overrides Sub FromStruct(Obj As AZObject)
         With Obj.Position
@@ -555,21 +602,6 @@ Public Class ZObject
     Public Sub New(Def As ZDef, ParamArray Args() As Object)
         MyBase.New(Def, Args)
     End Sub
-
-    Public Function Clone() As Object Implements System.ICloneable.Clone
-        Dim Copy As New ZObject
-        Copy._Name = _Name
-        Copy.Definition = Definition
-        Copy.Args = Args.Clone
-        Copy.Image = Image
-        With Copy
-            .X = X : .W = W
-            .Y = Y : .H = H
-            .Z = Z : .D = D
-        End With
-        Return Copy
-    End Function
-
 End Class
 
 Public Class ZMisc

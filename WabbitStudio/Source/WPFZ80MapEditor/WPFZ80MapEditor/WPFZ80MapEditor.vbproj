@@ -124,6 +124,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DragAdorner.vb" />
+    <Compile Include="EnemyLayer.xaml.vb">
+      <DependentUpon>EnemyLayer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MiscLayer.xaml.vb">
       <DependentUpon>MiscLayer.xaml</DependentUpon>
     </Compile>
@@ -164,6 +167,10 @@
     <Compile Include="ZeldaObjects.vb" />
     <Compile Include="ValueConverters.vb" />
     <Compile Include="Simulation\ZeldaSimObjects.vb" />
+    <Page Include="EnemyLayer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MiscLayer.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
