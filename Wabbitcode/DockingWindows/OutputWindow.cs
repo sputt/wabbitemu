@@ -66,7 +66,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	    private void HighlightOutput()
 		{
 			int i = 0;
-			foreach (String line in outputWindowBox.Lines)
+			foreach (string line in outputWindowBox.Lines)
 			{
 				if (line.Contains("error"))
 				{
@@ -119,7 +119,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 			string file = match.Groups["fileName"].Value;
 			int lineNumber = Convert.ToInt32(match.Groups["lineNum"].Value);
-			_documentService.GotoLine(file, lineNumber);
+			_documentService.GotoLine(file, lineNumber - 1);
 		}
 
 		private void selectAllOuputButton_Click(object sender, EventArgs e)

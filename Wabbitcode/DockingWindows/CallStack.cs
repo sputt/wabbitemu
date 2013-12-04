@@ -40,12 +40,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	    void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
 		{
 			_debugger = e.Debugger;
-			_debugger.OnDebuggerStep += (o, args) =>
+			_debugger.DebuggerStep += (o, args) =>
 			{
 			    this.Invoke(UpdateStack);
                 EnablePanel(true);
 			};
-			_debugger.OnDebuggerRunningChanged += (o, args) =>
+			_debugger.DebuggerRunningChanged += (o, args) =>
 			{
 			    this.Invoke(UpdateStack);
                 EnablePanel(!args.Running);

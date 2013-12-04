@@ -86,8 +86,6 @@ namespace Revsoft.TextEditor.Gui.CompletionWindow
 		public virtual bool InsertAction(TextArea textArea, char ch)
 		{
 			textArea.InsertString(text);
-            if (ch == '\n')
-                textArea.InsertChar(ch);
 			return false;
 		}
 		

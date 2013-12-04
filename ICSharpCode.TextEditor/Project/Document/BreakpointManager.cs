@@ -152,7 +152,8 @@ namespace Revsoft.TextEditor.Document
 		        nextLineOffset = document.TextLength;
 		    }
 
-			document.MarkerStrategy.RemoveAll(b => b.Offset >= thisLineOffset && b.Offset < nextLineOffset  && b.Tag == "Breakpoint");
+			document.MarkerStrategy.RemoveAll(b => b.Offset >= thisLineOffset &&
+                b.Offset < nextLineOffset && b is BreakpointTextMarker);
 
 			document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, mark.LineNumber));
 			document.CommitUpdate();
@@ -160,7 +161,7 @@ namespace Revsoft.TextEditor.Document
 
 		private TextMarker HighlightBreakpointMarker(int lineNumber)
 		{
-			string line = document.TextContent.Split('\n')[lineNumber];
+		    string line = document.GetText(document.GetLineSegment(lineNumber));
 			Match match = HighlightRegex.Match(line);
 
 			if (match.Groups.Count == 0)
@@ -171,12 +172,7 @@ namespace Revsoft.TextEditor.Document
 			Group group = match.Groups["line"];
 			int start = group.Index + document.GetOffsetForLineNumber(lineNumber);
 			int length = group.Length;
-			if (length == 0)
-			{
-				return null;
-			}
-
-			return new TextMarker(start, length, TextMarkerType.SolidBlock, Color.Maroon, Color.White) { Tag = "Breakpoint" };
+			return length == 0 ? null : new BreakpointTextMarker(start, length);
 		}
 
 		/// <remarks>

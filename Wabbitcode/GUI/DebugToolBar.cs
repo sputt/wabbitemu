@@ -79,7 +79,6 @@ namespace Revsoft.Wabbitcode.GUI
         };
 
         private readonly IDebuggerService _debuggerService;
-        private readonly IDocumentService _documentService;
 
         public DebugToolBar()
         {
@@ -107,14 +106,13 @@ namespace Revsoft.Wabbitcode.GUI
             _stepOutToolButton.Click += stepOutToolButton_Click;
 
             _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
         }
 
         private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
-            e.Debugger.OnDebuggerRunningChanged += (o, args) => EnableIcons();
-            e.Debugger.OnDebuggerStep += (o, args) => EnableIcons();
+            e.Debugger.DebuggerRunningChanged += (o, args) => EnableIcons();
+            e.Debugger.DebuggerStep += (o, args) => EnableIcons();
         }
 
         private void EnableIcons()
@@ -177,7 +175,7 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void gotoCurrentToolButton_Click(object sender, EventArgs e)
         {
-            _documentService.GotoCurrentDebugLine();
+            _debuggerService.GotoCurrentDebugLine();
         }
 
     }

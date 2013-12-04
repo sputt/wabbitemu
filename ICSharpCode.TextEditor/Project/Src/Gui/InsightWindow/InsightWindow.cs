@@ -15,45 +15,99 @@ using Revsoft.TextEditor.Util;
 
 namespace Revsoft.TextEditor.Gui.InsightWindow
 {
-	public class InsightWindow : AbstractCompletionWindow
+	public sealed class InsightWindow : AbstractCompletionWindow
 	{
-	    private ToolTip toolTip;
+	    private readonly ToolTip _toolTip = new ToolTip();
+	    private bool _toolTipVisible;
 
 		public InsightWindow(Form parentForm, TextEditorControl control) : base(parentForm, control)
 		{
 			SetStyle(ControlStyles.UserPaint, true);
 			SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
-            this.Font = new Font(FontFamily.GenericSansSerif, 10);
+            Font = new Font(FontFamily.GenericSansSerif, 10);
 		}
+
+	    private new void Close()
+	    {
+            _toolTip.Hide(control);
+            _toolTipVisible = false;
+	    }
 		
 		public void ShowInsightWindow()
 		{
-			if (!Visible) {
-				if (insightDataProviderStack.Count > 0) {
-					ShowCompletionWindow();
-				}
-			} else {
-				Refresh();
-			}
+            var description = GetDescription();
+
+		    bool oldToolTipVisible = _toolTipVisible;
+            SetLocation();
+		    var point = control.PointToClient(new Point(Bounds.X, Bounds.Y));
+            _toolTip.Show(description, control, point);
+		    _toolTipVisible = true;
+
+		    if (_insightDataProviderStack.Count <= 0 || oldToolTipVisible)
+		    {
+		        return;
+		    }
+
+		    control.Focus();
+
+		    if (ParentForm != null)
+		    {
+		        ParentForm.LocationChanged += (args, e) => SetLocation();
+		    }
+
+		    control.ActiveTextAreaControl.VScrollBar.ValueChanged += (args, e) => SetLocation();
+		    control.ActiveTextAreaControl.HScrollBar.ValueChanged += (args, e) => SetLocation();
+		    control.ActiveTextAreaControl.TextArea.DoProcessDialogKey += ProcessTextAreaKey;
+		    control.ActiveTextAreaControl.Caret.PositionChanged += CaretOffsetChanged;
+		    control.ActiveTextAreaControl.TextArea.LostFocus += TextEditorLostFocus;
+		    control.Resize += (args, e) => SetLocation();
 		}
-		
-		#region Event handling routines
+
+	    private string GetDescription()
+	    {
+	        string methodCountMessage = null;
+	        if (DataProvider == null || DataProvider.InsightDataCount < 1)
+	        {
+	            Close();
+	            return string.Empty;
+	        }
+	        
+            if (DataProvider.InsightDataCount > 1)
+	        {
+	            methodCountMessage = control.GetRangeDescription(CurrentData + 1, DataProvider.InsightDataCount);
+	        }
+	        string description = DataProvider.GetInsightData(CurrentData);
+
+	        if (!string.IsNullOrEmpty(methodCountMessage))
+	        {
+	            string[] array =
+	            {
+	                char.ConvertFromUtf32(0x25B2), methodCountMessage,
+	                char.ConvertFromUtf32(0x25BC), description
+	            };
+
+	            description = string.Join(" ", array);
+	        }
+	        return description;
+	    }
+
+	    #region Event handling routines
 		protected override bool ProcessTextAreaKey(Keys keyData)
 		{
-			if (!Visible) {
+			if (!_toolTip.Active) {
 				return false;
 			}
 			switch (keyData) {
 				case Keys.Down:
 					if (DataProvider != null && DataProvider.InsightDataCount > 0) {
 						CurrentData = (CurrentData + 1) % DataProvider.InsightDataCount;
-						Refresh();
+						ShowInsightWindow();
 					}
 					return true;
 				case Keys.Up:
 					if (DataProvider != null && DataProvider.InsightDataCount > 0) {
 						CurrentData = (CurrentData + DataProvider.InsightDataCount - 1) % DataProvider.InsightDataCount;
-						Refresh();
+                        ShowInsightWindow();
 					}
 					return true;
 			}
@@ -64,19 +118,14 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 		{
 			// move the window under the caret (don't change the x position)
 			TextLocation caretPos  = control.ActiveTextAreaControl.Caret.Position;
-			int y = (int)((1 + caretPos.Y) * control.ActiveTextAreaControl.TextArea.TextView.FontHeight)
-				- control.ActiveTextAreaControl.TextArea.VirtualTop.Y - 1
-				+ control.ActiveTextAreaControl.TextArea.TextView.DrawingPosition.Y;
-			
-			int xpos = control.ActiveTextAreaControl.TextArea.TextView.GetDrawingXPos(caretPos.Y, caretPos.X);
+
+		    int xpos = control.ActiveTextAreaControl.TextArea.TextView.GetDrawingXPos(caretPos.Line, caretPos.Column);
 			int ypos = (control.ActiveTextAreaControl.Document.GetVisibleLine(caretPos.Y) + 1) * control.ActiveTextAreaControl.TextArea.TextView.FontHeight
 				- control.ActiveTextAreaControl.TextArea.VirtualTop.Y;
 			int rulerHeight = control.TextEditorProperties.ShowHorizontalRuler ? control.ActiveTextAreaControl.TextArea.TextView.FontHeight : 0;
-			
-			Point p = control.ActiveTextAreaControl.PointToScreen(new Point(xpos, ypos + rulerHeight));
-			if (p.Y != Location.Y) {
-				Location = p;
-			}
+
+		    string description = GetDescription();
+            _toolTip.Show(description, control, new Point(xpos, ypos + rulerHeight));
 			
 			while (DataProvider != null && DataProvider.CaretOffsetChanged()) {
 				CloseCurrentDataProvider();
@@ -98,13 +147,13 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 		}
 		
 		#endregion
-		
-		MouseWheelHandler mouseWheelHandler = new MouseWheelHandler();
+
+	    readonly MouseWheelHandler _mouseWheelHandler = new MouseWheelHandler();
 		
 		public void HandleMouseWheel(MouseEventArgs e)
 		{
 			if (DataProvider != null && DataProvider.InsightDataCount > 0) {
-				int distance = mouseWheelHandler.GetScrollAmount(e);
+				int distance = _mouseWheelHandler.GetScrollAmount(e);
 				if (control.TextEditorProperties.MouseWheelScrollDown)
 					distance = -distance;
 				if (distance > 0) {
@@ -148,23 +197,24 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 		#endregion
 		
 		#region InsightDataProvider handling
-		Stack<InsightDataProviderStackElement> insightDataProviderStack = new Stack<InsightDataProviderStackElement>();
+
+	    readonly Stack<InsightDataProviderStackElement> _insightDataProviderStack = new Stack<InsightDataProviderStackElement>();
 		
 		int CurrentData {
 			get {
-				return insightDataProviderStack.Peek().currentData;
+				return _insightDataProviderStack.Peek().CurrentData;
 			}
 			set {
-				insightDataProviderStack.Peek().currentData = value;
+				_insightDataProviderStack.Peek().CurrentData = value;
 			}
 		}
 		
 		IInsightDataProvider DataProvider {
 			get {
-				if (insightDataProviderStack.Count == 0) {
+				if (_insightDataProviderStack.Count == 0) {
 					return null;
 				}
-				return insightDataProviderStack.Peek().dataProvider;
+				return _insightDataProviderStack.Peek().DataProvider;
 			}
 		}
 		
@@ -172,14 +222,14 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 		{
 			provider.SetupDataProvider(fileName, control.ActiveTextAreaControl.TextArea);
 			if (provider.InsightDataCount > 0) {
-				insightDataProviderStack.Push(new InsightDataProviderStackElement(provider));
+				_insightDataProviderStack.Push(new InsightDataProviderStackElement(provider));
 			}
 		}
 		
 		void CloseCurrentDataProvider()
 		{
-			insightDataProviderStack.Pop();
-			if (insightDataProviderStack.Count == 0) {
+			_insightDataProviderStack.Pop();
+			if (_insightDataProviderStack.Count == 0) {
 				Close();
 			} else {
 				Refresh();
@@ -188,13 +238,13 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 		
 		class InsightDataProviderStackElement
 		{
-			public int                  currentData;
-			public IInsightDataProvider dataProvider;
+		    public int                  CurrentData;
+			public readonly IInsightDataProvider DataProvider;
 			
 			public InsightDataProviderStackElement(IInsightDataProvider dataProvider)
 			{
-				this.currentData  = Math.Max(dataProvider.DefaultIndex, 0);
-				this.dataProvider = dataProvider;
+				CurrentData  = Math.Max(dataProvider.DefaultIndex, 0);
+				DataProvider = dataProvider;
 			}
 		}
 		#endregion

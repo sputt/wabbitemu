@@ -80,8 +80,8 @@ namespace Revsoft.Wabbitcode.Services
 
 		#region Events
 
-	    public event DebuggerRunning OnDebuggerRunningChanged;
-	    public event DebuggerStep OnDebuggerStep;
+	    public event DebuggerRunning DebuggerRunningChanged;
+	    public event DebuggerStep DebuggerStep;
 
 		#endregion
 
@@ -245,9 +245,9 @@ namespace Revsoft.Wabbitcode.Services
             _debugger.Step();
             _debugger.Running = true;
 
-            if (OnDebuggerRunningChanged != null)
+            if (DebuggerRunningChanged != null)
             {
-                OnDebuggerRunningChanged(this, new DebuggerRunningEventArgs(null, true));
+                DebuggerRunningChanged(this, new DebuggerRunningEventArgs(null, true));
             }
         }
 
@@ -270,9 +270,9 @@ namespace Revsoft.Wabbitcode.Services
 				throw new DebuggingException("Unable to pause here");
 			}
 
-			if (OnDebuggerRunningChanged != null)
+			if (DebuggerRunningChanged != null)
 			{
-				OnDebuggerRunningChanged(this, new DebuggerRunningEventArgs(key, false));
+				DebuggerRunningChanged(this, new DebuggerRunningEventArgs(key, false));
 			}
 		}
 
@@ -296,9 +296,9 @@ namespace Revsoft.Wabbitcode.Services
                 _debugger.Memory.Bank[2] = _debugger.Memory.RAM[1];
             }
 
-            if (OnDebuggerStep != null)
+            if (DebuggerStep != null)
             {
-                OnDebuggerStep(this, new DebuggerStepEventArgs(new DocumentLocation(fileName, lineNumber)));
+                DebuggerStep(this, new DebuggerStepEventArgs(new DocumentLocation(fileName, lineNumber)));
             }
         }
 
@@ -340,9 +340,9 @@ namespace Revsoft.Wabbitcode.Services
 	        byte page = GetRelativePageNum(address);
 	        key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
 
-	        if (OnDebuggerStep != null)
+	        if (DebuggerStep != null)
             {
-                OnDebuggerStep(this, new DebuggerStepEventArgs(key));
+                DebuggerStep(this, new DebuggerStepEventArgs(key));
             }
         }
 
@@ -374,9 +374,9 @@ namespace Revsoft.Wabbitcode.Services
             UpdateStack();
             _debugger.OnBreakpoint -= StepOutBreakpointEvent;
 
-            if (OnDebuggerStep != null)
+            if (DebuggerStep != null)
             {
-                OnDebuggerStep(this, new DebuggerStepEventArgs(key));
+                DebuggerStep(this, new DebuggerStepEventArgs(key));
             }
 	    }
 
@@ -431,9 +431,9 @@ namespace Revsoft.Wabbitcode.Services
             UpdateStack();
             _debugger.OnBreakpoint -= StepOverBreakpointEvent;
 
-            if (OnDebuggerStep != null)
+            if (DebuggerStep != null)
             {
-                OnDebuggerStep(this, new DebuggerStepEventArgs(key));
+                DebuggerStep(this, new DebuggerStepEventArgs(key));
             }
         }
 
@@ -654,9 +654,9 @@ namespace Revsoft.Wabbitcode.Services
 
                 UpdateStack();
 
-                if (OnDebuggerRunningChanged != null)
+                if (DebuggerRunningChanged != null)
                 {
-                    OnDebuggerRunningChanged(this, new DebuggerRunningEventArgs(key, false));
+                    DebuggerRunningChanged(this, new DebuggerRunningEventArgs(key, false));
                 }
             }
             else

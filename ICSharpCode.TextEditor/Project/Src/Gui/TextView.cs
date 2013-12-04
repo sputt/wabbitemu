@@ -361,24 +361,14 @@ namespace Revsoft.TextEditor
 		/// <returns>The Brush or null when no marker was found.</returns>
 		Brush GetMarkerBrushAt(int offset, int length, ref Color foreColor, out IList<TextMarker> markers)
 		{
-            TextMarker breakpoint = null;
-			markers = Document.MarkerStrategy.GetMarkers(offset, length);
-			foreach (TextMarker marker in markers) {
-                if (marker.Tag == "Breakpoint")
-                    breakpoint = marker;
-			    if (markers.Count == 1 || marker.Tag != "Breakpoint")
-			        if (marker.TextMarkerType == TextMarkerType.SolidBlock)
-			        {
-			            if (marker.OverrideForeColor)
-			                foreColor = marker.ForeColor;
-			            return BrushRegistry.GetBrush(marker.Color);
-			        }
-			}
-            if (breakpoint != null)
-            {
-                if (breakpoint.OverrideForeColor)
-                    foreColor = breakpoint.ForeColor;
-                return BrushRegistry.GetBrush(breakpoint.Color);
+            markers = Document.MarkerStrategy.GetMarkers(offset, length);
+            foreach (TextMarker marker in markers) {
+                if (marker.TextMarkerType == TextMarkerType.SolidBlock) {
+                    if (marker.OverrideForeColor) {
+                        foreColor = marker.ForeColor;
+                    }
+                    return BrushRegistry.GetBrush(marker.Color);
+                }
             }
             return null;
 		}
@@ -504,7 +494,7 @@ namespace Revsoft.TextEditor
 					++physicalColumn;
 					
 					wordRectangle = new RectangleF(physicalXPos, lineRectangle.Y, SpaceWidth, lineRectangle.Height);
-					g.FillRectangle(wordBackBrush, wordRectangle);
+                    g.FillRectangle(wordBackBrush, wordRectangle);
 					
 					if (TextEditorProperties.ShowSpaces) {
 						DrawSpaceMarker(g, wordForeColor, physicalXPos, lineRectangle.Y);

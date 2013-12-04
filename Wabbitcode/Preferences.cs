@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Revsoft.Wabbitcode.Utils;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Properties;
@@ -17,8 +18,7 @@ namespace Revsoft.Wabbitcode
 	public partial class Preferences : Form
 	{
 		private bool _browsing;
-		private bool _changing;
-		private readonly int[] _fontSizes = { 6, 8, 9, 10, 12, 14, 16, 18, 24 };
+		private readonly List<int> _fontSizes = new List<int> { 6, 8, 9, 10, 12, 14, 16, 18, 24 };
 		private bool _savesettings;
 
 	    public Preferences()
@@ -49,41 +49,16 @@ namespace Revsoft.Wabbitcode
 		private void UpdateOptions()
 		{
 			// editorbox font stuff
-			_changing = true;
-			fontBox.SelectedIndex = 0;
-			string fontName = Settings.Default.EditorFont.Name;
-			while (fontBox.Items[fontBox.SelectedIndex].ToString() != fontName &&
-				   fontBox.SelectedIndex < fontBox.Items.Count - 1)
-			{
-				fontBox.SelectedIndex++;
-			}
-
-			fontSizeBox.SelectedIndex = 0;
-			while (fontSizeBox.Items[fontSizeBox.SelectedIndex].ToString() !=
-				   Settings.Default.EditorFont.Size.ToString() &&
-				   fontSizeBox.SelectedIndex < fontSizeBox.Items.Count - 1)
-			{
-				fontSizeBox.SelectedIndex++;
-			}
+            string fontName = Settings.Default.EditorFont.Name;
+		    float fontSize = Settings.Default.EditorFont.Size;
+		    fontBox.SelectedIndex = fontBox.Items.Cast<string>().ToList().FindIndex(f => f == fontName);
+		    fontSizeBox.SelectedIndex = _fontSizes.FindIndex(s => Math.Abs(fontSize - s) < float.Epsilon);
 
 			// output window font stuff
-			outFontBox.SelectedIndex = 0;
-			string outFontName = Settings.Default.OutputFont.Name;
-			while (outFontBox.Items[outFontBox.SelectedIndex].ToString() != outFontName &&
-				   outFontBox.SelectedIndex < outFontBox.Items.Count - 1)
-			{
-				outFontBox.SelectedIndex++;
-			}
-
-			outFontSizeBox.SelectedIndex = 0;
-			while (outFontSizeBox.Items[outFontSizeBox.SelectedIndex].ToString() !=
-				   Settings.Default.OutputFont.Size.ToString() &&
-				   outFontSizeBox.SelectedIndex < outFontSizeBox.Items.Count - 1)
-			{
-				outFontSizeBox.SelectedIndex++;
-			}
-
-			_changing = false;
+            string outputFontName = Settings.Default.OutputFont.Name;
+            float outputFontSize = Settings.Default.OutputFont.Size;
+            outFontBox.SelectedIndex = fontBox.Items.Cast<string>().ToList().FindIndex(f => f == outputFontName);
+            outFontSizeBox.SelectedIndex = _fontSizes.FindIndex(s => Math.Abs(outputFontSize - s) < float.Epsilon);
 
 			// checkboxs for editor
 			autoIndentBox.Checked = Settings.Default.AutoIndent;
@@ -101,19 +76,15 @@ namespace Revsoft.Wabbitcode
 		    externalHighBox.Text = Settings.Default.ExternalHighlight;
 
 			// this is fucking badass code right here
-			foreach (Control control in highlightBox.Controls)
+			foreach (var box in highlightBox.Controls.OfType<CheckBox>())
 			{
-				var box = control as CheckBox;
-				if (box != null)
-				{
-					box.Checked = (bool)Settings.Default[box.Name];
-				}
-
-				if (control is Button)
-				{
-					control.BackColor = (Color)Settings.Default[control.Name];
-				}
+                box.Checked = (bool)Settings.Default[box.Name];
 			}
+
+		    foreach (var control in highlightBox.Controls.OfType<Button>())
+		    {
+                control.BackColor = (Color)Settings.Default[control.Name];
+		    }
 
 			// output stuff
 			foreach (var button in outTypeBox.Controls.OfType<RadioButton>())
@@ -292,23 +263,21 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			TempSettings.Default.EditorFont = new Font(
-				new FontFamily(fontBox.Items[fontBox.SelectedIndex].ToString()),
-				Convert.ToInt16(
-					fontSizeBox.Items[fontSizeBox.SelectedIndex].ToString()));
+            string fontName = fontBox.SelectedItem.ToString();
+            TempSettings.Default.EditorFont = new Font(new FontFamily(fontName),
+                Convert.ToInt32(fontSizeBox.SelectedItem.ToString()));
 		}
 
 		private void fontSizeBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (fontSizeBox.SelectedIndex < 0 || fontBox.SelectedIndex < 0 || _changing)
+			if (fontSizeBox.SelectedIndex < 0 || fontBox.SelectedIndex < 0)
 			{
 				return;
 			}
 
-			TempSettings.Default.EditorFont = new Font(
-				new FontFamily(fontBox.Items[fontBox.SelectedIndex].ToString()),
-				Convert.ToInt16(
-					fontSizeBox.Items[fontSizeBox.SelectedIndex].ToString()));
+		    string fontName = fontBox.SelectedItem.ToString();
+			TempSettings.Default.EditorFont = new Font(new FontFamily(fontName),
+                Convert.ToInt32(fontSizeBox.SelectedItem.ToString()));
 		}
 
 		private void HighlightCheckChange(object sender, EventArgs e)
@@ -347,22 +316,20 @@ namespace Revsoft.Wabbitcode
 			}
 
 			TempSettings.Default.OutputFont = new Font(
-				new FontFamily(fontBox.Items[fontBox.SelectedIndex].ToString()),
-				Convert.ToInt16(
-					fontSizeBox.Items[fontSizeBox.SelectedIndex].ToString()));
+				new FontFamily(fontBox.SelectedItem.ToString()),
+				Convert.ToInt32(fontSizeBox.SelectedItem.ToString()));
 		}
 
 		private void outFontSizeBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (outFontSizeBox.SelectedIndex < 0 || outFontBox.SelectedIndex < 0 || _changing)
+			if (outFontSizeBox.SelectedIndex < 0 || outFontBox.SelectedIndex < 0)
 			{
 				return;
 			}
 
-			TempSettings.Default.OutputFont = new Font(
-				new FontFamily(fontBox.Items[fontBox.SelectedIndex].ToString()),
-				Convert.ToInt16(
-					fontSizeBox.Items[fontSizeBox.SelectedIndex].ToString()));
+            TempSettings.Default.OutputFont = new Font(
+                new FontFamily(fontBox.SelectedItem.ToString()),
+                Convert.ToInt32(fontSizeBox.SelectedItem.ToString()));
 		}
 
 		private void Preferences_FormClosing(object sender, FormClosingEventArgs e)

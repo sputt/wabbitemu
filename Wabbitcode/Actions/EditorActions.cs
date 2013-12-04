@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using Revsoft.TextEditor;
+using Revsoft.TextEditor.Actions;
 using Revsoft.Wabbitcode.DockingWindows;
+using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
@@ -119,6 +122,19 @@ namespace Revsoft.Wabbitcode.Actions
 
             int line = Convert.ToInt32(gotoBox.inputBox.Text);
             editor.GotoLine(line);
+        }
+    }
+
+    public class ShowCodeCompletion : IEditAction
+    {
+        public Keys[] Keys { get; set; }
+        public void Execute(TextArea textArea)
+        {
+            WabbitcodeTextEditor editor = textArea.MotherTextEditorControl as WabbitcodeTextEditor;
+            if (editor != null)
+            {
+                editor.StartCtrlSpaceCompletion();
+            }
         }
     }
 }
