@@ -497,7 +497,6 @@ namespace Revsoft.Wabbitcode.GUI
 
         private readonly IDebuggerService _debuggerService;
         private readonly IDockingService _dockingService;
-        private readonly IDocumentService _documentService;
         private readonly IProjectService _projectService;
         private readonly IToolBarService _toolBarService;
         private readonly IStatusBarService _statusBarService;
@@ -520,7 +519,6 @@ namespace Revsoft.Wabbitcode.GUI
 
             _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             _statusBarService = ServiceFactory.Instance.GetServiceInstance<IStatusBarService>();
             _toolBarService = ServiceFactory.Instance.GetServiceInstance<IToolBarService>();
@@ -714,7 +712,7 @@ namespace Revsoft.Wabbitcode.GUI
         private void OpenRecentDoc(object sender, EventArgs e)
         {
             MenuItem button = (MenuItem) sender;
-            _documentService.OpenDocument(button.Text);
+            new OpenFileAction(button.Text).Execute();
         }
 
         private void AddRecentItem(string file)
@@ -854,7 +852,7 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void gLabelMenuItem_Click(object sender, EventArgs e)
         {
-            GotoLabelAction.FromDialog();
+            GotoDefinitionAction.FromDialog();
         }
 
         private static void prefsMenuItem_Click(object sender, EventArgs e)
@@ -1094,9 +1092,9 @@ namespace Revsoft.Wabbitcode.GUI
             RunCommand(new StepOutDebuggerAction());
         }
 
-        private void newBreakpointMenuItem_Click(object sender, EventArgs e)
+        private static void newBreakpointMenuItem_Click(object sender, EventArgs e)
         {
-            NewBreakpointForm form = new NewBreakpointForm(_dockingService, _documentService);
+            NewBreakpointForm form = new NewBreakpointForm();
             form.ShowDialog();
             form.Dispose();
         }

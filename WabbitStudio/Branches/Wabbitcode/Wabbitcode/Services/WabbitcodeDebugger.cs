@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -32,7 +33,6 @@ namespace Revsoft.Wabbitcode.Services
 
 		private readonly ISymbolService _symbolService;
         private readonly IFileReaderService _fileReaderService;
-		private readonly IDocumentService _documentService;
 	    private readonly IDebuggerService _debuggerService;
 
 	    #endregion
@@ -90,7 +90,6 @@ namespace Revsoft.Wabbitcode.Services
 		    _disposed = false;
 
 		    _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
-			_documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 		    _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
 			_symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
 
@@ -205,7 +204,7 @@ namespace Revsoft.Wabbitcode.Services
                 return;
             }
 
-            _documentService.GotoLine(key.FileName, key.LineNumber);
+            new GotoLineAction(key).Execute();
         }
 
         #endregion

@@ -27,7 +27,6 @@ namespace Revsoft.Wabbitcode
 			{
 				{ typeof(IDockingService), typeof(DockingService) },
 				{ typeof(IProjectService), typeof(ProjectService) },
-				{ typeof(IDocumentService), typeof(DocumentService) },
 				{ typeof(IAssemblerService), typeof(AssemblerService) },
 				{ typeof(ISymbolService), typeof(SymbolService) },
 				{ typeof(IParserService), typeof(ParserService) },

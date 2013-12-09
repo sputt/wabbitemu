@@ -1,8 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 using System;
-using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Services.Parser;
 
 
@@ -16,15 +15,13 @@ namespace Revsoft.Wabbitcode.DockingWindows
             get { return WindowIdentifier; }
         }
 
-		private readonly IDocumentService _documentService;
-		private readonly StringBuilder _stringBuilder;
+	    private readonly StringBuilder _stringBuilder;
 		private int _numResults;
 
 		public FindResultsWindow()
 		{
 			InitializeComponent();
 
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 			_stringBuilder = new StringBuilder();
 		}
 
@@ -92,8 +89,8 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			}
 
 			string file = match.Groups["fileName"].Value;
-			int lineNumber = Convert.ToInt32(match.Groups["lineNum"].Value);
-			_documentService.GotoLine(file, lineNumber - 1);
+			line = Convert.ToInt32(match.Groups["lineNum"].Value);
+            new GotoLineAction(file, line - 1).Execute();
 		}
 	}
 }

@@ -680,7 +680,6 @@
     <Compile Include="Services\Interfaces\IBackgroundAssemblerService.cs" />
     <Compile Include="Services\Interfaces\IDebuggerService.cs" />
     <Compile Include="Services\Interfaces\IDockingService.cs" />
-    <Compile Include="Services\Interfaces\IDocumentService.cs" />
     <Compile Include="Services\Interfaces\IFileReaderService.cs" />
     <Compile Include="Services\Interfaces\IMenuService.cs" />
     <Compile Include="Services\Interfaces\IParserService.cs" />
@@ -761,7 +760,6 @@
     <Compile Include="Services\Project\BuildSystem.cs" />
     <Compile Include="Services\Project\WabbitcodeProject.cs" />
     <Compile Include="Services\DockingService.cs" />
-    <Compile Include="Services\DocumentService.cs" />
     <Compile Include="Extensions\NativeMethods.cs" />
     <Compile Include="DockingWindows\BreakpointManagerWindow.cs">
       <SubType>Form</SubType>

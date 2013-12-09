@@ -33,12 +33,13 @@ namespace Revsoft.Wabbitcode
 	/// </summary>
 	public partial class Editor : ITextEditor, IBookmarkable
     {
+        private static bool _bindingsRegistered;
+
 		#region Private Memebers
 
         private readonly IDebuggerService _debuggerService;
 		private readonly IDockingService _dockingService;
-		private readonly IDocumentService _documentService;
-		private readonly IParserService _parserService;
+        private readonly IParserService _parserService;
 		private readonly IProjectService _projectService;
         private int _stackTop;
         private volatile bool _wasExternallyModified;
@@ -115,7 +116,6 @@ namespace Revsoft.Wabbitcode
 
             _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
             _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
 
@@ -135,16 +135,64 @@ namespace Revsoft.Wabbitcode
 
 		    if (_projectService.Project != null)
 		    {
-		        _projectService.Project.FileModifiedExternally += ProjectFileModifiedExternally;
+		        _projectService.Project.FileModifiedExternally += Project_FileModifiedExternally;
 		    }
-            _projectService.ProjectOpened += (sender, args) => _projectService.Project.FileModifiedExternally += ProjectFileModifiedExternally;
+            _projectService.ProjectOpened += (sender, args) => _projectService.Project.FileModifiedExternally += Project_FileModifiedExternally;
 
-            CodeCompletionFactory.RegisterCodeCompletionBinding(".asm", new Z80CodeCompletionBinding());
-            CodeCompletionFactory.RegisterCodeCompletionBinding(".z80", new Z80CodeCompletionBinding());
-            CodeCompletionFactory.RegisterCodeCompletionBinding(".inc", new Z80CodeCompletionBinding());
+		    if (!_bindingsRegistered)
+		    {
+		        return;
+		    }
+
+		    CodeCompletionFactory.RegisterCodeCompletionBinding(".asm", new Z80CodeCompletionBinding());
+		    CodeCompletionFactory.RegisterCodeCompletionBinding(".z80", new Z80CodeCompletionBinding());
+		    CodeCompletionFactory.RegisterCodeCompletionBinding(".inc", new Z80CodeCompletionBinding());
+
+		    FileTypeMethodFactory.RegisterFileType(".asm", path => OpenDocument(path) != null);
+		    FileTypeMethodFactory.RegisterFileType(".z80", path => OpenDocument(path) != null);
+		    FileTypeMethodFactory.RegisterFileType(".inc", path => OpenDocument(path) != null);
+		    FileTypeMethodFactory.RegisterDefaultHandler(path => OpenDocument(path) != null);
+		    _bindingsRegistered = true;
 		}
 
-        private void ProjectFileModifiedExternally(object sender, FileModifiedEventArgs e)
+        private Editor OpenDocument(string filename)
+        {
+            var child = _dockingService.Documents.OfType<Editor>()
+                .SingleOrDefault(e => FileOperations.CompareFilePath(e.FileName, filename));
+            if (child != null)
+            {
+                child.Show();
+                return child;
+            }
+
+            Editor doc = new Editor();
+            OpenDocument(doc, filename);
+            return doc;
+        }
+
+        private void OpenDocument(AbstractFileEditor doc, string filename)
+        {
+            doc.Text = Path.GetFileName(filename);
+            doc.TabText = Path.GetFileName(filename);
+            doc.ToolTipText = filename;
+            doc.OpenFile(filename);
+            AddRecentFile(filename);
+            _dockingService.ShowDockPanel(doc);
+        }
+
+        /// <summary>
+        /// Adds a string to the recent file list
+        /// </summary>
+        /// <param name="filename">Full path of the file to save to the list</param>
+        private static void AddRecentFile(string filename)
+        {
+            if (!Settings.Default.RecentFiles.Contains(filename))
+            {
+                Settings.Default.RecentFiles.Add(filename);
+            }
+        }
+
+        private void Project_FileModifiedExternally(object sender, FileModifiedEventArgs e)
         {
             if (!FileOperations.CompareFilePath(e.File.FileFullPath, FileName) || _wasExternallyModified)
             {
@@ -153,7 +201,7 @@ namespace Revsoft.Wabbitcode
 
             if (InvokeRequired)
             {
-                this.BeginInvoke(() => ProjectFileModifiedExternally(sender, e));
+                this.BeginInvoke(() => Project_FileModifiedExternally(sender, e));
                 return;
             }
 
@@ -264,6 +312,7 @@ namespace Revsoft.Wabbitcode
         {
             setNextStateMenuItem.Visible = debugging;
             editorBox.Document.ReadOnly = debugging;
+            editorBox.RemoveDebugHighlight();
 
             if (!debugging)
             {
@@ -293,7 +342,7 @@ namespace Revsoft.Wabbitcode
                     return;
                 }
 
-                _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+                new GotoLineAction(e.Location).Execute();
                 editorBox.HighlightDebugLine(e.Location.LineNumber);
             });
         }
@@ -319,7 +368,7 @@ namespace Revsoft.Wabbitcode
                         return;
                     }
 
-                    _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+                    new GotoLineAction(e.Location).Execute();
                     editorBox.HighlightDebugLine(e.Location.LineNumber);
                 }
             });
@@ -465,13 +514,13 @@ namespace Revsoft.Wabbitcode
 
 			if (action == "Goto")
 			{
-			    new GotoLabelAction(FileName, text, editorBox.ActiveTextAreaControl.Caret.Line).Execute();
+			    new GotoDefinitionAction(FileName, text, editorBox.ActiveTextAreaControl.Caret.Line).Execute();
 			}
 			else
 			{
 				string fileFullPath = Path.IsPathRooted(text) ? text : FileOperations.NormalizePath(
                     _projectService.Project.GetFilePathFromRelativePath(text));
-				_documentService.GotoFile(fileFullPath);
+                new GotoFileAction(fileFullPath).Execute();
 			}
 		}
 		#endregion
@@ -732,35 +781,6 @@ namespace Revsoft.Wabbitcode
         private void UpdateDocument(int line)
 		{
 			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
-		}
-
-	    /*internal void HighlightLine(int newLineNumber, Color foregroundColor, string tag)
-		{
-			int lineNum = newLineNumber - 1;
-		    string line = GetLineText(lineNum);
-
-	        Match match = LineRegex.Match(line);
-            Group group = match.Groups["line"];
-		    int start = group.Index + editorBox.Document.GetLineSegment(lineNum).Offset;
-            int length = group.Length;
-            if (length == 0)
-            {
-                return;
-            }
-
-		    TextMarker highlight = new TextMarker(start, length, TextMarkerType.SolidBlock, foregroundColor, Color.Black)
-		    {
-		        Tag = tag
-		    };
-		    editorBox.Document.MarkerStrategy.AddMarker(highlight);
-		    editorBox.Refresh();
-		    GotoLine(lineNum);
-		}*/
-
-        internal void RemoveHighlight(int line, string tag)
-		{
-			editorBox.Document.MarkerStrategy.RemoveAll(marker => editorBox.Document.GetLineNumberForOffset(marker.Offset) == line - 1 && tag == marker.Tag);
-			UpdateDocument(line);
 		}
 
         public void ConvertSpacesToTabs()

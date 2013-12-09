@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Extensions;
+﻿using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -23,13 +24,11 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	    private const string FcreateFile = "Built-in fcreate";
 		private int _errors;
 		private int _warnings;
-		private readonly IDocumentService _documentService;
-		private readonly IProjectService _projectService;
+	    private readonly IProjectService _projectService;
 
 		public ErrorList()
 		{
 			InitializeComponent();
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             var assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
 
@@ -114,7 +113,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			string file = errorGridView.Rows[e.RowIndex].Cells[3].Tag.ToString();
 		    if (file != FcreateFile)
 		    {
-		        _documentService.GotoLine(file, line - 1);
+		        new GotoLineAction(file, line - 1).Execute();
 		    }
 		}
 
@@ -145,7 +144,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			int line = (int)errorGridView.Rows[row].Cells[4].Value;
 			string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
 			string error = errorGridView.Rows[row].Cells[2].Value.ToString();
-			_documentService.GotoLine(file, line);
+            new GotoLineAction(file, line - 1).Execute();
 	        if (!error.Contains("Relative jump"))
 	        {
 	            return;
@@ -161,7 +160,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			int row = errorGridView.SelectedRows[0].Index;
 			int line = (int)errorGridView.Rows[row].Cells[4].Value;
 			string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
-			_documentService.GotoLine(file, line);
+            new GotoLineAction(file, line).Execute();
 		}
 
 		private void Instance_AssemblerFileFinished(object sender, AssemblyFinishFileEventArgs e)

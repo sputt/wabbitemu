@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.Extensions;
@@ -30,7 +31,6 @@ namespace Revsoft.Wabbitcode
 		#region Services
 
 	    private IDockingService _dockingService;
-        private IDocumentService _documentService;
 		private IProjectService _projectService;
 	    private IStatusBarService _statusBarService;
 	    private IToolBarService _toolBarService;
@@ -97,7 +97,13 @@ namespace Revsoft.Wabbitcode
 	        int column = int.Parse(parsedStrings[2]);
             int line = int.Parse(parsedStrings[3]);
 
-            Editor doc = _documentService.OpenDocument(fileName);
+            new OpenFileAction(fileName).Execute();
+	        Editor doc = _dockingService.ActiveDocument as Editor;
+	        if (doc == null)
+	        {
+	            return null;
+	        }
+
 	        doc.CaretLine = line;
 	        doc.CaretColumn = column;
             return doc;
@@ -161,7 +167,6 @@ namespace Revsoft.Wabbitcode
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             ServiceFactory.Instance.GetServiceInstance<IParserService>();
             ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
             ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
             _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
             _pluginService = ServiceFactory.Instance.GetServiceInstance<IPluginService>();
@@ -189,32 +194,15 @@ namespace Revsoft.Wabbitcode
             }
         }
 
-        private void HandleArgs(ICollection<string> args)
+        private static void HandleArgs(ICollection<string> args)
         {
             if (args.Count == 0)
             {
                 return;
             }
 
-            foreach (string arg in args)
-            {
-                try
-                {
-                    if (string.IsNullOrEmpty(arg))
-                    {
-                        break;
-                    }
-                    _documentService.OpenDocument(arg);
-                }
-                catch (FileNotFoundException)
-                {
-                    DockingService.ShowError("Error: File not found");
-                }
-                catch (Exception ex)
-                {
-                    DockingService.ShowError("Error in loading startup args", ex);
-                }
-            }
+            new OpenFileAction(args.Where(arg => !string.IsNullOrEmpty(arg)).ToArray())
+                .Execute();
         }
 
         public void ProcessParameters(string[] args)
@@ -328,8 +316,6 @@ namespace Revsoft.Wabbitcode
 
             UpdateTitle();
             HideDebugPanels();
-
-            _documentService.RemoveDebugHighlight();
         }
 
         private void ShowDebugPanels()

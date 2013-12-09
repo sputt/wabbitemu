@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Extensions;
+﻿using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
@@ -14,13 +15,11 @@ namespace Revsoft.Wabbitcode
 	public partial class NewProjectDialog
 	{
 		private bool _cancelQuit;
-	    private readonly IDocumentService _documentService;
 		private readonly IProjectService _projectService;
 
-		public NewProjectDialog(IDocumentService documentService, IProjectService projectService)
+		public NewProjectDialog()
 		{
-		    _documentService = documentService;
-			_projectService = projectService;
+		    _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
 
 			InitializeComponent();
 			CreateTemplates();
@@ -240,7 +239,7 @@ namespace Revsoft.Wabbitcode
 				}
 
 				_projectService.AddFile(folder, mainFile);
-				_documentService.OpenDocument(mainFile);
+			    new OpenFileAction(mainFile).Execute();
 			}
 
 			_projectService.Project.IncludeDirs.Add(FileLocations.IncludesDir);

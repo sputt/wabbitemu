@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.DockingWindows;
+﻿using System.Linq;
+using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.Resources;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -270,6 +271,8 @@ namespace Revsoft.Wabbitcode.Services
 				}
 
 				_dockPanel.SaveAsXml(FileLocations.ConfigFile);
+
+                _dockPanel.Documents.OfType<Form>().ToList().ForEach(f => f.Close());
 			}
 			catch (Exception ex)
 			{

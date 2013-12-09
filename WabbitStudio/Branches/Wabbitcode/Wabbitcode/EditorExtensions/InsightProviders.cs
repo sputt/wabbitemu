@@ -20,15 +20,27 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
             IParserService parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
             var parserData = parserService.GetParserData(word, Settings.Default.CaseSensitive).ToList();
-            // TODO: baaaad
             Data.AddRange(parserData.Select(d =>
             {
                 IParserData data = d;
                 while (data != null)
                 {
-                    if (data is IMacro || !string.IsNullOrEmpty(data.Description))
+                    string description = data.Description;
+                    IMacro macro = data as IMacro;
+                    if (macro != null)
                     {
-                        return data;
+                        string argDesc = macro.Arguments.Aggregate(macro.Name + "(", (current, arg) => current + (arg + ", "));
+                        if (argDesc.Length > 2)
+                        {
+                            argDesc = argDesc.Remove(argDesc.Length - 2);
+                        }
+                        argDesc += ")";
+                        return argDesc + "\n" + description;
+                    }
+
+                    if (!string.IsNullOrEmpty(data.Description))
+                    {
+                        return description;
                     }
 
                     if (d is IDefine)
@@ -43,23 +55,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
                 return null;
             })
-            .Where(d => d != null)
-            .Select(d =>
-            {
-                string description = d.Description;
-                IMacro macro = d as IMacro;
-                if (macro != null)
-                {
-                    string argDesc = macro.Arguments.Aggregate(macro.Name + "(", (current, arg) => current + (arg + ", "));
-                    if (argDesc.Length > 2)
-                    {
-                        argDesc = argDesc.Remove(argDesc.Length - 2);
-                    }
-                    argDesc += ")";
-                    description = argDesc + "\n" + description;
-                }
-                return description;
-            }));
+            .Where(d => d != null));
         }
     }
 

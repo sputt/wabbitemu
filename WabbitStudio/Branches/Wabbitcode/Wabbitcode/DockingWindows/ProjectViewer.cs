@@ -10,7 +10,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Utils;
 
 
 namespace Revsoft.Wabbitcode.DockingWindows
@@ -28,8 +27,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		#region Private Members
 
-		private readonly IDocumentService _documentService;
-		private readonly IProjectService _projectService;
+	    private readonly IProjectService _projectService;
 
 		#endregion
 
@@ -37,7 +35,6 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		{
 			InitializeComponent();
 
-		    _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 		    _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
 
 		    _projectService.ProjectOpened += (sender, args) => BuildProjTree();
@@ -173,7 +170,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			writer.Close();
 			ProjectFile fileAdded = _projectService.AddFile((ProjectFolder)parent.Tag, file);
 			AddFile(fileAdded, parent);
-			_documentService.OpenDocument(file);
+            new OpenFileAction(file).Execute();
 		}
 
 	    private void CloseProject()
@@ -346,7 +343,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			string filePath = file.FileFullPath;
 			if (File.Exists(filePath))
 			{
-			    FileTypeMethodFactory.OpenRegisteredFile(filePath);
+			    new OpenFileAction(filePath).Execute();
 			}
 			else
 			{
