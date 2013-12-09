@@ -15,6 +15,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 using IFileReaderService = Revsoft.Wabbitcode.Services.Interfaces.IFileReaderService;
 
@@ -56,6 +57,7 @@ namespace Revsoft.Wabbitcode.GUI
 			InitializeEvents();
             InitializeMenus();
             InitializeToolbars();
+		    RegisterFileTypes();
 
 		    _dockingService.InitPanels();
 			_dockingService.LoadConfig(GetContentFromPersistString);
@@ -193,6 +195,51 @@ namespace Revsoft.Wabbitcode.GUI
             }
             catch (ReflectionTypeLoadException)
             {
+            }
+        }
+
+        private void RegisterFileTypes()
+        {
+            FileTypeMethodFactory.RegisterFileType(".asm", path => OpenDocument(path) != null);
+            FileTypeMethodFactory.RegisterFileType(".z80", path => OpenDocument(path) != null);
+            FileTypeMethodFactory.RegisterFileType(".inc", path => OpenDocument(path) != null);
+            FileTypeMethodFactory.RegisterDefaultHandler(path => OpenDocument(path) != null);
+        }
+
+        private Editor OpenDocument(string filename)
+        {
+            var child = _dockingService.Documents.OfType<Editor>()
+                .SingleOrDefault(e => FileOperations.CompareFilePath(e.FileName, filename));
+            if (child != null)
+            {
+                child.Show();
+                return child;
+            }
+
+            Editor doc = new Editor();
+            OpenDocument(doc, filename);
+            return doc;
+        }
+
+        private void OpenDocument(AbstractFileEditor doc, string filename)
+        {
+            doc.Text = Path.GetFileName(filename);
+            doc.TabText = Path.GetFileName(filename);
+            doc.ToolTipText = filename;
+            doc.OpenFile(filename);
+            AddRecentFile(filename);
+            _dockingService.ShowDockPanel(doc);
+        }
+
+        /// <summary>
+        /// Adds a string to the recent file list
+        /// </summary>
+        /// <param name="filename">Full path of the file to save to the list</param>
+        private static void AddRecentFile(string filename)
+        {
+            if (!Settings.Default.RecentFiles.Contains(filename))
+            {
+                Settings.Default.RecentFiles.Add(filename);
             }
         }
 
