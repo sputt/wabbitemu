@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
@@ -24,8 +25,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		#region Private Properties
 
-		private readonly IDocumentService _documentService;
-		private readonly IParserService _parserService;
+	    private readonly IParserService _parserService;
 
 		#endregion
 
@@ -33,7 +33,6 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		{
 			InitializeComponent();
 
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
             _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
 
 		    _parserService.OnParserFinished += (sender, args) =>
@@ -140,22 +139,27 @@ namespace Revsoft.Wabbitcode.DockingWindows
 				return;
 			}
 
-			_documentService.GotoLabel((IParserData)labelsBox.SelectedItem);
+		    GotoLabel((IParserData) labelsBox.SelectedItem);
 		}
 
-		private void labelsBox_KeyPress(object sender, KeyPressEventArgs e)
+	    private void labelsBox_KeyPress(object sender, KeyPressEventArgs e)
 		{
 			if (e.KeyChar != (char)Keys.Enter)
 			{
 				return;
 			}
 
-			_documentService.GotoLabel((ILabel)labelsBox.SelectedItem);
+			GotoLabel((ILabel)labelsBox.SelectedItem);
 		    var activeForm = DockingService.ActiveDocument as Form;
 		    if (activeForm != null)
 		    {
 		        activeForm.Focus();
 		    }
 		}
+
+        private static void GotoLabel(IParserData parserData)
+        {
+            new GotoLabelAction(parserData).Execute();
+        }
 	}
 }

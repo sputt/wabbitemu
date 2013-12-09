@@ -1,8 +1,8 @@
-﻿using Revsoft.Wabbitcode.Services;
+﻿using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.Services;
 using System;
 using System.IO;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode
@@ -11,17 +11,11 @@ namespace Revsoft.Wabbitcode
 	{
 		#region Private Members
 
-		private readonly IDockingService _dockingService;
-		private readonly IDocumentService _documentService;
+	    #endregion
 
-		#endregion
-
-		public NewBreakpointForm(IDockingService dockingService, IDocumentService documentService)
+		public NewBreakpointForm()
 		{
 			InitializeComponent();
-
-			_dockingService = dockingService;
-			_documentService = documentService;
 		}
 
 		private void browseButton_Click(object sender, EventArgs e)
@@ -52,7 +46,7 @@ namespace Revsoft.Wabbitcode
 			string fileName = fileBox.Text;
 			if (File.Exists(fileName))
 			{
-				_documentService.GotoFile(fileName);
+                new GotoFileAction(fileName).Execute();
 			}
 			else
 			{

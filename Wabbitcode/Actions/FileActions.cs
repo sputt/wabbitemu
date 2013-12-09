@@ -10,18 +10,20 @@ namespace Revsoft.Wabbitcode.Actions
 {
     public class CreateNewDocumentAction : AbstractUiAction
     {
-        private readonly IDocumentService _documentService;
         private readonly IDockingService _dockingService;
 
         public CreateNewDocumentAction()
         {
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
         }
 
         public override void Execute()
         {
-            Editor doc = _documentService.CreateNewDocument();
+            Editor doc = new Editor
+            {
+                Text = "New Document",
+                TabText = "New Document"
+            };
             doc.TabText = "New Document";
             _dockingService.ShowDockPanel(doc);
         }
@@ -29,7 +31,46 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class OpenFileAction : AbstractUiAction
     {
+        private string[] _fileNames;
+
+        public OpenFileAction() : this(null)
+        {
+        }
+
+        public OpenFileAction(params string[] fileNames)
+        {
+            _fileNames = fileNames;
+        }
+
         public override void Execute()
+        {
+            if (_fileNames == null)
+            {
+                if (!ShowDialog())
+                {
+                    return;
+                }
+
+                if (_fileNames == null)
+                {
+                    return;
+                }
+            }
+
+            try
+            {
+                foreach (var fileName in _fileNames)
+                {
+                    FileTypeMethodFactory.OpenRegisteredFile(fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error opening file", ex);
+            }
+        }
+
+        private bool ShowDialog()
         {
             var openFileDialog = new OpenFileDialog
             {
@@ -46,20 +87,11 @@ namespace Revsoft.Wabbitcode.Actions
 
             if (openFileDialog.ShowDialog() != DialogResult.OK)
             {
-                return;
+                return false;
             }
 
-            try
-            {
-                foreach (var fileName in openFileDialog.FileNames)
-                {
-                    FileTypeMethodFactory.OpenRegisteredFile(fileName);
-                }
-            }
-            catch (Exception ex)
-            {
-                DockingService.ShowError("Error opening file", ex);
-            }
+            _fileNames = openFileDialog.FileNames;
+            return true;
         }
     }
 

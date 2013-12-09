@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
@@ -24,9 +25,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private IWabbitcodeDebugger _debugger;
 
-        private readonly IDocumentService _documentService;
-
-        private readonly List<DocumentLocation> _callLocations = new List<DocumentLocation>();
+	    private readonly List<DocumentLocation> _callLocations = new List<DocumentLocation>();
 
 		public CallStack()
 		{
@@ -34,7 +33,6 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		    IDebuggerService debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
             debuggerService.OnDebuggingStarted += mainForm_OnDebuggingStarted;
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 		}
 
 	    void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
@@ -76,7 +74,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			}
 
 		    DocumentLocation location = _callLocations[callStackView.SelectedRows[0].Index];
-		    _documentService.GotoLine(location.FileName, location.LineNumber);
+            new GotoLineAction(location).Execute();
 		}
 	
 		#region IClipboardOperation

@@ -8,18 +8,9 @@ namespace Revsoft.Wabbitcode.Actions
 {
     public class CreateNewProjectAction : AbstractUiAction
     {
-        private readonly IDocumentService _documentService;
-        private readonly IProjectService _projectService;
-
-        public CreateNewProjectAction()
-        {
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
-        }
-
         public override void Execute()
         {
-            NewProjectDialog template = new NewProjectDialog(_documentService, _projectService);
+            NewProjectDialog template = new NewProjectDialog();
             template.ShowDialog();
         }
     }

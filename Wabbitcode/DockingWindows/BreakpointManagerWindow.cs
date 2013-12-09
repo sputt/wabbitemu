@@ -24,14 +24,12 @@ namespace Revsoft.Wabbitcode.DockingWindows
         }
 
 		// TODO: this entire class looks nasty
-		private readonly IDocumentService _documentService;
-		private readonly IProjectService _projectService;
+	    private readonly IProjectService _projectService;
 
 		public BreakpointManagerWindow()
 		{
 			InitializeComponent();
 
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
 		}
 
@@ -110,7 +108,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 		private void breakpointToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			NewBreakpointForm form = new NewBreakpointForm(DockingService, _documentService);
+			NewBreakpointForm form = new NewBreakpointForm();
 			form.ShowDialog();
 		}
 

@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using System;
 using System.Drawing;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Properties;
@@ -20,14 +21,11 @@ namespace Revsoft.Wabbitcode.DockingWindows
             get { return WindowIdentifier; }
 	    }
 
-	    private readonly IDocumentService _documentService;
-	    
 		public OutputWindow()
 		{
 		    InitializeComponent();
 
 		    IAssemblerService assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
-            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 
 			outputWindowBox.ContextMenu = contextMenu1;
             Settings.Default.SettingChanging += Default_SettingChanging;
@@ -119,7 +117,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 
 			string file = match.Groups["fileName"].Value;
 			int lineNumber = Convert.ToInt32(match.Groups["lineNum"].Value);
-			_documentService.GotoLine(file, lineNumber - 1);
+            new GotoLineAction(file, lineNumber - 1).Execute();
 		}
 
 		private void selectAllOuputButton_Click(object sender, EventArgs e)

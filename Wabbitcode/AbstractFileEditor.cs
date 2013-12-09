@@ -1,6 +1,4 @@
-using System;
 using System.IO;
-using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Interface;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -29,25 +27,10 @@ namespace Revsoft.Wabbitcode
             }
         }
 
-        public bool ReadOnly
-        {
-            get;
-            set;
-        }
-
-        public event EventHandler<EditorEventArgs> OnEditorOpened;
-        public event EventHandler<EditorToolTipRequestEventArgs> OnEditorClosing;
-        public event EventHandler<EditorSelectionEventArgs> OnEditorSelectionChanged;
-
         public virtual void OpenFile(string filename)
         {
             FileName = filename;
             DocumentChanged = false;
-
-            if (OnEditorOpened != null)
-            {
-                OnEditorOpened(this, new EditorEventArgs(this));
-            }
         }
 
         internal void SaveFile(string fileName)
