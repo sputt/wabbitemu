@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.Services;
 
 namespace Revsoft.Wabbitcode.Actions

@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Revsoft.Wabbitcode.DockingWindows;
+using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.Resources;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;

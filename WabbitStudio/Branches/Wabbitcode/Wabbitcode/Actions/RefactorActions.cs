@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Interface;
+﻿using Revsoft.Wabbitcode.GUI.Dialogs;
+using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 

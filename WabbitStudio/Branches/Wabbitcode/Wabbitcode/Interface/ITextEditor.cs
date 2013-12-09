@@ -1,4 +1,5 @@
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.GUI.Dialogs;
 
 namespace Revsoft.Wabbitcode.Interface
 {

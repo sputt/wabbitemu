@@ -67,7 +67,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Services.Project;
 using Timer = System.Windows.Forms.Timer;
 

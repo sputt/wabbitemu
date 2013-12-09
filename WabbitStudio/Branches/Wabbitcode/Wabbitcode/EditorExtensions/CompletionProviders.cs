@@ -1,6 +1,5 @@
 using System.Linq;
 using Revsoft.TextEditor;
-using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;

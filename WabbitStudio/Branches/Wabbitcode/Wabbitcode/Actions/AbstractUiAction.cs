@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Revsoft.Wabbitcode.Actions
+﻿namespace Revsoft.Wabbitcode.Actions
 {
     public abstract class AbstractUiAction
     {
