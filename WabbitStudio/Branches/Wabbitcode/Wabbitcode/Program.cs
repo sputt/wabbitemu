@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Properties;
+﻿using System.Configuration;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Utils;
 using System;
@@ -24,7 +25,7 @@ namespace Revsoft.Wabbitcode
 					Settings.Default.Save();
 				}
 			}
-			catch (Exception ex)
+			catch (ConfigurationErrorsException ex)
 			{
 				DockingService.ShowError("Error upgrading settings", ex);
 			}
@@ -57,15 +58,21 @@ namespace Revsoft.Wabbitcode
 				DockingService.ShowError("Error checking for updates", ex);
 			}
 
-			try
-			{
-				AppBase appBase = new AppBase();
-				appBase.Run(args);
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Unhandled exception occurred. Please report this to the developers", ex);
-			}
+		    int numErrors = 0;
+            AppBase appBase = new AppBase();
+		    do
+		    {
+		        try
+		        {
+		            appBase.Run(args);
+		            return;
+		        }
+		        catch (Exception ex)
+		        {
+		            numErrors++;
+		            DockingService.ShowError("Unhandled exception occurred. Please report this to the developers", ex);
+		        }
+		    } while (numErrors < 5);
 		}
 	}
 }
