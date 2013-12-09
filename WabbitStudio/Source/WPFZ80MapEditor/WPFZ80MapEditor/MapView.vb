@@ -1,6 +1,8 @@
 ﻿Imports System.ComponentModel
 Imports System.Collections.ObjectModel
 Imports System.Windows.Media.Effects
+Imports WPFZ80MapEditor.ValueConverters
+Imports System.Windows.Media.Animation
 
 Public Class MapView
     Inherits Grid
@@ -16,6 +18,8 @@ Public Class MapView
     Public ShowCollidable As Boolean = True
 
     Private Sub HandleMouseUp(sender As Object, e As MouseButtonEventArgs)
+        If e.ChangedButton = MouseButton.Right Then Exit Sub
+
         Dim Tile As Tile = sender
 
         Dim x = Grid.GetColumn(Tile)
@@ -66,20 +70,25 @@ Public Class MapView
 
         For x = 0 To LayerContainer.MapSize.Width - 1
             For y = 0 To LayerContainer.MapSize.Height - 1
-                Dim Tile As New Tile(InEditor)
+                Dim Tile As New XTile()
+                'Dim Tile As New Tile(InEditor)
 
                 Dim Index As Integer = (y * LayerContainer.MapSize.Width + x)
 
                 Dim TileBinding As New Binding("TileData[" & Index & "]")
                 TileBinding.Mode = BindingMode.TwoWay
-                Tile.SetBinding(Tile.IndexProperty, TileBinding)
+                Tile.SetBinding(XTile.IndexProperty, TileBinding)
 
-                Tile.SetBinding(Tile.TilesetProperty, New Binding("Tileset"))
+                'Tile.SetBinding(Tile.TilesetProperty, New Binding("Tileset"))
 
                 If MapData IsNot Nothing Then
                     For Each Anim In MapData.ZAnims
                         If Anim.X = x * 16 And Anim.Y = y * 16 Then
-                            Tile.Anim = Anim
+                            Tile.SetValue(XTile.IsAnimatedProperty, True)
+                            Tile.SetValue(XTile.AnimDefProperty, Anim.Definition)
+
+                            Dim Story As Storyboard = New AnimDefStoryboardConverter().Convert1(Anim.Definition, GetType(Storyboard), Nothing, Nothing)
+                            Story.Begin(Tile)
                             Exit For
                         End If
                     Next

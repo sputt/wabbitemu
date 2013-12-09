@@ -1,4 +1,5 @@
 ﻿Imports SPASM
+Imports System.Windows.Media.Animation
 
 Namespace ValueConverters
 
@@ -56,7 +57,13 @@ Namespace ValueConverters
 
         Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
             Dim TileIndex = value
-            Return Scenario.Instance.Tilesets.Values(0)(TileIndex)
+            If TileIndex < 0 Then TileIndex = 0
+            Try
+                Return Scenario.Instance.Tilesets(0)(TileIndex Mod 128)
+            Catch e As Exception
+                Debug.WriteLine("TileIndex: " & value)
+                Return Scenario.Instance.Tilesets(0)(0)
+            End Try
         End Function
 
         Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
@@ -232,6 +239,35 @@ Namespace ValueConverters
         End Function
 
         Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As Globalization.CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+            Return Nothing
+        End Function
+    End Class
+
+    Public Class AnimDefStoryboardConverter
+        Implements IValueConverter
+
+        Public Function Convert1(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+            Dim Tileset = 0
+            Dim ZAnim As ZDef = value
+
+            Dim Anim As New DoubleAnimationUsingKeyFrames()
+            Anim.Duration = New Duration(TimeSpan.FromMilliseconds(500))
+
+            Anim.KeyFrames.Add(New DiscreteDoubleKeyFrame(ZAnim.DefaultImage, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(250))))
+            Anim.KeyFrames.Add(New DiscreteDoubleKeyFrame(ZAnim.DefaultImage + 1, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(250))))
+
+            Anim.RepeatBehavior = RepeatBehavior.Forever
+
+            Storyboard.SetTargetProperty(Anim, New PropertyPath(XTile.IndexProperty))
+
+            ' Create a storyboard to apply the animation.
+            Dim AnimStoryboard As New Storyboard()
+            AnimStoryboard.Children.Add(Anim)
+
+            Return AnimStoryboard
+        End Function
+
+        Public Function ConvertBack1(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
             Return Nothing
         End Function
     End Class

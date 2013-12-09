@@ -74,22 +74,5 @@ Public Class TilesPanel
         End Set
     End Property
 
-    Public Sub Initialize(TilesetIndex As Integer)
-        DataContext = Scenario.Instance
-
-        Dim Tileset = Scenario.Instance.Tilesets.Values(TilesetIndex)
-        For Index As Integer = 0 To Tileset.Count - 1
-            Dim tile = New PanelTile()
-            tile.Tileset = TilesetIndex
-            tile.Index = Index
-
-            AddHandler tile.TileSelected, AddressOf OnTileSelect
-            tile.Margin = New Thickness(2)
-            Panel.SetZIndex(tile, 0)
-            TilesGrid.Children.Add(tile)
-        Next
-
-    End Sub
-
     Public Event PropertyChanged(sender As Object, e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
 End Class

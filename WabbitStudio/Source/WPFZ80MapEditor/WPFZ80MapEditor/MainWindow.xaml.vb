@@ -15,25 +15,8 @@ Public Class MainWindow
     End Sub
 
     Private Sub Window_Loaded(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles MyBase.Loaded
-        Scenario.Instance.Tilesets.Add("dungeon", New Tileset("C:\users\spencer\desktop\zelda\images\dungeon.bmp"))
-        TileSelectorPanel.Initialize(0)
-
         Scenario.Instance.LoadScenario("C:\users\spencer\desktop\zelda\hill.asm")
-
-
-        'Dim MapData As New MapData(New Tileset("dungeon.bmp"))
-        'MapData.ZObjects = New ObservableCollection(Of ZObject)
-
-        'Dim ZObj As New ZObject("Pot", 12, 12)
-        'ZObj.X = 40
-        'ZObj.Y = 20
-        'MapData.ZObjects.Add(ZObj)
-
-        'Dim ZObj2 As New ZObject("Pot", 20, 20)
-        'MapData.ZObjects.Add(ZObj2)
-
-        'ObjLayer.DataContext = MapData
-        'ObjLayer.SetBinding(ObjectLayer.ItemsSourceProperty, New Binding("ZObjects"))
+        DataContext = Scenario.Instance
     End Sub
 
     Private Sub Background_MouseWheel(sender As Object, e As MouseWheelEventArgs) Handles Background.MouseWheel

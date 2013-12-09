@@ -5,7 +5,6 @@ Imports System.Text.RegularExpressions
 Public Class Scenario
     Inherits Freezable
 
-    Public Tilesets As New Dictionary(Of String, Tileset)
     Public Maps As New Dictionary(Of String, MapData)
     Public ScenarioName As String
 
@@ -85,6 +84,15 @@ Public Class Scenario
         End Set
     End Property
 
+    Public Property Tilesets As ObservableCollection(Of Tileset)
+        Get
+            Return GetValue(TilesetsProperty)
+        End Get
+        Set(value As ObservableCollection(Of Tileset))
+            SetValue(TilesetsProperty, value)
+        End Set
+    End Property
+
     Public ReadOnly Property AllDefs As Dictionary(Of String, ZDef)
         Get
             Return ObjectDefs.Values.Union(EnemyDefs.Values).Union(MiscDefs.Values).Union(AnimDefs.Values)
@@ -130,11 +138,6 @@ Public Class Scenario
         _MapCount += 1
     End Sub
 
-    Public Sub ClearMaps()
-        MainWindow.Instance.LayerContainer.Children.Clear()
-        Maps.Clear()
-    End Sub
-
     Public ReadOnly Property ActiveLayer As IMapLayer
         Get
             Return (From containers As MapContainer In MainWindow.Instance.LayerContainer.Children
@@ -148,7 +151,9 @@ Public Class Scenario
     Private _FileName As String
 
     Public Sub LoadScenario(FileName As String)
-        ClearMaps()
+        Tilesets = New ObservableCollection(Of Tileset)()
+        Tilesets.Add(New Tileset("dungeon", "C:\users\spencer\desktop\zelda\images\dungeon.bmp"))
+        Tilesets.Add(New Tileset("town", "C:\users\spencer\desktop\zelda\images\town.bmp"))
 
         Dim Path As String = Directory.GetParent(FileName).FullName
         SPASMHelper.Initialize(Path)
@@ -159,9 +164,9 @@ Public Class Scenario
         Dim Data = SPASMHelper.AssembleFile(FileName)
 
         LoadDefs(Path & "\animatedef.inc", AnimDefsProperty, GetType(ZAnim))
-        LoadDefs(Path & "\objectdef.inc", ObjectDefsProperty, GetType(ZObject))
-        LoadDefs(Path & "\miscdef.inc", MiscDefsProperty, GetType(ZMisc))
-        LoadDefs(Path & "\enemydef.inc", EnemyDefsProperty, GetType(ZEnemy))
+        'LoadDefs(Path & "\objectdef.inc", ObjectDefsProperty, GetType(ZObject))
+        'LoadDefs(Path & "\miscdef.inc", MiscDefsProperty, GetType(ZMisc))
+        'LoadDefs(Path & "\enemydef.inc", EnemyDefsProperty, GetType(ZEnemy))
 
         Dim Reader As New StreamReader(FileName)
         Dim ScenarioContents As String = Reader.ReadToEnd()
@@ -204,20 +209,20 @@ Public Class Scenario
 
                     For i = 0 To Groups("ObjectName").Captures.Count - 1
                         Dim Params = Split(Groups("ObjectArgs").Captures(i).Value, ",")
-                        Dim Obj As New ZObject(ObjectDefs(Groups("ObjectName").Captures(i).Value), Params)
-                        MapData.ZObjects.Add(Obj)
+                        'Dim Obj As New ZObject(ObjectDefs(Groups("ObjectName").Captures(i).Value), Params)
+                        'MapData.ZObjects.Add(Obj)
                     Next
 
                     For i = 0 To Groups("EnemyName").Captures.Count - 1
                         Dim Params = Split(Groups("EnemyArgs").Captures(i).Value, ",")
-                        Dim Enemy As New ZEnemy(EnemyDefs(Groups("EnemyName").Captures(i).Value), Params)
-                        MapData.ZEnemies.Add(Enemy)
+                        'Dim Enemy As New ZEnemy(EnemyDefs(Groups("EnemyName").Captures(i).Value), Params)
+                        'MapData.ZEnemies.Add(Enemy)
                     Next
 
                     For i = 0 To Groups("MiscName").Captures.Count - 1
                         Dim Params = Split(Groups("MiscArgs").Captures(i).Value, ",")
-                        Dim Misc As New ZMisc(MiscDefs(Groups("MiscName").Captures(i).Value), Params)
-                        MapData.ZMisc.Add(Misc)
+                        'Dim Misc As New ZMisc(MiscDefs(Groups("MiscName").Captures(i).Value), Params)
+                        'MapData.ZMisc.Add(Misc)
                     Next
                 End If
 

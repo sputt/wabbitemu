@@ -1,4 +1,5 @@
 ﻿Imports System.ComponentModel
+Imports System.Windows.Media.Animation
 
 Public Class Tile
     Inherits Grid
@@ -6,8 +7,8 @@ Public Class Tile
     Private _InEditor As Boolean
 
     Private Sub SetImageSource(NewIndex As Integer)
-        If NewIndex <> -1 Then
-            _Image.Source = Scenario.Instance.Tilesets.Values(Tileset)(NewIndex Mod 128)
+        If NewIndex <> -1 And Tileset IsNot Nothing Then
+            _Image.Source = Tileset(NewIndex Mod 128)
         End If
     End Sub
 
@@ -34,6 +35,9 @@ Public Class Tile
             If Anim IsNot Nothing Then
                 'OverlayColor
                 OverlayColor = Color.Add(OverlayColor, Color.FromArgb(64, 80, 0, 80))
+                'BeginStoryboard(
+                Dim AnimStoryboard = New Storyboard()
+ 
             End If
         ElseIf e.Property Is Tile.TilesetProperty Then
             SetImageSource(Index)
@@ -47,7 +51,7 @@ Public Class Tile
                                     New FrameworkPropertyMetadata(-1, FrameworkPropertyMetadataOptions.AffectsRender))
 
     Public Shared ReadOnly TilesetProperty As DependencyProperty =
-        DependencyProperty.Register("Tileset", GetType(Integer), GetType(Tile))
+        DependencyProperty.Register("Tileset", GetType(Tileset), GetType(Tile))
 
     Public Shared ReadOnly AnimDefProperty As DependencyProperty =
         DependencyProperty.Register("AnimDef", GetType(ZDef), GetType(Tile))
@@ -77,11 +81,11 @@ Public Class Tile
         End Set
     End Property
 
-    Public Property Tileset As Integer
+    Public Property Tileset As Tileset
         Get
             Return GetValue(TilesetProperty)
         End Get
-        Set(value As Integer)
+        Set(value As Tileset)
             SetValue(TilesetProperty, value)
         End Set
     End Property

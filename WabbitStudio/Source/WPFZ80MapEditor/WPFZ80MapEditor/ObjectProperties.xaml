@@ -32,7 +32,8 @@
 
         <DataTemplate x:Key="GraphicTemplate">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <Image Width="16" Height="16" Source="{Binding Path=Image}"/>
+                <Image Width="16" Height="16" Source="{Binding Path=Image}">
+                </Image>
                 <TextBlock Height="20" Text="{Binding Path=Label}" Padding="5,0,0,5"/>
             </StackPanel>
         </DataTemplate>

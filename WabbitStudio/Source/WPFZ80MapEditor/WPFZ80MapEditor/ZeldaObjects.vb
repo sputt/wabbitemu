@@ -515,6 +515,15 @@ Public Class ZDef
         End Set
     End Property
 
+    Public Property DefaultImage As Integer
+        Get
+            Return GetValue(DefaultImageProperty)
+        End Get
+        Set(value As Integer)
+            SetValue(DefaultImageProperty, value)
+        End Set
+    End Property
+
     Public Sub New(Name As String, Macro As String, Description As String, ObjType As Type)
         SetValue(NameProperty, Name)
         SetValue(MacroProperty, Macro)

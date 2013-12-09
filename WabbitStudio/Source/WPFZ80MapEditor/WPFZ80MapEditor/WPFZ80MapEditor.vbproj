@@ -163,6 +163,9 @@
     <Compile Include="Tile.vb" />
     <Compile Include="Tileset.vb" />
     <Compile Include="Utils.vb" />
+    <Compile Include="XTile.xaml.vb">
+      <DependentUpon>XTile.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ZeldaImage.vb" />
     <Compile Include="ZeldaObjects.vb" />
     <Compile Include="ValueConverters.vb" />
@@ -204,6 +207,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Panels\TilesPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="XTile.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
