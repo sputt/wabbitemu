@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.GUI.DocumentWindows;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -57,16 +58,19 @@ namespace Revsoft.Wabbitcode.Actions
                 }
             }
 
-            try
+            foreach (var fileName in _fileNames)
             {
-                foreach (var fileName in _fileNames)
+                try
                 {
-                    FileTypeMethodFactory.OpenRegisteredFile(fileName);
+                    if (!FileTypeMethodFactory.OpenRegisteredFile(fileName))
+                    {
+                        throw new Exception("Opening file failed");
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                DockingService.ShowError("Error opening file", ex);
+                catch (Exception ex)
+                {
+                    DockingService.ShowError("Error opening file", ex);
+                }
             }
         }
 
@@ -261,10 +265,7 @@ namespace Revsoft.Wabbitcode.Actions
             }
 
             string[] files = (string[])_dataObject.GetData(DataFormats.FileDrop);
-            foreach (string file in files)
-            {
-                FileTypeMethodFactory.OpenRegisteredFile(file);
-            }
+            new OpenFileAction(files).Execute();
         }
     }
 }

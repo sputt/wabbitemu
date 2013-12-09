@@ -1,8 +1,8 @@
-﻿namespace Revsoft.Wabbitcode.Classes
-{
-    using System;
-    using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
+namespace Revsoft.Wabbitcode.Services
+{
     public static class MacroService
     {
         public static int currentMacro = -1;

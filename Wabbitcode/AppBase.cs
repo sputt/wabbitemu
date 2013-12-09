@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.VisualBasic.ApplicationServices;
 using System;
 using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.GUI;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 

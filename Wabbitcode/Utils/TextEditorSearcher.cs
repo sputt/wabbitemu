@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Revsoft.Wabbitcode.GUI.Dialogs;
 
 namespace Revsoft.Wabbitcode.Utils
 {

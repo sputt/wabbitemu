@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Revsoft.Wabbitcode.DockingWindows;
+using Revsoft.Wabbitcode.GUI.DockingWindows;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces

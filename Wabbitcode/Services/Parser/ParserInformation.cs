@@ -1,13 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
     public class ParserInformation : IEnumerable<IParserData>
     {
-	    private bool _parsingIncludes;
         private readonly string _sourceFile;
         private readonly int _sourceFileHash;
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Assembler
 {

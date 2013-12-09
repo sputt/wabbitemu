@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Revsoft.Wabbitcode.GUI;
+using Revsoft.Wabbitcode.GUI.ToolBars;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 

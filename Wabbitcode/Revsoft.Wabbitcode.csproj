@@ -582,13 +582,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AboutBox.cs">
+    <Compile Include="GUI\Dialogs\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AboutBox.Designer.cs">
+    <Compile Include="GUI\Dialogs\AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="AbstractFileEditor.cs">
+    <Compile Include="GUI\DocumentWindows\AbstractFileEditor.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Actions\AbstractUiAction.cs" />
@@ -604,51 +604,53 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="BitmapViewer.cs">
+    <Compile Include="GUI\Dialogs\BitmapViewer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BitmapViewer.Designer.cs">
+    <Compile Include="GUI\Dialogs\BitmapViewer.Designer.cs">
       <DependentUpon>BitmapViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="BuildSteps.cs">
+    <Compile Include="GUI\Dialogs\BuildSteps.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BuildSteps.Designer.cs">
+    <Compile Include="GUI\Dialogs\BuildSteps.Designer.cs">
       <DependentUpon>BuildSteps.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\ExpressionWindow.cs">
+    <Compile Include="GUI\DockingWindows\ExpressionWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\ExpressionWindow.designer.cs">
+    <Compile Include="GUI\DockingWindows\ExpressionWindow.designer.cs">
       <DependentUpon>ExpressionWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="EditorExtensions\CompletionProviderBase.cs" />
     <Compile Include="EditorExtensions\CompletionProviders.cs" />
     <Compile Include="EditorExtensions\DebugHighlightMarker.cs" />
-    <Compile Include="EditorExtensions\EditorToolTipRequestEventArgs.cs" />
     <Compile Include="EditorExtensions\FoldingItem.cs" />
     <Compile Include="EditorExtensions\InsightProviders.cs" />
     <Compile Include="EditorExtensions\WabbitcodeTextEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Exceptions\InvalidProjectVersionException.cs" />
-    <Compile Include="GotoSymbol.cs">
+    <Compile Include="GUI\Dialogs\GotoSymbol.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GotoSymbol.Designer.cs">
+    <Compile Include="GUI\Dialogs\GotoSymbol.Designer.cs">
       <DependentUpon>GotoSymbol.cs</DependentUpon>
     </Compile>
     <Compile Include="EditorExtensions\CodeCompletion.cs" />
-    <Compile Include="EditorExtensions\EditorSelectionEventArgs.cs" />
-    <Compile Include="EditorExtensions\EditorEventArgs.cs" />
     <Compile Include="EditorExtensions\RegionFoldingStrategy.cs" />
-    <Compile Include="GUI\DebugToolBar.cs">
+    <Compile Include="GUI\ToolBars\DebugToolBar.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="GUI\EditorToolBar.cs">
+    <Compile Include="GUI\ToolBars\DebugToolBar.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DebugToolBar.resx</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ToolBars\EditorToolBar.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="GUI\MainMenuStrip.cs">
+    <Compile Include="GUI\Menus\MainMenuStrip.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Interface\IBookmarkable.cs" />
@@ -656,7 +658,7 @@
     <Compile Include="Interface\ISelectable.cs" />
     <Compile Include="Interface\ITextEditor.cs" />
     <Compile Include="Interface\IUndoable.cs" />
-    <Compile Include="GUI\MainToolBar.cs">
+    <Compile Include="GUI\ToolBars\MainToolBar.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Properties\TempSettings.Designer.cs" />
@@ -671,7 +673,6 @@
     <Compile Include="Services\Assembler\SpasmDllAssembler.cs" />
     <Compile Include="Services\BackgroundAssemblerService.cs" />
     <Compile Include="Services\DebuggerService.cs" />
-    <Compile Include="Services\Debugger\DebuggerBreakpointHitEventArgs.cs" />
     <Compile Include="Services\Debugger\DebuggerRunningEventArgs.cs" />
     <Compile Include="Services\Debugger\DebuggerEventArgs.cs" />
     <Compile Include="Services\Debugger\DebuggerStepEventArgs.cs" />
@@ -689,8 +690,8 @@
     <Compile Include="Services\Interfaces\ISymbolService.cs" />
     <Compile Include="Services\Interfaces\IToolBarService.cs" />
     <Compile Include="Services\MenuService.cs" />
-    <Compile Include="Services\ParserEventArgs.cs" />
-    <Compile Include="Services\ParserProgressEventArgs.cs" />
+    <Compile Include="Services\Parser\ParserEventArgs.cs" />
+    <Compile Include="Services\Parser\ParserProgressEventArgs.cs" />
     <Compile Include="Services\ParserService.cs" />
     <Compile Include="Services\Parser\IParser.cs" />
     <Compile Include="Services\Parser\Z80Parser.cs" />
@@ -706,18 +707,18 @@
     <Compile Include="Services\Debugger\BreakpointEventArgs.cs" />
     <Compile Include="Services\Debugger\DebuggingEventArgs.cs" />
     <Compile Include="Exceptions\DebugggingException.cs" />
-    <Compile Include="DockingWindows\StackViewer.cs">
+    <Compile Include="GUI\DockingWindows\StackViewer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\StackViewer.designer.cs">
+    <Compile Include="GUI\DockingWindows\StackViewer.designer.cs">
       <DependentUpon>StackViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\AsmFormattingStrategy.cs" />
     <Compile Include="Utils\ListBoxItem.cs" />
-    <Compile Include="Refactor.cs">
+    <Compile Include="GUI\Dialogs\Refactor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Refactor.Designer.cs">
+    <Compile Include="GUI\Dialogs\Refactor.Designer.cs">
       <DependentUpon>Refactor.cs</DependentUpon>
     </Compile>
     <Compile Include="Resources\VS2012ToolStripRenderer.cs" />
@@ -761,85 +762,85 @@
     <Compile Include="Services\Project\WabbitcodeProject.cs" />
     <Compile Include="Services\DockingService.cs" />
     <Compile Include="Extensions\NativeMethods.cs" />
-    <Compile Include="DockingWindows\BreakpointManagerWindow.cs">
+    <Compile Include="GUI\DockingWindows\BreakpointManagerWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\BreakpointManagerWindow.designer.cs">
+    <Compile Include="GUI\DockingWindows\BreakpointManagerWindow.designer.cs">
       <DependentUpon>BreakpointManagerWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\CallStack.cs">
+    <Compile Include="GUI\DockingWindows\CallStack.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\CallStack.designer.cs">
+    <Compile Include="GUI\DockingWindows\CallStack.designer.cs">
       <DependentUpon>CallStack.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\MacroManager.cs">
+    <Compile Include="GUI\DockingWindows\MacroManager.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\MacroManager.designer.cs">
+    <Compile Include="GUI\DockingWindows\MacroManager.designer.cs">
       <DependentUpon>MacroManager.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\Find Results.cs">
+    <Compile Include="GUI\DockingWindows\Find Results.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\Find Results.designer.cs">
+    <Compile Include="GUI\DockingWindows\Find Results.designer.cs">
       <DependentUpon>Find Results.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\Tracking.cs">
+    <Compile Include="GUI\DockingWindows\Tracking.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\Tracking.designer.cs">
+    <Compile Include="GUI\DockingWindows\Tracking.designer.cs">
       <DependentUpon>Tracking.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\DebugPanel.cs">
+    <Compile Include="GUI\DockingWindows\DebugPanel.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\DebugPanel.designer.cs">
+    <Compile Include="GUI\DockingWindows\DebugPanel.designer.cs">
       <DependentUpon>DebugPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\ProjectViewer.cs">
+    <Compile Include="GUI\DockingWindows\ProjectViewer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\ProjectViewer.designer.cs">
+    <Compile Include="GUI\DockingWindows\ProjectViewer.designer.cs">
       <DependentUpon>ProjectViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\LabelList.cs">
+    <Compile Include="GUI\DockingWindows\LabelList.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\LabelList.designer.cs">
+    <Compile Include="GUI\DockingWindows\LabelList.designer.cs">
       <DependentUpon>LabelList.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\ErrorList.cs">
+    <Compile Include="GUI\DockingWindows\ErrorList.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\ErrorList.designer.cs">
+    <Compile Include="GUI\DockingWindows\ErrorList.designer.cs">
       <DependentUpon>ErrorList.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\OutputWindow.cs">
+    <Compile Include="GUI\DockingWindows\OutputWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\OutputWindow.designer.cs">
+    <Compile Include="GUI\DockingWindows\OutputWindow.designer.cs">
       <DependentUpon>OutputWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="DockingWindows\ToolWindow.cs">
+    <Compile Include="GUI\DockingWindows\ToolWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DockingWindows\ToolWindow.designer.cs">
+    <Compile Include="GUI\DockingWindows\ToolWindow.designer.cs">
       <DependentUpon>ToolWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="FindAndReplaceForm.cs">
+    <Compile Include="GUI\Dialogs\FindAndReplaceForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FindAndReplaceForm.designer.cs">
+    <Compile Include="GUI\Dialogs\FindAndReplaceForm.designer.cs">
       <DependentUpon>FindAndReplaceForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewBreakpointForm.cs">
+    <Compile Include="GUI\Dialogs\NewBreakpointForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="NewBreakpointForm.designer.cs">
+    <Compile Include="GUI\Dialogs\NewBreakpointForm.designer.cs">
       <DependentUpon>NewBreakpointForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editor.Designer.cs">
+    <Compile Include="GUI\DocumentWindows\Editor.Designer.cs">
       <DependentUpon>Editor.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
@@ -861,44 +862,44 @@
     <Compile Include="Services\Project\ProjectFolder.cs" />
     <Compile Include="Services\Parser\Reference.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="IncludeDir.cs">
+    <Compile Include="GUI\Dialogs\IncludeDir.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="IncludeDir.Designer.cs">
+    <Compile Include="GUI\Dialogs\IncludeDir.Designer.cs">
       <DependentUpon>IncludeDir.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainForm.cs">
+    <Compile Include="GUI\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
+    <Compile Include="GUI\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editor.cs">
+    <Compile Include="GUI\DocumentWindows\Editor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GotoLine.cs">
+    <Compile Include="GUI\Dialogs\GotoLine.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GotoLine.Designer.cs">
+    <Compile Include="GUI\Dialogs\GotoLine.Designer.cs">
       <DependentUpon>GotoLine.cs</DependentUpon>
     </Compile>
-    <Compile Include="Preferences.cs">
+    <Compile Include="GUI\Dialogs\Preferences.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Preferences.Designer.cs">
+    <Compile Include="GUI\Dialogs\Preferences.Designer.cs">
       <DependentUpon>Preferences.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="RenameForm.cs">
+    <Compile Include="GUI\Dialogs\RenameForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="RenameForm.Designer.cs">
+    <Compile Include="GUI\Dialogs\RenameForm.Designer.cs">
       <DependentUpon>RenameForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewProject.cs">
+    <Compile Include="GUI\Dialogs\NewProject.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="NewProject.Designer.cs">
+    <Compile Include="GUI\Dialogs\NewProject.Designer.cs">
       <DependentUpon>NewProject.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\TreeView.cs">
@@ -906,41 +907,41 @@
     </Compile>
     <Compile Include="Utils\TextEditorSearcher.cs" />
     <Compile Include="Utils\WabbitcodeBreakpointEventArgs.cs" />
-    <Compile Include="GUI\WabbitcodeStatusBar.cs">
+    <Compile Include="GUI\ToolBars\WabbitcodeStatusBar.cs">
       <SubType>Component</SubType>
     </Compile>
-    <EmbeddedResource Include="DockingWindows\ExpressionWindow.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\ExpressionWindow.resx">
       <DependentUpon>ExpressionWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GotoSymbol.resx">
+    <EmbeddedResource Include="GUI\Dialogs\GotoSymbol.resx">
       <DependentUpon>GotoSymbol.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\BreakpointManagerWindow.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\BreakpointManagerWindow.resx">
       <DependentUpon>BreakpointManagerWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\StackViewer.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\StackViewer.resx">
       <DependentUpon>StackViewer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\MacroManager.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\MacroManager.resx">
       <DependentUpon>MacroManager.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\DebugToolBar.resx">
+    <EmbeddedResource Include="GUI\ToolBars\DebugToolBar.resx">
       <DependentUpon>DebugToolBar.cs</DependentUpon>
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>DebugToolBar.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\MainToolBar.resx">
+    <EmbeddedResource Include="GUI\ToolBars\MainToolBar.resx">
       <DependentUpon>MainToolBar.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Refactor.resx">
+    <EmbeddedResource Include="GUI\Dialogs\Refactor.resx">
       <DependentUpon>Refactor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\PNG\Info.png" />
-    <EmbeddedResource Include="NewBreakpointForm.resx">
+    <EmbeddedResource Include="GUI\Dialogs\NewBreakpointForm.resx">
       <DependentUpon>NewBreakpointForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Preferences.resx">
+    <EmbeddedResource Include="GUI\Dialogs\Preferences.resx">
       <DependentUpon>Preferences.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -971,39 +972,39 @@
     <CodeAnalysisDictionary Include="CustomDictionary.xml" />
     <Content Include="Resources\Hardware-Chip.ico" />
     <Compile Include="Services\UpdateService.cs" />
-    <EmbeddedResource Include="AboutBox.resx">
+    <EmbeddedResource Include="GUI\Dialogs\AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\CallStack.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\CallStack.resx">
       <DependentUpon>CallStack.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\Find Results.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\Find Results.resx">
       <DependentUpon>Find Results.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\DebugPanel.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\DebugPanel.resx">
       <DependentUpon>DebugPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\ProjectViewer.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\ProjectViewer.resx">
       <DependentUpon>ProjectViewer.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\LabelList.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\LabelList.resx">
       <DependentUpon>LabelList.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\ErrorList.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\ErrorList.resx">
       <DependentUpon>ErrorList.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\OutputWindow.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\OutputWindow.resx">
       <DependentUpon>OutputWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\ToolWindow.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\ToolWindow.resx">
       <DependentUpon>ToolWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DockingWindows\Tracking.resx">
+    <EmbeddedResource Include="GUI\DockingWindows\Tracking.resx">
       <DependentUpon>Tracking.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.resx">
+    <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
@@ -1026,35 +1027,35 @@
     <EmbeddedResource Include="Resources\TemplatesIncludes\relocate.inc" />
     <EmbeddedResource Include="Resources\Templates.xml" />
     <Content Include="Resources\Wabbitcode.ico" />
-    <EmbeddedResource Include="BitmapViewer.resx">
+    <EmbeddedResource Include="GUI\Dialogs\BitmapViewer.resx">
       <DependentUpon>BitmapViewer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="BuildSteps.resx">
+    <EmbeddedResource Include="GUI\Dialogs\BuildSteps.resx">
       <DependentUpon>BuildSteps.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="FindAndReplaceForm.resx">
+    <EmbeddedResource Include="GUI\Dialogs\FindAndReplaceForm.resx">
       <DependentUpon>FindAndReplaceForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="IncludeDir.resx">
+    <EmbeddedResource Include="GUI\Dialogs\IncludeDir.resx">
       <DependentUpon>IncludeDir.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Editor.resx">
+    <EmbeddedResource Include="GUI\DocumentWindows\Editor.resx">
       <DependentUpon>Editor.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="GotoLine.resx">
+    <EmbeddedResource Include="GUI\Dialogs\GotoLine.resx">
       <DependentUpon>GotoLine.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="RenameForm.resx">
+    <EmbeddedResource Include="GUI\Dialogs\RenameForm.resx">
       <DependentUpon>RenameForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\FindAndReplaceForm.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="NewProject.resx">
+    <EmbeddedResource Include="GUI\Dialogs\NewProject.resx">
       <DependentUpon>NewProject.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
