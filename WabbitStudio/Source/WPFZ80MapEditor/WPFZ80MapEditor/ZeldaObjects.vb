@@ -352,17 +352,19 @@ Public Class ZDefArgGraphic
     Inherits ZDefArg
 
     Public Shared ReadOnly GraphicsProperty = DependencyProperty.Register("Graphics", GetType(IEnumerable(Of ZeldaImage)), GetType(ZDefArg))
+    Private ReadOnly _images As ObservableCollection(Of ZeldaImage)
 
-    Public Sub New(Name As String, Description As String)
+    Public Sub New(Name As String, Description As String, images As ObservableCollection(Of ZeldaImage))
         SetValue(ZDefArg.NameProperty, Name)
         SetValue(ZDefArg.DescriptionProperty, Description)
+        _images = images
 
 
-        SetValue(GraphicsProperty, Scenario.Instance.Images)
+        SetValue(GraphicsProperty, images)
     End Sub
 
     Public Overloads Function Clone() As Object
-        Dim Copy As New ZDefArgGraphic(GetValue(ZDefArg.NameProperty), GetValue(ZDefArg.DescriptionProperty))
+        Dim Copy As New ZDefArgGraphic(GetValue(ZDefArg.NameProperty), GetValue(ZDefArg.DescriptionProperty), _images)
         Copy.SetValue(ZDefArg.ValueProperty, GetValue(ZDefArg.ValueProperty))
         Return Copy
     End Function
@@ -545,7 +547,7 @@ Public Class ZDef
         SetValue(DefaultImageProperty, ObjectInstance.Image)
     End Sub
 
-    Public Sub AddArg(Name As String, Description As String, Optional IsOptional As Boolean = False)
+    Public Sub AddArg(Name As String, Description As String, images As ObservableCollection(Of ZeldaImage), Optional IsOptional As Boolean = False)
         Dim NewArg As Object
         Select Case Name
             Case "x", "y", "z", "w", "h", "d", "ac", "cc"
@@ -557,7 +559,7 @@ Public Class ZDef
             Case "type", "ztype"
                 NewArg = New ZDefArgObjectID(Name, Description)
             Case "ap"
-                NewArg = New ZDefArgGraphic(Name, Description)
+                NewArg = New ZDefArgGraphic(Name, Description, images)
             Case "g"
                 NewArg = New ZDefArgGenState(Name, Description)
             Case Else

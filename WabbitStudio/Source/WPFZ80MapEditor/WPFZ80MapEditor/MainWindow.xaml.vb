@@ -1,12 +1,24 @@
 ﻿Imports System.Windows.Media.Animation
 Imports System.Linq
-Imports System.ComponentModel
-Imports System.Collections.ObjectModel
+Imports System.IO
 Imports WPFZ80MapEditor.ValueConverters
 
 Public Class MainWindow
+    Private Property Scenario As Scenario
 
-    'Public Shared Scenario As New Scenario
+    Public Shared ReadOnly Property ZeldaFolder() As String
+        Get
+            Return "C:\Users\Chris\Documents\Wabbitcode\Projects\Zelda\"
+        End Get
+    End Property
+
+    Public Shared ReadOnly Property RomPath() As String
+        Get
+            Return "C:\Users\Chris\Documents\Asm\Roms\ti84pse.rom"
+        End Get
+    End Property
+
+
     Public Shared Instance As MainWindow
 
     Public Sub New()
@@ -14,13 +26,14 @@ Public Class MainWindow
         InitializeComponent()
     End Sub
 
-    Private Sub Window_Loaded(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles MyBase.Loaded
-        Scenario.Instance.LoadScenario("C:\users\spencer\desktop\zelda\hill.asm")
-        DataContext = Scenario.Instance
+    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs) Handles MyBase.Loaded
+        Scenario = Scenario.Instance
+        Scenario.LoadScenario(Path.Combine(ZeldaFolder, "hill.asm"))
+        DataContext = Scenario
     End Sub
 
     Private Sub Background_MouseWheel(sender As Object, e As MouseWheelEventArgs) Handles Background.MouseWheel
-        Dim DefaultZoomFactor = 1.4
+        Const DefaultZoomFactor As Double = 1.4
         Dim zoomFactor = DefaultZoomFactor
 
         Dim physicalPoint As Point = e.GetPosition(Background)
@@ -70,7 +83,7 @@ Public Class MainWindow
     End Sub
 
     Private Sub Background_Click(sender As Object, e As MouseButtonEventArgs) Handles Background.MouseLeftButtonUp
-        Scenario.Instance.ActiveLayer.DeselectAll()
+        Scenario.ActiveLayer.DeselectAll()
     End Sub
 
     Private Sub ZoomAnimationEnd(sender As Object, e As EventArgs)
@@ -150,7 +163,8 @@ Public Class MainWindow
         CurrentZoomLevelItem.Height = 0
     End Sub
 
-    Private Sub LayerRadioButton_Checked(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles RadioMapSet.Checked, RadioMapView.Checked, RadioObjectLayer.Checked, RadioMiscLayer.Checked, RadioEnemyLayer.Checked
+    Private Sub LayerRadioButton_Checked(sender As Object, e As RoutedEventArgs) _
+        Handles RadioMapSet.Checked, RadioMapView.Checked, RadioObjectLayer.Checked, RadioMiscLayer.Checked, RadioEnemyLayer.Checked
         If Not LayerContainer Is Nothing Then
             Dim ActivateLayer = Sub(t As Type, rb As RadioButton)
                                     Dim AllLayers = (From s As MapContainer In LayerContainer.Children
@@ -167,15 +181,15 @@ Public Class MainWindow
             ActivateLayer(GetType(MiscLayer), RadioMiscLayer)
 
             If RadioMapSet.IsChecked Then
-                Scenario.Instance.ActiveLayerType = GetType(MapSet)
+                Scenario.ActiveLayerType = GetType(MapSet)
             ElseIf RadioMapView.IsChecked Then
-                Scenario.Instance.ActiveLayerType = GetType(MapView)
+                Scenario.ActiveLayerType = GetType(MapView)
             ElseIf RadioObjectLayer.IsChecked Then
-                Scenario.Instance.ActiveLayerType = GetType(ObjectLayer)
+                Scenario.ActiveLayerType = GetType(ObjectLayer)
             ElseIf RadioMiscLayer.IsChecked Then
-                Scenario.Instance.ActiveLayerType = GetType(MiscLayer)
+                Scenario.ActiveLayerType = GetType(MiscLayer)
             ElseIf RadioEnemyLayer.IsChecked Then
-                Scenario.Instance.ActiveLayerType = GetType(EnemyLayer)
+                Scenario.ActiveLayerType = GetType(EnemyLayer)
             End If
         End If
     End Sub
@@ -184,18 +198,18 @@ Public Class MainWindow
         Dim x = Grid.GetColumn(MapSet.CurrentlySelected)
         Dim y = Grid.GetRow(MapSet.CurrentlySelected)
 
-        Dim MapData As New MapData(0)
+        Dim MapData As New MapData(Scenario, 0)
 
-        Scenario.Instance.AddMap(x, y, MapData)
+        Scenario.AddMap(x, y, MapData)
 
     End Sub
 
     Private Sub MenuItem1_Click(sender As Object, e As RoutedEventArgs) Handles MenuItem1.Click
-        Scenario.Instance.SaveScenario()
+        Scenario.SaveScenario()
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As RoutedEventArgs) Handles Button1.Click
-        Scenario.Instance.SaveScenario()
+        Scenario.SaveScenario()
     End Sub
 
     Private Sub AddColumnLeft_Click(sender As Object, e As RoutedEventArgs) Handles AddColumnLeft.Click
@@ -204,7 +218,7 @@ Public Class MainWindow
             Grid.SetColumn(Child, Grid.GetColumn(Child) + 1)
         Next
         For i = 0 To LayerContainer.RowDefinitions.Count - 1
-            Scenario.Instance.AddMap(0, i, Nothing)
+            Scenario.AddMap(0, i, Nothing)
         Next
     End Sub
 
@@ -223,7 +237,7 @@ Public Class MainWindow
     Private Sub AddColumnRight_Click(sender As Object, e As RoutedEventArgs) Handles AddColumnRight.Click
         LayerContainer.AddRightColumn()
         For i = 0 To LayerContainer.RowDefinitions.Count - 1
-            Scenario.Instance.AddMap(LayerContainer.ColumnDefinitions.Count - 1, i, Nothing)
+            Scenario.AddMap(LayerContainer.ColumnDefinitions.Count - 1, i, Nothing)
         Next
     End Sub
 
@@ -233,14 +247,14 @@ Public Class MainWindow
             Grid.SetRow(Child, Grid.GetRow(Child) + 1)
         Next
         For i = 0 To LayerContainer.ColumnDefinitions.Count - 1
-            Scenario.Instance.AddMap(i, 0, Nothing)
+            Scenario.AddMap(i, 0, Nothing)
         Next
     End Sub
 
     Private Sub AddRowBottom_Click(sender As Object, e As RoutedEventArgs) Handles AddRowBottom.Click
         LayerContainer.AddBottomRow()
         For i = 0 To LayerContainer.ColumnDefinitions.Count - 1
-            Scenario.Instance.AddMap(i, LayerContainer.RowDefinitions.Count - 1, Nothing)
+            Scenario.AddMap(i, LayerContainer.RowDefinitions.Count - 1, Nothing)
         Next
     End Sub
 
@@ -258,6 +272,7 @@ Public Class MainWindow
 
     Private Sub TestButton_Click(sender As Object, e As RoutedEventArgs) Handles TestButton.Click
         Dim GameWindow As New GameWindow()
+        GameWindow.Scenario = Scenario
         GameWindow.Show()
     End Sub
 End Class

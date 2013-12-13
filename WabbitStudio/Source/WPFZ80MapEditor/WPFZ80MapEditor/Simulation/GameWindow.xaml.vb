@@ -8,8 +8,11 @@ Public Class GameWindow
 
     Public Model As GameModel
 
-    Private Calc As New Wabbitemu
-    Private Asm As New Z80Assembler
+    Private ReadOnly _Calc As New Wabbitemu
+    Private ReadOnly _Asm As New Z80Assembler
+
+    Public Property Scenario() As Scenario
+
 
     Private Sub LaunchApp(Name As String)
         Const ProgToEdit = &H84BF
@@ -17,45 +20,45 @@ Public Class GameWindow
 
         Dim AppCode() As Byte = {&HEF, &HD3, &H48, &HEF, &H51, &H4C}
         Dim NameBytes = System.Text.Encoding.ASCII.GetBytes(Name)
-        Calc.Break()
-        Calc.Memory.Write(ProgToEdit, NameBytes)
-        Calc.Memory.Write(RamCode, AppCode)
-        Calc.CPU.Halt = False
-        Calc.CPU.PC = RamCode
-        Calc.Run()
+        _Calc.Break()
+        _Calc.Memory.Write(ProgToEdit, NameBytes)
+        _Calc.Memory.Write(RamCode, AppCode)
+        _Calc.CPU.Halt = False
+        _Calc.CPU.PC = RamCode
+        _Calc.Run()
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
-        Asm.CurrentDirectory = "C:\Users\Chris\Documents\Wabbitcode\Projects\Zelda"
+        _Asm.CurrentDirectory = MainWindow.ZeldaFolder
 
-        Asm.InputFile = "zelda_all.asm"
-        Asm.OutputFile = "C:\Users\Chris\Documents\Wabbitcode\Projects\Zelda\zelda.8xk"
+        _Asm.InputFile = "zelda_all.asm"
+        _Asm.OutputFile = IO.Path.Combine(MainWindow.ZeldaFolder, "zelda.8xk")
 
-        Asm.IncludeDirectories.Add("defaults")
-        Asm.IncludeDirectories.Add("images")
-        Asm.IncludeDirectories.Add("maps")
-        Asm.IncludeDirectories.Add("scripts")
+        _Asm.IncludeDirectories.Add("defaults")
+        _Asm.IncludeDirectories.Add("images")
+        _Asm.IncludeDirectories.Add("maps")
+        _Asm.IncludeDirectories.Add("scripts")
 
-        Asm.Assemble()
-        Debug.Write(Asm.StdOut.ReadAll())
+        _Asm.Assemble()
+        Debug.Write(_Asm.StdOut.ReadAll())
 
-        Calc.LoadFile("C:\Users\Chris\Documents\Asm\Roms\ti84pse.rom")
-        Calc.LoadFile(Asm.OutputFile)
+        _Calc.LoadFile(MainWindow.RomPath)
+        _Calc.LoadFile(_Asm.OutputFile)
 
-        Calc.Run()
+        _Calc.Run()
 
-        Calc.Keypad.PressKey(Calc_Key.KEY_ON)
+        _Calc.Keypad.PressKey(Calc_Key.KEY_ON)
         Thread.Sleep(200)
-        Calc.Keypad.ReleaseKey(Calc_Key.KEY_ON)
+        _Calc.Keypad.ReleaseKey(Calc_Key.KEY_ON)
 
         LaunchApp("Zelda   ")
 
-        Model = New GameModel(Asm, Calc)
+        Model = New GameModel(Scenario, _Asm, _Calc)
 
         For Each Define As String In SPASMHelper.Assembler.Defines
             Dim DefineKey As String = Define.ToUpper()
             If DefineKey Like "*_GFX?" Or DefineKey Like "*_GFX" Then
-                Dim Address As UShort = Asm.Labels(Define.ToUpper()) And &HFFFF
+                Dim Address As UShort = _Asm.Labels(Define.ToUpper()) And &HFFFF
                 If Not Model.ImageMap.ContainsKey(Address) Then
                     Model.ImageMap.Add(Address, SPASMHelper.Assembler.Defines(Define))
                 End If
@@ -64,25 +67,25 @@ Public Class GameWindow
 
 
         Dim ZeldaApp As TIApplication = Nothing
-        For Each App As TIApplication In Calc.Apps
+        For Each App As TIApplication In _Calc.Apps
             If App.Name Like "Zelda*" Then
                 ZeldaApp = App
                 Exit For
             End If
         Next
 
-        Dim Page As Byte = Asm.Labels("SORT_DONE") / &H10000
+        Dim Page As Byte = _Asm.Labels("SORT_DONE") / &H10000
 
-        Calc.Break()
+        _Calc.Break()
 
         Dim SortDone As New CalcAddress
-        SortDone.Initialize(Calc.Memory.Flash(ZeldaApp.Page.Index - Page), Asm.Labels("SORT_DONE") And &HFFFF)
-        Calc.Breakpoints.Add(SortDone)
+        SortDone.Initialize(_Calc.Memory.Flash(ZeldaApp.Page.Index - Page), _Asm.Labels("SORT_DONE") And &HFFFF)
+        _Calc.Breakpoints.Add(SortDone)
 
-        AddHandler Calc.Breakpoint, AddressOf Calc_Breakpoint
+        AddHandler _Calc.Breakpoint, AddressOf Calc_Breakpoint
 
-        Calc.Run()
-        Calc.Visible = True
+        _Calc.Run()
+        _Calc.Visible = True
 
         RenderOptions.SetBitmapScalingMode(Me, BitmapScalingMode.NearestNeighbor)
 
@@ -90,7 +93,7 @@ Public Class GameWindow
     End Sub
 
     Private Sub Calc_Breakpoint(Calc As Wabbitemu, Breakpoint As IBreakpoint)
-        Model.UpdateModel(Asm, Calc)
+        Model.UpdateModel(_Asm, Calc)
         Calc.Step()
         Calc.Run()
     End Sub
@@ -99,13 +102,13 @@ Public Class GameWindow
         If e.Key = Key.LeftAlt Then
             Exit Sub
         End If
-        Calc.Keypad.PressVirtKey(KeyInterop.VirtualKeyFromKey(e.Key))
+        _Calc.Keypad.PressVirtKey(KeyInterop.VirtualKeyFromKey(e.Key))
     End Sub
 
     Private Sub Window_KeyUp(sender As Object, e As KeyEventArgs)
         If e.Key = Key.LeftAlt Then
             Exit Sub
         End If
-        Calc.Keypad.ReleaseVirtKey(KeyInterop.VirtualKeyFromKey(e.Key))
+        _Calc.Keypad.ReleaseVirtKey(KeyInterop.VirtualKeyFromKey(e.Key))
     End Sub
 End Class

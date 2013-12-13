@@ -21,7 +21,7 @@ Partial Class Scenario
             Dim Def As New ZDef(Groups("Name").Value, Groups("MacroName").Value, Groups("Description").Value, InstanceType)
 
             For i = 0 To Groups("ArgName").Captures.Count - 1
-                Def.AddArg(Groups("ArgName").Captures(i).Value, Groups("ArgDesc").Captures(i).Value)
+                Def.AddArg(Groups("ArgName").Captures(i).Value, Groups("ArgDesc").Captures(i).Value, Images)
             Next
 
             Dictionary.Add(Def.Macro, Def)

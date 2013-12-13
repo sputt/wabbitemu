@@ -52,25 +52,6 @@ Namespace ValueConverters
         End Function
     End Class
 
-    Public Class TileIndexImageConverter
-        Implements IValueConverter
-
-        Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
-            Dim TileIndex = value
-            If TileIndex < 0 Then TileIndex = 0
-            Try
-                Return Scenario.Instance.Tilesets(0)(TileIndex Mod 128)
-            Catch e As Exception
-                Debug.WriteLine("TileIndex: " & value)
-                Return Scenario.Instance.Tilesets(0)(0)
-            End Try
-        End Function
-
-        Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
-            Return Nothing
-        End Function
-    End Class
-
     Public Class YConverter
         Implements IMultiValueConverter
 

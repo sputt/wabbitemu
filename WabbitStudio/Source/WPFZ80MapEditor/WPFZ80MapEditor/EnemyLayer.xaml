@@ -16,7 +16,6 @@
         <ControlTemplate x:Key="NoScroll">
             <ItemsPresenter></ItemsPresenter>
         </ControlTemplate>
-        <localconverters:ImageIndexConverter x:Key="convertImageIndex"/>
         <localconverters:YConverter x:Key="YConverter"/>
         <localconverters:XConverter x:Key="XConverter"/>
         <localconverters:ZConverter x:Key="ZConverter"/>
@@ -91,7 +90,7 @@
             </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Image Source="{Binding Path=Image,Converter={StaticResource convertImageIndex}}"
+                    <Image Source="{Binding Path=Image, ElementName=ZObject}"
                            MouseLeftButtonDown="Object_MouseLeftButtonDown" 
                    MouseLeftButtonUp="Object_MouseLeftButtonUp"
                    MouseMove="Object_MouseMove"/>

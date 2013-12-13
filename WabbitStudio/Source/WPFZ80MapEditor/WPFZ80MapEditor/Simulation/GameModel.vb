@@ -55,7 +55,7 @@ Public Class GameModel
     Private FrameProcessThread As New Thread(AddressOf FrameProcess)
     Private ProcessEvent As New AutoResetEvent(False)
 
-    Public Sub New(Asm As Z80Assembler, Calc As IWabbitemu)
+    Public Sub New(scenario As Scenario, Asm As Z80Assembler, Calc As IWabbitemu)
         DrawQueueAddr = Asm.Labels("DRAW_QUEUE")
         DrawEntrySize = Asm.Labels("DRAW_ENTRY_WIDTH")
         ScreenPosAddr = Asm.Labels("SCREEN_XC")
@@ -63,7 +63,7 @@ Public Class GameModel
         MapDataAddr = Asm.Labels("MAP_DATA")
         Memory = Calc.Memory
 
-        Map = New MapData(0)
+        Map = New MapData(scenario, 0)
 
         DrawEntries = New ObservableCollection(Of ZDrawEntry)
         FrameProcessThread.Start()

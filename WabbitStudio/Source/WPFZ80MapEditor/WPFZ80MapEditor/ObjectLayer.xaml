@@ -24,7 +24,6 @@
         <local:Scenario x:Key="Scenario">
         </local:Scenario>
 
-        <localconverters:ImageIndexConverter x:Key="convertImageIndex"/>
         <localconverters:YConverter x:Key="YConverter"/>
         <localconverters:XConverter x:Key="XConverter"/>
         <localconverters:ZConverter x:Key="ZConverter"/>
@@ -33,10 +32,8 @@
             <Image Name="TemplatedZObject" 
                    MouseLeftButtonDown="Object_MouseLeftButtonDown" 
                    MouseLeftButtonUp="Object_MouseLeftButtonUp"
-                   MouseMove="Object_MouseMove">
-                <Image.Source>
-                    <Binding Path="Image" Converter="{StaticResource convertImageIndex}"/>
-                </Image.Source>
+                   MouseMove="Object_MouseMove"
+                   Source="{Binding Path=ObjectImage, ElementName=ObjectLayer}">
                 <Image.ContextMenu>
                     <ContextMenu HasDropShadow="True">
                         <MenuItem Command="ApplicationCommands.Properties"/>

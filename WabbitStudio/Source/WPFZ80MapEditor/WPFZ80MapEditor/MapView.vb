@@ -70,36 +70,38 @@ Public Class MapView
 
         For x = 0 To LayerContainer.MapSize.Width - 1
             For y = 0 To LayerContainer.MapSize.Height - 1
-                Dim Tile As New XTile()
+                Dim tile As New XTile()
+
                 'Dim Tile As New Tile(InEditor)
 
                 Dim Index As Integer = (y * LayerContainer.MapSize.Width + x)
 
                 Dim TileBinding As New Binding("TileData[" & Index & "]")
                 TileBinding.Mode = BindingMode.TwoWay
-                Tile.SetBinding(XTile.IndexProperty, TileBinding)
+                tile.SetBinding(XTile.IndexProperty, TileBinding)
 
                 'Tile.SetBinding(Tile.TilesetProperty, New Binding("Tileset"))
 
                 If MapData IsNot Nothing Then
+                    tile.Scenario = MapData.Scenario
                     For Each Anim In MapData.ZAnims
                         If Anim.X = x * 16 And Anim.Y = y * 16 Then
-                            Tile.SetValue(XTile.IsAnimatedProperty, True)
-                            Tile.SetValue(XTile.AnimDefProperty, Anim.Definition)
+                            tile.SetValue(XTile.IsAnimatedProperty, True)
+                            tile.SetValue(XTile.AnimDefProperty, Anim.Definition)
 
                             Dim Story As Storyboard = New AnimDefStoryboardConverter().Convert1(Anim.Definition, GetType(Storyboard), Nothing, Nothing)
-                            Story.Begin(Tile)
+                            Story.Begin(tile)
                             Exit For
                         End If
                     Next
                 End If
 
                 If InEditor Then
-                    AddHandler Tile.MouseDown, AddressOf HandleMouseUp
+                    AddHandler tile.MouseDown, AddressOf HandleMouseUp
                 End If
-                Children.Add(Tile)
-                Grid.SetColumn(Tile, x)
-                Grid.SetRow(Tile, y)
+                Children.Add(tile)
+                Grid.SetColumn(tile, x)
+                Grid.SetRow(tile, y)
             Next
         Next
         CacheMode = New BitmapCache()

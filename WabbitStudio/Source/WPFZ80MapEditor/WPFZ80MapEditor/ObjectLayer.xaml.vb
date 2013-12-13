@@ -1,4 +1,6 @@
-﻿Public Class ObjectLayer
+﻿Imports System.ComponentModel
+
+Public Class ObjectLayer
     Implements IMapLayer
 
     Public Shared ReadOnly LeftProperty As DependencyProperty =
@@ -6,6 +8,12 @@
 
     Public Shared ReadOnly TopProperty As DependencyProperty =
         DependencyProperty.RegisterAttached("Top", GetType(Double), GetType(ObjectLayer), New UIPropertyMetadata(CDbl(-1)))
+
+    Public Shared ReadOnly ObjectImageProperty As DependencyProperty =
+        DependencyProperty.RegisterAttached("ObjectImage", GetType(ImageSource), GetType(ObjectLayer),
+                                            New PropertyMetadata(Nothing, Nothing, AddressOf OnObjectImagePropertyCoerce))
+
+    Public Property Scenario As Scenario
 
     Public Shared Sub SetLeft(d As DependencyObject, value As Double)
         d.SetValue(LeftProperty, value)
@@ -35,6 +43,12 @@
         Width = LayerContainer.TileSize.Width * LayerContainer.MapSize.Width
     End Sub
 
+    Shared Sub New()
+        Dim imagePropertyDescriptor = DependencyPropertyDescriptor.FromName("Image", GetType(ZObject), GetType(ZObject))
+        imagePropertyDescriptor.DependencyProperty.OverrideMetadata(
+                GetType(ZObject), New PropertyMetadata(-1, AddressOf OnImagePropertyChanged))
+    End Sub
+
     Public WriteOnly Property Active As Boolean Implements IMapLayer.Active
         Set(value As Boolean)
             _IsActive = value
@@ -47,6 +61,17 @@
         ObjectItemsControl.SelectedItems.Clear()
     End Sub
 
+    Private Shared Function OnObjectImagePropertyCoerce(d As DependencyObject, basevalue As Object) As Object
+        Dim zObject As ZObject = d
+        Dim index = zObject.Image
+        ' TODO: figure out how to get scenario here
+        Return Nothing 'basevalue.Scenario.Images(index).Image
+    End Function
+
+    Private Shared Sub OnImagePropertyChanged(d As DependencyObject, basevalue As Object)
+        Dim zObject As ZObject = d
+        zObject.CoerceValue(ObjectImageProperty)
+    End Sub
 
 
     Private _StartDrag As New Point

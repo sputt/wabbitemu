@@ -7,13 +7,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:s="clr-namespace:System;assembly=mscorlib"
              xmlns:local="clr-namespace:WPFZ80MapEditor"
-             xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
              mc:Ignorable="d" 
              d:DesignHeight="429" d:DesignWidth="165" xmlns:my="clr-namespace:WPFZ80MapEditor">
     <UserControl.Resources>
         <s:Double x:Key="TilesZoomLevel">24.0</s:Double>
         <Color x:Key="InactiveTilesColor">Transparent</Color>
-        <localconverters:TileIndexImageConverter x:Key="TileConverter"/>
     </UserControl.Resources>
     <DockPanel>
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="0,5" VerticalAlignment="Top">

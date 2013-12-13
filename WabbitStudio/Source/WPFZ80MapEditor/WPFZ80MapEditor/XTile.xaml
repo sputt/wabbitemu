@@ -3,13 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:WPFZ80MapEditor"
              xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
-             xmlns:sys="clr-namespace:System;assembly=System"
              mc:Ignorable="d"
              d:DesignHeight="16" d:DesignWidth="16" x:Name="Tile">
     <UserControl.Resources>
-        <localconverters:TileIndexImageConverter x:Key="TileConverter"/>
         <localconverters:AnimDefStoryboardConverter x:Key="AnimConverter"/>
         <Storyboard x:Key="BottomLeftTorch">
             <DoubleAnimationUsingKeyFrames
@@ -26,7 +23,7 @@
     <UserControl.Template>
         <ControlTemplate>
             <Grid>
-                <Image Name="TileImage" Canvas.ZIndex="0" Source="{Binding Index, ElementName=Tile, Converter={StaticResource TileConverter}}">
+                <Image Name="TileImage" Canvas.ZIndex="0" Source="{Binding Path=TileImage, ElementName=Tile}">
                     <Image.Triggers>
                     </Image.Triggers>
                 </Image>

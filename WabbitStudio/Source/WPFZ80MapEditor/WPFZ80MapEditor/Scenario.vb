@@ -111,6 +111,7 @@ Public Class Scenario
         Panel.SetZIndex(EnemyLayer, 4)
 
         Dim ObjLayer As New ObjectLayer
+        ObjLayer.Scenario = Me
         Container.Children.Add(ObjLayer)
         Grid.SetColumn(ObjLayer, x)
         Grid.SetRow(ObjLayer, y)
@@ -152,8 +153,8 @@ Public Class Scenario
 
     Public Sub LoadScenario(FileName As String)
         Tilesets = New ObservableCollection(Of Tileset)()
-        Tilesets.Add(New Tileset("dungeon", "C:\users\spencer\desktop\zelda\images\dungeon.bmp"))
-        Tilesets.Add(New Tileset("town", "C:\users\spencer\desktop\zelda\images\town.bmp"))
+        Tilesets.Add(New Tileset("dungeon", IO.Path.Combine(MainWindow.ZeldaFolder, "images\dungeon.bmp")))
+        Tilesets.Add(New Tileset("town", IO.Path.Combine(MainWindow.ZeldaFolder, "images\town.bmp")))
 
         Dim Path As String = Directory.GetParent(FileName).FullName
         SPASMHelper.Initialize(Path)
@@ -183,7 +184,7 @@ Public Class Scenario
                 MaxY = Math.Max(y, MaxY)
                 Dim Tileset = SPASMHelper.Labels(Label & "_TILESET")
 
-                Dim MapData = New MapData(Data.Skip(SPASMHelper.Labels(Label)), Tileset)
+                Dim MapData = New MapData(Data.Skip(SPASMHelper.Labels(Label)), Me, Tileset)
 
                 Dim Rx As New Regex(
                     "^" & Label & "_DEFAULTS:" & vbCrLf & _

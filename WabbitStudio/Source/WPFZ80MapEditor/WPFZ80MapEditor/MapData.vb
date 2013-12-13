@@ -34,6 +34,15 @@ Public Class MapData
     Public Shared ReadOnly ScenarioProperty As DependencyProperty =
         DependencyProperty.Register("Scenario", GetType(Scenario), GetType(MapData))
 
+    Public Property Scenario As Scenario
+        Get
+            Return GetValue(ScenarioProperty)
+        End Get
+        Private Set(value As Scenario)
+            SetValue(ScenarioProperty, value)
+        End Set
+    End Property
+
     Public Property TileData As ObservableCollection(Of Byte)
         Get
             Return GetValue(TileDataProperty)
@@ -80,7 +89,7 @@ Public Class MapData
     End Property
 
     Public Sub AddFromDef(Def As ZDef, X As Byte, Y As Byte)
-        If Scenario.Instance.ObjectDefs.ContainsValue(Def) Then
+        If Scenario.ObjectDefs.ContainsValue(Def) Then
             Dim ObjTest As New ZObject(Def, X, Y)
 
             X = X - ObjTest.W / 2
@@ -88,7 +97,7 @@ Public Class MapData
 
             Dim Obj As New ZObject(Def, X, Y)
             ZObjects.Add(Obj)
-        ElseIf Scenario.Instance.EnemyDefs.ContainsValue(Def) Then
+        ElseIf Scenario.EnemyDefs.ContainsValue(Def) Then
             Dim ObjTest As New ZEnemy(Def, X, Y)
 
             X = X - ObjTest.W / 2
@@ -96,7 +105,7 @@ Public Class MapData
 
             Dim Obj As New ZEnemy(Def, X, Y)
             ZEnemies.Add(Obj)
-        ElseIf Scenario.Instance.MiscDefs.ContainsValue(Def) Then
+        ElseIf Scenario.MiscDefs.ContainsValue(Def) Then
             Dim Misc As New ZMisc(Def, X, Y, 16, 16)
 
             ZMisc.Add(Misc)
@@ -122,7 +131,8 @@ Public Class MapData
     '    End Set
     'End Property
 
-    Private Sub Initialize(NewTileset As Integer)
+    Private Sub Initialize(newScenario As Scenario, NewTileset As Integer)
+        Scenario = newScenario
         Tileset = NewTileset
         ZAnims = New ObservableCollection(Of ZAnim)
         ZObjects = New ObservableCollection(Of ZObject)
@@ -131,22 +141,22 @@ Public Class MapData
     End Sub
 
 
-    Public Sub New(FileName As String, NewTileset As Integer)
+    Public Sub New(FileName As String, newScenario As Scenario, newTileset As Integer)
         Dim FullPath = System.IO.Path.GetFullPath(FileName)
         Dim CompMapData = SPASMHelper.AssembleFile(FullPath)
         TileData = New ObservableCollection(Of Byte)(MapCompressor.Decompress(CompMapData))
 
-        Initialize(NewTileset)
+        Initialize(newScenario, NewTileset)
     End Sub
 
-    Public Sub New(Data As IEnumerable(Of Byte), NewTileset As Integer)
+    Public Sub New(Data As IEnumerable(Of Byte), newScenario As Scenario, newTileset As Integer)
         TileData = New ObservableCollection(Of Byte)(MapCompressor.Decompress(Data))
-        Initialize(NewTileset)
+        Initialize(newScenario, NewTileset)
     End Sub
 
-    Public Sub New(NewTileset As Integer)
+    Public Sub New(newScenario As Scenario, newTileset As Integer)
         TileData = New ObservableCollection(Of Byte)(Enumerable.Repeat(CByte(0), LayerContainer.MapSize.Width * LayerContainer.MapSize.Height))
-        Initialize(NewTileset)
+        Initialize(newScenario, NewTileset)
     End Sub
 
     Public Event PropertyChanged(sender As Object, e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged

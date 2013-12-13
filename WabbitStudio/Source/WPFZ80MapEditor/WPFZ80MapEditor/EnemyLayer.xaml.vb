@@ -1,6 +1,12 @@
 ﻿Public Class EnemyLayer
     Implements IMapLayer
 
+    Public Shared ReadOnly ImageProperty As DependencyProperty =
+        DependencyProperty.RegisterAttached("Image", GetType(ImageSource), GetType(ObjectLayer),
+                                            New PropertyMetadata(Nothing, AddressOf ImagePropertyChanged))
+
+    Public Property Scenario As Scenario
+
     Private _Active As Boolean
 
     Public Sub New()
@@ -11,6 +17,12 @@
         ' Add any initialization after the InitializeComponent() call.
         Height = LayerContainer.TileSize.Height * LayerContainer.MapSize.Height
         Width = LayerContainer.TileSize.Width * LayerContainer.MapSize.Width
+    End Sub
+
+    Private Shared Sub ImagePropertyChanged(d As DependencyObject, e As DependencyPropertyChangedEventArgs)
+        Dim objectLayer As ObjectLayer = d
+        'TODO: replacement for ImageIndexConverter
+        'Return objectLayer.Scenario.Images(Index).Image
     End Sub
 
     Public WriteOnly Property Active As Boolean Implements IMapLayer.Active
