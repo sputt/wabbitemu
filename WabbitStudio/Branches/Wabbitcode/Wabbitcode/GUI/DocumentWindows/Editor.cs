@@ -797,7 +797,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 	        FindAndReplaceForm.Instance.ShowFor(owner, editorBox, mode);
 	    }
 
-        protected override void OpenFile(string filename)
+        public override void OpenFile(string filename)
         {
             editorBox.LoadFile(filename, true, true);
             UpdateTabText();

@@ -94,7 +94,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         protected override bool DocumentChanged { get; set; }
 
-        protected override void OpenFile(string filename)
+        public override void OpenFile(string filename)
         {
             base.OpenFile(filename);
 
