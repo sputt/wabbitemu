@@ -1,6 +1,6 @@
 ﻿using Revsoft.TextEditor.Document;
 
-namespace Revsoft.Wabbitcode.Extensions
+namespace Revsoft.Wabbitcode.EditorExtensions
 {
     public class AsmFormattingStrategy : DefaultFormattingStrategy
     {

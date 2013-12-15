@@ -50,11 +50,24 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             DocumentChanged = false;
         }
 
+        protected override string GetPersistString()
+        {
+            // Add extra information into the persist string for this document
+            // so that it is available when deserialized.
+            return GetType() + ";" + FileName;
+        }
+
         public abstract void Copy();
         public abstract void Cut();
         public abstract void Paste();
         public abstract void Undo();
         public abstract void Redo();
         public abstract void SelectAll();
+
+        public virtual void PersistStringLoad(params string[] persistStrings)
+        {
+            string filename = persistStrings[1];
+            OpenFile(filename);
+        }
     }
 }

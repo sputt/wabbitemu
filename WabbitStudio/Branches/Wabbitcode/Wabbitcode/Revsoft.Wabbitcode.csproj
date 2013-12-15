@@ -582,6 +582,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EditorExtensions\AsmFormattingStrategy.cs" />
     <Compile Include="GUI\Dialogs\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -639,6 +640,9 @@
     </Compile>
     <Compile Include="EditorExtensions\CodeCompletion.cs" />
     <Compile Include="EditorExtensions\RegionFoldingStrategy.cs" />
+    <Compile Include="GUI\DocumentWindows\ImageViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="GUI\ToolBars\DebugToolBar.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -713,7 +717,6 @@
     <Compile Include="GUI\DockingWindows\StackViewer.designer.cs">
       <DependentUpon>StackViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="Extensions\AsmFormattingStrategy.cs" />
     <Compile Include="Utils\ListBoxItem.cs" />
     <Compile Include="GUI\Dialogs\Refactor.cs">
       <SubType>Form</SubType>
@@ -861,7 +864,6 @@
     <Compile Include="Services\Project\ProjectFile.cs" />
     <Compile Include="Services\Project\ProjectFolder.cs" />
     <Compile Include="Services\Parser\Reference.cs" />
-    <Compile Include="Settings.cs" />
     <Compile Include="GUI\Dialogs\IncludeDir.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -925,6 +927,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\DockingWindows\MacroManager.resx">
       <DependentUpon>MacroManager.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\DocumentWindows\ImageViewer.resx">
+      <DependentUpon>ImageViewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ToolBars\DebugToolBar.resx">
       <DependentUpon>DebugToolBar.cs</DependentUpon>

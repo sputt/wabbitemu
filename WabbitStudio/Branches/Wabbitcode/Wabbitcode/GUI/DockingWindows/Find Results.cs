@@ -29,7 +29,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			findResultsBox.Copy();
 		}
 
-		public void NewFindResults(string serachString, string projectfile)
+		public void NewFindResults(string searchString, string projectfile)
 		{
 			if (string.IsNullOrEmpty(projectfile))
 			{
@@ -38,7 +38,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
 			_numResults = 0;
 			_stringBuilder.Clear();
-			_stringBuilder.Append(string.Format("Searching for \"{0}\" in {1}\n", serachString, projectfile));
+			_stringBuilder.Append(string.Format("Searching for \"{0}\" in {1}\n", searchString, projectfile));
 		}
 
 

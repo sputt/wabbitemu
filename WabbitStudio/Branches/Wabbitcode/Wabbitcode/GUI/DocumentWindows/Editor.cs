@@ -33,7 +33,40 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 	/// </summary>
 	public partial class Editor : ITextEditor, IBookmarkable
     {
+        #region Static Members
+
         private static bool _bindingsRegistered;
+
+        internal static Editor OpenDocument(string filename)
+        {
+            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var child = dockingService.Documents.OfType<Editor>()
+                .SingleOrDefault(e => FileOperations.CompareFilePath(e.FileName, filename));
+            if (child != null)
+            {
+                child.Show();
+                return child;
+            }
+
+            Editor doc = new Editor
+            {
+                Text = Path.GetFileName(filename),
+                TabText = Path.GetFileName(filename),
+                ToolTipText = filename
+            };
+
+            doc.OpenFile(filename);
+
+            if (!Settings.Default.RecentFiles.Contains(filename))
+            {
+                Settings.Default.RecentFiles.Add(filename);
+            }
+
+            dockingService.ShowDockPanel(doc);
+            return doc;
+        }
+
+        #endregion
 
 		#region Private Memebers
 
@@ -286,9 +319,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 		{
 			// Add extra information into the persist string for this document
 			// so that it is available when deserialized.
-			return GetType() + ";" + FileName + ";" + 
+			return base.GetPersistString() + ";" +
 				   editorBox.ActiveTextAreaControl.Caret.Column + ";" +
-				   editorBox.ActiveTextAreaControl.Caret.Line;
+				   editorBox.ActiveTextAreaControl.Caret.Line + ";" +
+                   editorBox.ActiveTextAreaControl.VScrollBar.Value + ";" +
+			       editorBox.ActiveTextAreaControl.HScrollBar.Value;
 		}
 
         private void Debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
@@ -762,7 +797,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 	        FindAndReplaceForm.Instance.ShowFor(owner, editorBox, mode);
 	    }
 
-        public override void OpenFile(string filename)
+        protected override void OpenFile(string filename)
         {
             editorBox.LoadFile(filename, true, true);
             UpdateTabText();
@@ -794,6 +829,36 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
             base.SaveFile();
+        }
+
+        public override void PersistStringLoad(params string[] persistStrings)
+        {
+            base.PersistStringLoad(persistStrings);
+
+            int column;
+            int line;
+            int vScrollValue;
+            int hScrollValue;
+
+            if (int.TryParse(persistStrings[2], out column))
+            {
+                CaretColumn = column;
+            }
+
+            if (int.TryParse(persistStrings[3], out line))
+            {
+                CaretLine = line;
+            }
+
+            if (int.TryParse(persistStrings[4], out vScrollValue))
+            {
+                editorBox.ActiveTextAreaControl.VScrollBar.Value = vScrollValue;
+            }
+
+            if (int.TryParse(persistStrings[5], out hScrollValue))
+            {
+                editorBox.ActiveTextAreaControl.HScrollBar.Value = hScrollValue;
+            }
         }
 
         #region IUndoable
