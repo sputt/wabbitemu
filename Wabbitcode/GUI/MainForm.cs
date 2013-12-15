@@ -86,8 +86,8 @@ namespace Revsoft.Wabbitcode.GUI
 	        }
 
             string[] parsedStrings = persistString.Split(';');
-	        string type = parsedStrings[0];
-            if (parsedStrings.Length != 4 || type != typeof(Editor).ToString())
+	        Type type = Type.GetType(parsedStrings[0]);
+            if (parsedStrings.Length < 3 || type == null || type.IsAssignableFrom(typeof(AbstractFileEditor)))
             {
                 return null;
             }
@@ -98,18 +98,15 @@ namespace Revsoft.Wabbitcode.GUI
                 return null;
             }
 
-	        int column = int.Parse(parsedStrings[2]);
-            int line = int.Parse(parsedStrings[3]);
-
             new OpenFileAction(fileName).Execute();
-	        Editor doc = _dockingService.ActiveDocument as Editor;
+	        var doc = _dockingService.Documents.OfType<AbstractFileEditor>()
+                .FirstOrDefault(d => FileOperations.CompareFilePath(fileName, d.FileName));
 	        if (doc == null)
 	        {
 	            return null;
 	        }
 
-	        doc.CaretLine = line;
-	        doc.CaretColumn = column;
+	        doc.PersistStringLoad(parsedStrings);
             return doc;
         }
 
@@ -198,49 +195,14 @@ namespace Revsoft.Wabbitcode.GUI
             }
         }
 
-        private void RegisterFileTypes()
+        private static void RegisterFileTypes()
         {
-            FileTypeMethodFactory.RegisterFileType(".asm", path => OpenDocument(path) != null);
-            FileTypeMethodFactory.RegisterFileType(".z80", path => OpenDocument(path) != null);
-            FileTypeMethodFactory.RegisterFileType(".inc", path => OpenDocument(path) != null);
-            FileTypeMethodFactory.RegisterDefaultHandler(path => OpenDocument(path) != null);
-        }
-
-        private Editor OpenDocument(string filename)
-        {
-            var child = _dockingService.Documents.OfType<Editor>()
-                .SingleOrDefault(e => FileOperations.CompareFilePath(e.FileName, filename));
-            if (child != null)
-            {
-                child.Show();
-                return child;
-            }
-
-            Editor doc = new Editor();
-            OpenDocument(doc, filename);
-            return doc;
-        }
-
-        private void OpenDocument(AbstractFileEditor doc, string filename)
-        {
-            doc.Text = Path.GetFileName(filename);
-            doc.TabText = Path.GetFileName(filename);
-            doc.ToolTipText = filename;
-            doc.OpenFile(filename);
-            AddRecentFile(filename);
-            _dockingService.ShowDockPanel(doc);
-        }
-
-        /// <summary>
-        /// Adds a string to the recent file list
-        /// </summary>
-        /// <param name="filename">Full path of the file to save to the list</param>
-        private static void AddRecentFile(string filename)
-        {
-            if (!Settings.Default.RecentFiles.Contains(filename))
-            {
-                Settings.Default.RecentFiles.Add(filename);
-            }
+            FileTypeMethodFactory.RegisterFileType(".asm", path => Editor.OpenDocument(path) != null);
+            FileTypeMethodFactory.RegisterFileType(".z80", path => Editor.OpenDocument(path) != null);
+            FileTypeMethodFactory.RegisterFileType(".inc", path => Editor.OpenDocument(path) != null);
+            FileTypeMethodFactory.RegisterFileType(".bmp", path => ImageViewer.OpenImage(path) != null);
+            FileTypeMethodFactory.RegisterFileType(".png", path => ImageViewer.OpenImage(path) != null);
+            FileTypeMethodFactory.RegisterDefaultHandler(path => Editor.OpenDocument(path) != null);
         }
 
         private static void HandleArgs(ICollection<string> args)

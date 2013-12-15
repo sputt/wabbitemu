@@ -176,6 +176,7 @@ namespace Revsoft.Wabbitcode.Actions
             {
                 new GotoFileAction(_location.FileName).Execute();
                 line = _location.LineNumber;
+                editor = _dockingService.ActiveDocument as ITextEditor;
             }
 
             if (editor == null)

@@ -166,7 +166,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             if (!project.IsInternal)
             {
                 IEnumerable<ProjectFile> files = project.GetProjectFiles();
-                _results.NewFindResults(findFindBox.Text, project.ProjectName);
+                _results.NewFindResults(findFilesBox.Text, project.ProjectName);
                 foreach (ProjectFile file in files)
                 {
                     if (!File.Exists(file.FileFullPath))
