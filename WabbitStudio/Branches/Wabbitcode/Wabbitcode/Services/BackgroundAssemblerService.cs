@@ -82,8 +82,8 @@ namespace Revsoft.Wabbitcode.Services
 		//			BuildError errors = item;
 		//			_mainForm.Invoke(() =>
 		//			{
-		//				AddSquiggleLine(this, errors.LineNum, underlineColor, errors.Description);
-		//				UpdateDocument(errors.LineNum);
+		//				AddSquiggleLine(this, errors.lineNumber, underlineColor, errors.Description);
+		//				UpdateDocument(errors.lineNumber);
 		//			});
 		//		}
 		//		else
@@ -99,8 +99,8 @@ namespace Revsoft.Wabbitcode.Services
 		//					BuildError errors = item;
 		//					_mainForm.Invoke(() =>
 		//					{
-		//						AddSquiggleLine(newEditor, errors.LineNum, underlineColor, errors.Description);
-		//						newEditor.UpdateDocument(errors.LineNum);
+		//						AddSquiggleLine(newEditor, errors.lineNumber, underlineColor, errors.Description);
+		//						newEditor.UpdateDocument(errors.lineNumber);
 		//					});
 		//				}
 		//			}

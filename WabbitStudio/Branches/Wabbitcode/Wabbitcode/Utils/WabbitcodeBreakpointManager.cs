@@ -1,7 +1,9 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
+using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Utils
 {
@@ -9,12 +11,12 @@ namespace Revsoft.Wabbitcode.Utils
 	{
 		#region Private Members
 
-		private static readonly List<WabbitcodeBreakpoint> _breakpoints = new List<WabbitcodeBreakpoint>();
+		private static readonly List<WabbitcodeBreakpoint> BreakList = new List<WabbitcodeBreakpoint>();
 		public static IEnumerable<WabbitcodeBreakpoint> Breakpoints
 		{
 			get
 			{
-				return _breakpoints;
+				return BreakList;
 			}
 		} 
 
@@ -31,11 +33,11 @@ namespace Revsoft.Wabbitcode.Utils
 		public static void AddBreakpoint(string fileName, int lineNumber)
 		{
 			WabbitcodeBreakpoint newBreak = new WabbitcodeBreakpoint(fileName, lineNumber);
-			if (_breakpoints.Contains(newBreak))
+			if (BreakList.Contains(newBreak))
 			{
 				return;
 			}
-			_breakpoints.Add(newBreak);
+			BreakList.Add(newBreak);
 
 		    if (OnBreakpointAdded == null)
 		    {
@@ -50,6 +52,14 @@ namespace Revsoft.Wabbitcode.Utils
                     handler(null, eventArgs);
                 }
             }
+
+		    if (!eventArgs.Cancel)
+		    {
+		        return;
+		    }
+
+		    IStatusBarService statusBarService = ServiceFactory.Instance.GetServiceInstance<IStatusBarService>();
+		    statusBarService.SetText("A breakpoint could not be set at this location");
 		}
 
 		public static void RemoveBreakpoint(string fileName, int lineNumber)
@@ -59,7 +69,7 @@ namespace Revsoft.Wabbitcode.Utils
 			{
 				return;
 			}
-			_breakpoints.Remove(newBreak);
+			BreakList.Remove(newBreak);
 
 		    if (OnBreakpointRemoved == null)
 		    {

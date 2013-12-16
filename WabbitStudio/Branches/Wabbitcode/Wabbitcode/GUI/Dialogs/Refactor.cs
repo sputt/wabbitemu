@@ -6,7 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;

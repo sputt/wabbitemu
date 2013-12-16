@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;

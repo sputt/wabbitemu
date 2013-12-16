@@ -2,7 +2,7 @@
 
 namespace Revsoft.Wabbitcode.EditorExtensions
 {
-    public class AsmFormattingStrategy : DefaultFormattingStrategy
+    internal class AsmFormattingStrategy : DefaultFormattingStrategy
     {
         public override void FormatLine(TextEditor.TextArea textArea, int line, int cursorOffset, char ch)
         {

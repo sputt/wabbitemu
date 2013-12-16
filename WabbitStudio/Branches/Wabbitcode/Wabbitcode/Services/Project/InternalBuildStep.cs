@@ -145,7 +145,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			{
 				case BuildStepType.All:
                     AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
-                        project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.Symtable | AssemblyFlags.List);
+                        project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.SymbolTable | AssemblyFlags.List);
 			        outputString = assembler.Assemble();
 			        output = new AssemblerOutput(outputString, outputString.Contains("error"));
 					project.BuildSystem.ProjectOutput = _outputFile;
@@ -162,7 +162,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 					break;
 				case BuildStepType.SymbolTable:
 					AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
-                        project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.Symtable);
+                        project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.SymbolTable);
 			        outputString = assembler.Assemble();
 			        output = new AssemblerOutput(outputString, outputString.Contains("error"));
 					project.BuildSystem.ProjectOutput = _outputFile;

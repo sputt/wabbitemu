@@ -94,11 +94,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         protected override bool DocumentChanged { get; set; }
 
-        public override void OpenFile(string filename)
+        public override void OpenFile(string fileName)
         {
-            base.OpenFile(filename);
+            base.OpenFile(fileName);
 
-            _originalImage = new Bitmap(filename);
+            _originalImage = new Bitmap(fileName);
             if ((_originalImage.Size.Width < Size.Width/4) || 
                 (_originalImage.Size.Height < Size.Height/4))
             {

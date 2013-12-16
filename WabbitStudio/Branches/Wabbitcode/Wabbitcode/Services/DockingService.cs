@@ -97,6 +97,11 @@ namespace Revsoft.Wabbitcode.Services
 
         public void RegisterDockingWindow(ToolWindow dockingWindow)
         {
+            if (dockingWindow == null)
+            {
+                throw new ArgumentNullException("dockingWindow");
+            }
+
             if (_registeredDockingWindows.ContainsKey(dockingWindow.WindowName))
             {
                 throw new ArgumentException("This docking window name is already registered");
@@ -150,7 +155,7 @@ namespace Revsoft.Wabbitcode.Services
 
         public void ShowDockPanel(DockContent panel, IDockContent beforeContent)
         {
-            if (panel == null)
+            if (panel == null || beforeContent == null)
             {
                 return;
             }
@@ -160,7 +165,7 @@ namespace Revsoft.Wabbitcode.Services
 
 	    public void ShowDockPanel(DockContent panel, IDockContent beforeContent, DockAlignment alignment)
 	    {
-            if (panel == null)
+            if (panel == null || beforeContent == null)
             {
                 return;
             }

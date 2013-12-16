@@ -657,11 +657,11 @@
     <Compile Include="GUI\Menus\MainMenuStrip.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Interface\IBookmarkable.cs" />
-    <Compile Include="Interface\IClipboardOperation.cs" />
-    <Compile Include="Interface\ISelectable.cs" />
-    <Compile Include="Interface\ITextEditor.cs" />
-    <Compile Include="Interface\IUndoable.cs" />
+    <Compile Include="Interfaces\IBookmarkable.cs" />
+    <Compile Include="Interfaces\IClipboardOperation.cs" />
+    <Compile Include="Interfaces\ISelectable.cs" />
+    <Compile Include="Interfaces\ITextEditor.cs" />
+    <Compile Include="Interfaces\IUndoable.cs" />
     <Compile Include="GUI\ToolBars\MainToolBar.cs">
       <SubType>Component</SubType>
     </Compile>

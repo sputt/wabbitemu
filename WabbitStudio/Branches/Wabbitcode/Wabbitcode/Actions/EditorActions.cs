@@ -8,7 +8,7 @@ using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.GUI.DocumentWindows;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;

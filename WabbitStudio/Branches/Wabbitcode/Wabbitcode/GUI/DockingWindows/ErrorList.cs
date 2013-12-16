@@ -58,11 +58,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			{
 				if (error.IsWarning)
 				{
-					AddWarning(error.Description, error.File, error.LineNum.ToString(), warnToolButton.Checked);
+					AddWarning(error.Description, error.File, error.LineNumber.ToString(), warnToolButton.Checked);
 				}
 				else
 				{
-					AddError(error.Description, error.File, error.LineNum.ToString(), errorToolButton.Checked);
+					AddError(error.Description, error.File, error.LineNumber.ToString(), errorToolButton.Checked);
 				}
 			}
 
@@ -173,7 +173,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			this.Invoke(() =>
 			{
 			    ParseOutput(e.Output.ParsedErrors);
-			    if (!e.AssemblySucceeded)
+			    if (!e.Output.Succeeded)
 			    {
 			        Show();
 			    }
@@ -190,7 +190,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			this.Invoke(() =>
 			{
 			    ParseOutput(e.Output.ParsedErrors);
-                if (!e.AssemblySucceeded)
+                if (!e.Output.Succeeded)
                 {
                     Show();
                 }

@@ -1,7 +1,7 @@
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 
-namespace Revsoft.Wabbitcode.Interface
+namespace Revsoft.Wabbitcode.Interfaces
 {
     public interface ITextEditor
     {

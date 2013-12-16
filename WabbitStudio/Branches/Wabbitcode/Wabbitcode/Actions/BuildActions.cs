@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
@@ -32,7 +33,7 @@ namespace Revsoft.Wabbitcode.Actions
                 _debuggerService.EndDebugging();
             }
 
-            _statusBarService.SetText(string.Format("Building {0}", _projectService.Project.ProjectName));
+            _statusBarService.SetText(string.Format(CultureInfo.CurrentCulture, "Building {0}", _projectService.Project.ProjectName));
             _assemblerService.AssemblerProjectFinished += AssemblerService_AssemblerProjectFinished;
             Task.Factory.StartNew(() => _assemblerService.AssembleProject(_projectService.Project));
         }
@@ -40,7 +41,7 @@ namespace Revsoft.Wabbitcode.Actions
         private void AssemblerService_AssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
         {
             _assemblerService.AssemblerProjectFinished -= AssemblerService_AssemblerProjectFinished;
-            string statusText = e.AssemblySucceeded ? "Build Succeeded" : "Build Failed";
+            string statusText = e.Output.Succeeded ? "Build Succeeded" : "Build Failed";
             _statusBarService.SetText(statusText);
         }
     }

@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;

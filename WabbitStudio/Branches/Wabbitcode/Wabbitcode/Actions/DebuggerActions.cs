@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using Microsoft.Win32;
 using Revsoft.Wabbitcode.Exceptions;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Debugger;
@@ -70,7 +70,7 @@ namespace Revsoft.Wabbitcode.Actions
         private void AssemblerService_AssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
         {
             _assemblerService.AssemblerProjectFinished -= AssemblerService_AssemblerProjectFinished;
-            if (!e.AssemblySucceeded)
+            if (!e.Output.Succeeded)
             {
                 if (DockingService.ShowMessageBox(null, "There were errors assembling. Would you like to continue and try to debug?",
                     "Continue", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.No)

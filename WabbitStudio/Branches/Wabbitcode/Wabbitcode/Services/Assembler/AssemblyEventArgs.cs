@@ -8,13 +8,6 @@ namespace Revsoft.Wabbitcode.Services.Assembler
         protected AssemblyFinishEventArgs(string output, bool succeeded)
         {
             Output = new AssemblerOutput(output, succeeded);
-            AssemblySucceeded = succeeded;
-        }
-
-        public bool AssemblySucceeded
-        {
-            get;
-            private set;
         }
 
         public AssemblerOutput Output

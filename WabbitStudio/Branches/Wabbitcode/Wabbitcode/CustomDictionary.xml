@@ -7,6 +7,7 @@
       <Word>Revsoft</Word>
       <Word>Wabbitcode</Word>
       <Word>Wabbitemu</Word>
+      <Word>Utils</Word>
     </Recognized>
     <Deprecated>
       <Term PreferredAlternate=""></Term>
@@ -20,7 +21,7 @@
   </Words>
   <Acronyms>
     <CasingExceptions>
-      <Acronym></Acronym>
+      <Acronym>GUI</Acronym>
     </CasingExceptions>
   </Acronyms>
 </Dictionary>

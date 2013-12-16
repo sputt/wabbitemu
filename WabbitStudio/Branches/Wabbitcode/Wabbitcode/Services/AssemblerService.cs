@@ -1,10 +1,10 @@
-﻿using Revsoft.Wabbitcode.Services.Assembler;
+﻿using System.Text.RegularExpressions;
+using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -77,46 +77,37 @@ namespace Revsoft.Wabbitcode.Services
 
 		public CodeCountInfo CountCode(string lines)
 		{
-			int size = 0;
-			int min = 0;
-			int max = 0;
+			int size;
+			int min;
+			int max;
 			_assembler = new SpasmComAssembler();
-			string[] outputLines = null;
+			string outputLines = null;
 			if (!string.IsNullOrEmpty(lines))
 			{
 				_assembler.SetFlags(AssemblyFlags.CodeCounter | AssemblyFlags.Commandline);
-				outputLines = _assembler.Assemble(lines).Split('\n');
+				outputLines = _assembler.Assemble(lines);
 			}
 
-			if (outputLines == null)
+			if (string.IsNullOrEmpty(outputLines))
 			{
-				return new CodeCountInfo(size, min, max);
+				return new CodeCountInfo(0, 0, 0);
 			}
 
-			foreach (string line in outputLines.Where(line => !string.IsNullOrWhiteSpace(line)))
-			{
-				if (line.StartsWith("Size:"))
-				{
-					if (!int.TryParse(line.Substring(6, line.Length - 7), out size))
-					{
-						size = 0;
-					}
-				}
-				else if (line.StartsWith("Min. execution time:"))
-				{
-					if (!int.TryParse(line.Substring(20, line.Length - 21), out min))
-					{
-						min = 0;
-					}
-				}
-				else if (line.StartsWith("Max. execution time:"))
-				{
-					if (!int.TryParse(line.Substring(20, line.Length - 21), out max))
-					{
-						max = 0;
-					}
-				}
-			}
+            Match match = Regex.Match(outputLines, @"Size: (?<size>\d+)\s*Min. execution time: (?<min>\d+)\s*Max. execution time: (?<max>\d+)");
+		    if (!int.TryParse(match.Groups["size"].Value, out size))
+		    {
+		        size = 0;
+		    }
+
+		    if (!int.TryParse(match.Groups["min"].Value, out min))
+		    {
+		        min = 0;
+		    }
+
+		    if (!int.TryParse(match.Groups["max"].Value, out max))
+		    {
+		        max = 0;
+		    }
 			return new CodeCountInfo(size, min, max);
 		}
 

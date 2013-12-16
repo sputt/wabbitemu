@@ -15,7 +15,7 @@ using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
@@ -797,13 +797,13 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 	        FindAndReplaceForm.Instance.ShowFor(owner, editorBox, mode);
 	    }
 
-        public override void OpenFile(string filename)
+        public override void OpenFile(string fileName)
         {
-            editorBox.LoadFile(filename, true, true);
+            editorBox.LoadFile(fileName, true, true);
             UpdateTabText();
             ClearIcons();
 
-            base.OpenFile(filename);
+            base.OpenFile(fileName);
         }
 
         public override void SaveFile()

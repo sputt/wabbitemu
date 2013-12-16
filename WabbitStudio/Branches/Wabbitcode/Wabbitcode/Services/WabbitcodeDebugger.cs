@@ -635,15 +635,7 @@ namespace Revsoft.Wabbitcode.Services
                     break;
             }
 
-            if (breakpoint.BreakConditions == null)
-            {
-                return;
-            }
-
-            conditionsTrue = breakpoint.BreakConditions.Aggregate(conditionsTrue,
-                (current, condition) => current & breakpoint.EvalCondition(_debugger.CPU, condition));
-
-            if (conditionsTrue)
+            if (conditionsTrue && breakpoint.EvalulateAllConditions(_debugger.CPU))
             {
                 DocumentLocation key = _symbolService.ListTable.GetFileLocation(relativePage, address, !breakEvent.Address.Page.IsFlash);
                 if (key == null)
