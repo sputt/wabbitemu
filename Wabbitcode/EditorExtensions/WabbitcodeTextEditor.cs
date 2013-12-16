@@ -434,7 +434,8 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             iconManager.ClearIcons();
             var errorWarnings = e.Output.ParsedErrors.Where(issue => FileOperations.CompareFilePath(issue.File, FileName));
             foreach (MarginIcon marginIcon in errorWarnings.Select(issue =>
-                new MarginIcon(issue.IsWarning ? _warningBitmap : _errorBitmap, issue.LineNum - 1, issue.ToolTip)))
+                new MarginIcon(issue.IsWarning ? _warningBitmap : _errorBitmap, issue.LineNumber - 1,
+                    new ToolTip { ToolTipTitle = issue.Description })))
             {
                 iconManager.AddIcon(marginIcon);
             }

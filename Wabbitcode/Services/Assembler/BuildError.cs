@@ -1,19 +1,13 @@
-﻿using System.Windows.Forms;
-
-namespace Revsoft.Wabbitcode.Services.Assembler
+﻿namespace Revsoft.Wabbitcode.Services.Assembler
 {
     public class BuildError
     {
-        public BuildError(string file, int lineNum, string description, bool isWarning)
+        public BuildError(string file, int lineNumber, string description, bool isWarning)
         {
             File = file;
-            LineNum = lineNum;
+            LineNumber = lineNumber;
             Description = description;
             IsWarning = isWarning;
-            ToolTip = new ToolTip
-            {
-                ToolTipTitle = description
-            };
         }
 
         public string Description
@@ -34,13 +28,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
             private set;
         }
 
-        public int LineNum
-        {
-            get;
-            private set;
-        }
-
-        public ToolTip ToolTip
+        public int LineNumber
         {
             get;
             private set;

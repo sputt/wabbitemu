@@ -5,11 +5,13 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 {
 	public class AssemblerOutput
 	{
-		public AssemblerOutput(string outputText, bool succeeded)
+	    private readonly List<BuildError> _parsedErrors;
+
+	    public AssemblerOutput(string outputText, bool succeeded)
 		{
 			OutputText = outputText;
 			Succeeded = succeeded;
-			ParsedErrors = new List<BuildError>();
+			_parsedErrors = new List<BuildError>();
 			ParseOutput();
 		}
 
@@ -19,21 +21,19 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 			private set;
 		}
 
-		public List<BuildError> ParsedErrors
+		public IEnumerable<BuildError> ParsedErrors
 		{
-			get;
-			private set;
+            get { return _parsedErrors; }
 		}
 
-		private bool Succeeded
+		public bool Succeeded
 		{
-			get;
-			set;
+			get; private set;
 		}
 
 		private void ParseOutput()
 		{
-			ParsedErrors.Clear();
+			_parsedErrors.Clear();
 			string[] lines = OutputText.Split('\n');
 			foreach (string line in lines)
 			{
@@ -46,7 +46,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 					thirdColon = line.IndexOf(':', secondColon + 1);
 					if (firstColon < 0 || secondColon < 0 || thirdColon < 0)
 					{
-						ParsedErrors[ParsedErrors.Count - 1].Description += line;
+						_parsedErrors[_parsedErrors.Count - 1].Description += line;
 					}
 					else
 					{
@@ -60,7 +60,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 						}
 
 						description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-						ParsedErrors.Add(new BuildError(file, lineNumber, description, false));
+						_parsedErrors.Add(new BuildError(file, lineNumber, description, false));
 					}
 				}
 
@@ -73,7 +73,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 				thirdColon = line.IndexOf(':', secondColon + 1);
 				if (firstColon < 0 || secondColon < 0 || thirdColon < 0)
 				{
-					ParsedErrors[ParsedErrors.Count - 1].Description += line;
+					_parsedErrors[_parsedErrors.Count - 1].Description += line;
 				}
 				else
 				{
@@ -81,7 +81,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 					file = line.Substring(0, firstColon);
 					lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
 					description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-					ParsedErrors.Add(new BuildError(file, Convert.ToInt32(lineNum), description, true));
+					_parsedErrors.Add(new BuildError(file, Convert.ToInt32(lineNum), description, true));
 				}
 			}
 		}

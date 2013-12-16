@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
-
+using System.Linq;
 using WabbitemuLib;
 
 namespace Revsoft.Wabbitcode.Services.Debugger
@@ -36,24 +35,28 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
 	public class WabbitcodeBreakpoint
 	{
-		private readonly List<BreakCondition> _breakCondition = new List<BreakCondition>();
+		private readonly List<BreakCondition> _breakConditions = new List<BreakCondition>();
 
 		public ushort Address { get; set; }
 		public bool Enabled { get; set; }
 		public string File { get; set; }
 		public HitCountEnum HitCountCondition { get; set; }
 		public int HitCountConditionNumber { get; set; }
-		public List<BreakCondition> BreakConditions
-		{
-			get { return _breakCondition; }
-		}
 		public bool IsRam { get; set; }
-		public int LineNumber;
+	    public List<BreakCondition> BreakConditions
+	    {
+	        get
+	        {
+	            return _breakConditions;
+	        }
+	    }
+
+	    public readonly int LineNumber;
 		public int NumberOfTimesHit;
 		public byte Page;
 		public IBreakpoint WabbitemuBreakpoint;
 
-		public WabbitcodeBreakpoint()
+	    private WabbitcodeBreakpoint()
 		{
 			HitCountCondition = HitCountEnum.BreakAlways;
 			HitCountConditionNumber = 0;
@@ -66,14 +69,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 			LineNumber = lineNumber;
 		}
 
-		public WabbitcodeBreakpoint(ushort address, byte page, bool isRam)
-		{
-			Address = address;
-			Page = page;
-			IsRam = isRam;
-		}
-
-		public static bool operator !=(WabbitcodeBreakpoint break1, WabbitcodeBreakpoint break2)
+	    public static bool operator !=(WabbitcodeBreakpoint break1, WabbitcodeBreakpoint break2)
 		{
 			if ((object)break1 == null || (object)break2 == null)
 			{
@@ -104,7 +100,12 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 				   (string.Equals(File, break2.File, StringComparison.OrdinalIgnoreCase) && LineNumber == break2.LineNumber);
 		}
 
-		public bool EvalCondition(IZ80 cpu, BreakCondition condition)
+	    public bool EvalulateAllConditions(IZ80 cpu)
+	    {
+	        return _breakConditions.All(condition => EvalConditions(cpu, condition));
+	    }
+
+	    private static bool EvalConditions(IZ80 cpu, BreakCondition condition)
 		{
 			bool isTrue = true;
 

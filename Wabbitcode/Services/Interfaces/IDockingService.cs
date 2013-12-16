@@ -24,7 +24,7 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
         void ShowDockPanel(string panelName, string beforeContentName);
 	    void ShowDockPanel(DockContent panel, IDockContent beforeContent, DockAlignment alignment);
         void ShowDockPanel(string panelName, string beforeContentName, DockAlignment alignment);
-		void LoadConfig(DeserializeDockContent handleDeserializeDockContent);
+		void LoadConfig(DeserializeDockContent dockContent);
 	    void InitPanels();
 	}
 }

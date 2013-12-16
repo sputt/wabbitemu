@@ -1,4 +1,4 @@
-namespace Revsoft.Wabbitcode.Interface
+namespace Revsoft.Wabbitcode.Interfaces
 {
     public interface IUndoable
     {

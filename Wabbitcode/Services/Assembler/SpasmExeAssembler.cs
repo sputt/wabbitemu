@@ -132,7 +132,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 				_flagsString += "-T ";
 			}
 
-			if ((flags & AssemblyFlags.Symtable) != 0)
+			if ((flags & AssemblyFlags.SymbolTable) != 0)
 			{
 				_flagsString += "-L ";
 			}

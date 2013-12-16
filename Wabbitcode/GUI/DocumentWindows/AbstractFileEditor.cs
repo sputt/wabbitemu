@@ -1,5 +1,5 @@
 using System.IO;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Interfaces;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.GUI.DocumentWindows
@@ -27,9 +27,9 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
         }
 
-        public virtual void OpenFile(string filename)
+        public virtual void OpenFile(string fileName)
         {
-            FileName = filename;
+            FileName = fileName;
             DocumentChanged = false;
         }
 
@@ -64,9 +64,14 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         public abstract void Redo();
         public abstract void SelectAll();
 
-        public virtual void PersistStringLoad(params string[] persistStrings)
+        public virtual void PersistStringLoad(params string[] values)
         {
-            string filename = persistStrings[1];
+            if (string.IsNullOrEmpty(values[1]))
+            {
+                return;
+            }
+
+            string filename = values[1];
             OpenFile(filename);
         }
     }

@@ -102,7 +102,7 @@
         #endregion
 
         private System.Windows.Forms.Button button1;
-        public System.Windows.Forms.PictureBox pictureBox;
+        private System.Windows.Forms.PictureBox pictureBox;
         private System.Windows.Forms.PictureBox vertRuler;
         private System.Windows.Forms.PictureBox horzRuler;
     }
