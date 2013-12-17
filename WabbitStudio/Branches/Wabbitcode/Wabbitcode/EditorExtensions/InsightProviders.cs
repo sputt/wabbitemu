@@ -444,7 +444,9 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         public virtual bool CaretOffsetChanged()
         {
-            bool closeDataProvider = _textArea.Caret.Offset <= _initialOffset;
+            var segment = _textArea.Document.GetLineSegmentForOffset(_initialOffset);
+            int endOffset = segment.Offset + segment.Length;
+            bool closeDataProvider = _textArea.Caret.Offset <= _initialOffset || _textArea.Caret.Offset > endOffset;
             int brackets = 0;
             if (closeDataProvider)
             {

@@ -908,5 +908,16 @@ namespace Revsoft.Wabbitcode.Properties {
                 this["CheckUpdates"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection DocumentFoldings {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["DocumentFoldings"]));
+            }
+            set {
+                this["DocumentFoldings"] = value;
+            }
+        }
     }
 }

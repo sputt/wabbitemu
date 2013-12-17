@@ -30,6 +30,7 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 	    private new void Close()
 	    {
             _toolTip.Hide(control);
+	        _toolTip.Active = false;
             _toolTipVisible = false;
 	    }
 		
@@ -38,6 +39,7 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
             var description = GetDescription();
 
 		    bool oldToolTipVisible = _toolTipVisible;
+		    _toolTip.Active = true;
             SetLocation();
 		    var point = control.PointToClient(new Point(Bounds.X, Bounds.Y));
             _toolTip.Show(description, control, point);
@@ -126,7 +128,13 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 
 		    string description = GetDescription();
             _toolTip.Show(description, control, new Point(xpos, ypos + rulerHeight));
-			
+
+		    if (DataProvider == null)
+		    {
+		        Close();
+		        return;
+		    }
+
 			while (DataProvider != null && DataProvider.CaretOffsetChanged()) {
 				CloseCurrentDataProvider();
 			}

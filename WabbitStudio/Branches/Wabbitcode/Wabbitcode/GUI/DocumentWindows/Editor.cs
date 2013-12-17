@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -172,7 +173,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 		    }
             _projectService.ProjectOpened += (sender, args) => _projectService.Project.FileModifiedExternally += Project_FileModifiedExternally;
 
-		    if (!_bindingsRegistered)
+		    if (_bindingsRegistered)
 		    {
 		        return;
 		    }
@@ -320,8 +321,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 			// Add extra information into the persist string for this document
 			// so that it is available when deserialized.
 			return base.GetPersistString() + ";" +
-				   editorBox.ActiveTextAreaControl.Caret.Column + ";" +
 				   editorBox.ActiveTextAreaControl.Caret.Line + ";" +
+				   editorBox.ActiveTextAreaControl.Caret.Column + ";" +
                    editorBox.ActiveTextAreaControl.VScrollBar.Value + ";" +
 			       editorBox.ActiveTextAreaControl.HScrollBar.Value;
 		}
@@ -377,7 +378,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 		{
 			editorBox.Document.MarkerStrategy.RemoveAll(s => true);
 
-            // TODO: save document foldings
+            AddFoldings();
 
             WabbitcodeBreakpointManager.OnBreakpointAdded -= WabbitcodeBreakpointManager_OnBreakpointAdded;
             WabbitcodeBreakpointManager.OnBreakpointRemoved -= WabbitcodeBreakpointManager_OnBreakpointRemoved;
@@ -404,7 +405,44 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 			}
 		}
 
-		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        #region Folding
+
+        private void AddFoldings()
+        {
+            string foldingString = string.Format("{0}|{1}", FileName.ToLower(), editorBox.Document.FoldingManager.SerializeToString());
+            FindDocumentFolding(folding => Settings.Default.DocumentFoldings.Remove(folding));
+
+            Settings.Default.DocumentFoldings.Add(foldingString);
+        }
+
+        private void FindDocumentFolding(Action<string> action)
+        {
+            if (Settings.Default.DocumentFoldings == null)
+            {
+                Settings.Default.DocumentFoldings = new StringCollection();
+            }
+
+            foreach (string folding in Settings.Default.DocumentFoldings)
+            {
+                string fileName = folding.Split('|').First();
+                if (!FileOperations.CompareFilePath(fileName, FileName))
+                {
+                    continue;
+                }
+
+                action(folding);
+                return;
+            }
+        }
+
+        private void LoadFoldings()
+        {
+            FindDocumentFolding(folding => editorBox.Document.FoldingManager.DeserializeFromString(folding.Split('|').Last()));
+        }
+
+        #endregion
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 		{
 			if (keyData == Keys.F3)
 			{
@@ -799,11 +837,12 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         public override void OpenFile(string fileName)
         {
+            base.OpenFile(fileName);
+
             editorBox.LoadFile(fileName, true, true);
             UpdateTabText();
             ClearIcons();
-
-            base.OpenFile(fileName);
+            LoadFoldings();
         }
 
         public override void SaveFile()
@@ -840,22 +879,22 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             int vScrollValue;
             int hScrollValue;
 
-            if (int.TryParse(persistStrings[2], out column))
-            {
-                CaretColumn = column;
-            }
-
-            if (int.TryParse(persistStrings[3], out line))
+            if (persistStrings.Length > 2 && int.TryParse(persistStrings[2], out line))
             {
                 CaretLine = line;
             }
 
-            if (int.TryParse(persistStrings[4], out vScrollValue))
+            if (persistStrings.Length > 3 && int.TryParse(persistStrings[3], out column))
+            {
+                CaretColumn = column;
+            }
+
+            if (persistStrings.Length > 4 && int.TryParse(persistStrings[4], out vScrollValue))
             {
                 editorBox.ActiveTextAreaControl.VScrollBar.Value = vScrollValue;
             }
 
-            if (int.TryParse(persistStrings[5], out hScrollValue))
+            if (persistStrings.Length > 5 && int.TryParse(persistStrings[5], out hScrollValue))
             {
                 editorBox.ActiveTextAreaControl.HScrollBar.Value = hScrollValue;
             }
