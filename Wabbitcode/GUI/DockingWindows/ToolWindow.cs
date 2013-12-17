@@ -25,7 +25,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 	        }
 	    }
 
-	    protected ToolWindow()
+	    public ToolWindow()
 		{
 			InitializeComponent();
 

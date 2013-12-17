@@ -5,7 +5,7 @@ using Revsoft.Wabbitcode.Services.Assembler;
 
 namespace Revsoft.Wabbitcode.GUI.ToolBars
 {
-    sealed class WabbitcodeStatusBar : StatusStrip
+    public sealed class WabbitcodeStatusBar : StatusStrip
     {
         private readonly ToolStripStatusLabel _statusLabel = new ToolStripStatusLabel
         {

@@ -546,6 +546,9 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                         case '#':
                             editor.ShowInsightWindow(new PreprocessorInsightProvider());
                             break;
+                        default:
+                            editor.ShowInsightWindow(new Z80InsightProvider());
+                            break;
                     }
                     break;
                 case ',':

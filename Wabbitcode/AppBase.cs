@@ -50,9 +50,7 @@ namespace Revsoft.Wabbitcode
 		{
 			// Create an instance of the main form and set it in the application;
 			// but don't try to run it.
-			string[] args = new string[CommandLineArgs.Count];
-			CommandLineArgs.CopyTo(args, 0);
-			MainForm = new MainForm(args);
+			MainForm = new MainForm(CommandLineArgs.ToArray());
 		}
 
 		/// <summary>
