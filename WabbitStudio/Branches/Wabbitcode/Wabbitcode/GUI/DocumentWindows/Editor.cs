@@ -615,6 +615,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
 	    private void extractMethodContext_Click(object sender, EventArgs e)
 	    {
+            new RefactorExtractMethodAction().Execute();
 	    }
 
 		private bool FindFileIncludes(string gotoLabel)
@@ -687,6 +688,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 		}
 
 		#region Modify Selected Text
+
+        public string GetSelection()
+        {
+            return editorBox.GetWholeLinesSelected();
+        }
 
         public void SetSelection(int offset, int length)
         {

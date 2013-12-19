@@ -143,30 +143,34 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 				Name = "templatesBox",
 				Dock = DockStyle.Fill
 			};
+
 			while (reader.Read())
 			{
 				if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "model")
 				{
 					break;
 				}
-				if (reader.Name == "template" && reader.NodeType == XmlNodeType.Element)
-				{
-					var templateName = reader.GetAttribute("name");
-					var ext = reader.GetAttribute("ext");
-					if (!reader.Read())
-					{
-						throw new InvalidDataException("Invalid XML: Unexpected file end");
-					}
 
-					var file = reader.Value;
-					box.Items.Add(new ListBoxItem
-					{
-						Text = templateName,
-						File = Path.Combine(
-							Path.Combine(FileLocations.TemplatesDir, modelName), file),
-						Ext = ext
-					});
-				}
+			    if (reader.Name != "template" || reader.NodeType != XmlNodeType.Element)
+			    {
+			        continue;
+			    }
+
+			    var templateName = reader.GetAttribute("name");
+			    var ext = reader.GetAttribute("ext");
+			    if (!reader.Read())
+			    {
+			        throw new InvalidDataException("Invalid XML: Unexpected file end");
+			    }
+
+			    var file = reader.Value;
+			    box.Items.Add(new ListBoxItem
+			    {
+			        Text = templateName,
+			        File = Path.Combine(
+			            Path.Combine(FileLocations.TemplatesDir, modelName), file),
+			        Ext = ext
+			    });
 			}
 
 			page.Controls.Add(box);

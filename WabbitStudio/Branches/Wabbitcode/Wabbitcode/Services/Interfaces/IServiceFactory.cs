@@ -1,4 +1,5 @@
 ﻿using System;
+using Revsoft.Wabbitcode.Services.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {

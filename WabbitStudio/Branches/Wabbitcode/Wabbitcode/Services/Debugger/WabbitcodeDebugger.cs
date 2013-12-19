@@ -1,18 +1,17 @@
-﻿using System.Text.RegularExpressions;
-using Revsoft.Wabbitcode.Actions;
-using Revsoft.Wabbitcode.Exceptions;
-using Revsoft.Wabbitcode.Services.Debugger;
-using Revsoft.Wabbitcode.Services.Interfaces;
-using Revsoft.Wabbitcode.Services.Symbols;
-using Revsoft.Wabbitcode.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
+using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.Exceptions;
+using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Services.Symbols;
+using Revsoft.Wabbitcode.Utils;
 using WabbitemuLib;
 
-namespace Revsoft.Wabbitcode.Services
+namespace Revsoft.Wabbitcode.Services.Debugger
 {
 	public sealed class WabbitcodeDebugger : IWabbitcodeDebugger
     {

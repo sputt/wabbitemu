@@ -5,6 +5,7 @@ using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Services.Utils;
 
 namespace Revsoft.Wabbitcode.Services
 {

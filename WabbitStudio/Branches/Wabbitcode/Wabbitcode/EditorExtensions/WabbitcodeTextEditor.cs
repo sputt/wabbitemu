@@ -185,12 +185,12 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             return false;
         }
 
-        void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
+        private void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
         {
             WabbitcodeBreakpointManager.RemoveBreakpoint(FileName, e.Breakpoint.LineNumber);
         }
 
-        void BreakpointManager_Added(object sender, BreakpointEventArgs e)
+        private void BreakpointManager_Added(object sender, BreakpointEventArgs e)
         {
             WabbitcodeBreakpointManager.AddBreakpoint(FileName, e.Breakpoint.LineNumber);
         }
@@ -368,6 +368,12 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         private void UpdateCodeCountInfo()
         {
+            var codeInfoLines = GetWholeLinesSelected();
+            _backgroundAssemblerService.CountCode(codeInfoLines);
+        }
+
+        public string GetWholeLinesSelected()
+        {
             int startLine;
             int endLine;
             var selection = ActiveTextAreaControl.SelectionManager.SelectionCollection.FirstOrDefault();
@@ -393,8 +399,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             {
                 codeInfoLines += GetLineText(startLine) + Environment.NewLine;
             }
-
-            _backgroundAssemblerService.CountCode(codeInfoLines);
+            return codeInfoLines;
         }
 
         private void GetHighlightReferences(string word, IEnumerable<LineSegment> segmentCollection)

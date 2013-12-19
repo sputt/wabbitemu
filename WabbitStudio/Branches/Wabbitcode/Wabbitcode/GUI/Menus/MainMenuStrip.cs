@@ -961,6 +961,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static void extractMethodMenuItem_Click(object sender, EventArgs e)
         {
+            RunCommand(new RefactorExtractMethodAction());
         }
 
         #endregion

@@ -1,8 +1,8 @@
-﻿namespace Revsoft.Wabbitcode.Services
-{
-	using System;
+﻿using System;
 
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+namespace Revsoft.Wabbitcode.Services.Utils
+{
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class ServiceDependencyAttribute : Attribute
 	{
 		public ServiceDependencyAttribute(Type serviceType)
