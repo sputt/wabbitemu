@@ -546,6 +546,9 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                         case '#':
                             editor.ShowInsightWindow(new PreprocessorInsightProvider());
                             break;
+                        case ',':
+                            editor.ShowCompletionWindow(new CtrlSpaceCompletionProvider(editor), ch);
+                            break;
                         default:
                             editor.ShowInsightWindow(new Z80InsightProvider());
                             break;
@@ -553,6 +556,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                     break;
                 case ',':
                 case '(':
+                    editor.ShowCompletionWindow(new CtrlSpaceCompletionProvider(editor), ch);
                     editor.ShowInsightWindow(new MacroInsightProvider());
                     break;
                 case '#':

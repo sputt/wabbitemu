@@ -1,7 +1,7 @@
 ﻿using System;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
-namespace Revsoft.Wabbitcode.Services
+namespace Revsoft.Wabbitcode.Services.Utils
 {
     public class ServiceInitializedEventArgs : EventArgs
     {

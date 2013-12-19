@@ -17,6 +17,7 @@ namespace Revsoft.Wabbitcode.Interfaces
 
         void ShowFindForm(Form owner, SearchMode mode);
 
+        string GetSelection();
         void SetSelection(int offset, int length);
         void SelectedTextToUpper();
         void SelectedTextToLower();

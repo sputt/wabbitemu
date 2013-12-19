@@ -36,6 +36,12 @@ namespace Revsoft.Wabbitcode.Services
         /// <returns>The text of a file</returns>
         public string GetFileText(string fileName)
         {
+            StreamReader reader = new StreamReader(fileName);
+            return GetFileText(fileName, reader);
+        }
+
+        public string GetFileText(string fileName, TextReader reader)
+        {
             fileName = fileName.ToLower();
             string text;
             if (_cachedFiles.ContainsKey(fileName))
@@ -51,10 +57,8 @@ namespace Revsoft.Wabbitcode.Services
                 _cachedFiles.Remove(fileName);
             }
 
-            StreamReader reader = null;
             try
             {
-                reader = new StreamReader(fileName);
                 text = reader.ReadToEnd();
             }
             catch (Exception)

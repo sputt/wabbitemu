@@ -112,6 +112,9 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
                         ShowInsightWindow();
 					}
 					return true;
+                case Keys.Escape:
+                    CloseCurrentDataProvider();
+			        return true;
 			}
 			return base.ProcessTextAreaKey(keyData);
 		}

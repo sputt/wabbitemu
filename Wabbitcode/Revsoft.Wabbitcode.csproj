@@ -589,6 +589,12 @@
     <Compile Include="GUI\Dialogs\AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Dialogs\RefactorExtractMethodForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Dialogs\RefactorExtractMethodForm.Designer.cs">
+      <DependentUpon>RefactorExtractMethodForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\DocumentWindows\AbstractFileEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -700,7 +706,7 @@
     <Compile Include="Services\Parser\IParser.cs" />
     <Compile Include="Services\Parser\Z80Parser.cs" />
     <Compile Include="Services\PluginService.cs" />
-    <Compile Include="Services\ServiceInitializedEventArgs.cs" />
+    <Compile Include="Services\Utils\ServiceInitializedEventArgs.cs" />
     <Compile Include="Services\StatusBarService.cs" />
     <Compile Include="Services\Symbols\CalcLocation.cs" />
     <Compile Include="Services\ToolBarService.cs" />
@@ -718,11 +724,11 @@
       <DependentUpon>StackViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\ListBoxItem.cs" />
-    <Compile Include="GUI\Dialogs\Refactor.cs">
+    <Compile Include="GUI\Dialogs\RefactorRenameForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\Dialogs\Refactor.Designer.cs">
-      <DependentUpon>Refactor.cs</DependentUpon>
+    <Compile Include="GUI\Dialogs\RefactorRenameForm.Designer.cs">
+      <DependentUpon>RefactorRenameForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Resources\VS2012ToolStripRenderer.cs" />
     <Compile Include="Services\Assembler\AssemblyEventArgs.cs" />
@@ -742,10 +748,10 @@
     <Compile Include="Services\AssemblerService.cs" />
     <Compile Include="Services\Symbols\SymbolTable.cs" />
     <Compile Include="Services\Debugger\WabbitcodeBreakpoint.cs" />
-    <Compile Include="Services\ServiceDependencyAttribute.cs" />
+    <Compile Include="Services\Utils\ServiceDependencyAttribute.cs" />
     <Compile Include="Services\ServiceFactory.cs" />
     <Compile Include="Services\SymbolService.cs" />
-    <Compile Include="Services\WabbitcodeDebugger.cs" />
+    <Compile Include="Services\Debugger\WabbitcodeDebugger.cs" />
     <Compile Include="Utils\HighlightingUtils.cs" />
     <Compile Include="Services\Parser\Equate.cs" />
     <Compile Include="Services\Parser\Define.cs" />
@@ -912,6 +918,9 @@
     <Compile Include="GUI\ToolBars\WabbitcodeStatusBar.cs">
       <SubType>Component</SubType>
     </Compile>
+    <EmbeddedResource Include="GUI\Dialogs\RefactorExtractMethodForm.resx">
+      <DependentUpon>RefactorExtractMethodForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\DockingWindows\ExpressionWindow.resx">
       <DependentUpon>ExpressionWindow.cs</DependentUpon>
     </EmbeddedResource>
@@ -939,8 +948,8 @@
     <EmbeddedResource Include="GUI\ToolBars\MainToolBar.resx">
       <DependentUpon>MainToolBar.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Dialogs\Refactor.resx">
-      <DependentUpon>Refactor.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\Dialogs\RefactorRenameForm.resx">
+      <DependentUpon>RefactorRenameForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\PNG\Info.png" />
     <EmbeddedResource Include="GUI\Dialogs\NewBreakpointForm.resx">
