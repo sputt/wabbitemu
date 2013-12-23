@@ -4,10 +4,12 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
@@ -79,7 +81,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             string stackValue = stackView.SelectedRows[0].Cells[StackDataColIndex].Value.ToString();
             stackValue = stackValue.TrimStart().Substring(0, 4);
             ushort address = ushort.Parse(stackValue, NumberStyles.HexNumber);
-            _debugger.GotoAddress(address);
+            DocumentLocation location = _debugger.GetAddressLocation(address);
+            new GotoLineAction(location).Execute();
         }
 
         #region IClipboardOperation

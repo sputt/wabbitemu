@@ -146,12 +146,12 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 		/// the file never maps to a location on calc</returns>
 		public CalcLocation GetNextNearestCalcLocation(string fileName, int lineNumber)
 		{
-			var initialListing = _fileToCalc.Where(s => string.Compare(s.Key.FileName, fileName, true) == 0);
+			var initialListing = _fileToCalc.Where(s => string.Compare(s.Key.FileName, fileName, StringComparison.OrdinalIgnoreCase) == 0);
 			// we shouldn't ever call this when we are adding more, but just to be sure,
 			// we'll avoid multiple enumeration
-			var listInFile = initialListing as KeyValuePair<DocumentLocation, CalcLocation>[] ?? initialListing.ToArray();
-			var smallerListings = listInFile.Where(s => s.Key.LineNumber < lineNumber).ToArray();
-			var largerListings = listInFile.Where(s => s.Key.LineNumber >= lineNumber).ToArray();
+		    var listInFile = initialListing.ToList();
+			var smallerListings = listInFile.Where(s => s.Key.LineNumber < lineNumber).ToList();
+			var largerListings = listInFile.Where(s => s.Key.LineNumber >= lineNumber).ToList();
 			if (largerListings.Any())
 			{
 				int min = largerListings.Min(s => s.Key.LineNumber);

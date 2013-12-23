@@ -12,7 +12,5 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 
         void StartDebugging();
         void EndDebugging();
-
-        void GotoCurrentDebugLine();
     }
 }

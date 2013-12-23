@@ -51,7 +51,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         void StartDebug();
         void EndDebug();
 
-        void GotoAddress(ushort address);
+        DocumentLocation GetAddressLocation(ushort address);
 
         bool SetBreakpoint(WabbitcodeBreakpoint breakpoint);
         void ClearBreakpoint(WabbitcodeBreakpoint newBreakpoint);

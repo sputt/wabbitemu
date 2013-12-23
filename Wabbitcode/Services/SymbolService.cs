@@ -1,14 +1,16 @@
 ﻿using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Symbols;
+using Revsoft.Wabbitcode.Services.Utils;
 
 namespace Revsoft.Wabbitcode.Services
 {
+    [ServiceDependency(typeof(IProjectService))]
 	public class SymbolService : ISymbolService
 	{
-		private readonly SymbolTable _symbolTable;
-		private readonly ListTable _listTable;
-
-		public string ProjectDirectory { get; set; }
+		private readonly SymbolTable _symbolTable = new SymbolTable();
+		private readonly ListTable _listTable = new ListTable();
+        private readonly IProjectService _projectService;
+        private string _projectDirectory;
 
 		public SymbolTable SymbolTable
 		{
@@ -36,13 +38,12 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void InitService(params object[] objects)
 		{
-			
+		    _projectService.ProjectOpened += (sender, args) => _projectDirectory = _projectService.Project.ProjectDirectory;
 		}
 
-		public SymbolService()
+		public SymbolService(IProjectService projectService)
 		{
-			_symbolTable = new SymbolTable();
-			_listTable = new ListTable();
+		    _projectService = projectService;        
 		}
 	}
 }
