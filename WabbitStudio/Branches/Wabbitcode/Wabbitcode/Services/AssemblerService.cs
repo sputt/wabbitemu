@@ -38,8 +38,8 @@ namespace Revsoft.Wabbitcode.Services
 
 	    public AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir, 
             IEnumerable<string> includeDirs, AssemblyFlags flags = AssemblyFlags.Normal)
-		{
-			_assembler = new SpasmComAssembler();
+	    {
+	        _assembler = AssemblerFactory.CreateAssembler();
 
 		    AssemblerHelper.SetupAssembler(_assembler, inputFile, outputFile, originalDir, includeDirs, flags);	
 			string rawOutput = _assembler.Assemble();
@@ -81,7 +81,7 @@ namespace Revsoft.Wabbitcode.Services
 			int size;
 			int min;
 			int max;
-			_assembler = new SpasmComAssembler();
+		    _assembler = AssemblerFactory.CreateAssembler();
 			string outputLines = null;
 			if (!string.IsNullOrEmpty(lines))
 			{

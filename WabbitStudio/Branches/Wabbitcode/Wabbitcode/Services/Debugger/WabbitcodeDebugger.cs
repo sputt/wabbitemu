@@ -4,7 +4,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Symbols;
@@ -50,10 +49,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         public IZ80 CPU
 		{
-			get
-			{
-				return _debugger.CPU;
-			}
+			get { return _debugger.CPU; }
 		}
 
         public Image ScreenImage
@@ -65,10 +61,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
 	    public bool IsRunning
 		{
-			get
-			{
-			    return _debugger != null && _debugger.Running;
-			}
+			get { return _debugger != null && _debugger.Running; }
 		}
 
 	    public Stack<StackEntry> MachineStack { get; private set; }
@@ -194,16 +187,10 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 			return (byte)page;
 		}
 
-        public void GotoAddress(ushort address)
+        public DocumentLocation GetAddressLocation(ushort address)
         {
             int page = GetRelativePageNum(address);
-            DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
-            if (key == null)
-            {
-                return;
-            }
-
-            new GotoLineAction(key).Execute();
+            return _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
         }
 
         #endregion
@@ -387,7 +374,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
             string line = _fileReaderService.GetLine(key.FileName, key.LineNumber);
 
-            int commentIndex = line.IndexOf(";");
+            int commentIndex = line.IndexOf(";", StringComparison.Ordinal);
             if (commentIndex != -1)
             {
                 line = line.Substring(0, commentIndex);

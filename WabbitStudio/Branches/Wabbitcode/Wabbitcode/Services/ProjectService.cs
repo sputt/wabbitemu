@@ -12,7 +12,6 @@ using Revsoft.Wabbitcode.Utils;
 namespace Revsoft.Wabbitcode.Services
 {
 	[ServiceDependency(typeof(IParserService))]
-	[ServiceDependency(typeof(ISymbolService))]
 	public class ProjectService : IProjectService
     {
         #region Events
@@ -24,7 +23,6 @@ namespace Revsoft.Wabbitcode.Services
 
         private readonly List<ParserInformation> _parseInfo = new List<ParserInformation>();
 		private readonly IParserService _parserService;
-	    private readonly ISymbolService _symbolService;
 
 		private IList<ParserInformation> ParserInfomInformation
 		{
@@ -36,17 +34,15 @@ namespace Revsoft.Wabbitcode.Services
 
 		public IProject Project { get; private set; }
 
-		public ProjectService(IParserService parserService, ISymbolService symbolService)
+		public ProjectService(IParserService parserService)
 		{
 		    _parserService = parserService;
-			_symbolService = symbolService;
 		}
 
 		public bool OpenProject(string fileName)
 		{
 			Project = new WabbitcodeProject(fileName);
 			Project.OpenProject(fileName);
-			_symbolService.ProjectDirectory = Project.ProjectDirectory;
 
 			_parseInfo.Clear();
 			Task.Factory.StartNew(() => ParseFiles(Project.MainFolder));

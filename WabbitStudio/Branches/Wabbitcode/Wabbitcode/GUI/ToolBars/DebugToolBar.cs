@@ -7,6 +7,7 @@ using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.ToolBars
 {
@@ -175,7 +176,9 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
 
         private void gotoCurrentToolButton_Click(object sender, EventArgs e)
         {
-            _debuggerService.GotoCurrentDebugLine();
+            IWabbitcodeDebugger debugger = _debuggerService.CurrentDebugger;
+            DocumentLocation location = debugger.GetAddressLocation(debugger.CPU.PC);
+            new GotoLineAction(location).Execute();
         }
 
     }
