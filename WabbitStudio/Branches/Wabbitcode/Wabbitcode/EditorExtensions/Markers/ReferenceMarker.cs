@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
+using Revsoft.TextEditor.Document;
 
-namespace Revsoft.TextEditor.Document
+namespace Revsoft.Wabbitcode.EditorExtensions.Markers
 {
     public class ReferenceMarker : TextMarker
     {

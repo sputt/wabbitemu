@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Text;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,10 +10,10 @@ using Revsoft.TextEditor.Document;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.TextEditor.Gui.InsightWindow;
 using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.EditorExtensions.Markers;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Symbols;
@@ -28,8 +23,6 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 {
     public sealed class WabbitcodeTextEditor : TextEditorControl
     {
-        private readonly Bitmap _warningBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.PNG.Warning16.png"));
-        private readonly Bitmap _errorBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.PNG.error.png"));
         private InsightWindow _insightWindow;
         private CodeCompletionWindow _codeCompletionWindow;
         private bool _inHandleKeyPress;
@@ -40,6 +33,8 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             Interval = 5000,
             Enabled = false
         };
+
+        private readonly ErrorUnderliner _errorUnderliner;
 
         #region Services
 
@@ -53,16 +48,9 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         public WabbitcodeTextEditor()
         {
-            Font = Settings.Default.EditorFont;
-            IsIconBarVisible = Settings.Default.IconBar;
-            IsReadOnly = false;
-            LineViewerStyle = Settings.Default.LineEnabled ?
-                LineViewerStyle.FullRow : LineViewerStyle.None;
-            ShowLineNumbers = Settings.Default.LineNumbers;
-            ShowVRuler = false;
-            TextEditorProperties.MouseWheelScrollDown = !Settings.Default.InverseScrolling;
-            TextRenderingHint = Settings.Default.AntiAlias ?
-                TextRenderingHint.ClearTypeGridFit : TextRenderingHint.SingleBitPerPixel;
+            TextEditorProperties = new TextEditorProperties();
+            _errorUnderliner = new ErrorUnderliner(this);
+
             Document.FormattingStrategy = new AsmFormattingStrategy();
             editactions.Add(Keys.Control | Keys.Space, new ShowCodeCompletion());
             SetHighlighting("Z80 Assembly");
@@ -73,8 +61,6 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             Document.BreakpointManager.HighlightRegex = LineRegex;
 
             _textChangedTimer.Tick += textChangedTimer_Tick;
-            _backgroundAssemblerService.OnBackgroundAssemblerComplete += UpdateIcons;
-            Settings.Default.SettingChanging += Default_SettingChanging;
         }
 
         protected override void InitializeTextAreaControl(TextAreaControl newControl)
@@ -94,8 +80,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             base.Dispose(disposing);
 
             _textChangedTimer.Enabled = false;
-            _errorBitmap.Dispose();
-            _warningBitmap.Dispose();
+            _errorUnderliner.Dispose();
         }
 
         #region Events
@@ -175,7 +160,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.ToString());
+                LoggingService.Instance.Log("Code completion exception", ex);
             }
             finally
             {
@@ -257,7 +242,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                 return;
             }
 
-            Document.MarkerStrategy.RemoveAll(marker => marker != null && marker.Tag == "Reference");
+            Document.MarkerStrategy.RemoveAll(marker => marker is ReferenceMarker);
             Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
             if (!_isUpdatingRefs)
             {
@@ -419,6 +404,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             {
                 this.Invoke(() => AddMarkers(references));
             }
+
             _isUpdatingRefs = false;
         }
 
@@ -431,19 +417,6 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
             Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
             Refresh();
-        }
-
-        private void UpdateIcons(object sender, AssemblyFinishEventArgs e)
-        {
-            IconManager iconManager = Document.IconManager;
-            iconManager.ClearIcons();
-            var errorWarnings = e.Output.ParsedErrors.Where(issue => FileOperations.CompareFilePath(issue.File, FileName));
-            foreach (MarginIcon marginIcon in errorWarnings.Select(issue =>
-                new MarginIcon(issue.IsWarning ? _warningBitmap : _errorBitmap, issue.LineNumber - 1,
-                    new ToolTip { ToolTipTitle = issue.Description })))
-            {
-                iconManager.AddIcon(marginIcon);
-            }
         }
 
         public string GetLineText(int lineNum)
@@ -459,66 +432,22 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             bindings.ForEach(ccBinding => ccBinding.CtrlSpace(this));
         }
 
-        private void Default_SettingChanging(object sender, SettingChangingEventArgs e)
+        protected override void OnReloadHighlighting(object sender, EventArgs e)
         {
-            if (e.NewValue == null)
+            try
             {
-                return;
+                if (!string.IsNullOrEmpty(FileName))
+                {
+                    Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
+                }
+                else
+                {
+                    SetHighlighting("Z80 Assembly");
+                }
             }
-
-            switch (e.SettingName)
+            catch (HighlightingDefinitionInvalidException ex)
             {
-                case "MouseWheelScrollDown":
-                    TextEditorProperties.MouseWheelScrollDown = !((bool)e.NewValue);
-                    break;
-                case "EnableFolding":
-                    if ((bool)e.NewValue)
-                    {
-                        Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
-                        Document.FoldingManager.UpdateFoldings(null, null);
-                    }
-                    else
-                    {
-                        Document.FoldingManager.FoldingStrategy = null;
-                        Document.FoldingManager.UpdateFoldings(new List<FoldMarker>());
-                    }
-                    break;
-                case "AutoIndent":
-                    IndentStyle = (bool)e.NewValue ? IndentStyle.Smart : IndentStyle.None;
-                    break;
-                case "AntiAlias":
-                    TextRenderingHint = (bool)e.NewValue ? TextRenderingHint.ClearTypeGridFit : TextRenderingHint.SingleBitPerPixel;
-                    break;
-                case "EditorFont":
-                    Font = (Font)e.NewValue;
-                    break;
-                case "TabSize":
-                    TabIndent = (int)e.NewValue;
-                    break;
-                case "ConvertTabs":
-                    ConvertTabsToSpaces = (bool)e.NewValue;
-                    break;
-                case "ExternalHighlight":
-                    UpdateHighlighting();
-                    break;
-                case "IconBar":
-                    IsIconBarVisible = (bool)e.NewValue;
-                    break;
-                case "LineNumbers":
-                    ShowLineNumbers = (bool)e.NewValue;
-                    break;
-            }
-        }
-
-        private void UpdateHighlighting()
-        {
-            if (!string.IsNullOrEmpty(FileName))
-            {
-                Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
-            }
-            else
-            {
-                SetHighlighting("Z80 Assembly");
+                DockingService.ShowError("Error loading highlighting", ex);
             }
         }
 

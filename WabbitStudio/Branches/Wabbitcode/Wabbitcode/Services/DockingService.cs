@@ -65,6 +65,7 @@ namespace Revsoft.Wabbitcode.Services
 			sb.Append("\nReason: ");
 			sb.Append(ex.Message);
 			MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            LoggingService.Instance.Log(sb.ToString(), ex);
 		}
 
 		internal static DialogResult ShowMessageBox(Form parent, string text, string caption,
@@ -247,7 +248,6 @@ namespace Revsoft.Wabbitcode.Services
             RegisterDockingWindow(new CallStack());
             RegisterDockingWindow(new LabelList());
             RegisterDockingWindow(new OutputWindow());
-            //RegisterDockingWindow(FindForm = new FindAndReplaceForm());
             RegisterDockingWindow(new FindResultsWindow());
             RegisterDockingWindow(new MacroManager());
             RegisterDockingWindow(new BreakpointManagerWindow());

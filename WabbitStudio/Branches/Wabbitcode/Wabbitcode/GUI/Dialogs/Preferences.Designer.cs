@@ -937,7 +937,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             // 
             // enableRefHighlighterBox
             // 
-            this.enableRefHighlighterBox.Location = new System.Drawing.Point(19, 251);
+            this.enableRefHighlighterBox.Location = new System.Drawing.Point(19, 250);
             this.enableRefHighlighterBox.Name = "enableRefHighlighterBox";
             this.enableRefHighlighterBox.Size = new System.Drawing.Size(181, 24);
             this.enableRefHighlighterBox.TabIndex = 3;
@@ -947,16 +947,17 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             // 
             // inverseScrollingBox
             // 
-            this.inverseScrollingBox.Location = new System.Drawing.Point(19, 191);
+            this.inverseScrollingBox.Location = new System.Drawing.Point(19, 192);
             this.inverseScrollingBox.Name = "inverseScrollingBox";
             this.inverseScrollingBox.Size = new System.Drawing.Size(152, 24);
             this.inverseScrollingBox.TabIndex = 2;
             this.inverseScrollingBox.Text = "Inverse Scolling";
             this.inverseScrollingBox.UseVisualStyleBackColor = true;
+            this.inverseScrollingBox.CheckedChanged += new System.EventHandler(this.inverseScrollingBox_CheckedChanged);
             // 
             // enableAutoTriggerBox
             // 
-            this.enableAutoTriggerBox.Location = new System.Drawing.Point(19, 161);
+            this.enableAutoTriggerBox.Location = new System.Drawing.Point(19, 163);
             this.enableAutoTriggerBox.Name = "enableAutoTriggerBox";
             this.enableAutoTriggerBox.Size = new System.Drawing.Size(139, 24);
             this.enableAutoTriggerBox.TabIndex = 2;
@@ -966,7 +967,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             // 
             // enableFoldingBox
             // 
-            this.enableFoldingBox.Location = new System.Drawing.Point(19, 133);
+            this.enableFoldingBox.Location = new System.Drawing.Point(19, 134);
             this.enableFoldingBox.Name = "enableFoldingBox";
             this.enableFoldingBox.Size = new System.Drawing.Size(104, 24);
             this.enableFoldingBox.TabIndex = 2;
@@ -1036,7 +1037,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             // okButton
             // 
             this.okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.okButton.Location = new System.Drawing.Point(91, 399);
+            this.okButton.Location = new System.Drawing.Point(98, 399);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(69, 23);
             this.okButton.TabIndex = 1;
@@ -1047,7 +1048,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             // cancelButton
             // 
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(172, 399);
+            this.cancelButton.Location = new System.Drawing.Point(173, 399);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(69, 23);
             this.cancelButton.TabIndex = 1;

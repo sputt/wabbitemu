@@ -5,7 +5,7 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 {
 	public interface IBackgroundAssemblerService : IService
 	{
-        event EventHandler<AssemblyFinishEventArgs> OnBackgroundAssemblerComplete;
+        event EventHandler<AssemblyFinishEventArgs> BackgroundAssemblerComplete;
 
 		void RequestAssemble();
 	    void CountCode(string codeInfoLines);

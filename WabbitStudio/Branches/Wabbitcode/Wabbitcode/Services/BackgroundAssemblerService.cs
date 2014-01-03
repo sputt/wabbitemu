@@ -23,7 +23,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		#region Events
 
-		public event EventHandler<AssemblyFinishEventArgs> OnBackgroundAssemblerComplete;
+		public event EventHandler<AssemblyFinishEventArgs> BackgroundAssemblerComplete;
 
 		#endregion
 
@@ -68,54 +68,13 @@ namespace Revsoft.Wabbitcode.Services
 	        });
 	    }
 
-	    //private void CodeCheckAssemblerFinished(object sender, AssemblyFinishEventArgs e)
-		//{
-		//	foreach (Editor doc in DockingService.Documents)
-		//	{
-		//		doc.EditorBox.Document.MarkerStrategy.RemoveAll(marker => marker != null && marker.Tag == "Code Check");
-		//	}
-
-		//	foreach (var item in e.Output.ParsedErrors)
-		//	{
-		//		if (string.Equals(item.File, _fileName, StringComparison.OrdinalIgnoreCase))
-		//		{
-		//			Color underlineColor = item.IsWarning ? Color.Yellow : Color.Red;
-		//			BuildError errors = item;
-		//			_mainForm.Invoke(() =>
-		//			{
-		//				AddSquiggleLine(this, errors.lineNumber, underlineColor, errors.Description);
-		//				UpdateDocument(errors.lineNumber);
-		//			});
-		//		}
-		//		else
-		//		{
-		//			// because we are not thread safe, its possible that we close the editor as this is going
-		//			var docsList = DockingService.Documents.Select(s => s).ToList();
-		//			foreach (Editor doc in docsList)
-		//			{
-		//				if (string.Compare(item.File, doc.FileName, true) == 0)
-		//				{
-		//					Color underlineColor = item.IsWarning ? Color.Yellow : Color.Red;
-		//					Editor newEditor = doc;
-		//					BuildError errors = item;
-		//					_mainForm.Invoke(() =>
-		//					{
-		//						AddSquiggleLine(newEditor, errors.lineNumber, underlineColor, errors.Description);
-		//						newEditor.UpdateDocument(errors.lineNumber);
-		//					});
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-
 		#endregion
 
 		private void AssemblerFinished(object sender, AssemblyFinishEventArgs e)
 		{
-		    if (OnBackgroundAssemblerComplete != null)
+		    if (BackgroundAssemblerComplete != null)
 		    {
-		        OnBackgroundAssemblerComplete(sender, e);
+		        BackgroundAssemblerComplete(sender, e);
 		    }
 		}
 

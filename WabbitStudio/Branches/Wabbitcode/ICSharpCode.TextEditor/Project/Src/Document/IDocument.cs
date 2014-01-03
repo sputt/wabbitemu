@@ -77,10 +77,6 @@ namespace Revsoft.TextEditor.Document
             get;
         }
 
-        IconManager IconManager {
-            get;
-        }
-
 		MarkerStrategy MarkerStrategy {
 			get;
 		}

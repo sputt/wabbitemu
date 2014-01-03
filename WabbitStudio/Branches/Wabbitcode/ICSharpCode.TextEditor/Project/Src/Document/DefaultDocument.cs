@@ -95,7 +95,6 @@ namespace Revsoft.TextEditor.Document
 		LineManager           lineTrackingStrategy;
 		BookmarkManager       bookmarkManager;
         BreakpointManager     breakpointManager;
-	    IconManager           iconManager;
 		ITextBufferStrategy   textBufferStrategy;
 		IFormattingStrategy   formattingStrategy;
 		FoldingManager        foldingManager;
@@ -213,16 +212,6 @@ namespace Revsoft.TextEditor.Document
             }
             set {
                 breakpointManager = value;
-            }
-        }
-
-        public IconManager IconManager
-        {
-            get {
-                return iconManager;
-            }
-            set {
-                iconManager = value;
             }
         }
 

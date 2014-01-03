@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Revsoft.TextEditor.Document;
 
-namespace Revsoft.Wabbitcode.EditorExtensions
+namespace Revsoft.Wabbitcode.EditorExtensions.Markers
 {
     public class DebugHighlightMarker : TextMarker
     {
