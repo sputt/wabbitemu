@@ -24,6 +24,7 @@ using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Utils;
+using WeifenLuo.WinFormsUI.Docking;
 using GotoNextBookmark = Revsoft.TextEditor.Actions.GotoNextBookmark;
 using ToggleBookmark = Revsoft.TextEditor.Actions.ToggleBookmark;
 
@@ -369,11 +370,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             });
         }
 
-		private void ClearIcons()
-		{
-			editorBox.Document.IconManager.ClearIcons();
-		}
-
         private void editor_FormClosing(object sender, CancelEventArgs e)
 		{
 			editorBox.Document.MarkerStrategy.RemoveAll(s => true);
@@ -637,8 +633,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
 		private void closeAllOtherMenuItem_Click(object sender, EventArgs e)
 		{
-		    var array = _dockingService.Documents.Where(child => child != this).ToArray();
-			foreach (Editor child in array)
+            var array = _dockingService.Documents.OfType<DockContent>().Where(child => child != this).ToArray();
+			foreach (DockContent child in array)
 			{
 				child.Close();
 			}
@@ -646,8 +642,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
 		private void closeAllMenuItem_Click(object sender, EventArgs e)
 		{
-			var array = _dockingService.Documents.ToArray();
-			foreach (Editor child in array)
+			var array = _dockingService.Documents.OfType<DockContent>().ToArray();
+			foreach (DockContent child in array)
 			{
 				child.Close();
 			}
@@ -847,7 +843,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
             editorBox.LoadFile(fileName, true, true);
             UpdateTabText();
-            ClearIcons();
             LoadFoldings();
         }
 

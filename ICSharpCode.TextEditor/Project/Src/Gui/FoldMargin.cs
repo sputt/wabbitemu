@@ -55,7 +55,7 @@ namespace Revsoft.TextEditor
 					// draw dotted separator line
 					if (textArea.Document.TextEditorProperties.ShowLineNumbers) {
 						g.FillRectangle(BrushRegistry.GetBrush(textArea.Enabled ? lineNumberPainterColor.BackgroundColor : SystemColors.InactiveBorder),
-						                markerRectangle);
+                                        markerRectangle);
 						
 						g.DrawLine(BrushRegistry.GetDotPen(lineNumberPainterColor.Color),
 						           base.drawingPosition.X,
@@ -103,7 +103,7 @@ namespace Revsoft.TextEditor
 			bool isBetweenSelected = SelectedFoldingFrom(foldingsBetween);
 			bool isEndSelected     = SelectedFoldingFrom(foldingsWithEnd);
 			
-			int foldMarkerSize = (int)Math.Round(textArea.TextView.FontHeight * 0.57f);
+			int foldMarkerSize = (int)Math.Round(textArea.TextView.FontHeight * 0.5f);
 			foldMarkerSize -= (foldMarkerSize) % 2;
 			int foldMarkerYPos = drawingRectangle.Y + (int)((drawingRectangle.Height - foldMarkerSize) / 2);
 			int xPos = drawingRectangle.X + (drawingRectangle.Width - foldMarkerSize) / 2 + foldMarkerSize / 2;

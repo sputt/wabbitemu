@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Reflection;
 using System.Windows.Forms;
 
 using Revsoft.TextEditor.Document;
@@ -63,6 +64,7 @@ namespace Revsoft.TextEditor
 			    }
 			    mark.Draw(this, g, new Point(0, yPos));
 			}
+
             foreach (Breakpoint mark in textArea.Document.BreakpointManager.Marks)
             {
                 int lineNumber = textArea.Document.GetVisibleLine(mark.LineNumber);
@@ -75,8 +77,6 @@ namespace Revsoft.TextEditor
                 mark.Draw(this, g, new Point(0, yPos));
             }
 
-		    foreach (MarginIcon icon in textArea.Document.IconManager.IconsToDraw)
-		        DrawIcon(g, rect, icon);
 		    base.Paint(g, rect);
 		}
 
@@ -130,27 +130,6 @@ namespace Revsoft.TextEditor
 		
 		#region Drawing functions
 
-        public void DrawIcon(Graphics g, Rectangle rect, MarginIcon icon)
-        {
-            int lineNumber = textArea.Document.GetVisibleLine(icon.lineNum);
-            int lineHeight = textArea.TextView.FontHeight;
-            int diameter = Math.Min(iconBarWidth - 2, textArea.TextView.FontHeight);
-            int yPos = lineNumber * lineHeight - textArea.VirtualTop.Y;
-            if (!IsLineInsideRegion(yPos, yPos + lineHeight, rect.Y, rect.Bottom)) return;
-            if (lineNumber == textArea.Document.GetVisibleLine(icon.lineNum - 1))
-                // marker is inside folded region, do not draw it
-                return;
-            icon.image.MakeTransparent();
-            Rectangle iconrect = new Rectangle(1,
-                                           yPos + (textArea.TextView.FontHeight - diameter) / 2,
-                                           diameter,
-                                           diameter);
-            icon.toolTip.SetToolTip(icon, icon.toolTip.ToolTipTitle);
-
-            g.DrawImage(icon.image, iconrect);
-
-        }
-
 	    public void DrawBreakpoint(Graphics g, int y, bool isEnabled)
 		{
             
@@ -159,11 +138,15 @@ namespace Revsoft.TextEditor
                                            y + (textArea.TextView.FontHeight - diameter) / 2,
                                            diameter,
                                            diameter);
-// ReSharper disable AssignNullToNotNullAttribute
-            Bitmap breakpoint = new Bitmap(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.TextEditor.Resources.brk.bmp"));
-// ReSharper restore AssignNullToNotNullAttribute
-            breakpoint.MakeTransparent();
-            g.DrawImage(breakpoint, rect);
+            var icon = Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.TextEditor.Resources.brk.bmp");
+	        if (icon == null)
+	        {
+	            return;
+	        }
+
+	        Bitmap breakpoint = new Bitmap(icon);
+	        breakpoint.MakeTransparent();
+	        g.DrawImage(breakpoint, rect);
 		}
 		
 		public void DrawBookmark(Graphics g, int y, bool isEnabled)

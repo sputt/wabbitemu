@@ -30,7 +30,6 @@ namespace Revsoft.TextEditor.Document
 			doc.MarkerStrategy      = new MarkerStrategy(doc);
 			doc.BookmarkManager     = new BookmarkManager(doc, doc.LineManager);
             doc.BreakpointManager   = new BreakpointManager(doc);
-            doc.IconManager         = new IconManager();
 			return doc;
 		}
 		

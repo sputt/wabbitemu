@@ -583,6 +583,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EditorExtensions\AsmFormattingStrategy.cs" />
+    <Compile Include="EditorExtensions\ErrorUnderliner.cs" />
+    <Compile Include="EditorExtensions\Markers\ErrorMarker.cs" />
+    <Compile Include="EditorExtensions\Markers\ReferenceMarker.cs" />
+    <Compile Include="EditorExtensions\TextEditorProperties.cs" />
     <Compile Include="GUI\Dialogs\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -631,7 +635,7 @@
     </Compile>
     <Compile Include="EditorExtensions\CompletionProviderBase.cs" />
     <Compile Include="EditorExtensions\CompletionProviders.cs" />
-    <Compile Include="EditorExtensions\DebugHighlightMarker.cs" />
+    <Compile Include="EditorExtensions\Markers\DebugHighlightMarker.cs" />
     <Compile Include="EditorExtensions\FoldingItem.cs" />
     <Compile Include="EditorExtensions\InsightProviders.cs" />
     <Compile Include="EditorExtensions\WabbitcodeTextEditor.cs">
@@ -671,7 +675,6 @@
     <Compile Include="GUI\ToolBars\MainToolBar.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Properties\TempSettings.Designer.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\VS2012ColorTable.cs" />
     <Compile Include="Services\Assembler\AssemblerFactory.cs" />
@@ -692,6 +695,7 @@
     <Compile Include="Services\Interfaces\IDebuggerService.cs" />
     <Compile Include="Services\Interfaces\IDockingService.cs" />
     <Compile Include="Services\Interfaces\IFileReaderService.cs" />
+    <Compile Include="Services\Interfaces\ILoggingService.cs" />
     <Compile Include="Services\Interfaces\IMenuService.cs" />
     <Compile Include="Services\Interfaces\IParserService.cs" />
     <Compile Include="Services\Interfaces\IPluginService.cs" />
@@ -699,6 +703,7 @@
     <Compile Include="Services\Interfaces\IStatusBarService.cs" />
     <Compile Include="Services\Interfaces\ISymbolService.cs" />
     <Compile Include="Services\Interfaces\IToolBarService.cs" />
+    <Compile Include="Services\LoggingService.cs" />
     <Compile Include="Services\MenuService.cs" />
     <Compile Include="Services\Parser\ParserEventArgs.cs" />
     <Compile Include="Services\Parser\ParserProgressEventArgs.cs" />
@@ -1076,7 +1081,6 @@
     <EmbeddedResource Include="Extensions\TreeView.resx">
       <DependentUpon>TreeView.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="Properties\TempSettings.settings" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
