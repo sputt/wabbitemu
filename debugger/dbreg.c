@@ -1363,7 +1363,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_COMMAND:
 			switch (HIWORD(wParam)) {
 				case EN_CHANGE:
-				case 256:
+				case EN_SETFOCUS:
 				case EN_UPDATE:
 				case EN_MAXTEXT:
 					break;

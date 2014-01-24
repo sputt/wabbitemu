@@ -137,11 +137,7 @@ int mprintf(MFILE* mf, const char *format, ...) {
 	} else {
 		char buffer[1024];
 		int i;
-#ifdef WINVER
 		vsprintf_s(buffer, format, list);
-#else
-		vsprintf(buffer, format, list);
-#endif
 		size_t sz_length = strlen(buffer);
 		if (mf->pnt >= mf->size) {
 			temp = (unsigned char *) realloc(mf->data, mf->size+sz_length);

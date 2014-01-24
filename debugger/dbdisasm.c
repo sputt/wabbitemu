@@ -383,7 +383,7 @@ void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int o
 }
 
 static BOOL had_exe_violation = FALSE;
-void stepoverout_exe_callback(void *arg1) {
+void stepoverout_exe_callback(CPU_t *cpu) {
 	had_exe_violation = TRUE;
 }
 
@@ -395,7 +395,7 @@ void CPU_stepout(LPCALC lpCalc) {
 	had_exe_violation = FALSE;
 	BOOL backup_exe_violation = break_on_exe_violation;
 	break_on_exe_violation = TRUE;
-	void (*backupFunction)(void *) = cpu->exe_violation_callback;
+	void (*backupFunction)(CPU_t *) = cpu->exe_violation_callback;
 	cpu->exe_violation_callback = stepoverout_exe_callback;
 
 	uint64_t tstates15seconds = 15 * cpu->timer_c->freq;
@@ -435,7 +435,7 @@ void CPU_stepover(LPCALC lpCalc) {
 	had_exe_violation = FALSE;
 	BOOL backup_exe_violation = break_on_exe_violation;
 	break_on_exe_violation = TRUE;
-	void (*backupFunction)(void *) = cpu->exe_violation_callback;
+	void (*backupFunction)(CPU_t *) = cpu->exe_violation_callback;
 	cpu->exe_violation_callback = stepoverout_exe_callback;
 
 	disassemble(lpCalc, REGULAR, addr_to_waddr(cpu->mem_c, cpu->pc), 1, &zinflocal);

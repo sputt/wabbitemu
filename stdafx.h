@@ -78,19 +78,19 @@ typedef std::string tstring;
 }
 #endif
 
-#elif defined(_LINUX)
+#elif defined(_LINUX) || defined(_ANDROID)
 #include <assert.h>
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include <stddef.h>
 #include <time.h>
 #include <ctype.h>
 
-typedef char TCHAR;
-typedef char _TUCHAR;
 typedef void *LPVOID;
 typedef const char *LPCTSTR;
 typedef int errno_t;
@@ -98,6 +98,12 @@ typedef int errno_t;
 #define _T(z) z
 #define _tprintf_s printf
 #define ARRAYSIZE(z) (sizeof(z)/sizeof((z)[0]))
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
 #define _strnicmp strncasecmp
 #define _tcsicmp strcasecmp
 #define _putts puts
@@ -106,7 +112,13 @@ typedef int errno_t;
 #define _tcslen strlen
 #define _tcscmp strcmp
 #define _tcsncmp strncmp
+#define _tcsnicmp _strnicmp
+#define tmpfile_s tmpfile
+#define vsprintf_s vsprintf
 #define ZeroMemory(dest, size) memset(dest, 0, size)
+#define memcpy_s(dest, num, source, size) memcpy(dest, source, size)
+#define StringCbCopy(dest, size, source) strcpy(dest, source)
+#define StringCbPrintf(dest, size, format, args...) sprintf(dest, format, args)
 
 #elif defined(_MACVER)
 #include <assert.h>

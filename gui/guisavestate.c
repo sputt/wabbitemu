@@ -84,11 +84,7 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 
 							SAVESTATE_t *savestate = SaveSlot(lpCalc, author, comment);
 							WriteSave(save_filename, savestate, compression);
-#ifdef WINVER
 							StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), save_filename);
-#else
-							strcpy(lpCalc->rom_path, save_filename);
-#endif
 							FreeSave(savestate);
 						}
 					case IDC_BTNSAVECANCEL:
@@ -107,11 +103,7 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 
 INT_PTR gui_savestate(HWND hwndParent, TCHAR *filename, LPCALC lpCalc) {
 	InitCommonControls();
-#ifdef WINVER
 	StringCbCopy(save_filename, sizeof(save_filename), filename);
-#else
-	strcpy(save_filename, filename);
-#endif
 	return DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGSAVESTATE), hwndParent, DlgSavestateProc, (LPARAM) lpCalc);
 }
 

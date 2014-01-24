@@ -165,7 +165,7 @@ unsigned char *GetLCDImage() {
 
 __declspec (dllexport)
 void PressKey(WORD wKey) {
-	keypad_key_press(&calcs[0].cpu, wKey);
+	keypad_key_press(&calcs[0].cpu, wKey, NULL);
 }
 
 __declspec (dllexport)

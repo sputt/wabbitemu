@@ -132,7 +132,8 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						case IDC_BUTTON_BROWSE:
 							TCHAR buffer[MAX_PATH];
 							if (!BrowseFile(buffer, _T("Known types ( *.sav; *.rom) \0*.sav;*.rom\0Save States  (*.sav)\0*.sav\0\
-										ROMs  (*.rom)\0*.rom\0All Files (*.*)\0*.*\0\0"), _T("Please select a ROM or save state"), _T("rom"))) {
+										ROMs  (*.rom)\0*.rom\0All Files (*.*)\0*.*\0\0"), _T("Please select a ROM or save state"),
+										_T("rom"), 0)) {
 								Edit_SetText(hEditRom, buffer);
 							}
 							break;
@@ -428,7 +429,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							if (!BrowseFile(buf,			//output
 								_T("83 Plus Series OS  (*.8xu)\0*.8xu\0	73 OS  (*.73u)\0*.73u\0	All Files (*.*)\0*.*\0\0"), //filter
 								_T("Open Calculator OS File"),		//title
-								_T("8xu")))						//def ext
+								_T("8xu"),					//def ext
+								0))						
 								Edit_SetText(hEditOSPath, buf);
 							break;
 						}
@@ -512,7 +514,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					OSDownloadCallback callback;
 					TCHAR buffer[MAX_PATH];
 					SaveFile(buffer, _T("ROMs  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
-								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST);
+								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST, 0);
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
 						ShowWindow(hOSStaticProgress, SW_SHOW);
 						ShowWindow(hOSProgressBar, SW_SHOW);
@@ -739,7 +741,7 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 							ext = _T("86p");
 							break;
 						}
-						if (!SaveFile(buf, filter, _T("Wabbitemu Save ROM Dumper"), ext)) {
+						if (!SaveFile(buf, filter, _T("Wabbitemu Save ROM Dumper"), ext, 0, 0)) {
 							FILE *start, *end;
 							_tfopen_s(&start, dumperPath, _T("rb"));
 							_tfopen_s(&end, buf, _T("wb"));
@@ -811,7 +813,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_FINISH | PSWIZB_BACK);
 					TCHAR buf[MAX_PATH], ch;
 					if (BrowseFile(buf, _T("83 Plus Application Variables (*.8xv)\0*.8xv\0	All Files (*.*)\0*.*\0\0"),
-							_T("Wabbitemu Open ROM Dump"), _T("8xp"))) {
+							_T("Wabbitemu Open ROM Dump"), _T("8xp"), 0)) {
 						break;
 					}
 					if (LOWORD(wParam) == IDC_BUTTON_BROWSE1) {
@@ -907,7 +909,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					Edit_GetText(hEditVar1, browse, MAX_PATH);
 					TCHAR buffer[MAX_PATH];
 					SaveFile(buffer, _T("ROMs (*.rom)\0*.rom\0Bins (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
-								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST);
+								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST, 0);
 					LPCALC lpCalc = calc_slot_new();
 					ModelInit(lpCalc);
 

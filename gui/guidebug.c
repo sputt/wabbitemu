@@ -627,7 +627,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 			case IDM_TOOLS_DUMP: {
 				TCHAR path[MAX_PATH];
-				if (!SaveFile(path, _T("Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0\0"), _T("Save Dump"), _T("txt"), OFN_PATHMUSTEXIST)) {
+				if (!SaveFile(path, _T("Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0\0"), _T("Save Dump"), _T("txt"), OFN_PATHMUSTEXIST, 0)) {
 					WriteHumanReadableDump(lpDebugInfo->lpCalc, path);
 				}
 				break;
@@ -650,7 +650,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					double data;
 					TCHAR buffer[MAX_PATH];
 					if (BrowseFile(buffer, _T("	Text file  (*.txt)\0*.txt\0	All Files (*.*)\0*.*\0\0"),
-									_T("Wabbitemu Save Profile"), _T("txt"))) {
+									_T("Wabbitemu Save Profile"), _T("txt"), 0)) {
 						//make the profiler running again
 						lpCalc->profiler.running = TRUE;
 						break;

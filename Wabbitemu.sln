@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wabbitemu", "Wabbitemu.vcxproj", "{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}"
 EndProject
 Global
@@ -27,6 +29,8 @@ Global
 		WabbitComp Release|x64 = WabbitComp Release|x64
 		Wabbitemu Release|Win32 = Wabbitemu Release|Win32
 		Wabbitemu Release|x64 = Wabbitemu Release|x64
+		WindowsPhone8|Win32 = WindowsPhone8|Win32
+		WindowsPhone8|x64 = WindowsPhone8|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug DLL|Win32.ActiveCfg = Debug DLL|Win32
@@ -57,6 +61,10 @@ Global
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Release|Win32.Build.0 = Wabbitemu Release|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Release|x64.ActiveCfg = Wabbitemu Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Release|x64.Build.0 = Wabbitemu Release|x64
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WindowsPhone8|Win32.ActiveCfg = WindowsPhone8|Win32
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WindowsPhone8|Win32.Build.0 = WindowsPhone8|Win32
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WindowsPhone8|x64.ActiveCfg = WindowsPhone8|x64
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WindowsPhone8|x64.Build.0 = WindowsPhone8|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

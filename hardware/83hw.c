@@ -1,11 +1,11 @@
 #include "stdafx.h"
 
+#include "83hw.h"
 #include "lcd.h"
 #include "keys.h"
-#include "83hw.h"
 #include "link.h"
 #include "device.h"
-#include "calc.h"
+
 static double timer_freq83[4] = {1.0f / 600.0f, 1.0f / 257.14f, 1.0f / 163.63f, 1.0f / 120.0f};
 
 #define SWAP_BANK	0xFF
@@ -152,21 +152,20 @@ void port00_82(CPU_t *cpu, device_t *dev) {
 		cpu->bus += (((link->host & 0x03) | (link->client[0] & 0x03)) ^ 0x03);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-#ifdef WINVER
 		if ((link->host & 0x01) != ((cpu->bus & 0x04) >> 2)) {
 			FlippedLeft(cpu, (cpu->bus & 0x04) >> 2);
 		}
 		if ((link->host&0x02) != ((cpu->bus & 0x08) >> 2)) {
 			FlippedRight(cpu, (cpu->bus & 0x08) >> 3);
 		}
-#endif
 		link->host = (cpu->bus & 0x0C) >> 2;
 //		setpage83(cpu);
 		cpu->output = FALSE;
 	}
-#ifdef WINVER
-	if (link->audio.init && link->audio.enabled) nextsample(cpu);
-#endif
+
+	if (link->audio.init && link->audio.enabled) {
+		nextsample(cpu);
+	}
 }
 
 void port00_83(CPU_t *cpu, device_t *dev) {
@@ -179,22 +178,21 @@ void port00_83(CPU_t *cpu, device_t *dev) {
 		cpu->bus += stdint->xy;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-#ifdef WINVER
 		if ((link->host & 0x01) != (cpu->bus & 0x01)) {
 			FlippedLeft(cpu, cpu->bus & 0x01);
 		}
+
 		if ((link->host & 0x02) != (cpu->bus & 0x02)) {
 			FlippedRight(cpu, (cpu->bus & 0x02) >> 1);
 		}
-#endif
+
 		link->host = cpu->bus & 0x03;
 		stdint->xy = cpu->bus & 0x10;
 		setpage83(cpu);
 		cpu->output = FALSE;
 	}
-#ifdef WINVER
+
 	nextsample(cpu);
-#endif
 }
 
 void port02_83(CPU_t *cpu, device_t *dev) {
@@ -428,12 +426,6 @@ int device_init_83(CPU_t *cpu, BOOL bad82) {
 
 int memory_init_83(memc *mc) {
 	memset(mc, 0, sizeof(memc));
-
-	mc->mem_read_break_callback = mem_debug_callback;
-	mc->mem_write_break_callback = mem_debug_callback;
-#ifdef WINVER
-	mc->breakpoint_manager_callback = check_break_callback;
-#endif
 	
 	/* Set Number of Pages here */
 	mc->flash_pages = 16;

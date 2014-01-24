@@ -17,11 +17,7 @@ TCHAR *generate_gif_name(TCHAR *fn, int num, TCHAR *dest) {
 		fn[i] = '\0';
 	}
 	
-#ifdef WINVER
 	StringCbPrintf(dest, _tcslen(dest) + 4, _T("%s%d.gif"), fn, num);
-#else
-	sprintf(dest, "%s%d.gif", fn, num);
-#endif
 	
 	if (i)  {
 		fn[i] = '.';
@@ -68,7 +64,7 @@ BOOL get_gif_filename() {
 #ifdef _WINDOWS
 #ifndef _WINDLL
 		if (SaveFile(gif_file_name, _T("Graphics Interchange Format  (*.gif)\0*.gif\0All Files (*.*)\0*.*\0\0"),
-						_T("Wabbitemu GIF File Target"), _T("gif")))
+						_T("Wabbitemu GIF File Target"), _T("gif"), 0, 0))
 			//if we cancel, mark the menu and set to idle
 			return FALSE;
 #endif

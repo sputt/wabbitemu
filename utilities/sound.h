@@ -65,7 +65,7 @@ typedef struct {
 } AUDIO_t;
 
 
-int soundinit(void *);
+int soundinit(AUDIO_t *);
 int playsound(AUDIO_t *);
 int pausesound(AUDIO_t *);
 void togglesound(AUDIO_t *);

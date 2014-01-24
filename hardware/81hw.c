@@ -4,7 +4,6 @@
 #include "lcd.h"
 #include "keys.h"
 #include "device.h"
-#include "calc.h"
 
 static double timer_freq81[4] = { 1.0 / 800.0, 1.0 / 400.0, 3.0 / 800.0, 1.0 / 200.0 };
 
@@ -164,12 +163,6 @@ static STDINT_t* INT81_init(CPU_t* cpu) {
 
 int memory_init_81(memc *mc) {
 	memset(mc, 0, sizeof(memory_context_t));
-
-	mc->mem_read_break_callback = mem_debug_callback;
-	mc->mem_write_break_callback = mem_debug_callback;
-#ifdef WINVER
-	mc->breakpoint_manager_callback = check_break_callback;
-#endif
 	
 	/* Set Number of Pages here */
 	mc->flash_pages = 2;

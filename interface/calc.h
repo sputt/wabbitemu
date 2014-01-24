@@ -8,11 +8,11 @@
 #include "lcd.h"
 #include "keys.h"
 #include "link.h"
+#include "sound.h"
+#include "breakpoint.h"
 
 #ifdef _WINDOWS
-#include "sound.h"
 #include "DropTarget.h"
-#include "dbbreakpoints.h"
 
 class CWabbitemu;
 #endif
@@ -86,6 +86,7 @@ typedef struct tagCALC {
 
 	key_string *last_keypress_head;
 	int num_keypresses;
+#endif
 
 	union {
 		struct {
@@ -94,9 +95,6 @@ typedef struct tagCALC {
 		};
 		breakpoint_t **cond_breakpoints[2];
 	};
-#else
-	pthread_t hdlThread;
-#endif
 
 	DWORD scale;
 	BOOL bCutout;
@@ -175,11 +173,13 @@ void calc_pause_linked();
 int calc_init_83p(LPCALC);
 int calc_init_84p(LPCALC);
 int calc_init_83pse(LPCALC);
+
+int link_connect(CPU_t *, CPU_t *);
+int link_connect_hub(int slot, CPU_t *cpu);
+
 LPCALC calc_from_cpu(CPU_t *);
 LPCALC calc_from_memc(memc *);
 void calc_erase_certificate(unsigned char *, int);
-void port_debug_callback(void *, void *);
-void mem_debug_callback(void *);
 
 #ifdef CALC_C
 #define GLOBAL
@@ -198,11 +198,13 @@ GLOBAL int current_backup_index;
 GLOBAL int num_backup_per_sec;
 #endif
 
+#ifdef USE_AVI
 #include "avi_utils.h"
 #include "avifile.h"
 GLOBAL CAviFile *currentAvi;
 GLOBAL HAVI recording_avi;
 GLOBAL BOOL is_recording;
+#endif
 
 GLOBAL u_int frame_counter;
 GLOBAL int startX;
