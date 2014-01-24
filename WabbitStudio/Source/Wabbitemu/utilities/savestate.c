@@ -550,6 +550,11 @@ void SaveTIMER(SAVESTATE_t *save, timerc *time) {
 }
 
 void SaveLINK(SAVESTATE_t* save, link_t* link) {
+	if (link == NULL) {
+		// 81
+		return;
+	}
+
 	CHUNK_t* chunk = NewChunk(save, LINK_tag);
 	WriteChar(chunk, link->host);
 }
@@ -911,6 +916,11 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 
 void LoadLINK(SAVESTATE_t* save, link_t* link) {
 	CHUNK_t* chunk	= FindChunk(save,LINK_tag);
+	if (chunk == NULL) {
+		// 81
+		return;
+	}
+
 	chunk->pnt = 0;
 
 	link->host		= ReadChar(chunk);
@@ -1069,15 +1079,20 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 		_putts(_T("Save was null for write"));
 		return;
 	}
-	if (compress == 0) {
 #ifdef WINVER
+	if (compress == 0) {
 		_tfopen_s(&ofile, fn, _T("wb"));
-#else
-		ofile = fopen(fn, "wb");
-#endif
 	} else {
 		tmpfile_s(&ofile);
 	}
+#else
+	if (compress == 0) {
+		ofile = fopen(fn, "wb");
+	}
+	else {
+		ofile = tmpfile();
+	}
+#endif
 		
 	if (!ofile) {
 		_putts(_T("Could not open save file for write"));
@@ -1163,7 +1178,11 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 	string[8] = 0;
 	if (strncmp(DETECT_CMP_STR, string, 8) == 0) {
 		i = fgetc(ifile);
+#ifdef WINVER
 		tmpfile_s(&tmpFile);
+#else
+		tmpFile = tmpfile();
+#endif
 		if (!tmpFile) {
 			return NULL;
 		}

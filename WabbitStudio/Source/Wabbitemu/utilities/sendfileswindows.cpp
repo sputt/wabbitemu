@@ -1,16 +1,13 @@
 #include "stdafx.h"
 
-#ifdef WINVER
-#include "sound.h"
-#endif
+#include "sendfileswindows.h"
 
+#include "sound.h"
 #include "calc.h"
 #include "label.h"
 #include "state.h"
 #include "var.h"
 #include "link.h"
-#include "SendFile.h"
-#include "sendfileswindows.h"
 #include "fileutilities.h"
 
 typedef class SENDINFO

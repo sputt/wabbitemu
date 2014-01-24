@@ -2,7 +2,6 @@
 #define CORE_H
 
 #include "coretypes.h"
-//#include "stdafx.h"
 
 #define TI_81		0
 #define TI_82		1
@@ -170,7 +169,7 @@ typedef struct memory_context {
 		u_char *breaks[2];
 	};
 
-	BOOL (*breakpoint_manager_callback)(memory_context *, BREAK_TYPE, waddr_t);
+	BOOL (*breakpoint_manager_callback)(struct memory_context *, BREAK_TYPE, waddr_t);
 
 	int flash_size;
 	int flash_pages;
@@ -223,9 +222,6 @@ typedef struct memory_context {
 
 	int port27_remap_count;		// amount of 64 byte chunks remapped from RAM page 0 to bank 3
 	int port28_remap_count;		// amount of 64 byte chunks remapped from RAM page 1 to bank 1
-
-	void (*mem_read_break_callback)(void *);
-	void (*mem_write_break_callback)(void *);
 } memory_context_t, memc;
 
 /* Input/Output device mapping */
@@ -248,6 +244,7 @@ typedef struct interrupt {
 typedef struct pio_context {
 	int model;
 	struct LCD *lcd;
+	//struct ColorLCD *lcd;
 	struct keypad *keypad;
 	struct link *link;
 	struct STDINT *stdint;
@@ -294,7 +291,6 @@ typedef struct CPU {
 	pioc pio;
 	memc *mem_c;
 	timerc *timer_c;
-	void (*exe_violation_callback)(void *);
 	int cpu_version;
 	reverse_time_t prev_instruction_list[512];
 	reverse_time_t *prev_instruction;
@@ -304,17 +300,22 @@ typedef struct CPU {
 	BOOL is_link_instruction;
 	unsigned long long linking_time;
 	unsigned long long hasHitEnter;
+
+	void(*exe_violation_callback)(struct CPU *);
+	void(*invalid_flash_callback)(struct CPU *);
+	void(*mem_read_break_callback)(struct CPU *);
+	void(*mem_write_break_callback)(struct CPU *);
 } CPU_t;
 
 typedef void (*opcodep)(CPU_t*);
 typedef void (*index_opcodep)(CPU_t*, char);
 
-inline unsigned char mem_read(memc*, unsigned short);
+unsigned char mem_read(memc*, unsigned short);
 uint8_t wmem_read(memc*, waddr_t);
 uint16_t wmem_read16(memc *mem, waddr_t waddr);
 unsigned short mem_read16(memc*, unsigned short);
-inline unsigned char mem_write(memc*, unsigned short, char);
-inline waddr_t addr_to_waddr(memc*, uint16_t);
+unsigned char mem_write(memc*, unsigned short, char);
+waddr_t addr_to_waddr(memc*, uint16_t);
 
 void set_break(memc *, waddr_t waddr);
 void set_mem_write_break(memc *, waddr_t waddr);
@@ -338,10 +339,11 @@ void update_bootmap_pages(memc *mem_c);
 
 int tc_init(timerc*, int);
 int CPU_init(CPU_t*, memc*, timerc*);
+int CPU_reset(CPU_t *);
 int CPU_step(CPU_t*);
 int CPU_connected_step(CPU_t *cpu);
-inline unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr);
-inline void CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data);
+unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr);
+void CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data);
 CPU_t* CPU_clone(CPU_t *cpu);
 #define HALT_SCALE	3
 

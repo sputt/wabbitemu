@@ -433,7 +433,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 						case IDC_BROWSESKIN: {
 							TCHAR lpStrFile[MAX_PATH];
 							if (!BrowseFile(lpStrFile, _T("Image Files (*.bmp;*.jpg;*.png;*.tiff)\0*.bmp;*.jpg;*.png;*.tiff\0	All Files (*.*)\0*.*\0\0"),
-								_T("Browse for custom skin"), _T("png"))) {
+								_T("Browse for custom skin"), _T("png"), 0)) {
 									Edit_SetText(hSkinText, lpStrFile);
 							}
 							break;
@@ -441,7 +441,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 						case IDC_BROWSEKEY: {
 							TCHAR lpStrFile[MAX_PATH];
 							if (!BrowseFile(lpStrFile, _T("Image Files (*.bmp;*.jpg;*.png;*.tiff)\0*.bmp;*.jpg;*.png;*.tiff\0	All Files (*.*)\0*.*\0\0"),
-								_T("Browse for custom keymap"), _T("png"))) {
+								_T("Browse for custom keymap"), _T("png"), 0)) {
 									Edit_SetText(hKeyText, lpStrFile);
 							}
 							break;
@@ -705,7 +705,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 						}
 						case IDC_BTNGIFBROWSE:
 							BrowseFile(gif_file_name, _T("Graphics Interchange Format  (*.gif)\0*.gif\0All Files (*.*)\0*.*\0\0"),
-										_T("Wabbitemu GIF File Target"), _T("gif"));
+										_T("Wabbitemu GIF File Target"), _T("gif"), 0);
 							Edit_SetText(edtGIFFilename, gif_file_name);
 							break;
 						case IDC_CHKUSEINCREASING:
@@ -770,7 +770,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						case IDC_BTN1: {
 							TCHAR lpszFile[MAX_PATH];
 							if (!SaveFile(lpszFile, _T("ROMs  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
-											_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST)) {
+											_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST, 0)) {
 								MFILE *file = ExportRom(lpszFile, lpCalc);
 								mclose(file);
 							}

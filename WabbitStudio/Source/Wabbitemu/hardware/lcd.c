@@ -85,7 +85,6 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	}
 
 	lcd->free = &LCD_free;
-	lcd->is_color = FALSE;
 	LCD_reset(lcd);
 	
 	switch (model) {
@@ -108,10 +107,6 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 		case TI_84P:
 			lcd->base_level = BASE_LEVEL_83PSE;
 			break;
-		case TI_84PCSE:
-			lcd->base_level = BASE_LEVEL_83PSE;
-			lcd->is_color = TRUE;
-			break;
 		default:
 			lcd->base_level = BASE_LEVEL_83P;
 			break;
@@ -119,13 +114,12 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 
 	if (model == TI_86 || model == TI_85) {
 		lcd->width = 128;
-	} else if (model == TI_84PCSE) {
-		lcd->width = 320;
 	} else {
 		lcd->width = 96;
 	}
 	
 	// Set all values to the defaults
+	// TODO: remove
 #ifdef WINVER
 	lcd->shades = (u_int) QueryWabbitKey(_T("shades"));
 	lcd->mode = (LCD_MODE) QueryWabbitKey(_T("lcd_mode"));

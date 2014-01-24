@@ -9,11 +9,7 @@
 #define GIF_FRAME 2
 #define GIF_END 3
 
-#ifdef WINVER
-#include "gui.h"
-#else
 #include "coretypes.h"
-#endif
 
 extern int gif_write_state;
 extern int gif_file_size;

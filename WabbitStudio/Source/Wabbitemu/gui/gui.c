@@ -617,6 +617,41 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 	return hr;
 }
 
+HWND check_valid_frame_handle(HWND hwndToCheck) {
+	for (int i = 0; i < MAX_CALCS; i++) {
+		BOOL valid = calcs[i].hwndFrame == hwndToCheck;
+		if (valid) {
+			return calcs[i].hwndLCD;
+		}
+	}
+	return NULL;
+}
+
+HWND check_valid_other_handle(HWND hwndToCheck) {
+	for (int i = 0; i < MAX_CALCS; i++) {
+		// we only need to worry about this case if the cutout skin is enabled
+		if (calcs[i].bCutout && calcs[i].bSkinEnabled) {
+			continue;
+		}
+
+		BOOL valid = calcs[i].hwndSmallClose == hwndToCheck || calcs[i].hwndSmallMinimize;
+		if (valid) {
+			return calcs[i].hwndLCD;
+		}
+	}
+	return NULL;
+}
+
+HWND check_valid_debug_handle(HWND hwndToCheck) {
+	for (int i = 0; i < MAX_CALCS; i++) {
+		BOOL valid = calcs[i].hwndDebug == hwndToCheck;
+		if (valid) {
+			return calcs[i].hwndLCD;
+		}
+	}
+	return NULL;
+}
+
 void CWabbitemuModule::RunMessageLoop()
 {
 	if (m_parsedArgs.no_create_calc) {
@@ -628,21 +663,13 @@ void CWabbitemuModule::RunMessageLoop()
 		HACCEL haccel = haccelmain;
 		HWND hwndtop = GetForegroundWindow();
 		if (hwndtop) {
-			if (hwndtop == m_lpCalc->hwndDebug) {
+			if (check_valid_debug_handle(hwndtop)) {
 				haccel = hacceldebug;
-			} else if (hwndtop == m_lpCalc->hwndFrame) {
+			} else if (hwndtop = check_valid_frame_handle(hwndtop)) {
 				haccel = haccelmain;
-				hwndtop = m_lpCalc->hwndLCD;
 				SetForegroundWindow(hwndtop);
-			} else if (m_lpCalc->bCutout && m_lpCalc->bSkinEnabled) {
-				if (hwndtop == m_lpCalc->hwndFrame || 
-					hwndtop == m_lpCalc->hwndSmallClose ||
-					hwndtop == m_lpCalc->hwndSmallMinimize)
-				{
-					hwndtop = m_lpCalc->hwndLCD;
-				} else {
-					haccel = NULL;	
-				}
+			} else if (hwndtop = check_valid_other_handle(hwndtop)) {
+				haccel = haccelmain;
 			} else {
 				haccel = NULL;
 			}
@@ -697,6 +724,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				   LPSTR lpszCmdParam, int nCmdShow)
 {
 	return _Module.WinMain(nCmdShow);
+}
+
+void press_key(LPCALC lpCalc, UINT key) {
+	// TODO: handle remapped keys
+	keypad_key_press(&lpCalc->cpu, key, NULL);
+	calc_run_seconds(lpCalc, .25);
+	keypad_key_release(&lpCalc->cpu, key);
+	calc_run_seconds(lpCalc, .25);
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -842,7 +877,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			ZeroMemory(FileName, MAX_PATH);
 			BOOL running = lpCalc->running;
 			lpCalc->running = FALSE;
-			if (!SaveFile(FileName, (TCHAR *) lpstrFilter, _T("Wabbitemu Save State"), _T("sav"), OFN_PATHMUSTEXIST)) {
+			if (!SaveFile(FileName, (TCHAR *) lpstrFilter, _T("Wabbitemu Save State"), _T("sav"), OFN_PATHMUSTEXIST, 0)) {
 				TCHAR extension[5] = _T("");
 				const TCHAR *pext = _tcsrchr(FileName, _T('.'));
 				if (pext != NULL) {
@@ -851,6 +886,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				
 				if (!_tcsicmp(extension, _T(".rom")) || !_tcsicmp(extension, _T(".bin"))) {
 					MFILE *file = ExportRom(FileName, lpCalc);
+					if (file == NULL) {
+						MessageBox(hwnd, _T("There was an error writing to the file"), _T("Error"), MB_OK | MB_ICONERROR);
+					}
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), FileName);
 					mclose(file);
 				} else if (!_tcsicmp(extension, _T(".8xu"))) {
@@ -945,6 +983,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 								}
 		case IDM_FILE_AVI: {
+#ifdef USE_AVI
 			HMENU hmenu = GetMenu(hwnd);
 			if (is_recording) {
 				delete currentAvi;
@@ -956,7 +995,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				lpCalc->running = FALSE;
 				TCHAR lpszFile[MAX_PATH];
 				if (!SaveFile(lpszFile, _T("AVIs (*.avi)\0*.avi\0All Files (*.*)\0*.*\0\0"),
-					_T("Wabbitemu Export AVI"), _T("avi"), OFN_PATHMUSTEXIST)) {
+					_T("Wabbitemu Export AVI"), _T("avi"), OFN_PATHMUSTEXIST, 0)) {
 
 						GetCompression();
 						currentAvi = new CAviFile(lpszFile, /*mmioFOURCC('U', 'Y', 'V', 'Y')*/0x63646976, FPS);
@@ -967,6 +1006,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				lpCalc->running = TRUE;
 			}
+#endif
 			break;
 						   }
 		case IDM_FILE_CLOSE:
@@ -1000,8 +1040,67 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			CloseClipboard();
 			break;
 							}
-		case IDM_EDIT_PASTE: {
-			// TODO: add functionality
+		case IDM_CALC_PASTE: {
+			OpenClipboard(hwnd);
+			HANDLE hClipboardData = GetClipboardData(CF_TEXT);
+			if (!hClipboardData) {
+				break;
+			}
+
+			float tempFloat;
+			char *charData = (char *) GlobalLock(hClipboardData);
+
+			for (int i = 0; i < _tcslen(charData); i++) {
+				char num = charData[i];
+				if (!IsCharAlphaNumeric(num)) {
+					continue;
+				}
+
+#define CALC_FLAGS 0x89F0
+#define SHIFT_FLAGS CALC_FLAGS + 18
+#define LOWERCASE_FLAGS  CALC_FLAGS + 36
+
+#define LWR_CASE_ACTIVE (1 << 3)
+
+#define SHIFT_2ND (1 << 3)
+#define SHIFT_ALPHA (1 << 4)
+#define SHIFT_LWR_ALPHA (1 << 5)
+#define SHIFT_KEEP_ALPHA (1 << 7)
+				// we use tolower here so we just get the key not the modifier
+				SHORT vkey = VkKeyScan(tolower(num));
+				BYTE shiftFlags = mem_read(&lpCalc->mem_c, SHIFT_FLAGS);
+				if (shiftFlags & SHIFT_2ND) {
+					press_key(lpCalc, VK_LSHIFT);
+				}
+
+				BOOL isLowercaseEnabled = mem_read(&lpCalc->mem_c, LOWERCASE_FLAGS) & LWR_CASE_ACTIVE;
+				if (IsCharAlpha(num)) {
+					if (!(shiftFlags & SHIFT_ALPHA)) {
+						press_key(lpCalc, VK_CONTROL);
+					}
+
+					if (IsCharLower(num) && isLowercaseEnabled) {
+						press_key(lpCalc, VK_CONTROL);
+					}
+				} else if (shiftFlags & SHIFT_ALPHA) {
+					press_key(lpCalc, VK_CONTROL);
+					// if lowercase is enabled we have to press alpha again
+					if (isLowercaseEnabled) {
+						press_key(lpCalc, VK_CONTROL);
+					}
+				}
+
+				press_key(lpCalc, vkey);
+				// rather than put this in a thread and create who know what for
+				// race conditions, just force and lcd update. This should be plenty of
+				// user feedback, although it will be slower
+				SendMessage(lpCalc->hwndLCD, WM_PAINT, 0, 0);
+				InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
+			}
+paste_error:
+			GlobalUnlock(hClipboardData);
+			CloseClipboard();
+
 			break;
 							 }
 		case IDM_VIEW_SKIN: {
@@ -1252,6 +1351,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			int group, bit;
 			static POINT pt;
 			keypad_t *kp = lpCalc->cpu.pio.keypad;
+			if (kp == NULL) {
+				break;
+			}
 
 			SetCapture(hwnd);
 			pt.x	= GET_X_LPARAM(lParam);
@@ -1382,16 +1484,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		return 0;
 						   }
 	case WM_KILLFOCUS: {
+		if (lpCalc == NULL) {
+			break;
+		}
 		keypad_t *keypad = lpCalc->cpu.pio.keypad;
-		if (lpCalc != NULL && keypad != NULL)
-		{
-			//handle keys already down (just send release)
-			//i send the message here so that things like logging are handled
-			for (int group = 0; group < 8; group++) {
-				for (int bit = 0; bit < 8; bit++) {
-					if (keypad->keys[group][bit]) {
-						keypad_vk_release(hwnd, group, bit);
-					}
+		if (keypad == NULL) {
+			break;
+		}
+		
+		for (int group = 0; group < 8; group++) {
+			for (int bit = 0; bit < 8; bit++) {
+				if (keypad->keys[group][bit]) {
+					keyprog_t *key = keypad_keyprog_from_groupbit(&lpCalc->cpu, group, bit);
+					HandleKeyUp(lpCalc, key->vk);
 				}
 			}
 		}

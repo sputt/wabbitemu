@@ -2,6 +2,7 @@
 #define _86HW_H_
 
 #include "ti_stdint.h"
+#include "core.h"
 
 int device_init_86(CPU_t*);
 int memory_init_86(memc *);

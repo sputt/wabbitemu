@@ -42,7 +42,7 @@ STDMETHODIMP CKeypad::PressKey(KEYS Key)
 	{
 		return E_NOTIMPL;
 	}
-	keypad_key_press(m_cpu, wVirtCode);
+	keypad_key_press(m_cpu, wVirtCode, NULL);
 	return S_OK;
 }
 
@@ -59,7 +59,7 @@ STDMETHODIMP CKeypad::ReleaseKey(KEYS Key)
 
 STDMETHODIMP CKeypad::PressVirtKey(int Key)
 {
-	keypad_key_press(m_cpu, Key);
+	keypad_key_press(m_cpu, Key, NULL);
 	return S_OK;
 }
 

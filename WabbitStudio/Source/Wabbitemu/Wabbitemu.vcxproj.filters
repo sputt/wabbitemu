@@ -367,6 +367,12 @@
     <ClCompile Include="interface\CMemoryContext.cpp">
       <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
+    <ClCompile Include="hardware\colorlcd.c">
+      <Filter>Source Files\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="Utilities\breakpoint.c">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -704,6 +710,12 @@
     </ClInclude>
     <ClInclude Include="core\reverse_info_table.h">
       <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\colorlcd.h">
+      <Filter>Header Files\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\breakpoint.h">
+      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

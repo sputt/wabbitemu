@@ -2,7 +2,6 @@
 
 #include "var.h"
 #include "link.h"
-#include "calc.h"
 #include "lcd.h"	//lcd->active
 #include "keys.h"	//key_press
 
@@ -45,17 +44,6 @@ int link_init(CPU_t *cpu) {
 	link->vin = &link->host;
 
 	return 0;
-}
-
-int link_connect_hub(int slot, CPU_t *cpu) {
-	link_hub[slot] = cpu->pio.link;
-	cpu->pio.link->client = &link_hub[MAX_CALCS]->host;
-	link_hub_count++;
-	return 0;
-}
-
-BOOL link_connected_hub(int slot) {
-	return link_hub[slot] != NULL;
 }
 
 int link_connect(CPU_t *cpu1, CPU_t *cpu2) {

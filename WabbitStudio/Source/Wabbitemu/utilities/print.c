@@ -39,13 +39,8 @@ void press_textA(TCHAR *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 			if (str_left < 1)
 				str_left = 1;
 			
-#ifdef WINVER
 			StringCbCopy(szNew, sizeof(szNew), szText);
 			StringCbCopy(&szNew[break_string_index], _tcslen(dot_strings[str_left-1]) + 1, dot_strings[str_left-1]);
-#else
-			strcpy(szNew, szText);
-			strcpy(&szNew[break_string_index], dot_strings[str_left-1]);
-#endif
 			
 			szText = szNew;
 		}
@@ -303,11 +298,7 @@ void mysprintf(LPCALC lpCalc, TCHAR *output, int outputLength, Z80_info_t* zinf,
 				{
 					int val	= (int) va_arg(argp, INT_PTR);
 					TCHAR szAddr[16];
-#ifdef WINVER
 					StringCbPrintf(szAddr, sizeof(szAddr), _T("$%02X"), val);
-#else
-					sprintf(szAddr, "$%02X", val);
-#endif
 					StringCbCat(output, outputLength, szAddr);
 					break;	
 				}

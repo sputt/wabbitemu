@@ -75,11 +75,7 @@ HWND CreateValueField(
 	vfs->max_digits = max_digits;
 	vfs->max_value = max_value;
 	vfs->hwndTip = hwndTip;
-#ifdef WINVER
 	StringCbCopy(vfs->szName, sizeof(vfs->szName), name);
-#else
-	strcpy(vfs->szName, name);
-#endif
 	vfs->lpDebugInfo = lpDebugInfo;
 
 	// Create the container window

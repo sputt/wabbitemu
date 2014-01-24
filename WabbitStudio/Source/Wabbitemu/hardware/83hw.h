@@ -11,7 +11,7 @@
 
 
 STDINT_t* INT83_init(CPU_t*);
-int device_init_83(CPU_t*,int);
+int device_init_83(CPU_t*, BOOL);
 int memory_init_83(memc *);
 
 void port0_83(CPU_t *, device_t *);

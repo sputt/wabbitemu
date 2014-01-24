@@ -1,10 +1,7 @@
 #ifndef LINK_H
 #define LINK_H
 #include "core.h"		// CPU_t
-
-#ifdef WINVER
 #include "sound.h"		// audio_t
-#endif
 
 #include "var.h"
 #include "state.h"
@@ -62,9 +59,7 @@ typedef struct link {
 	volatile size_t vlink_send;		// amount already sent over vlink
 	volatile size_t vlink_recv;		// amount already received over the link
 	size_t vlink_size;				// Size of the var currently on the link (if known)
-	#ifdef WINVER
 	AUDIO_t audio;
-	#endif
 	BYTE vout;
 	LPBYTE vin;						// Virtual Link data
 	BOOL hasChanged;				// if were connected to a hub, has the hub value changed
@@ -198,8 +193,6 @@ enum TI86OBJ {
 LINK_ERR link_send_var(CPU_t *, TIFILE_t *, SEND_FLAG);
 LINK_ERR link_send_backup(CPU_t *, TIFILE_t *, SEND_FLAG);
 LINK_ERR forceload_os(CPU_t *, TIFILE_t *);
-int link_connect(CPU_t *, CPU_t *);
-int link_connect_hub(int slot, CPU_t *cpu);
 BOOL link_connected_hub(int slot);
 int link_disconnect(CPU_t *);
 void writeboot(FILE* , memory_context_t *, int page);

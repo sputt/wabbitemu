@@ -7,7 +7,7 @@
 #include "gif.h"
 
 
-
+#ifdef WINVER
 static void CALLBACK FillSoundBuffer(HWAVEOUT hWaveOut,
 									 UINT uMsg,
 									 DWORD_PTR dwInstance,
@@ -87,6 +87,7 @@ static void CALLBACK FillSoundBuffer(HWAVEOUT hWaveOut,
 	return;
 }
 
+#endif
 
 int soundinit(AUDIO_t *audio) {
 	int i,b;
@@ -125,7 +126,7 @@ int soundinit(AUDIO_t *audio) {
 	
 	audio->volume			= 0.33f;
 
-
+#ifdef WINVER
 	audio->wfx.nSamplesPerSec	= SAMPLE_RATE;
 	audio->wfx.wBitsPerSample	= SampleSizeBits;
 	audio->wfx.nChannels		= CHANNELS;
@@ -159,7 +160,7 @@ int soundinit(AUDIO_t *audio) {
 		waveOutPrepareHeader(audio->hWaveOut, &audio->waveheader[i], sizeof(WAVEHDR));
 		waveOutWrite(audio->hWaveOut, &audio->waveheader[i], sizeof(WAVEHDR));
 	}
-
+#endif
 
 	return 0;
 }
@@ -174,9 +175,11 @@ void KillSound(AUDIO_t* audio) {
 		audio->endsnd = 0;
 		audio->enabled	= FALSE;
 		audio->init = 0;
+#ifdef WINVER
 		for(i = 0; audio->endsnd < BUFFER_BANKS && i < 200; i++) Sleep(5);
 		waveOutClose(audio->hWaveOut);
 		for(i = 0; audio->endsnd < 100 && i < 200; i++) Sleep(5);
+#endif
 	}
 }
 
@@ -198,7 +201,10 @@ int playsound(AUDIO_t *audio) {
 				audio->playbuf[b][i].right = 0x80;
 			}
 		}
+
+#ifdef WINVER
 		waveOutRestart(audio->hWaveOut);
+#endif
 		audio->enabled = 1;
 	}
 	return 0;
@@ -207,7 +213,9 @@ int playsound(AUDIO_t *audio) {
 int pausesound(AUDIO_t *audio) {
 	if (audio->init == 0) return 0;
 	audio->enabled = 0;
+#ifdef WINVER
 	waveOutPause(audio->hWaveOut);
+#endif
 	return 0;
 }
 

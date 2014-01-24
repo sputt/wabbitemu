@@ -1,15 +1,11 @@
 #include "stdafx.h"
 
-#include "lcd.h"
+#include "84pcsehw.h"
+#include "colorlcd.h"
 #include "keys.h"
 #include "83psehw.h"
-#include "84pcsehw.h"
 #include "link.h"
 #include "device.h"
-#include "calc.h"
-#ifdef WINVER
-#include "dbbreakpoints.h"
-#endif
 
 #define BIT(bit) (1 << (bit))
 
@@ -33,24 +29,21 @@ void port0_84pcse(CPU_t *cpu, device_t *dev) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		if ((link->host & 0x01) != (cpu->bus & 0x01)) {
-			#ifdef WINVER
 			if (link->audio.init && link->audio.enabled) 
 				FlippedLeft(cpu, cpu->bus & 0x01);
-			#endif
 		}
 		if ((link->host & 0x02) != (cpu->bus & 0x02)) {
-			#ifdef WINVER
 			if (link->audio.init && link->audio.enabled) 
 				FlippedRight(cpu, (cpu->bus & 0x02) >> 1);
-			#endif
 		}		
 
 		cpu->link_write = link->host = cpu->bus & 0x03;
 		cpu->output = FALSE;
 	}
-	#ifdef WINVER
-	if (link->audio.init && link->audio.enabled) nextsample(cpu);
-	#endif
+	
+	if (link->audio.init && link->audio.enabled) {
+		nextsample(cpu);
+	}
 }
 
 //------------------------
@@ -925,14 +918,14 @@ int device_init_84pcse(CPU_t *cpu) {
 	cpu->pio.devices[0x0F].code = (devp) port0F_84pcse;
 	
 /* LCD */
-	LCD_t *lcd = LCD_init(cpu, TI_84PCSE);
+	ColorLCD_t *lcd = ColorLCD_init(cpu, TI_84PCSE);
 	cpu->pio.devices[0x10].active = TRUE;
 	cpu->pio.devices[0x10].aux = lcd;
-	cpu->pio.devices[0x10].code = (devp) LCD_command;
+	cpu->pio.devices[0x10].code = (devp) ColorLCD_command;
 
 	cpu->pio.devices[0x11].active = TRUE;
 	cpu->pio.devices[0x11].aux = lcd;
-	cpu->pio.devices[0x11].code = (devp) LCD_data;
+	cpu->pio.devices[0x11].code = (devp) ColorLCD_data;
 
 /* Flash locking */
 	cpu->pio.devices[0x14].active = TRUE;
@@ -1120,12 +1113,11 @@ int device_init_84pcse(CPU_t *cpu) {
 	cpu->pio.devices[0x80].aux = &se_aux->usb;
 	cpu->pio.devices[0x80].code = (devp) &port80_84pcse;
 	
-	cpu->pio.lcd		= lcd;
+	//cpu->pio.lcd		= lcd;
 	cpu->pio.keypad		= keyp;
 	cpu->pio.link		= link;
 	cpu->pio.stdint		= stdint;
 	cpu->pio.se_aux		= se_aux;
-	cpu->pio.breakpoint_callback = port_debug_callback;
 	cpu->pio.model		= TI_84PCSE;
 	
 	
@@ -1150,12 +1142,6 @@ int device_init_84pcse(CPU_t *cpu) {
 
 int memory_init_84pcse(memc *mc) {
 	memset(mc, 0, sizeof(memory_context_t));
-	
-	mc->mem_read_break_callback = mem_debug_callback;
-	mc->mem_write_break_callback = mem_debug_callback;
-#ifdef WINVER
-	mc->breakpoint_manager_callback = check_break_callback;
-#endif
 
 	/* Set Number of Pages here */
 	mc->flash_pages = 256;

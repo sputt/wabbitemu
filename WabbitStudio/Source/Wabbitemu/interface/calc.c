@@ -17,7 +17,6 @@
 #include "keys.h"
 
 #ifdef _WINDOWS
-#include "disassemble.h"
 #include "CCalcAddress.h"
 #include "CPage.h"
 #include "exportvar.h"
@@ -27,14 +26,19 @@
 
 #define FRAME_SUBDIVISIONS 1024
 #define BOOTFREE_VER_MAJOR 11
-#define BOOTFREE_VER_MINOR 246
+#define BOOTFREE_VER_MINOR 258
 
 static void calc_debug_callback(LPCALC lpCalc);
+void exe_violation_callback(CPU_t *cpu);
+void invalid_flash_callback(CPU_t *cpu);
+void mem_read_callback(CPU_t *cpu);
+void mem_write_callback(CPU_t *cpu);
+void port_debug_callback(void *arg1, void *arg2);
 
 /*
  * Determine the slot for a new calculator.  Return a pointer to the calc
  */
-calc_t *calc_slot_new(void) {
+LPCALC calc_slot_new(void) {
 #ifdef WITH_BACKUPS
 	current_backup_index = 10;
 #endif
@@ -75,12 +79,21 @@ u_int calc_count(void) {
 	return count;
 }
 
-int audio_init(LPCALC lpCalc) {
+static int audio_init(LPCALC lpCalc) {
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
 	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 	return 0;
+}
+
+static void setup_callbacks(LPCALC lpCalc) {
+	lpCalc->cpu.exe_violation_callback = exe_violation_callback;
+	lpCalc->cpu.invalid_flash_callback = invalid_flash_callback;
+	lpCalc->cpu.mem_read_break_callback = mem_read_callback;
+	lpCalc->cpu.mem_write_break_callback = mem_write_callback;
+	lpCalc->cpu.pio.breakpoint_callback = port_debug_callback;
+	lpCalc->cpu.mem_c->breakpoint_manager_callback = check_break_callback;
 }
 
 /* 81 */
@@ -101,6 +114,7 @@ int calc_init_81(LPCALC lpCalc, char *version) {
 	}
 	/* END INTIALIZE 81 */
 
+	setup_callbacks(lpCalc);
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 	return error;
@@ -118,6 +132,7 @@ static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	error |= audio_init(lpCalc);
 	/* END INTIALIZE 83 */
 
+	setup_callbacks(lpCalc);
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 	return error;
@@ -135,6 +150,7 @@ static int calc_init_86(LPCALC lpCalc) {
 	error |= audio_init(lpCalc);
 	/* END INTIALIZE 86 */
 
+	setup_callbacks(lpCalc);
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 	return error;
@@ -151,6 +167,7 @@ int calc_init_83p(LPCALC lpCalc) {
 	error |= audio_init(lpCalc);
 	/* END INTIALIZE 83+ */
 
+	setup_callbacks(lpCalc);
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 	return error;
@@ -167,6 +184,7 @@ int calc_init_83pse(LPCALC lpCalc) {
 	error |= audio_init(lpCalc);
 	/* END INTIALIZE 83+se */
 
+	setup_callbacks(lpCalc);
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 	return error;
@@ -183,6 +201,7 @@ int calc_init_84p(LPCALC lpCalc) {
 	error |= audio_init(lpCalc);
 	/* END INTIALIZE 84+ */
 
+	setup_callbacks(lpCalc);
 	lpCalc->flash_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.flash_pages, PAGE_SIZE);
 	lpCalc->ram_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.ram_pages, PAGE_SIZE);
 	return error;
@@ -199,6 +218,7 @@ int calc_init_84pcse(LPCALC lpCalc) {
 	error |= audio_init(lpCalc);
 	/* END INTIALIZE 84+CSE */
 
+	setup_callbacks(lpCalc);
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 
@@ -223,6 +243,7 @@ void calc_erase_certificate(unsigned char *mem, int size) {
 	return;
 }
 
+// TODO: move this
 void check_bootfree_and_update(LPCALC lpCalc) {
 	u_char *bootFreeString = lpCalc->mem_c.flash + (lpCalc->mem_c.flash_pages - 1) * PAGE_SIZE + 0x0F;
 	if (*bootFreeString != '1') {
@@ -309,11 +330,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 		}
 
 		LoadSlot(tifile->save, lpCalc);
-#ifdef WINVER
 		StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), FileName);
-#else
-		strcpy(lpCalc->rom_path, FileName);
-#endif
 		FindRomVersion(lpCalc->rom_version, lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
 	} else if (tifile->type == ROM_TYPE) {
 
@@ -380,17 +397,12 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 
 		lpCalc->active = TRUE;
 		memcpy(lpCalc->rom_version, tifile->rom->version, sizeof(lpCalc->rom_version));
-#ifdef WINVER
 		StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), FileName);
-#else
-		strcpy(lpCalc->rom_path, FileName);
-#endif
-		
-
 	} else {
 		lpCalc = NULL;
 		return FALSE;
 	}
+
 	if (lpCalc != NULL) {
 		lpCalc->cpu.pio.model = lpCalc->model;
 		if (lpCalc->model >= TI_73) {
@@ -412,10 +424,8 @@ void calc_slot_free(LPCALC lpCalc) {
 	if (lpCalc->active) {
 		lpCalc->active = FALSE;
 
-#ifdef WINVER
 		KillSound(lpCalc->audio);
 		lpCalc->audio = NULL;
-#endif
 
 		free(lpCalc->flash_cond_break);
 		lpCalc->flash_cond_break = NULL;
@@ -488,127 +498,6 @@ static void calc_debug_callback(LPCALC lpCalc)
 		lpCalc->pWabbitemu->Fire_OnBreakpoint(&addr);
 	}
 #endif
-}
-
-
-/* Clear RAM and start calculator at $0000 
- * 10/20/10 Calc84 says that starting at $0000 is wrong we need to start on the boot page,
- * 6/29/11 which turns out to be in bank 0 so we start at $0000 anyway.
- */
-int CPU_reset(CPU_t *lpCPU) {
-	lpCPU->sp			= 0;
-	lpCPU->interrupt	= FALSE;
-	lpCPU->imode		= 1;
-	lpCPU->ei_block		= FALSE;
-	lpCPU->iff1			= FALSE;
-	lpCPU->iff2			= FALSE;
-	lpCPU->halt			= FALSE;
-	lpCPU->read			= FALSE;
-	lpCPU->write		= FALSE;
-	lpCPU->output		= FALSE;
-	lpCPU->input		= FALSE;
-	lpCPU->prefix		= 0;
-	lpCPU->pc			= 0;
-	lpCPU->mem_c->port27_remap_count = 0;
-	lpCPU->mem_c->port28_remap_count = 0;
-	lpCPU->mem_c->ram_lower = 0x00 * 0x400;
-	lpCPU->mem_c->ram_upper = 0x00 * 0x400 + 0x3FF;
-	lpCPU->mem_c->banks = lpCPU->mem_c->normal_banks;
-	lpCPU->mem_c->boot_mapped = FALSE;
-	lpCPU->mem_c->hasChangedPage0 = FALSE;
-#ifdef WITH_REVERSE
-	lpCPU->prev_instruction = lpCPU->prev_instruction_list;
-	memset(lpCPU->prev_instruction_list, 0, sizeof(lpCPU->prev_instruction_list));
-	lpCPU->reverse_instr = 0;
-#endif
-	switch (lpCPU->pio.model) {
-		case TI_81: {
-			bank_state_t banks[5] = {
-				{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash+0x1*PAGE_SIZE,			0x1, 	FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash+0x1*PAGE_SIZE,			0x1, 	FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-				{NULL,								0,		FALSE,	FALSE,	FALSE}
-			};
-			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
-			break;
-		}
-		case TI_82:
-		case TI_83: {
-			bank_state_t banks[5] = {
-				{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash+0x00*PAGE_SIZE, 		0x00, 	FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->ram+0x01*PAGE_SIZE,		 	0x01, 	FALSE, 	TRUE, 	FALSE},
-				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-				{NULL,										0,		FALSE,	FALSE,	FALSE}
-			};
-			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
-			break;
-		}
-		case TI_85:
-		case TI_86: {
-			bank_state_t banks[5] = {
-				{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash + 0x0F * PAGE_SIZE,	0x0F, 	FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash,						0, 		FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-				{NULL,										0,		FALSE,	FALSE,	FALSE}
-			};
-
-			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
-			break;
-		}
-		case TI_73:
-		case TI_83P: {
-			/*bank_state_t banks[5] = {
-				{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-				{NULL,										0,		FALSE,	FALSE,	FALSE}
-			};
-			lpCPU->pc = 0x4000;*/
-			memset(lpCPU->mem_c->protected_page, 0, sizeof(lpCPU->mem_c->protected_page));
-			lpCPU->mem_c->protected_page_set = 0;
-			/*	Address										page	write?	ram?	no exec?	*/
-			bank_state_t banks[5] = {
-				{lpCPU->mem_c->flash +  0x1f * PAGE_SIZE, 	0x1f, 	FALSE,	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-				{NULL,										0,		FALSE,	FALSE,	FALSE}
-			};
-			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
-			break;
-		}
-		case TI_83PSE:
-		case TI_84PSE: {
-			/*	Address										page	write?	ram?	no exec?	*/
-			bank_state_t banks[5] = {
-				{lpCPU->mem_c->flash +  0x7f * PAGE_SIZE, 	0x7f, 	FALSE,	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-				{NULL,										0,		FALSE,	FALSE,	FALSE}
-			};
-
-			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
-			break;
-		}
-		case TI_84P: {
-			/*	Address										page	write?	ram?	no exec?	*/
-			bank_state_t banks[5] = {
-				{lpCPU->mem_c->flash + 0x3f * PAGE_SIZE,	0x3f,	FALSE,	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash,						0, 		FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-				{NULL,										0,		FALSE,	FALSE,	FALSE}
-			};
-			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
-			break;
-		}
-	}
-	return 0;
 }
 
 int calc_run_frame(LPCALC lpCalc) {
@@ -793,13 +682,34 @@ void link_step(CPU_t *cpu) {
 
 void port_debug_callback(void *arg1, void *arg2) {
 	CPU_t *cpu = (CPU_t *) arg1;
-	//device_t *dev = (device_t *) arg2;
 	LPCALC lpCalc = calc_from_cpu(cpu);
 	lpCalc->breakpoint_callback(lpCalc);
 }
 
-void mem_debug_callback(void *arg1) {
-	CPU_t *cpu = (CPU_t *) arg1;
+void exe_violation_callback(CPU_t *cpu) {
+	if (!break_on_exe_violation) {
+		return;
+	}
+
+	LPCALC lpCalc = calc_from_cpu(cpu);
+	lpCalc->breakpoint_callback(lpCalc);
+}
+
+void invalid_flash_callback(CPU_t *cpu) {
+	if (!break_on_invalid_flash) {
+		return;
+	}
+
+	LPCALC lpCalc = calc_from_cpu(cpu);
+	lpCalc->breakpoint_callback(lpCalc);
+}
+
+void mem_read_callback(CPU_t *cpu) {
+	LPCALC lpCalc = calc_from_cpu(cpu);
+	lpCalc->breakpoint_callback(lpCalc);
+}
+
+void mem_write_callback(CPU_t *cpu) {
 	LPCALC lpCalc = calc_from_cpu(cpu);
 	lpCalc->breakpoint_callback(lpCalc);
 }
@@ -879,6 +789,16 @@ int calc_run_seconds(LPCALC lpCalc, double seconds) {
 	return calc_run_timed(lpCalc, time);
 }
 
+int link_connect_hub(int slot, CPU_t *cpu) {
+	link_hub[slot] = cpu->pio.link;
+	cpu->pio.link->client = &link_hub[MAX_CALCS]->host;
+	link_hub_count++;
+	return 0;
+}
+
+BOOL link_connected_hub(int slot) {
+	return link_hub[slot] != NULL;
+}
 
 // ticks
 int calc_run_timed(LPCALC lpCalc, time_t time) {

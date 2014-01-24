@@ -3,10 +3,6 @@
 #include "state.h"
 #include "link.h"
 
-#ifndef WINVER
-#define min(a, b) ((a) > (b) ? (b) : (a))
-#endif
-
 void state_userpages(CPU_t *, upages_t*);
 TCHAR *symbol_to_string(CPU_t *, symbol83P_t *, TCHAR *);
 
@@ -165,16 +161,11 @@ symbol83P_t *search_symlist(symlist_t *symlist, const TCHAR *name, size_t name_l
 }
 
 TCHAR *App_Name_to_String(apphdr_t *app, TCHAR *buffer) {
-#ifdef WINVER
 	StringCbCopy(buffer, _tcslen(app->name) + 1, app->name);
 	return buffer;
-#else
-	return strcpy(buffer, app->name);
-#endif
 }
 
 
-#ifdef WINVER
 TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 	const TCHAR ans_name[] = {tAns, 0x00, 0x00};
 	if (memcmp(sym->name, ans_name, 3) == 0) {
@@ -265,109 +256,6 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 		}
 	}
 }
-#else
-TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
-	const TCHAR ans_name[] = {tAns, 0x00, 0x00};
-	if (memcmp(sym->name, ans_name, 3) == 0) {
-		strcpy(buffer, _T("Ans"));
-		return buffer;
-	}
-	
-	if (model == TI_86) {
-		strcpy(buffer, sym->name);
-		return buffer;
-	} else {
-		switch(sym->type_ID) {
-			case ProgObj:
-			case ProtProgObj:
-			case AppVarObj:
-			case GroupObj: {
-				strcpy(buffer, sym->name);
-				return buffer;
-			}
-			case PictObj:
-				sprintf(buffer, _T("Pic%d"), circ10(sym->name[1]));
-				return buffer;
-			case GDBObj:
-				sprintf(buffer, _T("GDB%d"), circ10(sym->name[1]));
-				return buffer;
-			case StrngObj:
-				sprintf(buffer, _T("Str%d"), circ10(sym->name[1]));
-				return buffer;		
-			case RealObj:
-			case CplxObj:
-				sprintf(buffer, _T("%c"), sym->name[0]);
-				return buffer;
-			case ListObj:
-			case CListObj:
-				if ((u_char) sym->name[1] < 6) {
-					sprintf(buffer, _T("L%d"), sym->name[1] + 1); //L1...L6
-				} else {
-					sprintf(buffer, _T("%s"), sym->name + 1); // No Little L
-				}
-				return buffer;
-			case MatObj:
-				if (sym->name[0] == 0x5C) {
-					sprintf(buffer, _T("[%c]"), 'A' + sym->name[1]);
-					return buffer;
-				}
-				return NULL;
-		//	case EquObj:
-		//	case NewEquObj:
-		//	case UnknownEquObj:
-			case EquObj_2:
-				{
-					if (sym->name[0] != 0x5E) {
-						return NULL;
-					}
-			
-					u_char b = sym->name[1] & 0x0F;
-					switch(sym->name[1] & 0xF0) {
-						case 0x10: //Y1
-							sprintf(buffer, _T("Y%d"),circ10(b));
-							return buffer;
-						case 0x20: //X1t Y1t
-							sprintf(buffer, _T("X%dT"), ((b/2)+1)%6);
-							if (b % 2) {
-								buffer[0] = 'Y';
-							}
-							return buffer;
-						case 0x40: //r1
-							sprintf(buffer, _T("R%d"),(b+1)%6);
-							return buffer;
-						case 0x80: //Y1
-							switch (b) {
-								case 0: 
-									strcpy(buffer, _T("Un"));
-									return buffer;
-								case 1: 
-									strcpy(buffer, _T("Vn"));
-									return buffer;
-								case 2: 
-									strcpy(buffer, _T("Wn"));
-									return buffer;
-							}
-						default: 
-							return NULL;
-					}
-				}
-			default:
-				return NULL;
-		}
-	}
-}
-#endif
-
-void SetRealAns(CPU_t *cpu, TCHAR *text) {
-	//here is our general strategy:
-	//1. save appbackupscreen
-	//2. 
-	int i;
-	unsigned char appbackupscreen[768];
-	for (i = 0; i < 768; i++)
-		appbackupscreen[i] = mem_read(cpu->mem_c, 0x9872 + i);
-
-}
 
 TCHAR *GetRealAns(CPU_t *cpu) {
 	symlist_t *symlist = (symlist_t *) malloc(sizeof(symlist_t));
@@ -426,11 +314,8 @@ TCHAR *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, TCHAR *buffer) {
 				*p++ = FP[i] + '0';
 				if ((i + 1) < sigdigs && i == 0) *p++ = '.';
 			}
-#ifdef WINVER
+
 			StringCbPrintf(p, _tcslen(p), _T("*10^%d"), exp);
-#else
-			sprintf(p, "*10^%d", exp);
-#endif
 			p += _tcslen(p);
 		} else {
 			for (i = min(exp, 0); i < sigdigs || i < exp; i++) {
@@ -527,11 +412,7 @@ TCHAR *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, TCHAR *buffer) {
 	
 		
 	default:
-#ifdef WINVER
 		StringCbCopy(buffer, _tcslen(buffer), _T("unsupported"));
-#else
-		strcpy(buffer, "unsupported");
-#endif
 		return buffer;
 	}
 }

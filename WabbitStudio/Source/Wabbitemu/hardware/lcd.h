@@ -85,11 +85,10 @@ typedef struct LCD {
 	double lastgifframe;
 	double write_avg, write_last;	/* Used to determine freq. of writes to the LCD */
 	long long last_tstate;			// timer_c->tstate of the last write
-	BOOL is_color;					//TRUE if model is 84PCSE
 } LCD_t;
 
 /* Device functions */
-LCD_t *LCD_init(CPU_t *, int);
+LCD_t* LCD_init(CPU_t *, int);
 void LCD_timer_refresh(CPU_t *);
 void LCD_command(CPU_t *, device_t *);
 void LCD_data(CPU_t *, device_t *);

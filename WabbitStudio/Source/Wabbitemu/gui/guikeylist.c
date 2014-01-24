@@ -114,7 +114,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 							TCHAR lpStrFile[MAX_PATH];
 							const TCHAR lpstrFilter[] = _T("Recorded key files ( *.key) \0*.key\0\
 														All Files (*.*)\0*.*\0\0");
-							if (!SaveFile(lpStrFile, lpstrFilter, _T("Save key file"), _T(".key"))) {
+							if (!SaveFile(lpStrFile, lpstrFilter, _T("Save key file"), _T(".key"), 0, 0)) {
 								FILE *file;
 								_tfopen_s(&file, lpStrFile, _T("wb"));
 								key_string *current = lpCalc->last_keypress_head;
@@ -147,7 +147,6 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 						key_string *prev = current;
 						for (int i = 0; i < lpCalc->num_keypresses - index - 1; i++) {
 							prev = current;
-							//assuming our linked list is good
 							current = current->next;
 						}
 						if (current == lpCalc->last_keypress_head) {
