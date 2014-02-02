@@ -3,6 +3,7 @@
 #include "var.h"
 #include "link.h"
 #include "lcd.h"	//lcd->active
+#include "colorlcd.h"
 #include "keys.h"	//key_press
 
 //#define DEBUG
@@ -77,19 +78,20 @@ static void link_wait(CPU_t *cpu, time_t tstates) {
  * On error: Throws a Byte Exception */
 static void link_send(CPU_t *cpu, u_char byte) {
 	link_t *link = cpu->pio.link;
+	u_int i;
 
 	for (u_int bit = 0; bit < 8; bit++, byte >>= 1) {
 		link->vout = (byte & 1) + 1;
 
-		for (u_int i = 0; i < LINK_TIMEOUT && vlink(link) != 0; i += LINK_STEP)
+		for (i = 0; i < LINK_TIMEOUT && vlink(link) != 0; i += LINK_STEP)
 			link_wait(cpu, LINK_STEP);
-		if (vlink(link) != 0)
+		if (i >= LINK_TIMEOUT)
 			longjmp(exc_byte, LERR_TIMEOUT);
 
 		link->vout = 0;
-		for (u_int i = 0; i < LINK_TIMEOUT && vlink(link) != 3; i += LINK_STEP)
+		for (i = 0; i < LINK_TIMEOUT && vlink(link) != 3; i += LINK_STEP)
 			link_wait(cpu, LINK_STEP);
-		if (vlink(link) != 3)
+		if (i >= LINK_TIMEOUT)
 			longjmp(exc_byte, LERR_TIMEOUT);
 	}
 
@@ -97,29 +99,30 @@ static void link_send(CPU_t *cpu, u_char byte) {
 }
 
 /* Receive a byte through the virtual link
- * On error: Throws a Byte Exception */
+* On error: Throws a Byte Exception */
 static u_char link_recv(CPU_t *cpu) {
 	link_t *link = cpu->pio.link;
 	u_char byte = 0;
+	u_int i;
 
 	for (u_int bit = 0; bit < 8; bit++) {
 		byte >>= 1;
 
-		for (u_int i = 0; i < LINK_TIMEOUT && vlink(link) == 3; i += LINK_STEP)
+		for (i = 0; i < LINK_TIMEOUT && vlink(link) == 3; i += LINK_STEP)
 			link_wait(cpu, LINK_STEP);
 
 		if (vlink(link) == 0)
 			longjmp(exc_byte, LERR_LINK);
-		if (vlink(link) == 3)
+		if (i >= LINK_TIMEOUT)
 			longjmp(exc_byte, LERR_TIMEOUT);
 
 		link->vout = vlink(link);
 		if (link->vout == 1)
 			byte |= 0x80;
 
-		for (u_int i = 0; i < LINK_TIMEOUT && vlink(link) == 0; i += LINK_STEP)
+		for (i = 0; i < LINK_TIMEOUT && vlink(link) == 0; i += LINK_STEP)
 			link_wait(cpu, LINK_STEP);
-		if (vlink(link) == 0)
+		if (i >= LINK_TIMEOUT)
 			longjmp(exc_byte, LERR_TIMEOUT);
 		link->vout = 0;
 	}
@@ -158,6 +161,7 @@ static u_char link_target_ID(const CPU_t *cpu) {
 	case TI_83PSE:
 	case TI_84P:
 	case TI_84PSE:
+	case TI_84PCSE:
 		return 0x23;
 	default:
 		return ~0;
@@ -372,6 +376,8 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 			return LERR_LINK;
 	}
 
+	int group = cpu->pio.model == TI_85 ? 6 : 1;
+	int bit = cpu->pio.model == TI_85 ? 4 : 0;
 	if (tifile->backup == NULL)
 		return LERR_FILE;
 	TIBACKUP_t *backup = tifile->backup;
@@ -393,8 +399,6 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		// Send the VAR with Backup style header
 		link_send_pkt(cpu, CID_VAR, &bkhdr);
 
-		int group = cpu->pio.model == TI_85 ? 6 : 1;
-		int bit = cpu->pio.model == TI_85 ? 4 : 0;
 		keypad_press(cpu, group, bit);
 
 		// Receive the ACK
@@ -460,6 +464,7 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		break;
 	}
 	default:
+			keypad_release(cpu, group, bit);
 			return LERR_SYSTEM;
 	}
 	return LERR_SUCCESS;
@@ -566,7 +571,7 @@ LINK_ERR link_send_var(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		}
 		var = tifile->vars[++i];
 	}
-	if (cpu->pio.model == TI_85) {
+	if (cpu->pio.model == TI_85 || cpu->pio.model == TI_82) {
 		TI_PKTHDR rpkt;
 		u_char data[64];
 		link_send_pkt(cpu, CID_EOT, NULL);
@@ -696,6 +701,7 @@ BOOL check_flashpage_empty(u_char (*dest)[PAGE_SIZE], u_int page, u_int num_page
 	return TRUE;
 }
 
+#define TI_84PCSE_CERT_APP_TRIAL_OFFSET 0x1FC8
 #define TI_83PSE_CERT_APP_TRIAL_OFFSET 0x1E50
 #define TI_83P_CERT_APP_TRIAL_OFFSET 0x1F18
 #define APP_BITMAP_VALID_OFFSET 0x1FE0
@@ -711,18 +717,30 @@ void fix_certificate(CPU_t *cpu, u_int page) {
 	upages_t upages;
 	state_userpages(cpu, &upages);
 	int offset;
-	if (cpu->pio.model == TI_83P) {
+	switch (cpu->pio.model) {
+	case TI_83P:
 		offset = TI_83P_CERT_APP_TRIAL_OFFSET;
-	} else {
+		break;
+	case TI_84PCSE:
+		offset = TI_84PCSE_CERT_APP_TRIAL_OFFSET;
+		break;
+	default:
 		offset = TI_83PSE_CERT_APP_TRIAL_OFFSET;
+		break;
 	}
 
 	// erase the part of the certificate that marks it as a trial app
 	dest[CERT_PAGE][offset + 2 * (upages.start - page)] = 0x80;
 	dest[CERT_PAGE][offset+1 + 2 * (upages.start - page)] = 0x00;
+	// don't know which certificate slot the os expects out certificate to be in
+	// so we'll write to both
+	dest[CERT_PAGE][offset + PAGE_SIZE / 2 +  2 * (upages.start - page)] = 0x80;
+	dest[CERT_PAGE][offset + PAGE_SIZE / 2 + 1 + 2 * (upages.start - page)] = 0x00;
 
 	// mark all bitmaps as valid. each app has a bit, so 8 apps per byte
 	memset(dest[CERT_PAGE] + APP_BITMAP_VALID_OFFSET, 0, (upages.start - upages.end) / 8);
+	// same as above write to both possible certificates
+	memset(dest[CERT_PAGE] + APP_BITMAP_VALID_OFFSET + PAGE_SIZE / 2, 0, (upages.start - upages.end) / 8);
 }
 
 LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
@@ -917,7 +935,12 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	//mark the app as non trial
 	fix_certificate(cpu, page);
 	//force reset the app list says BrandonW. seems to work, apps show up (sometimes)
-	mem_write(cpu->mem_c, 0x9C87, 0x00);
+	if (cpu->pio.model >= TI_84PCSE) {
+		mem_write(cpu->mem_c, 0x9F68, 0x00);
+	} else {
+		mem_write(cpu->mem_c, 0x9C87, 0x00);
+	}
+	
 
 	//u_char *space = &dest[page][PAGE_SIZE - 1];
 	u_int i;

@@ -122,7 +122,6 @@
     <ClCompile Include="hardware\83hw.c" />
     <ClCompile Include="hardware\83phw.c" />
     <ClCompile Include="hardware\83psehw.c" />
-    <ClCompile Include="hardware\84pcsehw.c" />
     <ClCompile Include="hardware\86hw.c" />
     <ClCompile Include="hardware\colorlcd.c" />
     <ClCompile Include="hardware\keys.c" />
@@ -140,7 +139,6 @@
     <ClCompile Include="interface\CPio.cpp" />
     <ClCompile Include="interface\CWabbitemu.cpp" />
     <ClCompile Include="interface\CZ80.cpp" />
-    <ClCompile Include="interface\mapeditor.c" />
     <ClCompile Include="interface\state.c" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -349,7 +347,6 @@
     <ClInclude Include="hardware\83hw.h" />
     <ClInclude Include="hardware\83phw.h" />
     <ClInclude Include="hardware\83psehw.h" />
-    <ClInclude Include="hardware\84pcsehw.h" />
     <ClInclude Include="hardware\86hw.h" />
     <ClInclude Include="hardware\colorlcd.h" />
     <ClInclude Include="hardware\keys.h" />
@@ -430,6 +427,7 @@
     <None Include="gui\ROM\bf83pbe.hex" />
     <None Include="gui\ROM\bf83pse.hex" />
     <None Include="gui\ROM\bf84pbe.hex" />
+    <None Include="gui\ROM\bf84pcse.hex" />
     <None Include="gui\ROM\bf84pse.hex" />
     <None Include="gui\ROM\Rom82.82p" />
     <None Include="gui\ROM\Rom83.83p" />
@@ -479,10 +477,12 @@
       <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">X64</TargetEnvironment>
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)$(ProjectName).tlb</TypeLibraryName>
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(ProjectName).tlb</TypeLibraryName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='WindowsPhone8|Win32'">true</ExcludedFromBuild>
     </Midl>
   </ItemGroup>
   <ItemGroup>
     <Image Include="gui\ti-84+cse.png" />
+    <Image Include="gui\ti-84+csekeymap.png" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}</ProjectGuid>
@@ -525,7 +525,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='WindowsPhone8|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfAtl>Static</UseOfAtl>
@@ -876,7 +876,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Full</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;ZLIB_WINAPI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;ZLIB_WINAPI;_WINPHONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>true</OmitFramePointers>

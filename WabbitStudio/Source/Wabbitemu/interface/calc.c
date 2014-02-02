@@ -7,7 +7,6 @@
 #include "83hw.h"
 #include "83phw.h"
 #include "83psehw.h"
-#include "84pcsehw.h"
 #include "86hw.h"
 #include "device.h"
 #include "var.h"
@@ -15,6 +14,8 @@
 #include "gifhandle.h"
 #include "link.h"
 #include "keys.h"
+#include "lcd.h"
+#include "colorlcd.h"
 
 #ifdef _WINDOWS
 #include "CCalcAddress.h"
@@ -127,7 +128,7 @@ static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	error |= tc_init(&lpCalc->timer_c, MHZ_6);
 	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
-	BOOL isBad82 = lpCalc->model == TI_82 && memcmp(os, "19.006", 6) == 0;
+	BOOL isBad82 = lpCalc->model == TI_82 && memcmp(os, "19.006", 6) != 0;
 	error |= device_init_83(&lpCalc->cpu, isBad82);
 	error |= audio_init(lpCalc);
 	/* END INTIALIZE 83 */
@@ -180,7 +181,7 @@ int calc_init_83pse(LPCALC lpCalc) {
 	error |= tc_init(&lpCalc->timer_c, MHZ_6);
 	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
-	error |= device_init_83pse(&lpCalc->cpu);
+	error |= device_init_83pse(&lpCalc->cpu, lpCalc->model);
 	error |= audio_init(lpCalc);
 	/* END INTIALIZE 83+se */
 
@@ -197,7 +198,7 @@ int calc_init_84p(LPCALC lpCalc) {
 	error |= tc_init(&lpCalc->timer_c, MHZ_6);
 	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
-	error |= device_init_83pse(&lpCalc->cpu);
+	error |= device_init_83pse(&lpCalc->cpu, TI_84P);
 	error |= audio_init(lpCalc);
 	/* END INTIALIZE 84+ */
 
@@ -214,7 +215,7 @@ int calc_init_84pcse(LPCALC lpCalc) {
 	error |= tc_init(&lpCalc->timer_c, MHZ_6);
 	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
-	error |= device_init_84pcse(&lpCalc->cpu);
+	error |= device_init_83pse(&lpCalc->cpu, TI_84PCSE);
 	error |= audio_init(lpCalc);
 	/* END INTIALIZE 84+CSE */
 
@@ -222,11 +223,6 @@ int calc_init_84pcse(LPCALC lpCalc) {
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 
-	waddr_t waddr;
-	waddr.addr = 0;
-	waddr.page = 0x7F;
-	waddr.is_ram = FALSE;
-	set_break(&lpCalc->mem_c, waddr);
 	return error;
 }
 
@@ -482,7 +478,7 @@ void calc_turn_on(LPCALC lpCalc)
 
 int calc_reset(LPCALC lpCalc) {
 	CPU_reset(&lpCalc->cpu);
-	LCD_timer_refresh(&lpCalc->cpu);
+	lpCalc->cpu.pio.lcd->reset(&lpCalc->cpu);
 	//calc_turn_on(lpCalc);
 	return 0;
 }

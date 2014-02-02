@@ -117,7 +117,7 @@ INT_PTR CALLBACK BugReportDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 			case IDC_BTN_BUGATTACH: {
-				if (!BrowseFile(attachFileNameBuffer, _T("All files (*.*)\0*.*"), _T("Open file to attach..."), _T(".txt"), 0)) {
+				if (!BrowseFile(attachFileNameBuffer, _T("All files (*.*)\0*.*"), _T("Open file to attach..."), _T(".txt"), 0, 1)) {
 					Edit_SetText(GetDlgItem(hwndDlg, IDC_EDT_BUGATTACH), attachFileNameBuffer);
 				}
 				break;

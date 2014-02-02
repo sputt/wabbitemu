@@ -474,7 +474,8 @@ void SaveMEM(SAVESTATE_t* save, memc* mem) {
 	WriteInt(chunk, mem->ram_size);
 	WriteInt(chunk, mem->ram_pages);
 	WriteInt(chunk, mem->step);
-	WriteChar(chunk, mem->cmd);
+	// compatibility
+	WriteChar(chunk, 0);
 	
 	WriteInt(chunk, mem->boot_mapped);
 	WriteInt(chunk, mem->flash_locked);
@@ -647,13 +648,13 @@ void SaveLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	if (!lcd) return;
 	CHUNK_t* chunk = NewChunk(save, LCD_tag);
 
-	WriteInt(chunk, lcd->active);
+	WriteInt(chunk, lcd->base.active);
 	WriteInt(chunk, lcd->word_len);
-	WriteInt(chunk, lcd->x);
-	WriteInt(chunk, lcd->y);
-	WriteInt(chunk, lcd->z);
-	WriteInt(chunk, lcd->cursor_mode);
-	WriteInt(chunk, lcd->contrast);
+	WriteInt(chunk, lcd->base.x);
+	WriteInt(chunk, lcd->base.y);
+	WriteInt(chunk, lcd->base.z);
+	WriteInt(chunk, lcd->base.cursor_mode);
+	WriteInt(chunk, lcd->base.contrast);
 	WriteInt(chunk, lcd->base_level);
 	WriteBlock(chunk, lcd->display, DISPLAY_SIZE);
 
@@ -662,10 +663,10 @@ void SaveLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	
 	WriteInt(chunk, lcd->shades);
 	WriteInt(chunk, lcd->mode);
-	WriteDouble(chunk, lcd->time);
-	WriteDouble(chunk, lcd->ufps);
-	WriteDouble(chunk, lcd->ufps_last);
-	WriteDouble(chunk, lcd->lastgifframe);
+	WriteDouble(chunk, lcd->base.time);
+	WriteDouble(chunk, lcd->base.ufps);
+	WriteDouble(chunk, lcd->base.ufps_last);
+	WriteDouble(chunk, lcd->base.lastgifframe);
 	WriteDouble(chunk, lcd->write_avg);
 	WriteDouble(chunk, lcd->write_last);
 }
@@ -686,7 +687,12 @@ SAVESTATE_t* SaveSlot(void *lpInput, TCHAR *author, TCHAR *comment) {
 	SaveCPU(save, &lpCalc->cpu);
 	SaveMEM(save, &lpCalc->mem_c);
 	SaveTIMER(save, &lpCalc->timer_c);
-	SaveLCD(save, lpCalc->cpu.pio.lcd);
+	if (lpCalc->model >= TI_84PCSE) {
+		// TODO: fix
+		//SaveLCD(save, lpCalc->cpu.pio.lcd);
+	} else {
+		SaveLCD(save, (LCD_t *) lpCalc->cpu.pio.lcd);
+	}
 	SaveLINK(save, lpCalc->cpu.pio.link);
 	SaveSTDINT(save, lpCalc->cpu.pio.stdint);
 	SaveSE_AUX(save, lpCalc->cpu.pio.se_aux);
@@ -765,7 +771,9 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	mem->ram_size	= ReadInt(chunk);
 	mem->ram_pages	= ReadInt(chunk);
 	mem->step		= (FLASH_COMMAND) ReadInt(chunk);
-	mem->cmd		= ReadChar(chunk);
+	// dummy read for compatibility. this used to read mem_c->cmd but 
+	// is no longer needed
+	ReadChar(chunk);
 	mem->boot_mapped= ReadInt(chunk);
 	mem->flash_locked= ReadInt(chunk);
 	mem->flash_version = ReadInt(chunk);
@@ -890,13 +898,13 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	CHUNK_t* chunk = FindChunk(save,LCD_tag);
 	chunk->pnt = 0;
 
-	lcd->active		= ReadInt(chunk);
+	lcd->base.active		= ReadInt(chunk);
 	lcd->word_len	= ReadInt(chunk);
-	lcd->x			= ReadInt(chunk);
-	lcd->y			= ReadInt(chunk);
-	lcd->z			= ReadInt(chunk);
-	lcd->cursor_mode		= (LCD_CURSOR_MODE) ReadInt(chunk);
-	lcd->contrast	= ReadInt(chunk);
+	lcd->base.x = ReadInt(chunk);
+	lcd->base.y = ReadInt(chunk);
+	lcd->base.z = ReadInt(chunk);
+	lcd->base.cursor_mode = (LCD_CURSOR_MODE)ReadInt(chunk);
+	lcd->base.contrast = ReadInt(chunk);
 	lcd->base_level	= ReadInt(chunk);
 
 	ReadBlock(chunk, lcd->display, DISPLAY_SIZE);
@@ -904,10 +912,10 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	ReadBlock(chunk,  (unsigned char *) lcd->queue, LCD_MAX_SHADES * DISPLAY_SIZE);
 	lcd->shades		= ReadInt(chunk);
 	lcd->mode		= (LCD_MODE) ReadInt(chunk);
-	lcd->time		= ReadDouble(chunk);
-	lcd->ufps		= ReadDouble(chunk);
-	lcd->ufps_last	= ReadDouble(chunk);
-	lcd->lastgifframe= ReadDouble(chunk);
+	lcd->base.time = ReadDouble(chunk);
+	lcd->base.ufps = ReadDouble(chunk);
+	lcd->base.ufps_last = ReadDouble(chunk);
+	lcd->base.lastgifframe = ReadDouble(chunk);
 	lcd->write_avg	= ReadDouble(chunk);
 	lcd->write_last = ReadDouble(chunk);
 }
@@ -1054,7 +1062,12 @@ void LoadSlot(SAVESTATE_t *save, void *lpInput) {
 	LoadCPU(save, &lpCalc->cpu);
 	LoadMEM(save, &lpCalc->mem_c);
 	LoadTIMER(save, &lpCalc->timer_c);
-	LoadLCD(save, lpCalc->cpu.pio.lcd);
+	if (lpCalc->model >= TI_84PCSE) {
+		// TODO: fix
+		//LoadLCD(save, (LCD_t *)lpCalc->cpu.pio.lcd);
+	} else {
+		LoadLCD(save, (LCD_t *) lpCalc->cpu.pio.lcd);
+	}
 	LoadLINK(save, lpCalc->cpu.pio.link);
 	LoadSTDINT(save, lpCalc->cpu.pio.stdint);
 	LoadSE_AUX(save, lpCalc->cpu.pio.se_aux);

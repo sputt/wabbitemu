@@ -208,6 +208,7 @@ int CPU_reset(CPU_t *cpu) {
 	memset(cpu->prev_instruction_list, 0, sizeof(cpu->prev_instruction_list));
 	cpu->reverse_instr = 0;
 #endif
+	// TODO: eliminate this
 	switch (cpu->pio.model) {
 	case TI_81: {
 					bank_state_t banks[5] = {
@@ -294,6 +295,19 @@ int CPU_reset(CPU_t *cpu) {
 					 memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
 					 break;
 	}
+	case TI_84PCSE: {
+					/*	Address										page	write?	ram?	no exec?	*/
+					bank_state_t banks[5] = {
+						{ cpu->mem_c->flash + 0xff * PAGE_SIZE, 0xff, FALSE, FALSE, FALSE },
+						{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
+						{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
+						{ cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
+						{ NULL, 0, FALSE, FALSE, FALSE }
+					};
+
+					memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
+					break;
+	}
 	}
 	return 0;
 }
@@ -349,9 +363,7 @@ static BOOL is_allowed_exec(CPU_t *cpu) {
 	} else {
 		memc *mem = cpu->mem_c;
 		if (!bank->ram)	{		//if its flash and between page limits
-			return bank->page <= mem->flash_lower || mem->flash_enabled ||
-				(!mem->flash_disabled && bank->page > mem->flash_upper) ||
-				is_priveleged_page(cpu);
+			return bank->page <= mem->flash_lower || bank->page > mem->flash_upper;
 		}
 		if (bank->page & (2 >> (cpu->mem_c->prot_mode + 1)))
 			return TRUE;		//we know were in ram so lets check if the page is allowed in the mem protected mode
@@ -368,7 +380,7 @@ static BOOL is_allowed_exec(CPU_t *cpu) {
 	}
 }
 
-void change_page(memc *mem, int bank, char page, BOOL ram) {
+void change_page(memc *mem, int bank, u_char page, BOOL ram) {
 	mem->normal_banks[bank].ram = ram;
 	if (ram) {
 		mem->normal_banks[bank].page = page;
@@ -487,7 +499,7 @@ static unsigned char flash_read(CPU_t *cpu, unsigned short addr) {
 	memc *mem_c = cpu->mem_c;
 
 	if (mem_c->flash_error) {
-		unsigned char error_value = ((~cpu->mem_c->flash_last_write & 0x80) | 0x20);
+		unsigned char error_value = ((~cpu->mem_c->flash_write_byte & 0x80) | 0x20);
 		error_value |= cpu->mem_c->flash_toggles;
 		cpu->mem_c->flash_toggles ^= 0x40;
 		mem_c->flash_error = FALSE;
@@ -528,7 +540,7 @@ static void flash_write_byte(memc *mem_c, unsigned short addr, unsigned char dat
 	bank_t bank = mem_c->banks[bankNum];
 	BYTE *write_location = bank.addr + mc_base(addr);
 	(*write_location) &= data;  //AND LOGIC!!
-	mem_c->flash_last_write = data;
+	mem_c->flash_write_byte = data;
 	if ((*write_location) != data) {
 		mem_c->flash_error = TRUE;
 	}
@@ -623,8 +635,8 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			int totalPages = pages * 2;
 
 			if (spage < totalPages - 8) {
-				int startaddr = (spage & 0x00F8) * 0x2000;
-				int endaddr = startaddr + 0x10000;
+				int startaddr = (spage & 0x01FF) * 0x2000;
+				int endaddr = startaddr + PAGE_SIZE * 4;
 				for (i = startaddr; i < endaddr; i++) {
 					mem_c->flash[i] = 0xFF;
 				}
@@ -931,6 +943,7 @@ int CPU_connected_step(CPU_t *cpu) {
 int CPU_step(CPU_t* cpu) {
 	cpu->interrupt = 0;
 	cpu->ei_block = FALSE;
+	cpu->old_pc = cpu->pc;
 
 #ifdef WITH_REVERSE
 	CPU_add_prev_instr(cpu);

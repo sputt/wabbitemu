@@ -136,26 +136,25 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 			continue;
 		}
 		uint8_t *screenImage;
-		if (cpu->pio.lcd != lpCalc->cpu.pio.lcd) {
-			u_char *buffer = NULL;
-			switch (cpu->imode) {
-			case 0: buffer = displayoptionstest_draw_bounce(4, displayFPS, Time); break;
-			case 1: buffer = displayoptionstest_draw_scroll(4, displayFPS, Time); break;
-			case 2: buffer = displayoptionstest_draw_gradient((int) (displayFPS / 10.0f), displayFPS, Time);
-			}
+		u_char *buffer = NULL;
+		LCDBase_t *lcd = cpu->pio.lcd;
+		switch (cpu->imode) {
+		case 0: buffer = displayoptionstest_draw_bounce(4, displayFPS, Time); break;
+		case 1: buffer = displayoptionstest_draw_scroll(4, displayFPS, Time); break;
+		case 2: buffer = displayoptionstest_draw_gradient((int)(displayFPS / 10.0f), displayFPS, Time); break;
+		case 3: lcd = lpCalc->cpu.pio.lcd;
+		}
+		if (cpu->imode != 3) {
 			fastcopy(buffer, cpu);
-			if (cpu->imode == 2) {
-				Time += 1 / 70.0f;
-			} else {
-				Time += 1 / displayFPS;
-			}
-			screenImage = LCD_image(cpu->pio.lcd);
-		} else {
-			uint8_t tempBuffer[64][128];
-			memcpy(tempBuffer, lpCalc->cpu.pio.lcd->screen, sizeof(lpCalc->cpu.pio.lcd->screen));
-			screenImage = (uint8_t *) tempBuffer;
 		}
 
+		if (cpu->imode == 2) {
+			Time += 1 / 70.0f;
+		} else {
+			Time += 1 / displayFPS;
+		}
+		screenImage = lcd->image(lcd);
+		
 		StretchDIBits(hdc, 0, 0, 192, 128,
 			0, 0, 96, 64,
 			screenImage,
@@ -174,7 +173,7 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 
 			cpu->output = FALSE;
 			if (cpu->pio.lcd != lpCalc->cpu.pio.lcd) {
-				LCD_data(cpu, &(cpu->pio.devices[0x11]));
+				cpu->pio.lcd->data(cpu, &(cpu->pio.devices[0x11]));
 			}
 		}
 
@@ -198,17 +197,18 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 }
 
 
-LCD_t *DupLCDConfig(LCD_t *lcd_dest, const LCD_t *lcd_source) {
+LCD_t *DupLCDConfig(LCD_t *lcd_dest, const LCD_t *lcd_source, BOOL deep_copy) {
 	if (lcd_dest == NULL || lcd_source == NULL || lcd_dest == lcd_source)
 		return lcd_dest;
 
-	lcd_dest->time = lcd_source->time;
-	lcd_dest->write_last = lcd_source->write_last;
-	lcd_dest->write_avg = lcd_source->write_avg;
-	lcd_dest->mode = lcd_source->mode;
-	lcd_dest->steady_frame = lcd_source->steady_frame;
-	lcd_dest->shades = lcd_source->shades;
-	lcd_dest->ufps_last = lcd_source->ufps_last;
+	if (deep_copy) {
+		memcpy(lcd_dest, lcd_source, sizeof(LCD_t));
+		ZeroMemory(lcd_dest->queue, sizeof(lcd_dest->queue));
+	} else {
+		lcd_dest->mode = lcd_source->mode;
+		lcd_dest->steady_frame = lcd_source->steady_frame;
+		lcd_dest->shades = lcd_source->shades;
+	}
 	return lcd_dest;
 }
 
@@ -230,17 +230,17 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			lcd = LCD_init(&cpu, TI_83P);
 			lcd_old = lcd;
 
-			DupLCDConfig(lcd, lpCalc->cpu.pio.lcd);
-			lcd->active = TRUE;
+			DupLCDConfig(lcd, (LCD_t *) lpCalc->cpu.pio.lcd, TRUE);
+			lcd->base.active = TRUE;
 			lcd->word_len = 1;
-			lcd->contrast = 52;
-			lcd->time = 0.0;
+			lcd->base.contrast = 52;
+			lcd->base.time = 0.0;
 
 			cpu.pio.devices[0x11].active = TRUE;
 			cpu.pio.devices[0x11].mem_c = NULL;
 			cpu.pio.devices[0x11].aux = lcd;
-			cpu.pio.devices[0x11].code = (devp) LCD_data;
-			cpu.pio.lcd = lcd;
+			cpu.pio.devices[0x11].code = (devp) lcd->base.data;
+			cpu.pio.lcd = (LCDBase_t *) lcd;
 
 			cbMode = GetDlgItem(hwndDlg, IDC_CBODISPLAYMODE);
 			imgDisplayPreview = GetDlgItem(hwndDlg, IDC_IMGDISPLAYPREVIEW);
@@ -284,13 +284,21 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 				TerminateThread(hdlThread, 0);
 				hdlThread = NULL;
 			}
-			hdlThread = CreateThread(NULL,0,ThreadDisplayPreview, &cpu, 0, NULL);
+			if (lpCalc->model >= TI_84PCSE) {
+				EnableWindow(hwndDlg, FALSE);
+				MessageBox(hwndDlg, _T("LCD Options are not available for the TI 84+C SE"), _T("Warning"), MB_OK);
+			} else {
+				EnableWindow(hwndDlg, TRUE);
+				hdlThread = CreateThread(NULL, 0, ThreadDisplayPreview, &cpu, 0, NULL);
+			}
 			return FALSE;
 		}
 		case WM_NOTIFY:
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
-					DupLCDConfig(lpCalc->cpu.pio.lcd, lcd);
+					if (lpCalc->model < TI_84PCSE) {
+						DupLCDConfig((LCD_t *)lpCalc->cpu.pio.lcd, lcd, FALSE);
+					}
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -309,7 +317,6 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 						PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 						return TRUE;
 					case IDC_CBODISPLAYSOURCE: {
-						static int last_index = 0;
 						int index = ComboBox_GetCurSel(cbSource);
 						BOOL bEnable = TRUE;
 						HWND stcDisplayOption = GetDlgItem(hwndDlg, IDC_STCDISPLAYOPTION);
@@ -317,25 +324,15 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 							case 0:
 							case 1:
 								Static_SetText(stcDisplayOption, _T("FPS"));
-								if (last_index == 3) DupLCDConfig(lcd_old, lcd);
-								lcd = lcd_old;
 								break;
 							case 2:
-								if (last_index == 3) DupLCDConfig(lcd_old, lcd);
-								lcd = lcd_old;
 								Static_SetText(stcDisplayOption, _T("Levels"));
 								break;
 							case 3:
-								lcd = lpCalc->cpu.pio.lcd;
-								if (last_index != 3) DupLCDConfig(lcd, lcd_old);
 								bEnable = FALSE;
 								break;
 						}
-						last_index = index;
 						cpu.imode = index;
-						cpu.pio.devices[0x11].aux = lcd;
-						cpu.pio.lcd = lcd;
-						if (last_index == 3) cpu.timer_c->elapsed = lpCalc->timer_c.elapsed;
 						EnableWindow(trbFPS, bEnable);
 						return TRUE;
 					}
@@ -433,7 +430,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 						case IDC_BROWSESKIN: {
 							TCHAR lpStrFile[MAX_PATH];
 							if (!BrowseFile(lpStrFile, _T("Image Files (*.bmp;*.jpg;*.png;*.tiff)\0*.bmp;*.jpg;*.png;*.tiff\0	All Files (*.*)\0*.*\0\0"),
-								_T("Browse for custom skin"), _T("png"), 0)) {
+								_T("Browse for custom skin"), _T("png"), 0, 1)) {
 									Edit_SetText(hSkinText, lpStrFile);
 							}
 							break;
@@ -441,7 +438,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 						case IDC_BROWSEKEY: {
 							TCHAR lpStrFile[MAX_PATH];
 							if (!BrowseFile(lpStrFile, _T("Image Files (*.bmp;*.jpg;*.png;*.tiff)\0*.bmp;*.jpg;*.png;*.tiff\0	All Files (*.*)\0*.*\0\0"),
-								_T("Browse for custom keymap"), _T("png"), 0)) {
+								_T("Browse for custom keymap"), _T("png"), 0, 1)) {
 									Edit_SetText(hKeyText, lpStrFile);
 							}
 							break;
@@ -705,7 +702,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 						}
 						case IDC_BTNGIFBROWSE:
 							BrowseFile(gif_file_name, _T("Graphics Interchange Format  (*.gif)\0*.gif\0All Files (*.*)\0*.*\0\0"),
-										_T("Wabbitemu GIF File Target"), _T("gif"), 0);
+								_T("Wabbitemu GIF File Target"), _T("gif"), 0, 1);
 							Edit_SetText(edtGIFFilename, gif_file_name);
 							break;
 						case IDC_CHKUSEINCREASING:
@@ -761,7 +758,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 							const TCHAR lpstrTitle[] = _T("Wabbitemu Load ROM");
 							const TCHAR lpstrDefExt[] = _T("rom");
 							
-							if (!BrowseFile(lpszFile, lpstrFilter, lpstrTitle, lpstrDefExt, OFN_PATHMUSTEXIST)) {
+							if (!BrowseFile(lpszFile, lpstrFilter, lpstrTitle, lpstrDefExt, OFN_PATHMUSTEXIST, 1)) {
 								StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), lpszFile);
 								SendMessage(hwnd, WM_USER, 0, 0);
 							}
@@ -770,7 +767,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						case IDC_BTN1: {
 							TCHAR lpszFile[MAX_PATH];
 							if (!SaveFile(lpszFile, _T("ROMs  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
-											_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST, 0)) {
+											_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST, 1)) {
 								MFILE *file = ExportRom(lpszFile, lpCalc);
 								mclose(file);
 							}
@@ -795,9 +792,10 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					lpCalc->cpu.cpu_version = Button_GetCheck(old83p_check) ? 1 : 0;
 					Edit_GetText(edtLCD_delay,buf, ARRAYSIZE(buf));
 					delay = _ttoi(buf);
-					if (delay != 0) {
-						lpCalc->cpu.pio.lcd->lcd_delay = delay;
-					}
+					// TODO: fix
+					//if (delay != 0) {
+					//	lpCalc->cpu.pio.lcd->lcd_delay = delay;
+					//}
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -810,7 +808,8 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		// Update all of the ROM attributes
 		case WM_USER: {
 			TCHAR buf[64];
-			StringCbPrintf(buf, sizeof(buf), _T("%i"), lpCalc->cpu.pio.lcd->lcd_delay);
+			// TODO: fix
+			//StringCbPrintf(buf, sizeof(buf), _T("%i"), lpCalc->cpu.pio.lcd->lcd_delay);
 			Button_SetCheck(saveState_check, exit_save_state);
 			Edit_SetText(edtRom_path, lpCalc->rom_path);
 			Edit_SetText(edtLCD_delay, buf);

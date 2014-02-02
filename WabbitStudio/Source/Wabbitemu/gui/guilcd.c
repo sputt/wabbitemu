@@ -9,6 +9,8 @@
 #include "gifhandle.h"
 #include "guioptions.h"
 #include "link.h"
+#include "lcd.h"
+#include "colorlcd.h"
 #include "savestate.h"
 #include "SendFilesWindows.h"
 #include "guifilepreview.h"
@@ -28,7 +30,8 @@ extern BOOL is_exiting;
 
 static int alphablendfail = 0;
 
-BITMAPINFO *bi = NULL;
+BITMAPINFO *bi = NULL; 
+BITMAPINFO *colorbi = NULL;
 BOOL is_archive_only = FALSE;
 BOOL is_calc_file = FALSE;
 
@@ -285,7 +288,7 @@ HANDLE DDBToDIB(HBITMAP bitmap, DWORD dwCompression)
 void PaintLCD(HWND hwnd, HDC hdcDest) {
 	unsigned char * screen;
 	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	LCD_t *lcd = lpCalc->cpu.pio.lcd;
+	LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 	if (lcd == NULL) {
 		_tprintf_s(_T("Invalid LCD pointer"));
 		return;
@@ -305,16 +308,18 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		SelectObject(hdc, bmpBuf);
 	}
 
+	BITMAPINFO *info = lpCalc->model >= TI_84PCSE ? colorbi : bi;
 	if (lcd->active == FALSE) {
-		BYTE lcd_data[128*64];
-		memset(lcd_data, 0, sizeof(lcd_data));
+		int displaySize = lpCalc->model >= TI_84PCSE ? COLOR_LCD_DISPLAY_SIZE : GRAY_DISPLAY_SIZE;
+		BYTE *lcd_data = (BYTE *) malloc(displaySize);
+		ZeroMemory(lcd_data, displaySize);
 
 		if (StretchDIBits(
 			hdc,
 			rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
-			0, 0, lcd->width, 64,
+			0, 0, lcd->display_width, lcd->height,
 			lcd_data,
-			bi,
+			info,
 			DIB_RGB_COLORS,
 			SRCCOPY) == 0) {
 
@@ -341,14 +346,16 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		if (BitBlt(	hdcDest, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
 			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("BitBlt failed\n"));
 
+		free(lcd_data);
+
 	} else {
-		screen = LCD_image(lcd);
-		if ((rc.right - rc.left) % lcd->width) {
-			Bitmap lcdBitmap(bi, screen);
+		screen = lcd->image(lcd);
+		if ((rc.right - rc.left) % lcd->display_width) {
+			Bitmap lcdBitmap(info, screen);
 			Graphics g(hdc);
 			g.SetInterpolationMode(InterpolationModeLowQuality);
 			Rect rect(rc.left, rc.top, rc.right - rc.left + 1,  rc.bottom - rc.top + 1);
-			g.DrawImage(&lcdBitmap, rect, 0, 0, lcd->width, 64, UnitPixel);
+			g.DrawImage(&lcdBitmap, rect, 0, 0, lcd->width, lcd->height, UnitPixel);
 			rect.Width--;
 			rect.Height--;
 			g.SetClip(rect);
@@ -356,9 +363,9 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			SetStretchBltMode(hdc, BLACKONWHITE);
 			if (StretchDIBits(hdc,
 							rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
-							0, 0, lcd->width, 64,
+							0, 0, lcd->display_width, lcd->height,
 							screen,
-							bi,
+							info,
 							DIB_RGB_COLORS,
 							SRCCOPY) == 0) {
 							_tprintf_s(_T("error in SetDIBitsToDevice\n"));
@@ -391,7 +398,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		ClientToScreen(hwnd, &pt);
 		ScreenToClient(GetParent(hwnd), &pt);
 
-		if (alphablendfail < 100 && lpCalc->bAlphaBlendLCD) {
+		if (alphablendfail < 100 && lpCalc->bAlphaBlendLCD && lpCalc->model < TI_84PCSE) {
 			if (AlphaBlend(	hdc, rc.left, rc.top, rc.right,  rc.bottom,
 				lpCalc->hdcSkin, lpCalc->rectLCD.left, lpCalc->rectLCD.top,
 				lpCalc->rectLCD.right - lpCalc->rectLCD.left,
@@ -434,6 +441,8 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 #endif
 		if (BitBlt(	hdcDest, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
 			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("Bit blit failed\n"));
+
+		free(screen);
 
 	}
 	DeleteObject(bmpBuf);
@@ -488,6 +497,21 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					bi->bmiColors[i].rgbBlue = (0x88*(256-(LCD_HIGH/MAX_SHADES)*i))/255;
 				}
 			}
+
+			if (colorbi == NULL) {
+				colorbi = (BITMAPINFO *)malloc(sizeof(BITMAPINFOHEADER)+sizeof(RGBQUAD));
+				colorbi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+				colorbi->bmiHeader.biWidth = COLOR_LCD_WIDTH;
+				colorbi->bmiHeader.biHeight = -COLOR_LCD_HEIGHT;
+				colorbi->bmiHeader.biPlanes = 1;
+				colorbi->bmiHeader.biBitCount = 24;
+				colorbi->bmiHeader.biCompression = BI_RGB;
+				colorbi->bmiHeader.biSizeImage = 0;
+				colorbi->bmiHeader.biXPelsPerMeter = 0;
+				colorbi->bmiHeader.biYPelsPerMeter = 0;
+				colorbi->bmiHeader.biClrUsed = 0;
+				colorbi->bmiHeader.biClrImportant = 0;
+			}
 			ReleaseDC(hwnd, hdc);
 
 			return 0;
@@ -496,7 +520,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		{
 			HDC hdcDest;
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			LCD_t *lcd = lpCalc->cpu.pio.lcd;
+			LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 			PAINTSTRUCT ps;
 			hdcDest = BeginPaint(hwnd, &ps);
 			PaintLCD(hwnd, hdcDest);
@@ -572,6 +596,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (wParam != MK_LBUTTON) {
 					dwDragCountdown = 0;
 				} else if (gif_write_state == GIF_IDLE) {
+					// TODO: make this not ugly and work
 					if (++dwDragCountdown < (u_int) GetSystemMetrics(SM_CXDRAG)) return 0;
 
 					CDataObject *pDataObject;
@@ -591,21 +616,22 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					StringCbCopy(gif_file_name, sizeof(gif_file_name), fn);
 
 					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					LCD_t *lcd = lpCalc->cpu.pio.lcd;
+					LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 					gif_xs = lcd->width * gif_size;
-					gif_ys = SCRYSIZE * gif_size;
-					GIFGREYLCD(lcd);
+					gif_ys = lcd->height * gif_size;
+					uint8_t *gif = generate_gif_image(lcd);
 
 					unsigned int i, j;
-					for (i = 0; i < SCRYSIZE * gif_size; i++)
-						for (j = 0; j < lcd->width * gif_size; j++)
-							gif_frame[i * gif_xs + j] = lpCalc->cpu.pio.lcd->gif[i][j];
-
+					for (i = 0; i < lcd->height * gif_size; i++) {
+						for (j = 0; j < lcd->width * gif_size; j++) {
+							gif_frame[i * gif_xs + j] = gif[i * gif_xs + j];
+						}
+					}
 					gif_write_state = GIF_START;
-					gif_writer(lcd->shades);
+					gif_writer(MAX_SHADES);
 
 					gif_write_state = GIF_END;
-					gif_writer(lcd->shades);
+					gif_writer(MAX_SHADES);
 
 					FORMATETC fmtetc[] = {
 						{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
@@ -749,8 +775,10 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 		case WM_DESTROY: {
 				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				if (calc_count() == 1 && is_exiting)
+				if (calc_count() == 1 && is_exiting) {
 					free(bi);
+					free(colorbi);
+				}
 
 				if (hwnd == lpCalc->hwndLCD) {
 					UnregisterDropWindow(hwnd, (IDropTarget *) lpCalc->pDropTarget);
@@ -789,9 +817,10 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmDrag);
 
 				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				u_char *screen = LCD_image( lpCalc->cpu.pio.lcd ) ;
+				u_char *screen = lpCalc->cpu.pio.lcd->image(lpCalc->cpu.pio.lcd);
 				FillRect(hdc, &rc, (HBRUSH) GetStockObject(BLACK_BRUSH));
 
+				// TODO: fix
 				//screen = GIFGREYLCD();
 				if (StretchDIBits(
 					hdc,
@@ -842,7 +871,3 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	}
 	return 0;
 }
-
-
-
-

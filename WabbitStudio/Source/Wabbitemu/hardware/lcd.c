@@ -64,10 +64,14 @@ while ((CRD_TEST & (CRD_##zz##_MASK))==CRD_##zz) {LINECAT(A)
  * Prototypes
  */
 static void LCD_advance_cursor(LCD_t *);
-static void LCD_reset(LCD_t *);
 static void LCD_enqueue(LCD_t *);
-static void LCD_free(LCD_t *);
+static void LCD_free(CPU_t *);
+static void LCD_reset(CPU_t *);
+static void LCD_timer_refresh(CPU_t * cpu);
 u_char *LCD_update_image(LCD_t *lcd);
+u_char* LCD_image(LCDBase_t *lcdBase);
+static void LCD_command(CPU_t *cpu, device_t *dev);
+static void LCD_data(CPU_t *cpu, device_t *dev);
 
 #define NORMAL_DELAY 60		//tstates
 //#define MICROSECONDS(xx) (((cpu->timer_c->freq * 10 / MHZ_6) * xx) / 10)
@@ -84,8 +88,11 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 		exit(1);
 	}
 
-	lcd->free = &LCD_free;
-	LCD_reset(lcd);
+	lcd->base.free = &LCD_free;
+	lcd->base.reset = &LCD_reset;
+	lcd->base.command = (devp) &LCD_command;
+	lcd->base.data = (devp) &LCD_data;
+	lcd->base.image = &LCD_image;
 	
 	switch (model) {
 		case TI_82:
@@ -97,7 +104,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 		case TI_85:
 		case TI_86:
 			lcd->base_level = BASE_LEVEL_83P;
-			lcd->contrast = lcd->base_level;
+			lcd->base.contrast = lcd->base_level;
 			break;
 		case TI_73:
 		case TI_83P:
@@ -112,10 +119,12 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 			break;
 	}
 
+	lcd->base.height = 64;
+	lcd->base.width = 128;
 	if (model == TI_86 || model == TI_85) {
-		lcd->width = 128;
+		lcd->base.display_width = 128;
 	} else {
-		lcd->width = 96;
+		lcd->base.display_width = 96;
 	}
 	
 	// Set all values to the defaults
@@ -137,22 +146,21 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 		lcd->shades = LCD_DEFAULT_SHADES;
 	}
 
-	
-	lcd->time = tc_elapsed(cpu->timer_c);
-	lcd->ufps_last = tc_elapsed(cpu->timer_c);
-	lcd->ufps = 0.0f;
-	lcd->lastgifframe = tc_elapsed(cpu->timer_c);
+	lcd->base.time = tc_elapsed(cpu->timer_c);
+	lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
+	lcd->base.ufps = 0.0f;
+	lcd->base.lastgifframe = tc_elapsed(cpu->timer_c);
 	lcd->write_avg = 0.0f;
 	lcd->write_last = tc_elapsed(cpu->timer_c);
 	return lcd;
 }
 
-void LCD_timer_refresh(CPU_t * cpu) {
-	LCD_t *lcd = cpu->pio.lcd;
-	lcd->time = tc_elapsed(cpu->timer_c);
-	lcd->ufps_last = tc_elapsed(cpu->timer_c);
-	lcd->ufps = 0.0f;
-	lcd->lastgifframe = tc_elapsed(cpu->timer_c);
+static void LCD_timer_refresh(CPU_t * cpu) {
+	LCD_t *lcd = (LCD_t *)cpu->pio.lcd;
+	lcd->base.time = tc_elapsed(cpu->timer_c);
+	lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
+	lcd->base.ufps = 0.0f;
+	lcd->base.lastgifframe = tc_elapsed(cpu->timer_c);
 	lcd->write_avg = 0.0f;
 	lcd->write_last = tc_elapsed(cpu->timer_c);
 	lcd->lcd_delay = NORMAL_DELAY;
@@ -161,14 +169,15 @@ void LCD_timer_refresh(CPU_t * cpu) {
 /* 
  * Simulates the state of the LCD after a power reset
  */
-static void LCD_reset(LCD_t *lcd) {
-	lcd->active = FALSE;
+static void LCD_reset(CPU_t *cpu) {
+	LCD_t *lcd = (LCD_t *) cpu->pio.lcd;
+	lcd->base.active = FALSE;
 	lcd->word_len = 8;
-	lcd->cursor_mode = Y_UP;
-	lcd->x = 0;
-	lcd->y = 0;
-	lcd->z = 0;
-	lcd->contrast = 32;
+	lcd->base.cursor_mode = Y_UP;
+	lcd->base.x = 0;
+	lcd->base.y = 0;
+	lcd->base.z = 0;
+	lcd->base.contrast = 32;
 	lcd->last_read = 0;
 	
 	memset(lcd->display, 0, DISPLAY_SIZE);
@@ -180,8 +189,8 @@ static void LCD_reset(LCD_t *lcd) {
 /* 
  * Free space belonging to lcd
  */
-static void LCD_free(LCD_t *lcd) {
-	free(lcd);
+static void LCD_free(CPU_t *cpu) {
+	free(cpu->pio.lcd);
 }
 
 static void Add_SE_Delay(CPU_t *cpu) {
@@ -193,12 +202,12 @@ static void Add_SE_Delay(CPU_t *cpu) {
 /* 
  * Device code for LCD commands 
  */
-void LCD_command(CPU_t *cpu, device_t *dev) {
+static void LCD_command(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
 	if (cpu->pio.model > TI_83P)
 		Add_SE_Delay(cpu);
 	//int min_wait = MICROSECONDS(lcd->lcd_delay);
-	if (lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
+	if (cpu->pio.model >= TI_83P && lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->base.last_tstate)) {
 		cpu->output = FALSE;
 		if (cpu->input) {
 			cpu->input = FALSE;
@@ -213,39 +222,39 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
 	OutputDebugString(buffer);*/
 
 	if (cpu->output) {
-		lcd->last_tstate = tc_tstates(cpu->timer_c);
+		lcd->base.last_tstate = tc_tstates(cpu->timer_c);
 		// Test the bus to determine which command to run
 		CRD_SWITCH(cpu->bus) {
 			CRD_CASE(DPE):
-				lcd->active = CRD_DATA(DPE);
+				lcd->base.active = CRD_DATA(DPE);
 				break;
 			CRD_CASE(86E):
 				lcd->word_len = CRD_DATA(86E);
 				break;
 			CRD_CASE(UDE):
-				lcd->cursor_mode = (LCD_CURSOR_MODE) CRD_DATA(UDE);
+				lcd->base.cursor_mode = (LCD_CURSOR_MODE)CRD_DATA(UDE);
 				break;
 			CRD_CASE(CHE):
 			CRD_CASE(OPA1):
 			CRD_CASE(OPA2):
 				break;
 			CRD_CASE(SYE):
-				lcd->y = CRD_DATA(SYE);
+				lcd->base.y = CRD_DATA(SYE);
 				break;
 			CRD_CASE(SZE):
-				lcd->z = CRD_DATA(SZE);
+				lcd->base.z = CRD_DATA(SZE);
 				LCD_enqueue(lcd);
 				break;
 			CRD_CASE(SXE):
-				lcd->x = CRD_DATA(SXE);
+				lcd->base.x = CRD_DATA(SXE);
 				break;
 			CRD_CASE(SCE):
-				lcd->contrast = CRD_DATA(SCE);
+				lcd->base.contrast = CRD_DATA(SCE);
 				break;
 		}
 		cpu->output = FALSE;
 	} else if (cpu->input) {
-		cpu->bus = (lcd->word_len << 6) | (lcd->active << 5) | lcd->cursor_mode;
+		cpu->bus = (lcd->word_len << 6) | (lcd->base.active << 5) | lcd->base.cursor_mode;
 		cpu->input = FALSE;
 	}
 }
@@ -254,14 +263,14 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
  * Output to the LCD data port.
  * Also manage user FPS and grayscale 
  */
-void LCD_data(CPU_t *cpu, device_t *dev) {
+static void LCD_data(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
 
 	if (cpu->pio.model > TI_83P)
 		Add_SE_Delay(cpu);
 
 	//int min_wait = MICROSECONDS(lcd->lcd_delay);
-	if (lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
+	if (lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->base.last_tstate)) {
 		cpu->output = FALSE;
 		cpu->input = FALSE;
 		return;
@@ -271,13 +280,13 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 	u_int shift = 0;
 	u_char *cursor;
 	if (lcd->word_len) {
-		int temp =  LCD_OFFSET(lcd->y, lcd->x, 0);
+		int temp = LCD_OFFSET(lcd->base.y, lcd->base.x, 0);
 		cursor = &lcd->display[temp];
 	} else {
-		u_int new_y = lcd->y * 6;
+		u_int new_y = lcd->base.y * 6;
 		shift = 10 - (new_y % 8);
 		
-		cursor = &lcd->display[ LCD_OFFSET(new_y / 8, lcd->x, 0) ];
+		cursor = &lcd->display[LCD_OFFSET(new_y / 8, lcd->base.x, 0)];
 	}
 
 	if (cpu->output) {
@@ -288,7 +297,7 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 		double write_delay = tc_elapsed(cpu->timer_c) - lcd->write_last;
 		if (lcd->write_avg == 0.0) lcd->write_avg = write_delay;
 		lcd->write_last = tc_elapsed(cpu->timer_c);
-		lcd->last_tstate = tc_tstates(cpu->timer_c);
+		lcd->base.last_tstate = tc_tstates(cpu->timer_c);
 	
 		// If there is a delay that is significantly longer than the
 		// average write delay, we can assume a frame has just terminated
@@ -300,20 +309,20 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 		if (write_delay < lcd->write_avg * 100.0) {
 			lcd->write_avg = (lcd->write_avg * 0.90) + (write_delay * 0.10);
 		} else {
-			double ufps_length = tc_elapsed(cpu->timer_c) - lcd->ufps_last;
-			lcd->ufps = 1.0 / ufps_length;
-			lcd->ufps_last = tc_elapsed(cpu->timer_c);
+			double ufps_length = tc_elapsed(cpu->timer_c) - lcd->base.ufps_last;
+			lcd->base.ufps = 1.0 / ufps_length;
+			lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
 			
 			if (lcd->mode == MODE_PERFECT_GRAY) {
 				LCD_enqueue(lcd);
-				lcd->time = tc_elapsed(cpu->timer_c);
+				lcd->base.time = tc_elapsed(cpu->timer_c);
 			}
 		}
 		
 		if (lcd->mode == MODE_GAME_GRAY) {
-			if ((lcd->x == 0) && (lcd->y == 0)) {
+			if ((lcd->base.x == 0) && (lcd->base.y == 0)) {
 				LCD_enqueue(lcd);
-				lcd->time = tc_elapsed(cpu->timer_c);
+				lcd->base.time = tc_elapsed(cpu->timer_c);
 			}
 		}
 
@@ -346,23 +355,23 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 	}
 	
 	// Make sure timers are valid
-	if (lcd->time > tc_elapsed(cpu->timer_c))
-		lcd->time = tc_elapsed(cpu->timer_c);
+	if (lcd->base.time > tc_elapsed(cpu->timer_c))
+		lcd->base.time = tc_elapsed(cpu->timer_c);
 	
-	else if (tc_elapsed(cpu->timer_c) - lcd->time > (2.0/STEADY_FREQ_MIN))
-		lcd->time = tc_elapsed(cpu->timer_c) - (2.0/STEADY_FREQ_MIN);
+	else if (tc_elapsed(cpu->timer_c) - lcd->base.time > (2.0 / STEADY_FREQ_MIN))
+		lcd->base.time = tc_elapsed(cpu->timer_c) - (2.0 / STEADY_FREQ_MIN);
 	
 	// Perfect gray mode should time out too in case the screen update rate is too slow for
 	// proper grayscale (essentially a fallback on steady freq)
 	if (lcd->mode == MODE_PERFECT_GRAY || lcd->mode == MODE_GAME_GRAY) {	
-		if ((tc_elapsed(cpu->timer_c) - lcd->time) >= (1.0 / STEADY_FREQ_MIN)) {
+		if ((tc_elapsed(cpu->timer_c) - lcd->base.time) >= (1.0 / STEADY_FREQ_MIN)) {
 			LCD_enqueue(lcd);
-			lcd->time += (1.0 / STEADY_FREQ_MIN);
+			lcd->base.time += (1.0 / STEADY_FREQ_MIN);
 		}
 	} else if (lcd->mode == MODE_STEADY) {
-		if ((tc_elapsed(cpu->timer_c) - lcd->time) >= lcd->steady_frame) {
+		if ((tc_elapsed(cpu->timer_c) - lcd->base.time) >= lcd->steady_frame) {
 			LCD_enqueue(lcd);
-			lcd->time += lcd->steady_frame;
+			lcd->base.time += lcd->steady_frame;
 		}
 	}
 }
@@ -372,25 +381,25 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
  * to the increment/decrement mode set by lcd->cursor_mode
  */
 static void LCD_advance_cursor(LCD_t *lcd) {
-	switch (lcd->cursor_mode) {
+	switch (lcd->base.cursor_mode) {
 		case X_UP:
-			lcd->x = (lcd->x + 1) % 64;
+			lcd->base.x = (lcd->base.x + 1) % LCD_HEIGHT;
 			break;
 		case X_DOWN:
-			lcd->x = (lcd->x - 1) % 64;
+			lcd->base.x = (lcd->base.x - 1) % LCD_HEIGHT;
 			break;
 		case Y_UP:
 			{
-				lcd->y++;
+					 lcd->base.y++;
 				u_int bound = lcd->word_len ? 15 : 19;
-				if (((u_int) lcd->y) >= bound) lcd->y = 0;
+				if (((u_int)lcd->base.y) >= bound) lcd->base.y = 0;
 				break;
 			}
 		case Y_DOWN:
-			if (lcd->y <= 0) {
-				lcd->y = lcd->word_len ? 14 : 18;
+			if (lcd->base.y <= 0) {
+				lcd->base.y = lcd->word_len ? 14 : 18;
 			} else
-			lcd->y--;
+				lcd->base.y--;
 			break;
 		case MODE_NONE:
 			break;
@@ -407,7 +416,7 @@ static void LCD_enqueue(LCD_t *lcd) {
 	
 	for (int i = 0; i < LCD_HEIGHT; i++)
 		for (int j = 0; j < LCD_MEM_WIDTH; j++)
-			lcd->queue[lcd->front][LCD_OFFSET(j, i, 64 - lcd->z)] = lcd->display[LCD_OFFSET(j, i, 0)];
+			lcd->queue[lcd->front][LCD_OFFSET(j, i, LCD_HEIGHT - lcd->base.z)] = lcd->display[LCD_OFFSET(j, i, 0)];
 	//7/8/11 BuckeyeDude: does not work with z-addressing properly
 	//we now copy to display assuming z offset is 0 always here 
 	//when we enqueue the lcd->z property is taken into account
@@ -428,8 +437,10 @@ void LCD_clear(LCD_t *lcd) {
 
 
 u_char *LCD_update_image(LCD_t *lcd) {
-	int level = abs((int) lcd->contrast - (int) lcd->base_level);
-	int base = (lcd->contrast - 54) * 24;
+	LCDBase_t *lcdBase = (LCDBase_t *) lcd;
+	u_char *screen = (u_char *) malloc(GRAY_DISPLAY_SIZE);
+	int level = abs((int) lcdBase->contrast - (int) lcd->base_level);
+	int base = (lcdBase->contrast - 54) * 24;
 	if (base < 0) {
 		base = 0;
 	}
@@ -458,7 +469,7 @@ u_char *LCD_update_image(LCD_t *lcd) {
 				p0 += u;
 			}
 			
-			u_char *scol = &lcd->screen[row][col * 8];
+			u_char *scol = &screen[row * LCD_WIDTH + col * 8];
 			scol[0] = p0 * level + base;
 			scol[1] = p1 * level + base;
 			scol[2] = p2 * level + base;
@@ -470,7 +481,7 @@ u_char *LCD_update_image(LCD_t *lcd) {
 		}
 	}
 
-	return (uint8_t*) lcd->screen;
+	return screen;
 }
 
 /* 
@@ -478,6 +489,7 @@ u_char *LCD_update_image(LCD_t *lcd) {
  * pushed to the queue.  If there are no images in the queue,
  * the generated image will be blank
  */
-u_char* LCD_image(LCD_t *lcd) {
+u_char* LCD_image(LCDBase_t *lcdBase) {
+	LCD_t *lcd = (LCD_t *)lcdBase;
 	return LCD_update_image(lcd);
 }

@@ -32,7 +32,7 @@ void fastcopy(u_char *buffer, CPU_t *cpu) {
 			cpu->pio.lcd->x = y;
 			cpu->pio.lcd->y = x;
 			
-			LCD_data(cpu,&(cpu->pio.devices[0x11]));
+			cpu->pio.lcd->data(cpu, &(cpu->pio.devices[0x11]));
 			tc_add(cpu->timer_c, 67);
 		}
 	}

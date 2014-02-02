@@ -214,9 +214,6 @@
     <ClCompile Include="gui\guiwizard.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="interface\mapeditor.c">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
     <ClCompile Include="utilities\fileutilities.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -354,9 +351,6 @@
     </ClCompile>
     <ClCompile Include="utilities\avifile.cpp">
       <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="hardware\84pcsehw.c">
-      <Filter>Source Files\Hardware</Filter>
     </ClCompile>
     <ClCompile Include="interface\CBreakpointCollection.cpp">
       <Filter>Source Files\Interface\COM</Filter>
@@ -657,9 +651,6 @@
     <ClInclude Include="utilities\avifile.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="hardware\84pcsehw.h">
-      <Filter>Header Files\Hardware</Filter>
-    </ClInclude>
     <ClInclude Include="interface\CBank.h">
       <Filter>Header Files\Interface\COM</Filter>
     </ClInclude>
@@ -911,6 +902,9 @@
     <None Include="CalcAddress.rgs">
       <Filter>Source Files\Interface\COM</Filter>
     </None>
+    <None Include="gui\ROM\bf84pcse.hex">
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">
@@ -924,6 +918,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="gui\ti-84+cse.png">
+      <Filter>Resource Files\Skins</Filter>
+    </Image>
+    <Image Include="gui\ti-84+csekeymap.png">
       <Filter>Resource Files\Skins</Filter>
     </Image>
   </ItemGroup>

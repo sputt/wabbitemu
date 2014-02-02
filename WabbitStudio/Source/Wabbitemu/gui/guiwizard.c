@@ -133,7 +133,7 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 							TCHAR buffer[MAX_PATH];
 							if (!BrowseFile(buffer, _T("Known types ( *.sav; *.rom) \0*.sav;*.rom\0Save States  (*.sav)\0*.sav\0\
 										ROMs  (*.rom)\0*.rom\0All Files (*.*)\0*.*\0\0"), _T("Please select a ROM or save state"),
-										_T("rom"), 0)) {
+										_T("rom"), 0, 1)) {
 								Edit_SetText(hEditRom, buffer);
 							}
 							break;
@@ -228,12 +228,15 @@ void ModelInit(LPCALC lpCalc)
 		case TI_84PSE:
 			calc_init_83pse(lpCalc);
 			break;
+		case TI_84PCSE:
+			calc_init_84pcse(lpCalc);
+			break;
 	}
 }
 
 INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static BOOL inited = FALSE;
-	static HWND hQuestion, hTI73, hTI82, hTI83, hTI83P, hTI83PSE, hTI84P, hTI84PSE, hTI85, hTI86;
+	static HWND hQuestion, hTI73, hTI82, hTI83, hTI83P, hTI83PSE, hTI84P, hTI84PSE, hTI84PCSE, hTI85, hTI86;
 	switch (Message) {
 		case WM_INITDIALOG:
 			hQuestion = GetDlgItem(hwnd, IDC_STATIC_TYPE);
@@ -244,6 +247,7 @@ INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 			hTI83PSE = GetDlgItem(hwnd, IDC_RADIO_TI83PSE);
 			hTI84P = GetDlgItem(hwnd, IDC_RADIO_TI84P);
 			hTI84PSE = GetDlgItem(hwnd, IDC_RADIO_TI84PSE);
+			hTI84PCSE = GetDlgItem(hwnd, IDC_RADIO_TI84PCSE);
 			hTI85 = GetDlgItem(hwnd, IDC_RADIO_TI85);
 			hTI86 = GetDlgItem(hwnd, IDC_RADIO_TI86);
 
@@ -311,6 +315,8 @@ INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 						model = TI_84P;
 					} else if (Button_GetCheck(hTI84PSE) == BST_CHECKED) {
 						model = TI_84PSE;
+					} else if (Button_GetCheck(hTI84PCSE) == BST_CHECKED) {
+						model = TI_84PCSE;
 					} else if (Button_GetCheck(hTI85) == BST_CHECKED) {
 						model = TI_85;
 					} else if (Button_GetCheck(hTI86) == BST_CHECKED) {
@@ -348,6 +354,9 @@ void ExtractBootFree(int model, TCHAR *hexFile) {
 			break;
 		case TI_84PSE:
 			resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84PSE), _T("HEX"));
+			break;
+		case TI_84PCSE:
+			resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84PCSE), _T("HEX"));
 			break;
 	}
 	GetAppDataString(hexFile, MAX_PATH);
@@ -425,12 +434,25 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							break;
 						}
 						case IDC_BROWSE_OS: {
+							TCHAR defExt[32];
+							int filterIndex;
+							if (model == TI_73) {
+								filterIndex = 2;
+								StringCbCopy(defExt, sizeof(defExt), _T("73u"));
+							} else if (model == TI_84PCSE) {
+								filterIndex = 3;
+								StringCbCopy(defExt, sizeof(defExt), _T("8cu"));
+							} else {
+								filterIndex = 1;
+								StringCbCopy(defExt, sizeof(defExt), _T("8xu"));
+							}
+
 							TCHAR buf[512];
 							if (!BrowseFile(buf,			//output
-								_T("83 Plus Series OS  (*.8xu)\0*.8xu\0	73 OS  (*.73u)\0*.73u\0	All Files (*.*)\0*.*\0\0"), //filter
+								_T("83 Plus Series OS  (*.8xu)\0*.8xu\0	73 OS  (*.73u)\0*.73u\0	84 Plus C SE OS  (*.8cu)\0*.8cu\0	All Files (*.*)\0*.*\0\0"), //filter
 								_T("Open Calculator OS File"),		//title
-								_T("8xu"),					//def ext
-								0))						
+								defExt,
+								0, filterIndex))
 								Edit_SetText(hEditOSPath, buf);
 							break;
 						}
@@ -601,6 +623,10 @@ static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version)
 				url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS243.8Xu");
 			else
 				url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS.8Xu");
+			break;
+		case TI_84PCSE:
+			// TODO: find the correct link
+			//url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS.8Xu");
 			break;
 	}
 	HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, callback);
@@ -813,7 +839,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_FINISH | PSWIZB_BACK);
 					TCHAR buf[MAX_PATH], ch;
 					if (BrowseFile(buf, _T("83 Plus Application Variables (*.8xv)\0*.8xv\0	All Files (*.*)\0*.*\0\0"),
-							_T("Wabbitemu Open ROM Dump"), _T("8xp"), 0)) {
+						_T("Wabbitemu Open ROM Dump"), _T("8xp"), 0, 1)) {
 						break;
 					}
 					if (LOWORD(wParam) == IDC_BUTTON_BROWSE1) {

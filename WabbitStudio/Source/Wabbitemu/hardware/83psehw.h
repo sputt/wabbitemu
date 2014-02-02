@@ -122,9 +122,10 @@ typedef struct SE_AUX {
 } SE_AUX_t;
 
 STDINT_t *INT83PSE_init(CPU_t*);
-int device_init_83pse(CPU_t*);
+int device_init_83pse(CPU_t*, int model);
 int memory_init_83pse(memc *);
 int memory_init_84p(memc *);
+int memory_init_84pcse(memc *mc);
 void UpdateDelays(CPU_t *cpu, DELAY_t *delay);
 void handlextal(CPU_t *cpu,XTAL_t* xtal);
 void mod_timer(CPU_t *cpu, XTAL_t* xtal);

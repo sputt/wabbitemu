@@ -5,6 +5,7 @@
 #include "gui.h"
 #include "guibuttons.h"
 #include "guicutout.h"
+#include "guisize.h"
 #include "CGdiPlusBitmap.h"
 
 extern BOOL silent_mode;
@@ -60,11 +61,12 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 		CopyRect(&rc, &lpCalc->rectSkin);
 		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
 		rc.bottom += GetSystemMetrics(SM_CYMENU);
-		
 	} else {
 		bChecked = MF_UNCHECKED;
 		// Create status bar
-		SetRect(&rc, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
+		// fix scale so that it is valid for this calc
+		lpCalc->scale = max(GetDefaultKeymapScale(lpCalc->model), lpCalc->scale);
+		SetRect(&rc, 0, 0, lpCalc->cpu.pio.lcd->width * lpCalc->scale, lpCalc->cpu.pio.lcd->height * lpCalc->scale);
 		int iStatusWidths[] = { 100, -1 };
 		lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE,
 			0, 0, 0, 0, lpCalc->hwndFrame, NULL, g_hInst, NULL);
@@ -119,7 +121,7 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 
 	int skinWidth = lpCalc->rectSkin.right;
 	int skinHeight = lpCalc->rectSkin.bottom;
-	BOOL drawFaceplate = lpCalc->model == TI_84PSE && !lpCalc->bCustomSkin;
+	BOOL drawFaceplate = lpCalc->model == TI_84PSE || lpCalc->model == TI_84PCSE && !lpCalc->bCustomSkin;
 	if (drawFaceplate) {
 		if (DrawFaceplateRegion(lpCalc->hdcSkin, lpCalc->FaceplateColor)) {
 			return ERROR_FACEPLATE;
@@ -240,7 +242,7 @@ int gui_frame_update(LPCALC lpCalc) {
 			delete m_pBitmapSkin;
 			m_pBitmapKeymap = NULL;
 			m_pBitmapSkin = NULL;
-			//your skin failed to load, lets disable it and load the normal skin
+			// your skin failed to load, lets disable it and load the normal skin
 			lpCalc->bCustomSkin = FALSE;
 		}
 		hbmSkin.Load(CalcModelTxt[lpCalc->model], _T("PNG"), g_hInst);
@@ -256,8 +258,10 @@ int gui_frame_update(LPCALC lpCalc) {
 				break;
 			case TI_84P:
 			case TI_84PSE:
-			case TI_84PCSE:
 				hbmKeymap.Load(_T("TI-84+SEKeymap"), _T("PNG"), g_hInst);
+				break;
+			case TI_84PCSE:
+				hbmKeymap.Load(_T("TI-84+CSEKeymap"), _T("PNG"), g_hInst);
 				break;
 			case TI_85:
 				hbmKeymap.Load(_T("TI-85Keymap"), _T("PNG"), g_hInst);

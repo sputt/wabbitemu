@@ -35,11 +35,11 @@
  * directions the cursor can be in.
  */
 typedef enum _LCD_CURSOR_MODE {
-	X_DOWN		= 0,
-	X_UP		= 1,
-	Y_DOWN		= 2,
-	Y_UP		= 3,
-	MODE_NONE	= 4,
+	X_DOWN,
+	X_UP,
+	Y_DOWN,
+	Y_UP,
+	MODE_NONE,
 } LCD_CURSOR_MODE;
 
 /*
@@ -60,40 +60,42 @@ typedef enum _LCD_MODE {
  * additionally calculation buffers (such as screen) are stored
  * here to prevent thread related issues with a static buffer
  */
-typedef struct LCD {
-	void (*free)(struct LCD*);		// Function to free this aux
-	BOOL active;					// TRUE = on, FALSE = off
-	u_int word_len;
-	u_int x, y, z;					/* LCD cursors */
+typedef struct LCDBase {
+	void(*free)(CPU_t *);					// Function to free this aux
+	void(*reset)(CPU_t *);					// Reset lcd function
+	uint8_t *(*image)(struct LCDBase *);	// Generate image function
+	devp command;							// Port 10 function
+	devp data;								// Port 11 function
+	BOOL active;							// TRUE = on, FALSE = off
+	u_int x, y, z;							// LCD cursors
+	u_int contrast;							// 0 to 63
+	LCD_CURSOR_MODE cursor_mode;			// Y_UP, Y_DOWN, X_UP, X_DOWN
 	int width;
+	int display_width;
+	int height;
+	double ufps, ufps_last;					// User frames per second
+	double time;							// Last lcd update in seconds
+	long long last_tstate;					// timer_c->tstate of the last write
+	double lastgifframe;
+} LCDBase_t;
+
+typedef struct LCD {
+	LCDBase_t base;
+	u_int word_len;
 	u_int lcd_delay;				//delay in tstate required to write
 	
-	LCD_CURSOR_MODE cursor_mode;	/* Y_UP, Y_DOWN, X_UP, X_DOWN */
 	u_int last_read;				/* Buffer previous read */
-	u_int contrast;					/* 0 to 63 */
 	u_int base_level;				/* used in lcd level to handle contrast */
 	uint8_t display[DISPLAY_SIZE];	/* LCD display memory */
-	uint8_t screen[LCD_HEIGHT][LCD_WIDTH];
 	int front;
 	uint8_t queue[LCD_MAX_SHADES][DISPLAY_SIZE];/* holds previous buffers for grey */
-	uint8_t gif[LCD_HEIGHT*2][LCD_WIDTH*2];		/*for rendering limited color gifs*/
 	u_int shades;					/* number of shades of grey*/
 	LCD_MODE mode;					/* Mode of LCD rendering */
 	double steady_frame;			/* Length of a steady frame in seconds */
-	double time;					/* Last lcd update in seconds*/
-	double ufps, ufps_last;			/* User frames per second*/
-	double lastgifframe;
 	double write_avg, write_last;	/* Used to determine freq. of writes to the LCD */
-	long long last_tstate;			// timer_c->tstate of the last write
 } LCD_t;
 
 /* Device functions */
 LCD_t* LCD_init(CPU_t *, int);
-void LCD_timer_refresh(CPU_t *);
-void LCD_command(CPU_t *, device_t *);
-void LCD_data(CPU_t *, device_t *);
-
-/* Interface functions */
-uint8_t *LCD_image(LCD_t *);
 
 #endif /* #ifndef LCD_H */

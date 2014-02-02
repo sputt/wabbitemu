@@ -480,11 +480,14 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		res = RegSetValueEx(hkeyWabbit, _T("emu_keys"), NULL, dwType, (LPBYTE) keysti83, dwCount);
 		res = RegSetValueEx(hkeyWabbit, _T("emu_keys86"), NULL, dwType, (LPBYTE) keysti86, dwCount);
 		
-		SaveWabbitKey(_T("shades"), REG_DWORD, &lpCalc->cpu.pio.lcd->shades);
-		SaveWabbitKey(_T("lcd_mode"), REG_DWORD, &lpCalc->cpu.pio.lcd->mode);
-		DWORD steady = (DWORD) ( 1.0 / lpCalc->cpu.pio.lcd->steady_frame);
-		SaveWabbitKey(_T("lcd_freq"), REG_DWORD, &steady);
-		SaveWabbitKey(_T("lcd_delay"), REG_DWORD, &lpCalc->cpu.pio.lcd->lcd_delay);
+		if (lpCalc->model != TI_84PCSE) {
+			LCD_t *lcd = (LCD_t *)lpCalc->cpu.pio.lcd;
+			SaveWabbitKey(_T("shades"), REG_DWORD, &lcd->shades);
+			SaveWabbitKey(_T("lcd_mode"), REG_DWORD, &lcd->mode);
+			DWORD steady = (DWORD)(1.0 / lcd->steady_frame);
+			SaveWabbitKey(_T("lcd_freq"), REG_DWORD, &steady);
+			SaveWabbitKey(_T("lcd_delay"), REG_DWORD, &lcd->lcd_delay);
+		}
 #ifdef WITH_BACKUPS
 		SaveWabbitKey(_T("num_backup_per_sec"), REG_DWORD, &num_backup_per_sec);
 #endif

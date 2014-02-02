@@ -3,6 +3,7 @@
 #include "gif.h"
 #include "coretypes.h"
 #include "lcd.h"
+#include "colorlcd.h"
 #include "gifhandle.h"
 #ifdef WINVER
 #include "fileutilities.h"
@@ -32,11 +33,7 @@ static TCHAR gif_fn_backup[MAX_PATH];
  */
 BOOL get_gif_filename() {
 	int i;
-#ifdef _WINDOWS
 	StringCbCopy(gif_fn_backup, sizeof(gif_fn_backup), gif_file_name);
-#else
-	strcpy(gif_fn_backup, gif_file_name);
-#endif
 	if (gif_autosave) {
 		/* do file save */
 		if (gif_use_increasing) {
@@ -73,70 +70,35 @@ BOOL get_gif_filename() {
 	return TRUE;
 }
 
-unsigned char* GIFGREYLCD(LCD_t *lpLCD) {
+uint8_t* generate_gif_image(LCDBase_t *lcd) {
+	uint8_t *image = lcd->image(lcd);
+	uint8_t *gif = (uint8_t *)malloc(lcd->width * gif_size * lcd->height * gif_size);
+	int gif_height = lcd->height * gif_size;
+	int gif_width = lcd->width * gif_size;
 	
-	uint8_t temp_gif[LCD_HEIGHT][LCD_WIDTH];
-
-	int level = abs((int) lpLCD->contrast - (int) lpLCD->base_level);
-	int base = (lpLCD->contrast - 54) * 24;
-	if (base < 0) base = 0;
-
-	if (level > 12) level = 0;
-	else level = (12 - level) * (255 - base) / lpLCD->shades / 12;
-
-	u_int row, col;
-	for (row = 0; row < LCD_HEIGHT; row++) {
-		for (col = 0; col < LCD_MEM_WIDTH; col++) {
-			double p0 = 0, p1 = 0, p2 = 0, p3 = 0, p4 = 0, p5 = 0, p6 = 0, p7 = 0;
-			u_int i;
-			
-			for (i = 0; i < lpLCD->shades; i++) {
-				u_int u = lpLCD->queue[i][row * 16 + col];
-				p7 += u & 1; u >>= 1;
-				p6 += u & 1; u >>= 1;
-				p5 += u & 1; u >>= 1;
-				p4 += u & 1; u >>= 1;
-				p3 += u & 1; u >>= 1;
-				p2 += u & 1; u >>= 1;
-				p1 += u & 1; u >>= 1;
-				p0 += u;
-			}
-			
-			// Convert lcd shades to gif
-			u_char *scol = &temp_gif[row][col * 8];
-			scol[0] = (u_char) p0;//(p0 * level + base);
-			scol[1] = (u_char) p1;//(p1 * level + base);
-			scol[2] = (u_char) p2;//(p2 * level + base);
-			scol[3] = (u_char) p3;//(p3 * level + base);
-			scol[4] = (u_char) p4;//(p4 * level + base);
-			scol[5] = (u_char) p5;//(p5 * level + base);
-			scol[6] = (u_char) p6;//(p6 * level + base);
-			scol[7] = (u_char) p7;//(p7 * level + base);
+	for (int row = 0; row < gif_height; row++) {
+		for (int col = 0; col < gif_width; col++) {
+			gif[row * gif_width + col] = image[(row / gif_size) * lcd->width + (col / gif_size)];
 		}
 	}
-	
-	//if (gif_size > 1) {
-		for (row = 0; row < LCD_HEIGHT * gif_size; row++) {
-			for (col = 0; col < LCD_WIDTH * gif_size; col++) {
-				lpLCD->gif[row][col] = temp_gif[row / gif_size][col / gif_size];
-			}
-		}
-	//}
-	return (uint8_t*) lpLCD->gif;
+
+	return (uint8_t*) gif;
 }
 
 void handle_screenshot() {
 	LCD_t* lcd;
+	LCDBase_t *lcdBase;
 	int i, j;
 	u_int shades = 0;
 	BOOL running_backup[MAX_CALCS];
 	for (i = 0; i < MAX_CALCS; i++) {
 		running_backup[i] = calcs[i].running;
 		calcs[i].running = FALSE;
-		lcd = calcs[i].cpu.pio.lcd;
+		lcdBase = calcs[i].cpu.pio.lcd;
+		lcd = (LCD_t *)lcdBase;
 		//find the calc with the highest number of shades and use that as our number for the gif
 		//since I'm to lazy to implement them individually :P
-		if (calcs[i].active && lcd && shades < lcd->shades) {
+		if (calcs[i].active && calcs[i].model < TI_84PCSE && lcd && shades < lcd->shades) {
 			shades = lcd->shades;
 		}
 		//we also need to find the size of all the LCDs
@@ -157,17 +119,18 @@ void handle_screenshot() {
 			gif_xs = 0;
 			gif_ys = 64 * gif_size;
 			for (i = 0; i < MAX_CALCS; i++) {
-				if (calcs[i].active)
+				if (calcs[i].active &&  calcs[i].model < TI_84PCSE)
 					gif_xs += calcs[i].cpu.pio.lcd->width * gif_size;
 		
 			}
 #endif
 			for (int calc_num = 0; calc_num < MAX_CALCS; calc_num++) {
-				if (!calcs[calc_num].active)
+				if (!calcs[calc_num].active || calcs[i].model >= TI_84PCSE)
 					continue;
-				lcd = calcs[calc_num].cpu.pio.lcd;
+				lcdBase = calcs[calc_num].cpu.pio.lcd;
+				lcd = (LCD_t *)lcd;
 #ifdef USE_GIF_SIZES
-				gif_indiv_xs = lcd->width * gif_size;
+				gif_indiv_xs = lcdBase->width * gif_size;
 #else
 				gif_xs = SCRXSIZE;
 				gif_ys = SCRYSIZE;			
@@ -177,12 +140,13 @@ void handle_screenshot() {
 				gif_newframe = 1;
 				gif_colors = lcd->shades + 1;
 			
-				GIFGREYLCD(lcd);
+				uint8_t *gif = generate_gif_image(lcdBase);
 #ifdef USE_GIF_SIZES
 				for (i = 0; i < gif_ys; i++)
 					for (j = 0; j < gif_indiv_xs; j++)
-						gif_frame[i * gif_xs + j + calc_pos] = lcd->gif[i][j];	
+						gif_frame[i * gif_xs + j + calc_pos] = gif[i * gif_indiv_xs + j];	
 				calc_pos += gif_indiv_xs;
+				free(gif);
 			}
 #else
 			for (i = 0; i < SCRYSIZE; i++) {
@@ -202,17 +166,19 @@ void handle_screenshot() {
 				gif_newframe = 1;
 
 			for (int calc_num = 0; calc_num < MAX_CALCS; calc_num++) {
-				if (!calcs[calc_num].active)
+				if (!calcs[calc_num].active || calcs[i].model >= TI_84PCSE)
 					continue;
-				lcd = calcs[calc_num].cpu.pio.lcd;
+				lcdBase = calcs[calc_num].cpu.pio.lcd;
+				lcd = (LCD_t *)lcd;
 
-				GIFGREYLCD(lcd);
+				uint8_t *gif = generate_gif_image(lcdBase);
 #ifdef USE_GIF_SIZES
-				gif_indiv_xs = lcd->width * gif_size;
+				gif_indiv_xs = lcdBase->width * gif_size;
 				for (i = 0; i < gif_ys; i++)
 					for (j = 0; j < gif_indiv_xs; j++)
-						gif_frame[i * gif_xs + j + calc_pos] = lcd->gif[i][j];	
+						gif_frame[i * gif_xs + j + calc_pos] = gif[i * gif_indiv_xs + j];
 				calc_pos += gif_indiv_xs;
+				free(gif);
 			}
 #else
 				for (i = 0; i < SCRYSIZE; i++) {

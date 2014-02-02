@@ -650,7 +650,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					double data;
 					TCHAR buffer[MAX_PATH];
 					if (BrowseFile(buffer, _T("	Text file  (*.txt)\0*.txt\0	All Files (*.*)\0*.*\0\0"),
-									_T("Wabbitemu Save Profile"), _T("txt"), 0)) {
+						_T("Wabbitemu Save Profile"), _T("txt"), 0, 1)) {
 						//make the profiler running again
 						lpCalc->profiler.running = TRUE;
 						break;
@@ -1158,20 +1158,25 @@ void WriteHumanReadableDump(LPCALC lpCalc, TCHAR *path) {
 	_ftprintf(file, _T("%s %s"), _T("IFF2:"), lpCalc->cpu.iff2 ? _T("True\n") : _T("False\n"));
 	_ftprintf_s(file, _T("IM %d\n"), lpCalc->cpu.imode);
 	
-	_fputts(_T("\nDisplay:\n"), file);
-	uint8_t (*lcd)[LCD_WIDTH] = (uint8_t(*)[LCD_WIDTH]) GIFGREYLCD(lpCalc->cpu.pio.lcd);
-	for (int i = 0; i < LCD_HEIGHT * 4; i += 4) {
-		for (int j = 0; j < lpCalc->cpu.pio.lcd->width * 2; j += 2) {
-			if (lcd[i][j] < lpCalc->cpu.pio.lcd->shades / 4)
-				_fputtc(' ', file);
-			/*else if (lcd[i][j] < lpCalc->cpu.pio.lcd->shades / 2)
-				_fputtc(176, file);
-			else if (lcd[i][j] < lpCalc->cpu.pio.lcd->shades * 3 / 4)
-				_fputtc(178 , file);*/
-			else
-				_fputtc('#', file);
+	if (lpCalc->model < TI_84PCSE) {
+		_fputts(_T("\nDisplay:\n"), file);
+		LCD_t *lcd = (LCD_t *)lpCalc->cpu.pio.lcd;
+		uint8_t(*lcdData)[LCD_WIDTH] = (uint8_t(*)[LCD_WIDTH]) lcd->base.image(&lcd->base);
+		for (int i = 0; i < LCD_HEIGHT * 4; i += 4) {
+			for (int j = 0; j < lpCalc->cpu.pio.lcd->width * 2; j += 2) {
+				if (lcdData[i][j] < lcd->shades / 4) {
+					_fputtc(' ', file);
+				}
+				/*else if (lcd[i][j] < lpCalc->cpu.pio.lcd->shades / 2)
+					_fputtc(176, file);
+					else if (lcd[i][j] < lpCalc->cpu.pio.lcd->shades * 3 / 4)
+					_fputtc(178 , file);*/
+				else {
+					_fputtc('#', file);
+				}
+			}
+			_fputtc('\n', file);
 		}
-		_fputtc('\n', file);
 	}
 	
 	_fputts(_T("\nPorts:\n"), file);

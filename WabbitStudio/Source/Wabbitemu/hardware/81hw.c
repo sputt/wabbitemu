@@ -19,7 +19,7 @@ static void port0(CPU_t *cpu, device_t *dev) {
 		cpu->output = FALSE;
 		device_t devt;
 		devt.aux = cpu->pio.lcd;
-		LCD_data(cpu, &devt);
+		cpu->pio.lcd->data(cpu, &devt);
 	}
 	return;
 }
@@ -31,9 +31,9 @@ static void port2(CPU_t *cpu, device_t *dev) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		//HACK: still not sure exactly how this works :P
-		lcd->contrast = lcd->base_level - 19 + cpu->bus;
-		if (lcd->contrast > 64)
-			lcd->contrast = 64;
+		lcd->base.contrast = lcd->base_level - 19 + cpu->bus;
+		if (lcd->base.contrast > 64)
+			lcd->base.contrast = 64;
 		cpu->output = FALSE;
 	}
 	return;
@@ -133,7 +133,7 @@ static void port7(CPU_t *cpu, device_t *dev) {
 static void port10(CPU_t *cpu, device_t *dev) {
 	int screen_addr = (int) dev->aux;
 	// Output the entire LCD
-	LCD_t *lcd = cpu->pio.lcd;
+	LCD_t *lcd = (LCD_t *) cpu->pio.lcd;
 	unsigned char *base_addr = cpu->mem_c->banks[mc_bank(screen_addr)].addr + mc_base(screen_addr);
 	int k = 0, l = 0;
 	for (int j = 0; j < 64; j++) {	
@@ -240,9 +240,9 @@ int device_init_81(CPU_t *cpu) {
 
 	cpu->pio.devices[0x11].active = TRUE;
 	cpu->pio.devices[0x11].aux = lcd;
-	cpu->pio.devices[0x11].code = (devp) &LCD_data;
+	cpu->pio.devices[0x11].code = (devp) &lcd->base.data;
 	
-	cpu->pio.lcd		= lcd;
+	cpu->pio.lcd		= (LCDBase_t *) lcd;
 	cpu->pio.keypad		= keyp;
 	cpu->pio.link		= NULL;
 	cpu->pio.stdint		= stdint;

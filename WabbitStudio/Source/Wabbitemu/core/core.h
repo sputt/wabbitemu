@@ -17,22 +17,28 @@
 
 /*defines the start of the app page*/
 /*this page starts in HIGH mem and grows to LOW */
-#define TI_73_APPPAGE		0x15	/*Ummm...*/
+#define TI_73_APPPAGE		0x15
 #define TI_83P_APPPAGE		0x15
 #define TI_83PSE_APPPAGE	0x69
-#define TI_84P_APPPAGE		0x29	/*Ummm...*/
+#define TI_84P_APPPAGE		0x29
 #define TI_84PSE_APPPAGE	0x69
+#define TI_84PCSE_APPPAGE	0xE3
 
 
 /*defines the Number of user archive pages*/
-#define TI_73_USERPAGES		0x0A	/*Ummm...*/
+#define TI_73_USERPAGES		0x0A
 #define TI_83P_USERPAGES	0x0A
 #define TI_83PSE_USERPAGES	0x60
-#define TI_84P_USERPAGES	0x1E	/*Ummm...*/
+#define TI_84P_USERPAGES	0x1E
 #define TI_84PSE_USERPAGES	0x60
+#define TI_84PCSE_USERPAGES	0xDB
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 16384
+#endif
+
+#ifndef BIT
+#define BIT(bit) (1 << (bit))
 #endif
 
 #define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
@@ -177,8 +183,6 @@ typedef struct memory_context {
 	int ram_pages;
 
 	FLASH_COMMAND step;				// the current flash command
-	unsigned char cmd;				// this is no longer used, however it is kept for save state compatibility
-	uint64_t flash_last_write;		// last time flash was written to
 	uint64_t flash_write_delay;		// number of tstates to delay before allowing flash read/write
 	BOOL flash_locked;				// Whether flash is writeable or not.
 	unsigned char flash_write_byte;	// the last value written to flash
@@ -204,21 +208,20 @@ typedef struct memory_context {
 	int read_NOP_ram_tstates;
 	int write_ram_tstates;
 
-	unsigned char flash_upper;
-	unsigned char flash_lower;
+	unsigned short flash_upper;
+	unsigned short flash_lower;
 
 	unsigned short ram_upper;
 	unsigned short ram_lower;
 
-	int port0E;
-	int port0F;
-	union {
-		struct {
-			BOOL flash_enabled : 1;
-			BOOL flash_disabled : 1;
-		};
-		uint8_t port24;
-	};
+	unsigned char port06;
+	unsigned char port07;
+	// upper bits of port 6
+	unsigned char port0E;
+	// upper bits of port 7
+	unsigned char port0F;
+	// upper bits of ports 22 and 23
+	unsigned char port24;
 
 	int port27_remap_count;		// amount of 64 byte chunks remapped from RAM page 0 to bank 3
 	int port28_remap_count;		// amount of 64 byte chunks remapped from RAM page 1 to bank 1
@@ -243,8 +246,7 @@ typedef struct interrupt {
 
 typedef struct pio_context {
 	int model;
-	struct LCD *lcd;
-	//struct ColorLCD *lcd;
+	struct LCDBase *lcd;
 	struct keypad *keypad;
 	struct link *link;
 	struct STDINT *stdint;
@@ -279,7 +281,7 @@ typedef struct CPU {
 	/* Remaining CPU registers */
 	regpair(ixh, ixl, ix);
 	regpair(iyh, iyl, iy);
-	unsigned short pc, sp;
+	unsigned short pc, sp, old_pc;
 	unsigned char i, r, bus, link_write;
 	int imode;
 	BOOL interrupt;
@@ -334,7 +336,7 @@ BOOL check_mem_read_break(memc *mem, waddr_t waddr);
 BOOL check_mem_write_break(memc *mem, waddr_t waddr);
 
 BOOL is_priveleged_page(CPU_t *cpu);
-void change_page(memc *mem, int bank, char page, BOOL ram);
+void change_page(memc *mem, int bank, u_char page, BOOL ram);
 void update_bootmap_pages(memc *mem_c);
 
 int tc_init(timerc*, int);

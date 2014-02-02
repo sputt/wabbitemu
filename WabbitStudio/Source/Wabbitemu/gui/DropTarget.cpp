@@ -268,12 +268,12 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 
 										TIFILE_t *tifile = importvar(path, TRUE);
 										valid = tifile != NULL;
-										if (tifile->flash == NULL)
+										if (valid &&  tifile->flash == NULL)
 											is_archive_only = FALSE;
-										if (tifile->rom || tifile->save)
+										if (valid && (tifile->rom || tifile->save))
 											is_calc_file = FALSE;
 										LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
-										if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
+										if (valid && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
 											valid = FALSE;
 										FreeTiFile(tifile);
 									}

@@ -5,6 +5,7 @@
 #include "guiskin.h"
 #include "guibuttons.h"
 #include "guicutout.h"
+#include "colorlcd.h"
 
 #include "CGdiPlusBitmap.h"
 
@@ -303,13 +304,15 @@ int DisableCutout(LPCALC lpCalc) {
 
 	int scale = lpCalc->bSkinEnabled ? DEFAULT_SKIN_SCALE : lpCalc->scale;
 	if (!lpCalc->hwndLCD || !GetParent(lpCalc->hwndLCD )) {
+		int lcd_width = lpCalc->cpu.pio.lcd->display_width;
+		int lcd_height = lpCalc->cpu.pio.lcd->height;
 		DestroyWindow(lpCalc->hwndLCD);
 		lpCalc->hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
 			_T("LCD"),
-			WS_VISIBLE |  WS_CHILD,
-			0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
+			WS_VISIBLE | WS_CHILD,
+			0, 0, lcd_width * scale, lcd_height *scale,
 			lpCalc->hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID) lpCalc);
 	}
 
