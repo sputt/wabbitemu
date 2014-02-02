@@ -8,6 +8,7 @@
 #include "expandpane.h"
 #include "dbvalue.h"
 #include "dbdisasm.h"
+#include "colorlcd.h"
 
 extern HINSTANCE g_hInst;
 
@@ -375,9 +376,11 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 				if (lpCalc->mem_c.boot_mapped) {
 					ShowWindow(hwndPageMode0[i], FALSE);
 					ShowWindow(hwndPageMode1[i], TRUE);
+					SendMessage(hwndPageMode1[i], WM_USER, DB_UPDATE, 0);
 				} else {
-					ShowWindow(hwndPageMode0[i], FALSE);
-					ShowWindow(hwndPageMode1[i], TRUE);
+					ShowWindow(hwndPageMode0[i], TRUE);
+					ShowWindow(hwndPageMode1[i], FALSE);
+					SendMessage(hwndPageMode0[i], WM_USER, DB_UPDATE, 0);
 				}
 			}
 			break;
@@ -399,6 +402,7 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	static double freq;
 	static LPCALC lpCalc;
 	static LPDEBUGWINDOWINFO lpDebugInfo;
+	static HWND hwndFreq;
 
 	switch (Message) {
 	case WM_CREATE:
@@ -409,9 +413,9 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 		HWND hwndValue;
 		freq = ((double) lpCalc->cpu.timer_c->freq) / 1000000.0;
-		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("Freq."), lpDebugInfo->kRegAddr*3/2, &freq, sizeof(double), 5, FLOAT2);
-		SetWindowPos(hwndValue, NULL, 0, lpDebugInfo->kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-		SendMessage(hwndValue, WM_SIZE, 0, 0);
+		hwndFreq = CreateValueField(hwnd, lpDebugInfo, _T("Freq."), lpDebugInfo->kRegAddr*3/2, &freq, sizeof(double), 5, FLOAT2);
+		SetWindowPos(hwndFreq, NULL, 0, lpDebugInfo->kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		SendMessage(hwndFreq, WM_SIZE, 0, 0);
 
 		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("Bus"), lpDebugInfo->kRegAddr*2 + lpDebugInfo->kRegAddr/4, &lpCalc->cpu.bus, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 0, lpDebugInfo->kRegRow*2, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
@@ -478,6 +482,7 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		switch (wParam) {
 		case DB_UPDATE:
 			Button_SetCheck(chkHalt, lpCalc->cpu.halt ? BST_CHECKED : BST_UNCHECKED);
+			freq = ((double)lpCalc->cpu.timer_c->freq) / 1000000.0;
 			break;
 		case VF_DESELECT_CHILDREN:
 			EnumChildWindows(hwnd, EnumDeselectChildren, (LPARAM) hwnd);
@@ -922,7 +927,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	case WM_USER:
 		lpCalc = ((LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA))->lpCalc;
 		switch (wParam) {
-		case DB_UPDATE:
+		case DB_UPDATE: {
 			Button_SetCheck(chkOn, lpCalc->cpu.pio.lcd->active ? BST_CHECKED : BST_UNCHECKED);
 
 			Button_SetCheck(rdoXdec, BST_UNCHECKED);
@@ -942,6 +947,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
 			break;
+		}
 		case VF_DESELECT_CHILDREN:
 			EnumChildWindows(hwnd, EnumDeselectChildren, (LPARAM) hwnd);
 			break;

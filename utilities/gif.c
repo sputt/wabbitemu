@@ -27,9 +27,7 @@
 #include "coretypes.h"
 #endif
 
-//#include "gif.h" // uhh...
-
-#define GIF_FRAME_MAX (256 * 128 * MAX_CALCS)
+#include "gif.h"
 
 #define GIF_IDLE 0
 #define GIF_START 1
@@ -82,6 +80,7 @@ int gif_newframe;
 
 int gif_file_num = 0;
 BOOL gif_bw = FALSE;
+BOOL gif_color = FALSE;
 
 
 int chainlen = 0, maxchainlen = 0, nodecount = 0, lookuptypes = 0, nbits;

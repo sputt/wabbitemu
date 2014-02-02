@@ -12,7 +12,7 @@ public:
 		COM_INTERFACE_ENTRY(IDispatch)
 	END_COM_MAP()
 
-	void Initialize(LCD_t *lcd)
+	void Initialize(LCDBase_t *lcd)
 	{
 		m_lcd = lcd;
 	}
@@ -21,13 +21,15 @@ public:
 	STDMETHOD (get_Display)(LPSAFEARRAY *ppsa)
 	{
 		SAFEARRAYBOUND sab = {0};
-		sab.cElements = 64 * 128;
+		sab.cElements = m_lcd->width * m_lcd->height;
 		sab.lLbound = 0;
 		LPSAFEARRAY psa = SafeArrayCreate(VT_UI1, 1, &sab);
 
 		LPBYTE lpData = NULL;
 		SafeArrayAccessData(psa, (LPVOID *) &lpData);
-		memcpy(lpData, LCD_image(m_lcd), 128 * 64);
+		u_char *image = m_lcd->image(m_lcd);
+		memcpy(lpData, image, GRAY_DISPLAY_SIZE);
+		free(image);
 		SafeArrayUnaccessData(psa);
 
 		*ppsa = psa;
@@ -48,16 +50,18 @@ public:
 
 	STDMETHOD(Draw)(BYTE Display[8192])
 	{
-		memcpy(Display, LCD_image(m_lcd), 128 * 64);
+		u_char *image = m_lcd->image(m_lcd);
+		memcpy(Display, image, GRAY_DISPLAY_SIZE);
+		free(image);
 		return S_OK;
 	}
 
 	STDMETHOD(GetByteArray)(BYTE Display[8192])
 	{
-		memcpy(Display, LCD_image(m_lcd), 128 * 64);
+		memcpy(Display, m_lcd->image(m_lcd), m_lcd->width * m_lcd->height);
 		return S_OK;
 	}
 
 private:
-	LCD_t *m_lcd;
+	LCDBase_t *m_lcd;
 };

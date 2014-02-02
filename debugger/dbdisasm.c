@@ -1474,7 +1474,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					if (dps->type == REGULAR) {
 						dps->lpCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
 					} else {
-						
+						// TODO: consider if we try swapping pages here
+						dps->lpCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
 					}
 					
 					cycle_pcs(dps);

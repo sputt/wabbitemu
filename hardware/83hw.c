@@ -401,16 +401,16 @@ int device_init_83(CPU_t *cpu, BOOL bad82) {
 	LCD_t *lcd = LCD_init(cpu, TI_83);
 	cpu->pio.devices[0x10].active = TRUE;
 	cpu->pio.devices[0x10].aux = lcd;
-	cpu->pio.devices[0x10].code = (devp) LCD_command;
+	cpu->pio.devices[0x10].code = (devp) lcd->base.command;
 
 	cpu->pio.devices[0x11].active = TRUE;
 	cpu->pio.devices[0x11].aux = lcd;
-	cpu->pio.devices[0x11].code = (devp) LCD_data;
+	cpu->pio.devices[0x11].code = (devp) lcd->base.data;
 
 	cpu->pio.devices[0x14].active = TRUE;
 	cpu->pio.devices[0x14].code = (devp) port14_83;
 
-	cpu->pio.lcd		= lcd;
+	cpu->pio.lcd		= (LCDBase_t *) lcd;
 	cpu->pio.keypad		= keyp;
 	cpu->pio.link		= link;
 	cpu->pio.stdint		= stdint;

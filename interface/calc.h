@@ -173,6 +173,7 @@ void calc_pause_linked();
 int calc_init_83p(LPCALC);
 int calc_init_84p(LPCALC);
 int calc_init_83pse(LPCALC);
+int calc_init_84pcse(LPCALC lpCalc);
 
 int link_connect(CPU_t *, CPU_t *);
 int link_connect_hub(int slot, CPU_t *cpu);

@@ -112,6 +112,7 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			
 			LCD_t lcd;
 			LoadLCD(save, &lcd);
+			LCDBase_t *lcdBase = (LCDBase_t *) &lcd;
 			
 #ifdef _UNICODE
 			size_t len;
@@ -129,6 +130,7 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmPreview);
 			
 			int width = 96;
+			// TODO: crash
 			//if (save->model == TI_86 || save->model == TI_85) {
 			//	RECT rc;
 			//	GetWindowRect(hwnd, &rc);
@@ -136,9 +138,10 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			//	SetWindowPos(hwnd, NULL, 0, 0, rc.right - rc.left + (256 - 192), rc.bottom - rc.top, SWP_NOMOVE);
 			//}
 
+			if (lcdBase)
 			StretchDIBits(hdc, 0, 0, width * 2, 128,
 				0, 0, width, 64,
-				LCD_image(&lcd),
+				lcdBase->image(lcdBase),
 				bi,
 				DIB_RGB_COLORS,
 				SRCCOPY);

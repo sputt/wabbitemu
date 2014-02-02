@@ -838,12 +838,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			if (rom_load(lpCalcNew, lpCalc->rom_path) || 
 				rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey(_T("rom_path"))))
 			{
+				// TODO: this should be handled by the ROM load event
 				lpCalcNew->bSkinEnabled = lpCalc->bSkinEnabled;
 				lpCalcNew->bCutout = lpCalc->bCutout;
 				lpCalcNew->scale = lpCalc->scale;
 				lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
 				lpCalcNew->bAlphaBlendLCD = lpCalc->bAlphaBlendLCD;
-				lpCalcNew->cpu.pio.lcd->shades = lpCalc->cpu.pio.lcd->shades;
+				//lpCalcNew->cpu.pio.lcd->shades = lpCalc->cpu.pio.lcd->shades;
 
 				if (!lpCalcNew->cpu.pio.lcd->active) {
 					calc_turn_on(lpCalcNew);
@@ -962,22 +963,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			lpCalc->running = FALSE;
 			BOOL start_screenshot = get_gif_filename();
 			if (start_screenshot) {
-				LCD_t *lcd = lpCalc->cpu.pio.lcd;
+				LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 				gif_xs = lcd->width * gif_size;
-				gif_ys = SCRYSIZE * gif_size;
-				GIFGREYLCD(lcd);
+				gif_ys = lcd->height * gif_size;
+				uint8_t *gif = generate_gif_image(lcd);
 
 				unsigned int i, j;
-				for (i = 0; i < SCRYSIZE * gif_size; i++) {
+				for (i = 0; i < lcd->height * gif_size; i++) {
 					for (j = 0; j < lcd->width * gif_size; j++) {
-						gif_frame[i * gif_xs + j] = lpCalc->cpu.pio.lcd->gif[i][j];
+						gif_frame[i * gif_xs + j] = gif[i * gif_xs + j];
 					}
 				}
 				gif_write_state = GIF_START;
-				gif_writer(lcd->shades);
+				gif_writer(MAX_SHADES);
 
 				gif_write_state = GIF_END;
-				gif_writer(lcd->shades);
+				gif_writer(MAX_SHADES);
 			}
 			lpCalc->running = TRUE;
 			break;
@@ -1047,7 +1048,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				break;
 			}
 
-			float tempFloat;
 			char *charData = (char *) GlobalLock(hClipboardData);
 
 			for (int i = 0; i < _tcslen(charData); i++) {
@@ -1097,7 +1097,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				SendMessage(lpCalc->hwndLCD, WM_PAINT, 0, 0);
 				InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
 			}
-paste_error:
 			GlobalUnlock(hClipboardData);
 			CloseClipboard();
 
@@ -1113,7 +1112,9 @@ paste_error:
 				break;
 			}
 			RECT r;
-			SetRect(&r, 0, 0, (lpCalc->rectLCD.right - lpCalc->rectLCD.left) / 2 * lpCalc->scale, 64 * lpCalc->scale);
+			int lcdWidth = lpCalc->cpu.pio.lcd->display_width;
+			int lcdHeight = lpCalc->cpu.pio.lcd->height;
+			SetRect(&r, 0, 0, lcdWidth * lpCalc->scale, lcdHeight * lpCalc->scale);
 			AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 
 			lpCalc->hwndDetachedFrame  = CreateWindowEx(
@@ -1435,9 +1436,12 @@ paste_error:
 		}
 		return 0;
 	case WM_SIZING:
+		if (lpCalc->bSkinEnabled) {
+			return 1;
+		}
 		return HandleSizingMessage(hwnd, lpCalc, wParam, (RECT *) lParam);
 	case WM_SIZE:
-		return HandleSizeMessage(hwnd, lpCalc);
+		return HandleSizeMessage(hwnd, lpCalc->hwndLCD, lpCalc, lpCalc->bSkinEnabled);
 	case WM_MOVE: {
 		if (lpCalc->bCutout && lpCalc->bSkinEnabled) {
 			HDWP hdwp = BeginDeferWindowPos(3);

@@ -439,6 +439,10 @@ void state_userpages(CPU_t *cpu, upages_t *upages) {
 			upages->start	= TI_84PSE_APPPAGE;
 			upages->end		= upages->start - TI_84PSE_USERPAGES;
 			break;
+		case TI_84PCSE:
+			upages->start = TI_84PCSE_APPPAGE;
+			upages->end = upages->start - TI_84PCSE_USERPAGES;
+			break;
 		default:
 			upages->start	= -1;
 			upages->end		= 0;

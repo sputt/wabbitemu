@@ -45,14 +45,15 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 			
 			HBITMAP hbmPreview = CreateBitmap(96, 64, 1, 32, NULL);
 			
-			LCD_t *lcd = lpCalc->cpu.pio.lcd;
+			LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 			
 			HDC hdc = CreateCompatibleDC(NULL);
 			HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmPreview);
 			
+			// TODO: fix for everything not 96x64
 			StretchDIBits(hdc, 0, 0, 96, 64,
 				0, 0, 96, 64,
-				LCD_image(lcd),
+				lcd->image(lcd),
 				bi,
 				DIB_RGB_COLORS,
 				SRCCOPY);
