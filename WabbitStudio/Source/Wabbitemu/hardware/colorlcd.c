@@ -548,6 +548,7 @@ void ColorLCD_LCDreset(ColorLCD_t *lcd) {
 
 	lcd->base.x = 319;
 	lcd->base.y = 239;
+	lcd->base.bytes_per_pixel = 3;
 }
 
 void ColorLCD_reset(CPU_t *cpu) {

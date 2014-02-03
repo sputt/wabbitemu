@@ -74,11 +74,25 @@ uint8_t* generate_gif_image(LCDBase_t *lcd) {
 	uint8_t *image = lcd->image(lcd);
 	uint8_t *gif = (uint8_t *)malloc(lcd->width * gif_size * lcd->height * gif_size);
 	int gif_height = lcd->height * gif_size;
-	int gif_width = lcd->width * gif_size;
-	
+	int gif_width = lcd->display_width * gif_size;
+
 	for (int row = 0; row < gif_height; row++) {
 		for (int col = 0; col < gif_width; col++) {
-			gif[row * gif_width + col] = image[(row / gif_size) * lcd->width + (col / gif_size)];
+			uint8_t color = 0;
+			if (lcd->bytes_per_pixel > 1) {
+				int idx = (row / gif_size) * lcd->width * lcd->bytes_per_pixel + (col / gif_size) * lcd->bytes_per_pixel;
+				double b = image[idx];
+				double g = image[idx+1];
+				double r = image[idx+2];
+				color = (uint8_t) gif_convert_color_to_index(r, g, b);
+			}
+			else {
+				int part = 255 / gif_colors;
+				color = image[(row / gif_size) * lcd->width * lcd->bytes_per_pixel + (col / gif_size) * lcd->bytes_per_pixel];
+				color = (color + (part / 2)) / part;
+			}
+
+			gif[row * gif_width + col] = color;
 		}
 	}
 
@@ -86,20 +100,21 @@ uint8_t* generate_gif_image(LCDBase_t *lcd) {
 }
 
 void handle_screenshot() {
-	LCD_t* lcd;
-	LCDBase_t *lcdBase;
+	LCDBase_t* lcd;
 	int i, j;
 	u_int shades = 0;
 	BOOL running_backup[MAX_CALCS];
 	for (i = 0; i < MAX_CALCS; i++) {
 		running_backup[i] = calcs[i].running;
 		calcs[i].running = FALSE;
-		lcdBase = calcs[i].cpu.pio.lcd;
-		lcd = (LCD_t *)lcdBase;
-		//find the calc with the highest number of shades and use that as our number for the gif
-		//since I'm to lazy to implement them individually :P
-		if (calcs[i].active && calcs[i].model < TI_84PCSE && lcd && shades < lcd->shades) {
-			shades = lcd->shades;
+		lcd = calcs[i].cpu.pio.lcd;
+
+		if (calcs[i].active && calcs[i].model < TI_84PCSE && lcd && shades < ((LCD_t *) lcd)->shades) {
+			shades = ((LCD_t *)lcd)->shades;
+		}
+		else if (calcs[i].model == TI_84PCSE)
+		{
+			shades = 255;
 		}
 		//we also need to find the size of all the LCDs
 	}
@@ -117,20 +132,21 @@ void handle_screenshot() {
 		case GIF_START: {
 #ifdef USE_GIF_SIZES
 			gif_xs = 0;
-			gif_ys = 64 * gif_size;
+			
 			for (i = 0; i < MAX_CALCS; i++) {
-				if (calcs[i].active &&  calcs[i].model < TI_84PCSE)
-					gif_xs += calcs[i].cpu.pio.lcd->width * gif_size;
-		
+				if (calcs[i].active) {
+					gif_xs += calcs[i].cpu.pio.lcd->display_width * gif_size;
+					gif_ys = calcs[i].cpu.pio.lcd->height * gif_size;
+				}
 			}
 #endif
 			for (int calc_num = 0; calc_num < MAX_CALCS; calc_num++) {
-				if (!calcs[calc_num].active || calcs[i].model >= TI_84PCSE)
+				if (!calcs[calc_num].active)
 					continue;
-				lcdBase = calcs[calc_num].cpu.pio.lcd;
-				lcd = (LCD_t *)lcd;
+				lcd = calcs[calc_num].cpu.pio.lcd;
+
 #ifdef USE_GIF_SIZES
-				gif_indiv_xs = lcdBase->width * gif_size;
+				gif_indiv_xs = lcd->display_width * gif_size;
 #else
 				gif_xs = SCRXSIZE;
 				gif_ys = SCRYSIZE;			
@@ -138,9 +154,9 @@ void handle_screenshot() {
 				gif_base_delay = gif_base_delay_start;
 				gif_time = 0;
 				gif_newframe = 1;
-				gif_colors = lcd->shades + 1;
+				gif_colors = shades + 1;
 			
-				uint8_t *gif = generate_gif_image(lcdBase);
+				uint8_t *gif = generate_gif_image(lcd);
 #ifdef USE_GIF_SIZES
 				for (i = 0; i < gif_ys; i++)
 					for (j = 0; j < gif_indiv_xs; j++)
@@ -166,14 +182,13 @@ void handle_screenshot() {
 				gif_newframe = 1;
 
 			for (int calc_num = 0; calc_num < MAX_CALCS; calc_num++) {
-				if (!calcs[calc_num].active || calcs[i].model >= TI_84PCSE)
+				if (!calcs[calc_num].active)
 					continue;
-				lcdBase = calcs[calc_num].cpu.pio.lcd;
-				lcd = (LCD_t *)lcd;
+				lcd = calcs[calc_num].cpu.pio.lcd;
 
-				uint8_t *gif = generate_gif_image(lcdBase);
+				uint8_t *gif = generate_gif_image(lcd);
 #ifdef USE_GIF_SIZES
-				gif_indiv_xs = lcdBase->width * gif_size;
+				gif_indiv_xs = lcd->display_width * gif_size;
 				for (i = 0; i < gif_ys; i++)
 					for (j = 0; j < gif_indiv_xs; j++)
 						gif_frame[i * gif_xs + j + calc_pos] = gif[i * gif_indiv_xs + j];

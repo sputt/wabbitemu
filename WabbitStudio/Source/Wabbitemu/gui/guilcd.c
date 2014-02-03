@@ -617,21 +617,15 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
-					gif_xs = lcd->width * gif_size;
+					gif_xs = lcd->display_width * gif_size;
 					gif_ys = lcd->height * gif_size;
-					uint8_t *gif = generate_gif_image(lcd);
 
-					unsigned int i, j;
-					for (i = 0; i < lcd->height * gif_size; i++) {
-						for (j = 0; j < lcd->width * gif_size; j++) {
-							gif_frame[i * gif_xs + j] = gif[i * gif_xs + j];
-						}
-					}
 					gif_write_state = GIF_START;
-					gif_writer(MAX_SHADES);
-
+					handle_screenshot();
 					gif_write_state = GIF_END;
-					gif_writer(MAX_SHADES);
+					gif_writer(gif_colors - 1);
+
+					gif_write_state = GIF_IDLE;
 
 					FORMATETC fmtetc[] = {
 						{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },

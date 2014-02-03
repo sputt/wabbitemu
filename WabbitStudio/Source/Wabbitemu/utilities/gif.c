@@ -284,10 +284,112 @@ int gif_encode(FILE *fout, BYTE *pixels, int depth, int siz) {
 	return fsize;
 }
 
+unsigned char web_safe_palette[216 * 3];
+static BOOL palette_generated = FALSE;
+
+unsigned char extra_palette[40 * 3];
+
+int gif_palette_color(int idx)
+{
+	if (!palette_generated)
+	{
+		int i = 0;
+		for (int r = 0; r <= 0xFF; r += 0x33)
+		{
+			for (int g = 0; g <= 0xFF; g += 0x33)
+			{
+				for (int b = 0; b <= 0xFF; b += 0x33)
+				{
+					web_safe_palette[i * 3] = r;
+					web_safe_palette[i * 3 + 1] = g;
+					web_safe_palette[i * 3 + 2] = b;
+					i++;
+				}
+			}
+		}
+		palette_generated = TRUE;
+	}
+	if (idx > 216)
+	{
+		return 0;
+	}
+	return (web_safe_palette[idx * 3] << 16) | (web_safe_palette[idx * 3 + 1] << 8) | web_safe_palette[idx * 3 + 2];
+}
+
+int gif_extra_color(int idx)
+{
+	return (extra_palette[idx * 3] << 16) | (extra_palette[idx * 3 + 1] << 8) | extra_palette[idx * 3 + 2];
+}
+
+int gif_add_extra_color(int r, int g, int b)
+{
+	for (int i = 0; i < ARRAYSIZE(extra_palette); i+=3)
+	{
+		if (extra_palette[i] == 0x00 && extra_palette[i + 1] == 0 && extra_palette[i + 2] == 0)
+		{
+			extra_palette[i] = r;
+			extra_palette[i + 1] = g;
+			extra_palette[i + 2] = b;
+			return i/3;
+		}
+	}
+	return -1;
+}
+
+#define ERROR_TRESHOLD 1100
+
+int gif_convert_color_to_index(int r, int g, int b)
+{
+	int rgb = (r << 16) | (g << 8) | b;
+
+	int new_r = ((r + 26) / 51) * 0x33;
+	int new_g = ((g + 26) / 51) * 0x33;
+	int new_b = ((b + 26) / 51) * 0x33;
+
+	int new_rgb = (new_r << 16) | (new_g << 8) | new_b;
+
+	int error_r = (new_r - r);
+	int error_g = (new_g - g);
+	int error_b = (new_b - b);
+
+	int total_error = error_r * error_r + error_g * error_g + error_b * error_b;
+
+	// Worse possible error is = 2028
+	if (total_error > ERROR_TRESHOLD)
+	{
+		// Check extra colors
+		for (int i = 0; i < ARRAYSIZE(extra_palette)/3; i++)
+		{
+			if (gif_extra_color(i) == rgb)
+			{
+				return 216 + i;
+			}
+		}
+
+		// See if we can add it
+		int result = gif_add_extra_color(r, g, b);
+		if (result != -1)
+		{
+			return 216 + result;
+		}
+	}
+
+	
+	for (int i = 0; i < 216; i++)
+	{
+		if (gif_palette_color(i) == new_rgb)
+		{
+			return i;
+		}
+	}
+
+	return 0;
+}
+
 void gif_writer(int shades) {
 	static FILE *fp;
 	// flags = 1 111 0 010
-	BYTE gif_header[205] = {'G', 'I', 'F', '8', '9', 'a', 96, 0, 64, 0, 0xf2, 0x0f, 0};
+	BYTE gif_header[13 + 3*256] = {'G', 'I', 'F', '8', '9', 'a', 96, 0, 64, 0, 0xf2, 0x0f, 0};
 	static BYTE gif_info[31] = {
 		0x21, 0xff, 0x0b, 'N', 'E', 'T', 'S', 'C', 'A', 'P', 'E', '2', '.', '0', 3, 1, 0, 0, 0,
 		0x21, 0xfe, 8, 'W', 'a', 'b', 'b', 'i', 't', 0, 0, 0
@@ -303,28 +405,45 @@ void gif_writer(int shades) {
 		case GIF_START: {
 			int i;
 			gif_colors = shades + 1;
+
+			ZeroMemory(extra_palette, sizeof(extra_palette));
 			for (i = 0; i < gif_colors; i++) {
-				double color_ratio = 1.0 - ((double) i / (double) (gif_colors - 1));
-				printf("ratio: %lf\n", color_ratio);
-				
+				double color_ratio = 1.0 - ((double)i / (double)(gif_colors - 1));
 #define LCD_HIGH_MUL 6
-				
-				if (gif_bw) {
-					gif_header[13 + i * 3] = (BYTE) (0xFF * color_ratio);
-					gif_header[14 + i * 3] = (BYTE) (0xFF * color_ratio);
-					gif_header[15 + i * 3] = (BYTE) (0xFF * color_ratio);
-				} else {
-					gif_header[13 + i * 3] = (BYTE) ((0x9E - (0x9E/LCD_HIGH_MUL)) * color_ratio + (0x9E/LCD_HIGH_MUL));
-					gif_header[14 + i * 3] = (BYTE) ((0xAB - (0xAB/LCD_HIGH_MUL)) * color_ratio + (0xAB/LCD_HIGH_MUL));
-					gif_header[15 + i * 3] = (BYTE) ((0x88 - (0x88/LCD_HIGH_MUL)) * color_ratio + (0x88/LCD_HIGH_MUL));
+				if (gif_colors == 256)
+				{
+					int color = gif_palette_color(i);
+					gif_header[13 + i * 3] = (color >> 16) & 0xFF;
+					gif_header[14 + i * 3] = (color >> 8) & 0xFF;
+					gif_header[15 + i * 3] = (color & 0xFF);
+				}
+				else if (gif_bw) {
+					gif_header[13 + i * 3] = (BYTE)(0xFF * color_ratio);
+					gif_header[14 + i * 3] = (BYTE)(0xFF * color_ratio);
+					gif_header[15 + i * 3] = (BYTE)(0xFF * color_ratio);
+				}
+				else
+				{
+					gif_header[13 + i * 3] = (BYTE)((0x9E - (0x9E / LCD_HIGH_MUL)) * color_ratio + (0x9E / LCD_HIGH_MUL));
+					gif_header[14 + i * 3] = (BYTE)((0xAB - (0xAB / LCD_HIGH_MUL)) * color_ratio + (0xAB / LCD_HIGH_MUL));
+					gif_header[15 + i * 3] = (BYTE)((0x88 - (0x88 / LCD_HIGH_MUL)) * color_ratio + (0x88 / LCD_HIGH_MUL));
 				}
 			}
 			
-			int palette_bits = 2;
-			if (gif_colors > 8)
+			int palette_bits;
+			if (gif_colors <= 8)
+			{
 				palette_bits = 3;
-			
-			gif_header[10] = 0xF0 | palette_bits;
+			}
+			else if(gif_colors <= 16)
+			{
+				palette_bits = 4;
+			}
+			else
+			{
+				palette_bits = 8;
+			}
+			gif_header[10] = 0xF0 | (palette_bits - 1);
 			gif_frame_xs = gif_xs;
 			gif_frame_ys = gif_ys;
 			gif_frame_x = 0;
@@ -338,7 +457,7 @@ void gif_writer(int shades) {
 #else
 			fp = fopen(gif_file_name, "wb");
 #endif
-			fwrite(gif_header, 13 + (3 * (1 << (palette_bits+1))), 1, fp);
+			fwrite(gif_header, 13 + (3 * (1 << (palette_bits))), 1, fp);
 			fwrite(gif_info, 31, 1, fp);
 			gif_file_size = 236;
 			gif_write_state = GIF_FRAME;
@@ -431,6 +550,14 @@ void gif_writer(int shades) {
 				gif_file_size += i + 19;
 			}
 			fputc(0x3b, fp);
+
+			// Write out the special colors table
+			if (gif_colors == 256)
+			{
+				fseek(fp, 13 + 216 * 3, SEEK_SET);
+				fwrite(extra_palette, sizeof(extra_palette), 1, fp);
+			}
+
 			fclose(fp);
 			gif_file_size += 1;
 			gif_write_state = GIF_IDLE;
@@ -438,3 +565,4 @@ void gif_writer(int shades) {
 		}
 	}
 }
+
