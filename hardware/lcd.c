@@ -93,6 +93,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	lcd->base.command = (devp) &LCD_command;
 	lcd->base.data = (devp) &LCD_data;
 	lcd->base.image = &LCD_image;
+	lcd->base.bytes_per_pixel = 1;
 	
 	switch (model) {
 		case TI_82:

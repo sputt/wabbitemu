@@ -4,7 +4,7 @@
 
 #include "calc.h"
 
-#define GIF_FRAME_MAX (256 * 128 * MAX_CALCS)
+#define GIF_FRAME_MAX (320 * 240 * MAX_CALCS)
 
 #define GIF_IDLE 0
 #define GIF_START 1
@@ -33,5 +33,6 @@ extern BOOL gif_bw;
 extern BOOL gif_color;
 
 void gif_writer(int shades);
+int gif_convert_color_to_index(int r, int g, int b);
 
 #endif // GIF_H

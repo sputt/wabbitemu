@@ -77,6 +77,7 @@ typedef struct LCDBase {
 	double time;							// Last lcd update in seconds
 	long long last_tstate;					// timer_c->tstate of the last write
 	double lastgifframe;
+	int bytes_per_pixel;
 } LCDBase_t;
 
 typedef struct LCD {
