@@ -14,7 +14,6 @@
 #include "expandpane.h"
 #include "registry.h"
 #include "fileutilities.h"
-#include "gifhandle.h"
 
 extern HINSTANCE g_hInst;
 

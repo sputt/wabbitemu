@@ -117,6 +117,7 @@
     <ClCompile Include="GUI\guiupdate.c" />
     <ClCompile Include="gui\guivartree.c" />
     <ClCompile Include="gui\guiwizard.c" />
+    <ClCompile Include="GUI\pngexport.c" />
     <ClCompile Include="gui\registry.c" />
     <ClCompile Include="hardware\81hw.c" />
     <ClCompile Include="hardware\83hw.c" />
@@ -165,8 +166,8 @@
     <ClCompile Include="utilities\exportvar.c" />
     <ClCompile Include="utilities\fileutilities.c" />
     <ClCompile Include="utilities\ftp.c" />
-    <ClCompile Include="utilities\gif.c" />
-    <ClCompile Include="utilities\gifhandle.c" />
+    <ClCompile Include="utilities\gif.cpp" />
+    <ClCompile Include="utilities\screenshothandle.c" />
     <ClCompile Include="utilities\ioapi.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </CompileAs>
@@ -341,6 +342,7 @@
     <ClInclude Include="gui\linksprites.h" />
     <ClInclude Include="gui\map.h" />
     <ClInclude Include="GUI\osdownloadcallback.h" />
+    <ClInclude Include="GUI\pngexport.h" />
     <ClInclude Include="gui\registry.h" />
     <ClInclude Include="gui\resource.h" />
     <ClInclude Include="Hardware\81hw.h" />
@@ -381,7 +383,7 @@
     <ClInclude Include="utilities\flags.h" />
     <ClInclude Include="utilities\ftp.h" />
     <ClInclude Include="utilities\gif.h" />
-    <ClInclude Include="utilities\gifhandle.h" />
+    <ClInclude Include="utilities\screenshothandle.h" />
     <ClInclude Include="utilities\ioapi.h" />
     <ClInclude Include="utilities\iowin32.h" />
     <ClInclude Include="utilities\label.h" />

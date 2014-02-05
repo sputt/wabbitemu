@@ -2,7 +2,7 @@
 
 #include "lcd.h"
 #include "83psehw.h"
-#include "gifhandle.h"
+#include "screenshothandle.h"
 #ifdef WINVER
 #include "registry.h"
 #endif
@@ -151,8 +151,8 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
 	lcd->base.ufps = 0.0f;
 	lcd->base.lastgifframe = tc_elapsed(cpu->timer_c);
-	lcd->write_avg = 0.0f;
-	lcd->write_last = tc_elapsed(cpu->timer_c);
+	lcd->base.write_avg = 0.0f;
+	lcd->base.write_last = tc_elapsed(cpu->timer_c);
 	return lcd;
 }
 
@@ -162,8 +162,8 @@ static void LCD_timer_refresh(CPU_t * cpu) {
 	lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
 	lcd->base.ufps = 0.0f;
 	lcd->base.lastgifframe = tc_elapsed(cpu->timer_c);
-	lcd->write_avg = 0.0f;
-	lcd->write_last = tc_elapsed(cpu->timer_c);
+	lcd->base.write_avg = 0.0f;
+	lcd->base.write_last = tc_elapsed(cpu->timer_c);
 	lcd->lcd_delay = NORMAL_DELAY;
 }
 
@@ -292,12 +292,12 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 
 	if (cpu->output) {
 		// Run some sanity checks on the write vars
-		if (lcd->write_last > tc_elapsed(cpu->timer_c))
-			lcd->write_last = tc_elapsed(cpu->timer_c);
+		if (lcd->base.write_last > tc_elapsed(cpu->timer_c))
+			lcd->base.write_last = tc_elapsed(cpu->timer_c);
 
-		double write_delay = tc_elapsed(cpu->timer_c) - lcd->write_last;
-		if (lcd->write_avg == 0.0) lcd->write_avg = write_delay;
-		lcd->write_last = tc_elapsed(cpu->timer_c);
+		double write_delay = tc_elapsed(cpu->timer_c) - lcd->base.write_last;
+		if (lcd->base.write_avg == 0.0) lcd->base.write_avg = write_delay;
+		lcd->base.write_last = tc_elapsed(cpu->timer_c);
 		lcd->base.last_tstate = tc_tstates(cpu->timer_c);
 	
 		// If there is a delay that is significantly longer than the
@@ -307,8 +307,8 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 		
 		// If you are in steady mode, then this simply serves as a
 		// FPS calculator
-		if (write_delay < lcd->write_avg * 100.0) {
-			lcd->write_avg = (lcd->write_avg * 0.90) + (write_delay * 0.10);
+		if (write_delay < lcd->base.write_avg * 100.0) {
+			lcd->base.write_avg = (lcd->base.write_avg * 0.90) + (write_delay * 0.10);
 		} else {
 			double ufps_length = tc_elapsed(cpu->timer_c) - lcd->base.ufps_last;
 			lcd->base.ufps = 1.0 / ufps_length;

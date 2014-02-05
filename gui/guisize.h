@@ -3,7 +3,7 @@
 
 #include "calc.h"
 
-int GetDefaultKeymapScale(int model);
+unsigned int GetDefaultKeymapScale(int model);
 LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabled);
 LRESULT HandleSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc);
 

@@ -21,8 +21,6 @@ typedef struct ColorLCD {
 
 	int read_step;
 	int write_step;
-
-	double time;					/* Last lcd update in seconds*/
 } ColorLCD_t;
 
 ColorLCD_t *ColorLCD_init(CPU_t *cpu, int model);

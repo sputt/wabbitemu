@@ -1,6 +1,5 @@
 #ifndef GIF_H
 #define GIF_H
-#define USE_GIF_SIZES
 
 #include "calc.h"
 
@@ -15,9 +14,10 @@
 
 extern int gif_write_state;
 extern int gif_file_size;
-extern TCHAR gif_file_name[512];
-extern BOOL gif_autosave;
-extern BOOL gif_use_increasing;
+extern TCHAR screenshot_file_name[512];
+extern BOOL screenshot_autosave;
+extern BOOL screenshot_use_increasing;
+extern u_int screenshot_size;
 extern WORD gif_base_delay;
 extern int gif_xs;
 extern int gif_indiv_xs;
@@ -28,7 +28,6 @@ extern int gif_newframe;
 extern int gif_colors;
 extern int gif_base_delay_start;
 extern int gif_file_num;
-extern u_int gif_size;
 extern BOOL gif_bw;
 extern BOOL gif_color;
 

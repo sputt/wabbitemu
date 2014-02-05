@@ -74,6 +74,7 @@ typedef struct LCDBase {
 	int display_width;
 	int height;
 	double ufps, ufps_last;					// User frames per second
+	double write_avg, write_last;			// Used to determine freq. of writes to the LCD
 	double time;							// Last lcd update in seconds
 	long long last_tstate;					// timer_c->tstate of the last write
 	double lastgifframe;
@@ -85,15 +86,14 @@ typedef struct LCD {
 	u_int word_len;
 	u_int lcd_delay;				//delay in tstate required to write
 	
-	u_int last_read;				/* Buffer previous read */
-	u_int base_level;				/* used in lcd level to handle contrast */
-	uint8_t display[DISPLAY_SIZE];	/* LCD display memory */
+	u_int last_read;				// Buffer previous read
+	u_int base_level;				// used in lcd level to handle contrast
+	uint8_t display[DISPLAY_SIZE];	// LCD display memory
 	int front;
-	uint8_t queue[LCD_MAX_SHADES][DISPLAY_SIZE];/* holds previous buffers for grey */
-	u_int shades;					/* number of shades of grey*/
-	LCD_MODE mode;					/* Mode of LCD rendering */
-	double steady_frame;			/* Length of a steady frame in seconds */
-	double write_avg, write_last;	/* Used to determine freq. of writes to the LCD */
+	uint8_t queue[LCD_MAX_SHADES][DISPLAY_SIZE];	// holds previous buffers for grey
+	u_int shades;					// number of shades of grey
+	LCD_MODE mode;					// Mode of LCD rendering
+	double steady_frame;			// Length of a steady frame in seconds
 } LCD_t;
 
 /* Device functions */

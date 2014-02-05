@@ -23,19 +23,13 @@
 #include "stdafx.h"
 
 #include "calc.h"
-#ifndef WINVER
 #include "coretypes.h"
-#endif
-
 #include "gif.h"
 
 #define GIF_IDLE 0
 #define GIF_START 1
 #define GIF_FRAME 2
 #define GIF_END 3
-
-#define SCRXSIZE 96
-#define SCRYSIZE 64
 
 #define TERMIN 'T'
 #define LOOKUP 'L'
@@ -57,12 +51,12 @@ typedef struct GIF_TREE {
 
 int gif_write_state = GIF_IDLE;
 
-TCHAR gif_file_name[512] = _T("wabbitemu.gif");
-BOOL gif_autosave = FALSE;
-BOOL gif_use_increasing = FALSE;
+TCHAR screenshot_file_name[512] = _T("wabbitemu.gif");
+BOOL screenshot_autosave = FALSE;
+BOOL screenshot_use_increasing = FALSE;
 int gif_colors = 8;
 int gif_base_delay_start = 4;
-u_int gif_size = 2;
+u_int screenshot_size = 2;
 
 WORD gif_base_delay;
 int gif_file_size = 0;
@@ -284,62 +278,47 @@ int gif_encode(FILE *fout, BYTE *pixels, int depth, int siz) {
 	return fsize;
 }
 
-unsigned char web_safe_palette[216 * 3];
 static BOOL palette_generated = FALSE;
-
-unsigned char extra_palette[40 * 3];
+std::map<int, int> palette;
+int last_index = 216;
 
 int gif_palette_color(int idx)
 {
-	if (!palette_generated)
-	{
-		int i = 0;
-		for (int r = 0; r <= 0xFF; r += 0x33)
-		{
-			for (int g = 0; g <= 0xFF; g += 0x33)
-			{
-				for (int b = 0; b <= 0xFF; b += 0x33)
-				{
-					web_safe_palette[i * 3] = r;
-					web_safe_palette[i * 3 + 1] = g;
-					web_safe_palette[i * 3 + 2] = b;
-					i++;
-				}
-			}
-		}
-		palette_generated = TRUE;
-	}
-	if (idx > 216)
-	{
-		return 0;
-	}
-	return (web_safe_palette[idx * 3] << 16) | (web_safe_palette[idx * 3 + 1] << 8) | web_safe_palette[idx * 3 + 2];
-}
-
-int gif_extra_color(int idx)
-{
-	return (extra_palette[idx * 3] << 16) | (extra_palette[idx * 3 + 1] << 8) | extra_palette[idx * 3 + 2];
-}
-
-int gif_add_extra_color(int r, int g, int b)
-{
-	for (int i = 0; i < ARRAYSIZE(extra_palette); i+=3)
-	{
-		if (extra_palette[i] == 0x00 && extra_palette[i + 1] == 0 && extra_palette[i + 2] == 0)
-		{
-			extra_palette[i] = r;
-			extra_palette[i + 1] = g;
-			extra_palette[i + 2] = b;
-			return i/3;
+	for (auto it = palette.begin(); it != palette.end(); ++it) {
+		if (it->second == idx) {
+			return it->first;
 		}
 	}
-	return -1;
+}
+
+int gif_add_extra_color(int rgb)
+{
+	if (last_index > 0xFF) {
+		return -1;
+	}
+
+	palette[rgb] = last_index++;
+	return last_index - 1;
 }
 
 #define ERROR_TRESHOLD 1100
 
 int gif_convert_color_to_index(int r, int g, int b)
 {
+	if (!palette_generated) {
+		int i = 0;
+		for (int red = 0; red <= 0xFF; red += 0x33) {
+			for (int green = 0; green <= 0xFF; green += 0x33) {
+				for (int blue = 0; blue <= 0xFF; blue += 0x33) {
+					int web_rgb = (red << 16) | (green << 8) | blue;
+					palette[web_rgb] = i;
+					i++;
+				}
+			}
+		}
+		palette_generated = TRUE;
+	}
+
 	int rgb = (r << 16) | (g << 8) | b;
 
 	int new_r = ((r + 26) / 51) * 0x33;
@@ -357,33 +336,19 @@ int gif_convert_color_to_index(int r, int g, int b)
 	// Worse possible error is = 2028
 	if (total_error > ERROR_TRESHOLD)
 	{
-		// Check extra colors
-		for (int i = 0; i < ARRAYSIZE(extra_palette)/3; i++)
-		{
-			if (gif_extra_color(i) == rgb)
-			{
-				return 216 + i;
-			}
+		if (palette.find(rgb) != palette.end()) {
+			return palette[rgb];
 		}
 
 		// See if we can add it
-		int result = gif_add_extra_color(r, g, b);
+		int result = gif_add_extra_color(rgb);
 		if (result != -1)
 		{
-			return 216 + result;
+			return result;
 		}
 	}
-
 	
-	for (int i = 0; i < 216; i++)
-	{
-		if (gif_palette_color(i) == new_rgb)
-		{
-			return i;
-		}
-	}
-
-	return 0;
+	return palette[new_rgb];
 }
 
 void gif_writer(int shades) {
@@ -406,7 +371,7 @@ void gif_writer(int shades) {
 			int i;
 			gif_colors = shades + 1;
 
-			ZeroMemory(extra_palette, sizeof(extra_palette));
+			last_index = 216;
 			for (i = 0; i < gif_colors; i++) {
 				double color_ratio = 1.0 - ((double)i / (double)(gif_colors - 1));
 #define LCD_HIGH_MUL 6
@@ -453,7 +418,7 @@ void gif_writer(int shades) {
 			gif_header[8] = gif_ys;
 			gif_header[9] = gif_ys >> 8;
 #ifdef WINVER
-			_tfopen_s(&fp, gif_file_name, _T("wb"));
+			_tfopen_s(&fp, screenshot_file_name, _T("wb"));
 #else
 			fp = fopen(gif_file_name, "wb");
 #endif
@@ -555,7 +520,12 @@ void gif_writer(int shades) {
 			if (gif_colors == 256)
 			{
 				fseek(fp, 13 + 216 * 3, SEEK_SET);
-				fwrite(extra_palette, sizeof(extra_palette), 1, fp);
+				for (i = 216; i < gif_colors; i++) {
+					int color = gif_palette_color(i);
+					fputc((color >> 16) & 0xFF, fp);
+					fputc((color >> 8) & 0xFF, fp);
+					fputc(color & 0xFF, fp);
+				}
 			}
 
 			fclose(fp);

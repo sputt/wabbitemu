@@ -288,7 +288,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 				result = LERR_LINK;
 			}
 
-			if (var->type == ROM_TYPE) {
+			if (var->type == ROM_TYPE || var->type == SAV_TYPE) {
 				//calc_turn_on(lpCalc);
 				SendMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
 			}
