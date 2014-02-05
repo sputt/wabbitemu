@@ -155,6 +155,8 @@ void handle_screenshot() {
 				}
 			}
 
+			gif_clear_palette();
+
 			for (int calc_num = 0; calc_num < MAX_CALCS; calc_num++) {
 				if (!calcs[calc_num].active)
 					continue;
