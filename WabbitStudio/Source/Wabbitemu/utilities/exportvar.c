@@ -356,7 +356,7 @@ void intelhex (MFILE* outfile, const unsigned char* buffer, int size, int page, 
 
 void IncWaddr(waddr_t *waddr) {
 	waddr->addr++;
-	if (waddr->addr == 0) {
+	if ((waddr->addr % PAGE_SIZE) == 0) {
 		waddr->page++;
 	}
 }

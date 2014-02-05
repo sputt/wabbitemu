@@ -30,6 +30,8 @@ static struct {
 	{_T("gif_autosave"),			REG_DWORD,	FALSE},
 	{_T("gif_useinc"),				REG_DWORD,	FALSE},
 	{_T("gif_framerate"),			REG_DWORD,	4},
+	{_T("gif_gray_size"),			REG_DWORD,  2},
+	{_T("gif_color_size"),			REG_DWORD,  1},
 	{_T("lcd_mode"),				REG_DWORD,	0},		// perfect gray
 	{_T("lcd_freq"),				REG_DWORD,	FPS},	// steady freq
 	{_T("screen_scale"),			REG_DWORD,  2},
@@ -376,6 +378,8 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	screenshot_autosave = (BOOL) QueryWabbitKey(_T("gif_autosave"));
 	screenshot_use_increasing = (BOOL) QueryWabbitKey(_T("gif_useinc"));
 	gif_base_delay_start = (BOOL) QueryWabbitKey(_T("gif_framerate"));
+	screenshot_size = (int)QueryWabbitKey(_T("gif_gray_size"));
+	screenshot_color_size = (int)QueryWabbitKey(_T("gif_color_size"));
 	break_on_exe_violation = (BOOL) QueryWabbitKey(_T("break_on_exe_violation"));
 	break_on_invalid_flash = (BOOL) QueryWabbitKey(_T("break_on_invalid_flash"));
 	auto_turn_on = (BOOL) QueryWabbitKey(_T("auto_turn_on"));
@@ -446,6 +450,8 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("gif_autosave"), REG_DWORD, &screenshot_autosave);
 		SaveWabbitKey(_T("gif_useinc"), REG_DWORD, &screenshot_use_increasing);
 		SaveWabbitKey(_T("gif_framerate"), REG_DWORD, &gif_base_delay_start);
+		SaveWabbitKey(_T("gif_gray_size"), REG_DWORD, &screenshot_size);
+		SaveWabbitKey(_T("gif_color_size"), REG_DWORD, &screenshot_color_size);
 		SaveWabbitKey(_T("exit_save_state"), REG_DWORD, &exit_save_state);
 		SaveWabbitKey(_T("load_files_first"), REG_DWORD, &new_calc_on_load_files);
 		SaveWabbitKey(_T("do_backups"), REG_DWORD, &do_backups);

@@ -107,6 +107,9 @@ symlist_t *state_build_symlist_86(CPU_t *cpu, symlist_t *symlist) {
 
 symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 	memc *mem = cpu->mem_c;
+	int pTemp = cpu->pio.model >= TI_84PCSE ? PTEMP_84PCSE : PTEMP_83P;
+	int progPtr = cpu->pio.model >= TI_84PCSE ? PROGPTR_84PCSE : PROGPTR_83P;
+	int symTable = cpu->pio.model >= TI_84PCSE ? SYMTABLE_84PCSE : SYMTABLE_83P;
 	// end marks the end of the symbol table
 	uint16_t 	end = mem_read16(mem, pTemp),
 	// prog denotes where programs start
