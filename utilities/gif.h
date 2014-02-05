@@ -33,5 +33,6 @@ extern BOOL gif_color;
 
 void gif_writer(int shades);
 int gif_convert_color_to_index(int r, int g, int b);
+void gif_clear_palette();
 
 #endif // GIF_H

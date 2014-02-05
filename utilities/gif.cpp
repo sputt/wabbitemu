@@ -278,9 +278,8 @@ int gif_encode(FILE *fout, BYTE *pixels, int depth, int siz) {
 	return fsize;
 }
 
-static BOOL palette_generated = FALSE;
-std::map<int, int> palette;
-int last_index = 216;
+static std::map<int, int> palette;
+static int last_index = 0;
 
 int gif_palette_color(int idx)
 {
@@ -289,66 +288,74 @@ int gif_palette_color(int idx)
 			return it->first;
 		}
 	}
+
+	return 0;
+}
+
+int gif_find_best_match(int rgb) {
+	int r = rgb >> 16;
+	int g = (rgb >> 8) & 0xFF;
+	int b = rgb & 0xFF;
+	int best_error = 0xFFFFFF;
+	int best_error_index = 0;
+	for (auto it = palette.begin(); it != palette.end(); ++it) {
+		int new_rgb = it->first;
+
+		int new_r = new_rgb >> 16;
+		int new_g = (new_rgb >> 8) & 0xFF;
+		int new_b = new_rgb & 0xFF;
+
+		int error_r = (new_r - r);
+		int error_g = (new_g - g);
+		int error_b = (new_b - b);
+
+		int total_error = error_r * error_r + error_g * error_g + error_b * error_b;
+		if (total_error < best_error) {
+			best_error = total_error;
+			best_error_index = it->second;
+		}
+	}
+
+	return best_error_index;
 }
 
 int gif_add_extra_color(int rgb)
 {
+	int index;
 	if (last_index > 0xFF) {
-		return -1;
+		index = gif_find_best_match(rgb);
+	} else {
+		index = last_index;
+		last_index++;
+		// FIXME: 0x0F is always black
+		if (last_index == 0x0F) {
+			last_index++;
+		}
 	}
 
-	palette[rgb] = last_index++;
-	return last_index - 1;
+	palette[rgb] = index;
+	return index;
 }
 
-#define ERROR_TRESHOLD 1100
+void gif_clear_palette() {
+	palette.clear();
+	last_index = 0;
+}
 
 int gif_convert_color_to_index(int r, int g, int b)
 {
-	if (!palette_generated) {
-		int i = 0;
-		for (int red = 0; red <= 0xFF; red += 0x33) {
-			for (int green = 0; green <= 0xFF; green += 0x33) {
-				for (int blue = 0; blue <= 0xFF; blue += 0x33) {
-					int web_rgb = (red << 16) | (green << 8) | blue;
-					palette[web_rgb] = i;
-					i++;
-				}
-			}
-		}
-		palette_generated = TRUE;
-	}
-
 	int rgb = (r << 16) | (g << 8) | b;
-
-	int new_r = ((r + 26) / 51) * 0x33;
-	int new_g = ((g + 26) / 51) * 0x33;
-	int new_b = ((b + 26) / 51) * 0x33;
-
-	int new_rgb = (new_r << 16) | (new_g << 8) | new_b;
-
-	int error_r = (new_r - r);
-	int error_g = (new_g - g);
-	int error_b = (new_b - b);
-
-	int total_error = error_r * error_r + error_g * error_g + error_b * error_b;
-
-	// Worse possible error is = 2028
-	if (total_error > ERROR_TRESHOLD)
-	{
-		if (palette.find(rgb) != palette.end()) {
-			return palette[rgb];
+	auto it = palette.find(rgb);
+	if (it != palette.end()) {
+		if (it->first != rgb) {
+			throw 10;
 		}
-
-		// See if we can add it
-		int result = gif_add_extra_color(rgb);
-		if (result != -1)
-		{
-			return result;
-		}
+		return it->second;
 	}
-	
-	return palette[new_rgb];
+
+	// See if we can add it
+	int result = gif_add_extra_color(rgb);
+	return result;
 }
 
 void gif_writer(int shades) {
@@ -371,13 +378,12 @@ void gif_writer(int shades) {
 			int i;
 			gif_colors = shades + 1;
 
-			last_index = 216;
 			for (i = 0; i < gif_colors; i++) {
 				double color_ratio = 1.0 - ((double)i / (double)(gif_colors - 1));
 #define LCD_HIGH_MUL 6
 				if (gif_colors == 256)
 				{
-					int color = gif_palette_color(i);
+					int color = 0;
 					gif_header[13 + i * 3] = (color >> 16) & 0xFF;
 					gif_header[14 + i * 3] = (color >> 8) & 0xFF;
 					gif_header[15 + i * 3] = (color & 0xFF);
@@ -519,8 +525,8 @@ void gif_writer(int shades) {
 			// Write out the special colors table
 			if (gif_colors == 256)
 			{
-				fseek(fp, 13 + 216 * 3, SEEK_SET);
-				for (i = 216; i < gif_colors; i++) {
+				fseek(fp, 13, SEEK_SET);
+				for (i = 0; i < gif_colors; i++) {
 					int color = gif_palette_color(i);
 					fputc((color >> 16) & 0xFF, fp);
 					fputc((color >> 8) & 0xFF, fp);
