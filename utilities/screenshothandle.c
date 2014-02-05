@@ -85,17 +85,17 @@ BOOL get_screenshot_filename(TCHAR *ext) {
 	return TRUE;
 }
 
-uint8_t* generate_gif_image(LCDBase_t *lcd) {
+uint8_t* generate_gif_image(LCDBase_t *lcd, int gif_size) {
 	uint8_t *image = lcd->image(lcd);
-	uint8_t *gif = (uint8_t *)malloc(lcd->width * screenshot_size * lcd->height * screenshot_size);
-	int gif_height = lcd->height * screenshot_size;
-	int gif_width = lcd->display_width * screenshot_size;
+	uint8_t *gif = (uint8_t *)malloc(lcd->width * gif_size * lcd->height * gif_size);
+	int gif_height = lcd->height * gif_size;
+	int gif_width = lcd->display_width * gif_size;
 
 	for (int row = 0; row < gif_height; row++) {
 		for (int col = 0; col < gif_width; col++) {
 			uint8_t color = 0;
 			if (lcd->bytes_per_pixel > 1) {
-				int idx = (row / screenshot_size) * lcd->width * lcd->bytes_per_pixel + (col / screenshot_size) * lcd->bytes_per_pixel;
+				int idx = (row / gif_size) * lcd->width * lcd->bytes_per_pixel + (col / gif_size) * lcd->bytes_per_pixel;
 				double b = image[idx];
 				double g = image[idx+1];
 				double r = image[idx+2];
@@ -103,7 +103,7 @@ uint8_t* generate_gif_image(LCDBase_t *lcd) {
 			}
 			else {
 				int part = 255 / gif_colors;
-				color = image[(row / screenshot_size) * lcd->width * lcd->bytes_per_pixel + (col / screenshot_size) * lcd->bytes_per_pixel];
+				color = image[(row / gif_size) * lcd->width * lcd->bytes_per_pixel + (col / gif_size) * lcd->bytes_per_pixel];
 				color = (color + (part / 2)) / part;
 			}
 
@@ -120,6 +120,7 @@ void handle_screenshot() {
 	int i, j;
 	u_int shades = 0;
 	BOOL running_backup[MAX_CALCS];
+	int size;
 	for (i = 0; i < MAX_CALCS; i++) {
 		running_backup[i] = calcs[i].running;
 		calcs[i].running = FALSE;
@@ -127,10 +128,12 @@ void handle_screenshot() {
 
 		if (calcs[i].active && calcs[i].model < TI_84PCSE && lcd && shades < ((LCD_t *) lcd)->shades) {
 			shades = ((LCD_t *)lcd)->shades;
+			size = screenshot_size;
 		}
 		else if (calcs[i].model == TI_84PCSE)
 		{
 			shades = 255;
+			size = screenshot_color_size;
 		}
 		//we also need to find the size of all the LCDs
 	}
@@ -150,8 +153,8 @@ void handle_screenshot() {
 			
 			for (i = 0; i < MAX_CALCS; i++) {
 				if (calcs[i].active) {
-					gif_xs += calcs[i].cpu.pio.lcd->display_width * screenshot_size;
-					gif_ys = calcs[i].cpu.pio.lcd->height * screenshot_size;
+					gif_xs += calcs[i].cpu.pio.lcd->display_width * size;
+					gif_ys = calcs[i].cpu.pio.lcd->height * size;
 				}
 			}
 
@@ -162,13 +165,13 @@ void handle_screenshot() {
 					continue;
 				lcd = calcs[calc_num].cpu.pio.lcd;
 
-				gif_indiv_xs = lcd->display_width * screenshot_size;
+				gif_indiv_xs = lcd->display_width * size;
 				gif_base_delay = gif_base_delay_start;
 				gif_time = 0;
 				gif_newframe = 1;
 				gif_colors = shades + 1;
 			
-				uint8_t *gif = generate_gif_image(lcd);
+				uint8_t *gif = generate_gif_image(lcd, size);
 				for (i = 0; i < gif_ys; i++)
 					for (j = 0; j < gif_indiv_xs; j++)
 						gif_frame[i * gif_xs + j + calc_pos] = gif[i * gif_indiv_xs + j];	
@@ -184,19 +187,19 @@ void handle_screenshot() {
 				gif_time -= gif_base_delay;
 				gif_newframe = 1;
 
-			for (int calc_num = 0; calc_num < MAX_CALCS; calc_num++) {
-				if (!calcs[calc_num].active)
-					continue;
-				lcd = calcs[calc_num].cpu.pio.lcd;
+				for (int calc_num = 0; calc_num < MAX_CALCS; calc_num++) {
+					if (!calcs[calc_num].active)
+						continue;
+					lcd = calcs[calc_num].cpu.pio.lcd;
 
-				uint8_t *gif = generate_gif_image(lcd);
-				gif_indiv_xs = lcd->display_width * screenshot_size;
-				for (i = 0; i < gif_ys; i++)
-					for (j = 0; j < gif_indiv_xs; j++)
-						gif_frame[i * gif_xs + j + calc_pos] = gif[i * gif_indiv_xs + j];
-				calc_pos += gif_indiv_xs;
-				free(gif);
-			}
+					uint8_t *gif = generate_gif_image(lcd, size);
+					gif_indiv_xs = lcd->display_width * size;
+					for (i = 0; i < gif_ys; i++)
+						for (j = 0; j < gif_indiv_xs; j++)
+							gif_frame[i * gif_xs + j + calc_pos] = gif[i * gif_indiv_xs + j];
+					calc_pos += gif_indiv_xs;
+					free(gif);
+				}
 			}
 			break;
 		}

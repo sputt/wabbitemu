@@ -627,6 +627,8 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 				(LPARAM) MAKELONG(0, TBRTICS));
 			SendMessage(hwndSpeed, TBM_SETTICFREQ, 1, 0);
 
+			int size = lpCalc->model >= TI_84PCSE ? screenshot_color_size : screenshot_size;
+
 			int speedPos = 0;
 			if (gif_base_delay_start != 0) {
 				speedPos = ((100 / gif_base_delay_start) - 9) / TBRSTEP;
@@ -656,7 +658,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 			Button_SetCheck(gif_bw ? rbnGray : rbnScreen, BST_CHECKED);
 
 			chkSize = GetDlgItem(hwndDlg, IDC_CHKGIF2X);
-			Button_SetCheck(chkSize, (screenshot_size == 2) ? BST_CHECKED : BST_UNCHECKED);
+			Button_SetCheck(chkSize, (size == 2) ? BST_CHECKED : BST_UNCHECKED);
 			return TRUE;
 		}
 		case WM_NOTIFY:
@@ -675,7 +677,12 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
 
-					screenshot_size = Button_GetState(chkSize) & 0x0003 ? 2 : 1;
+					int size = Button_GetState(chkSize) & 0x0003 ? 2 : 1;
+					if (lpCalc->model >= TI_84PCSE) {
+						screenshot_color_size = size;
+					} else {
+						screenshot_size = size;
+					}
 
 					Edit_GetText(edtGIFFilename, screenshot_file_name, ARRAYSIZE(screenshot_file_name));
 					return TRUE;

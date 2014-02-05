@@ -18,6 +18,7 @@ extern TCHAR screenshot_file_name[512];
 extern BOOL screenshot_autosave;
 extern BOOL screenshot_use_increasing;
 extern u_int screenshot_size;
+extern u_int screenshot_color_size;
 extern WORD gif_base_delay;
 extern int gif_xs;
 extern int gif_indiv_xs;

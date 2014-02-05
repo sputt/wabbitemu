@@ -31,11 +31,15 @@ typedef struct symlist {
 	symbol83P_t symbols[512];
 } symlist_t;
 
-//83p
-#define pTemp			0x982E
-#define progPtr			0x9830
-#define symTable		0xFE66
-//86
+// 83p
+#define PTEMP_83P			0x982E
+#define PROGPTR_83P			0x9830
+#define SYMTABLE_83P		0xFE66
+// 84PCSE
+#define PTEMP_84PCSE		0x9E0F
+#define PROGPTR_84PCSE		0x9E11
+#define SYMTABLE_84PCSE		0xFD9E
+// 86
 #define VAT_END			0xD298
 
 typedef struct upages {

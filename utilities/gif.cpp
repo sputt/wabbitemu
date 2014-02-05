@@ -57,6 +57,7 @@ BOOL screenshot_use_increasing = FALSE;
 int gif_colors = 8;
 int gif_base_delay_start = 4;
 u_int screenshot_size = 2;
+u_int screenshot_color_size = 1;
 
 WORD gif_base_delay;
 int gif_file_size = 0;
