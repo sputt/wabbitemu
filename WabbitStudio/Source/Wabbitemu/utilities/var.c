@@ -163,7 +163,12 @@ int FindRomVersion(char *string, unsigned char *rom, u_int size) {
 		case TI_84P:
 		case TI_83PSE:
 		case TI_84PSE:
+		case TI_84PCSE:
 			i = 0x0064;
+			if (calc == TI_84PCSE) {
+				// uh ok TI
+				i++;
+			}
 			for(b = 0; b < 32; b++) {
 				string[b] = rom[i++];
 			}

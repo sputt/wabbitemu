@@ -372,9 +372,9 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	lpCalc->bTIOSDebug = (BOOL) QueryWabbitKey(_T("tios_debug"));
 	QueryKeyMappings();
 
-	StringCbCopy(gif_file_name, sizeof(gif_file_name), (TCHAR *) QueryWabbitKey(_T("gif_path")));
-	gif_autosave = (BOOL) QueryWabbitKey(_T("gif_autosave"));
-	gif_use_increasing = (BOOL) QueryWabbitKey(_T("gif_useinc"));
+	StringCbCopy(screenshot_file_name, sizeof(screenshot_file_name), (TCHAR *) QueryWabbitKey(_T("gif_path")));
+	screenshot_autosave = (BOOL) QueryWabbitKey(_T("gif_autosave"));
+	screenshot_use_increasing = (BOOL) QueryWabbitKey(_T("gif_useinc"));
 	gif_base_delay_start = (BOOL) QueryWabbitKey(_T("gif_framerate"));
 	break_on_exe_violation = (BOOL) QueryWabbitKey(_T("break_on_exe_violation"));
 	break_on_invalid_flash = (BOOL) QueryWabbitKey(_T("break_on_invalid_flash"));
@@ -442,9 +442,9 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("alphablend_lcd"), REG_DWORD, &lpCalc->bAlphaBlendLCD);
 		SaveWabbitKey(_T("skin"), REG_DWORD, &lpCalc->bSkinEnabled);
 		SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
-		SaveWabbitKey(_T("gif_path"), REG_SZ, &gif_file_name);
-		SaveWabbitKey(_T("gif_autosave"), REG_DWORD, &gif_autosave);
-		SaveWabbitKey(_T("gif_useinc"), REG_DWORD, &gif_use_increasing);
+		SaveWabbitKey(_T("gif_path"), REG_SZ, &screenshot_file_name);
+		SaveWabbitKey(_T("gif_autosave"), REG_DWORD, &screenshot_autosave);
+		SaveWabbitKey(_T("gif_useinc"), REG_DWORD, &screenshot_use_increasing);
 		SaveWabbitKey(_T("gif_framerate"), REG_DWORD, &gif_base_delay_start);
 		SaveWabbitKey(_T("exit_save_state"), REG_DWORD, &exit_save_state);
 		SaveWabbitKey(_T("load_files_first"), REG_DWORD, &new_calc_on_load_files);

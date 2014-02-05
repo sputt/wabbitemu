@@ -2,7 +2,6 @@
 
 #include "core.h"
 #include "savestate.h"
-#include "lcd.h"
 #include "link.h"
 #include "calc.h"
 #include "83psehw.h"
@@ -667,8 +666,34 @@ void SaveLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	WriteDouble(chunk, lcd->base.ufps);
 	WriteDouble(chunk, lcd->base.ufps_last);
 	WriteDouble(chunk, lcd->base.lastgifframe);
-	WriteDouble(chunk, lcd->write_avg);
-	WriteDouble(chunk, lcd->write_last);
+	WriteDouble(chunk, lcd->base.write_avg);
+	WriteDouble(chunk, lcd->base.write_last);
+}
+
+void SaveColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
+	if (!lcd) return;
+	CHUNK_t* chunk = NewChunk(save, LCD_tag);
+
+	WriteInt(chunk, lcd->base.active);
+	WriteInt(chunk, lcd->base.x);
+	WriteInt(chunk, lcd->base.y);
+	WriteInt(chunk, lcd->base.z);
+	WriteInt(chunk, lcd->base.cursor_mode);
+	WriteInt(chunk, lcd->base.contrast);
+	WriteDouble(chunk, lcd->base.time);
+	WriteDouble(chunk, lcd->base.ufps);
+	WriteDouble(chunk, lcd->base.ufps_last);
+	WriteDouble(chunk, lcd->base.lastgifframe);
+	WriteDouble(chunk, lcd->base.write_avg);
+	WriteDouble(chunk, lcd->base.write_last);
+
+	WriteBlock(chunk, lcd->display, COLOR_LCD_DISPLAY_SIZE);
+	WriteBlock(chunk, (unsigned char *) &lcd->registers, sizeof(lcd->registers));
+	WriteShort(chunk, lcd->current_register);
+	WriteShort(chunk, lcd->read_buffer);
+	WriteShort(chunk, lcd->write_buffer);
+	WriteInt(chunk, lcd->read_step);
+	WriteInt(chunk, lcd->write_step);
 }
 
 SAVESTATE_t* SaveSlot(void *lpInput, TCHAR *author, TCHAR *comment) {
@@ -688,8 +713,7 @@ SAVESTATE_t* SaveSlot(void *lpInput, TCHAR *author, TCHAR *comment) {
 	SaveMEM(save, &lpCalc->mem_c);
 	SaveTIMER(save, &lpCalc->timer_c);
 	if (lpCalc->model >= TI_84PCSE) {
-		// TODO: fix
-		//SaveLCD(save, lpCalc->cpu.pio.lcd);
+		SaveColorLCD(save, (ColorLCD_t *) lpCalc->cpu.pio.lcd);
 	} else {
 		SaveLCD(save, (LCD_t *) lpCalc->cpu.pio.lcd);
 	}
@@ -916,11 +940,35 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	lcd->base.ufps = ReadDouble(chunk);
 	lcd->base.ufps_last = ReadDouble(chunk);
 	lcd->base.lastgifframe = ReadDouble(chunk);
-	lcd->write_avg	= ReadDouble(chunk);
-	lcd->write_last = ReadDouble(chunk);
+	lcd->base.write_avg	= ReadDouble(chunk);
+	lcd->base.write_last = ReadDouble(chunk);
 }
 
+void LoadColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
+	CHUNK_t* chunk = FindChunk(save, LCD_tag);
+	chunk->pnt = 0;
 
+	lcd->base.active = ReadInt(chunk);
+	lcd->base.x = ReadInt(chunk);
+	lcd->base.y = ReadInt(chunk);
+	lcd->base.z = ReadInt(chunk);
+	lcd->base.cursor_mode = (LCD_CURSOR_MODE)ReadInt(chunk);
+	lcd->base.contrast = ReadInt(chunk);
+	lcd->base.time = ReadDouble(chunk);
+	lcd->base.ufps = ReadDouble(chunk);
+	lcd->base.ufps_last = ReadDouble(chunk);
+	lcd->base.lastgifframe = ReadDouble(chunk);
+	lcd->base.write_avg = ReadDouble(chunk);
+	lcd->base.write_last = ReadDouble(chunk);
+
+	ReadBlock(chunk, lcd->display, COLOR_LCD_DISPLAY_SIZE);
+	ReadBlock(chunk, (unsigned char *) &lcd->registers, sizeof(lcd->registers));
+	lcd->current_register = ReadShort(chunk);
+	lcd->read_buffer = ReadShort(chunk);
+	lcd->write_buffer = ReadShort(chunk);
+	lcd->read_step = ReadInt(chunk);
+	lcd->write_step = ReadInt(chunk);
+}
 
 void LoadLINK(SAVESTATE_t* save, link_t* link) {
 	CHUNK_t* chunk	= FindChunk(save,LINK_tag);
@@ -1063,8 +1111,7 @@ void LoadSlot(SAVESTATE_t *save, void *lpInput) {
 	LoadMEM(save, &lpCalc->mem_c);
 	LoadTIMER(save, &lpCalc->timer_c);
 	if (lpCalc->model >= TI_84PCSE) {
-		// TODO: fix
-		//LoadLCD(save, (LCD_t *)lpCalc->cpu.pio.lcd);
+		LoadColorLCD(save, (ColorLCD_t *)lpCalc->cpu.pio.lcd);
 	} else {
 		LoadLCD(save, (LCD_t *) lpCalc->cpu.pio.lcd);
 	}

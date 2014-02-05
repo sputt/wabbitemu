@@ -11,7 +11,7 @@
 #include "device.h"
 #include "var.h"
 #include "gif.h"
-#include "gifhandle.h"
+#include "screenshothandle.h"
 #include "link.h"
 #include "keys.h"
 #include "lcd.h"
@@ -571,11 +571,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 BOOL calc_start_screenshot(LPCALC calc, const TCHAR *filename) {
 	if (gif_write_state == GIF_IDLE) {
 		gif_write_state = GIF_START;
-#ifdef _WINDOWS
-		StringCbCopy(gif_file_name, MAX_PATH, filename);
-#else
-		strcpy(gif_file_name, filename);
-#endif
+		StringCbCopy(screenshot_file_name, sizeof(screenshot_file_name), filename);
 		return TRUE;
 	} else {
 		return FALSE;

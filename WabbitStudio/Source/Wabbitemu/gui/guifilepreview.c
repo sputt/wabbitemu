@@ -2,10 +2,11 @@
 
 #include "guifilepreview.h"
 #include "lcd.h"
+#include "colorlcd.h"
 #include "savestate.h"
 
 extern HINSTANCE g_hInst;
-extern BITMAPINFO *bi;
+extern BITMAPINFO *bi, *colorbi;
 
 static HWND grpSettings;
 static OFNHookOptions *HookOptions;
@@ -110,9 +111,21 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			SAVESTATE_t *save = ReadSave(prgFile);
 			if (!save) goto NoFilePreviewNotSave;
 			
-			LCD_t lcd;
-			LoadLCD(save, &lcd);
-			LCDBase_t *lcdBase = (LCDBase_t *) &lcd;
+			CPU_t cpu = { 0 };
+			timer_context_t tc = { 0 };
+			cpu.timer_c = &tc;
+			LCD_t *lcd;
+			LCDBase_t *lcdBase;
+			ColorLCD_t *colorlcd;
+			if (save->model >= TI_84PCSE) {
+				colorlcd = ColorLCD_init(&cpu, save->model);
+				LoadColorLCD(save, colorlcd);
+				lcdBase = (LCDBase_t *)colorlcd;
+			} else {
+				lcd = LCD_init(&cpu, save->model);
+				LoadLCD(save, lcd);
+				lcdBase = (LCDBase_t *)lcd;
+			}
 			
 #ifdef _UNICODE
 			size_t len;
@@ -128,27 +141,20 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			
 			HDC hdc = CreateCompatibleDC(NULL);
 			HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmPreview);
-			
-			int width = 96;
-			// TODO: crash
-			//if (save->model == TI_86 || save->model == TI_85) {
-			//	RECT rc;
-			//	GetWindowRect(hwnd, &rc);
-			//	width = 128;
-			//	SetWindowPos(hwnd, NULL, 0, 0, rc.right - rc.left + (256 - 192), rc.bottom - rc.top, SWP_NOMOVE);
-			//}
 
-			if (lcdBase)
-			StretchDIBits(hdc, 0, 0, width * 2, 128,
-				0, 0, width, 64,
-				lcdBase->image(lcdBase),
-				bi,
-				DIB_RGB_COLORS,
-				SRCCOPY);
+			if (lcdBase) {
+				StretchDIBits(hdc, 0, 0, 192, 128,
+					0, 0, lcdBase->display_width, lcdBase->height,
+					lcdBase->image(lcdBase),
+					save->model >= TI_84PCSE ? colorbi : bi,
+					DIB_RGB_COLORS,
+					SRCCOPY);
+			}
 	
 			SelectObject(hdc, hbmOld);
 			DeleteDC(hdc);
 			SendMessage(imgPreview, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) hbmPreview);
+			free(lcdBase);
 			fclose(prgFile);
 			return S_OK;
 		NoFilePreviewNotSave:

@@ -160,12 +160,6 @@
     <ClCompile Include="utilities\exportvar.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="utilities\gif.c">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="utilities\gifhandle.c">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="utilities\label.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -367,6 +361,15 @@
     <ClCompile Include="Utilities\breakpoint.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="utilities\screenshothandle.c">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\pngexport.c">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\gif.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -520,9 +523,6 @@
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="utilities\gif.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="utilities\gifhandle.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="utilities\label.h">
@@ -707,6 +707,12 @@
     </ClInclude>
     <ClInclude Include="Utilities\breakpoint.h">
       <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\screenshothandle.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\pngexport.h">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

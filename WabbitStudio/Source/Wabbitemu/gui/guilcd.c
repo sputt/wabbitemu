@@ -6,7 +6,7 @@
 #include "calc.h"
 #include "sound.h"
 #include "gif.h"
-#include "gifhandle.h"
+#include "screenshothandle.h"
 #include "guioptions.h"
 #include "link.h"
 #include "lcd.h"
@@ -17,6 +17,7 @@
 #include "guicontext.h"
 #include "guiopenfile.h"
 #include "fileutilities.h"
+#include "pngexport.h"
 
 #include "DropSource.h"
 #include "DropTarget.h"
@@ -612,20 +613,21 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					// Create the GIF that is going to be produced by the drag
 					TCHAR fn[MAX_PATH];
 					GetAppDataString(fn, sizeof(fn));
-					StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.gif"));
-					StringCbCopy(gif_file_name, sizeof(gif_file_name), fn);
+					StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.png"));
 
 					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
-					gif_xs = lcd->display_width * gif_size;
-					gif_ys = lcd->height * gif_size;
+					
+					export_png(lpCalc, fn);
 
-					gif_write_state = GIF_START;
-					handle_screenshot();
-					gif_write_state = GIF_END;
-					gif_writer(gif_colors - 1);
-
-					gif_write_state = GIF_IDLE;
+					int file_size = 0;
+					FILE *file;
+					_tfopen_s(&file, fn, _T("rb"));
+					if (file != NULL) {
+						fseek(file, 0L, SEEK_END);
+						file_size = ftell(file);
+						fclose(file);
+					}
 
 					FORMATETC fmtetc[] = {
 						{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
@@ -649,24 +651,24 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
 					fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-					fd->nFileSizeLow = gif_file_size;
-					StringCbCopy(fd->cFileName, sizeof(fd->cFileName), _T("wabbitemu.gif"));
+					fd->nFileSizeLow = file_size;
+					StringCbCopy(fd->cFileName, sizeof(fd->cFileName), _T("wabbitemu.png"));
 					GlobalUnlock(stgmed[0].hGlobal);
 
 					// Now do file contents
-					stgmed[1].hGlobal = GlobalAlloc(GHND, gif_file_size);
+					stgmed[1].hGlobal = GlobalAlloc(GHND, file_size);
 					stgmed[1].tymed = TYMED_HGLOBAL;
 
 					FILE *fgif;
 					_tfopen_s(&fgif, fn, _T("rb"));
 					if (fgif != NULL) {
 						char *buf = (char *) GlobalLock(stgmed[1].hGlobal);
-						fread(buf, gif_file_size, 1, fgif);
+						fread(buf, file_size, 1, fgif);
 						fclose(fgif);
 
 						GlobalUnlock(stgmed[1].hGlobal);
 					} else {
-						MessageBox(NULL, _T("Opening the GIF failed\n"), _T("Wabbitemu"), MB_OK);
+						MessageBox(NULL, _T("Opening the PNG failed\n"), _T("Wabbitemu"), MB_OK);
 					}
 
 

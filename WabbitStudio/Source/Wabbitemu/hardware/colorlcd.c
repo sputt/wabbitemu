@@ -2,31 +2,36 @@
 
 #include "colorlcd.h"
 
-#define PIXEL_OFFSET(x, y) (y * COLOR_LCD_WIDTH + x) * COLOR_LCD_DEPTH 
-#define TRUCOLOR(color, bits) color * (0xFF / ((1 << bits) - 1))
+#define PIXEL_OFFSET(x, y) ((y) * COLOR_LCD_WIDTH + (x)) * COLOR_LCD_DEPTH 
+#define TRUCOLOR(color, bits) (color) * (0xFF / ((1 << (bits)) - 1))
+#define LCD_REG(reg) (lcd->registers[reg])
+#define LCD_REG_MASK(reg, mask) (LCD_REG(reg) & (mask))
 
-#define DRIVER_CODE_REG 0x00
-#define DRIVER_OUTPUT_CONTROL1_REG 0x01
-#define ENTRY_MODE_REG 0x03
-#define DISPLAY_CONTROL1_REG 0x07
-#define CUR_Y_REG 0x20
-#define CUR_X_REG 0x21
-#define GRAM_REG 0x22
-#define WINDOW_HORZ_START_REG 0x50
-#define WINDOW_HORZ_END_REG 0x51
-#define WINDOW_VERT_START_REG 0x52
-#define WINDOW_VERT_END_REG 0x53
-#define GATE_SCAN_CONTROL_REG 0x60
-#define BASE_IMAGE_DISPLAY_CONTROL_REG 0x61
-#define VERTICAL_SCROLL_CONTROL_REG 0x6A
-#define PARTIAL_IMAGE1_DISPLAY_POSITION_REG 0x80
-#define PARTIAL_IMAGE1_START_LINE_REG 0x81
-#define PARTIAL_IMAGE1_END_LINE_REG 0x82
-#define PARTIAL_IMAGE2_DISPLAY_POSITION_REG 0x83
-#define PARTIAL_IMAGE2_START_LINE_REG 0x84
-#define PARTIAL_IMAGE2_END_LINE_REG 0x85
+typedef enum {
+	DRIVER_CODE_REG = 0x00,
+	DRIVER_OUTPUT_CONTROL1_REG = 0x01,
+	ENTRY_MODE_REG = 0x03,
+	DISPLAY_CONTROL1_REG = 0x07,
+	CUR_Y_REG = 0x20,
+	CUR_X_REG = 0x21,
+	GRAM_REG = 0x22,
+	WINDOW_HORZ_START_REG = 0x50,
+	WINDOW_HORZ_END_REG = 0x51,
+	WINDOW_VERT_START_REG = 0x52,
+	WINDOW_VERT_END_REG = 0x53,
+	GATE_SCAN_CONTROL_REG = 0x60,
+	BASE_IMAGE_DISPLAY_CONTROL_REG = 0x61,
+	VERTICAL_SCROLL_CONTROL_REG = 0x6A,
+	PARTIAL_IMAGE1_DISPLAY_POSITION_REG = 0x80,
+	PARTIAL_IMAGE1_START_LINE_REG = 0x81,
+	PARTIAL_IMAGE1_END_LINE_REG = 0x82,
+	PARTIAL_IMAGE2_DISPLAY_POSITION_REG = 0x83,
+	PARTIAL_IMAGE2_START_LINE_REG = 0x84,
+	PARTIAL_IMAGE2_END_LINE_REG = 0x85,
+} COLOR_LCD_COMMAND;
 
 // 1
+#define FLIP_COLS_MASK BIT(8)
 #define INTERLACED_MASK BIT(10)
 
 // 3
@@ -35,19 +40,16 @@
 #define COL_INC_MASK BIT(5)
 #define ORG_MASK BIT(7)
 #define BGR_MASK BIT(12)
-
-// 7
-#define DISPLAY_ON_MASK (BIT(0) | BIT(1))
-#define SHOW_BASE_MASK BIT(8)
-#define SHOW_PARTIAL1_MASK BIT(12)
-#define SHOW_PARTIAL2_MASK BIT(13)
-#define COLOR8_MASK BIT(3)
-
-#define FLIP_COLS_MASK BIT(8)
 #define EIGHTEEN_BIT_MASK BIT(14)
 #define UNPACKED_MASK BIT(15)
 #define TRI_MASK EIGHTEEN_BIT_MASK | UNPACKED_MASK
-#define NDL_MASK BIT(2)
+
+// 7
+#define DISPLAY_ON_MASK (BIT(0) | BIT(1))
+#define COLOR8_MASK BIT(3)
+#define BASEE_MASK BIT(8)
+#define SHOW_PARTIAL1_MASK BIT(12)
+#define SHOW_PARTIAL2_MASK BIT(13)
 
 // 60
 #define BASE_START_MASK (BIT(0) | BIT(1) | BIT(2) | BIT(3) | BIT(4) | BIT(5))
@@ -55,20 +57,21 @@
 #define GATE_SCAN_DIR_MASK BIT(15)
 
 // 61
+#define LEVEL_INVERT_MASK BIT(0)
 #define SCROLL_ENABLED_MASK BIT(1)
-#define LEVEL_INVERT_MASK BIT(1)
+#define NDL_MASK BIT(2)
 
 // 6a
 #define SCROLL_MASK 0x1FF
 
 // 80
-#define p2_POS_MASK 0x1FF
+#define P1_POS_MASK 0x1FF
 
 // 81
-#define p2_START_MASK 0x1FF
+#define P1_START_MASK 0x1FF
 
 // 82
-#define p2_END_MASK 0x1FF
+#define P1_END_MASK 0x1FF
 
 // 83
 #define P2_POS_MASK 0x1FF
@@ -80,8 +83,8 @@
 #define P2_END_MASK 0x1FF
 
 static int read_pixel(ColorLCD_t *lcd);
-static void write_pixel18(ColorLCD_t *lcd);
-static void write_pixel16(ColorLCD_t *lcd);
+static void write_pixel18(ColorLCD_t *lcd, timerc *timerc);
+static void write_pixel16(ColorLCD_t *lcd, timerc *timerc);
 static void update_x(ColorLCD_t *lcd, BOOL should_update_row);
 static void update_y(ColorLCD_t *lcd, BOOL should_update_col);
 
@@ -275,8 +278,7 @@ static void reset_x(ColorLCD_t *lcd, uint16_t mode) {
 
 static void set_register(ColorLCD_t *lcd, uint16_t reg, uint16_t value) {
 	value = value & get_register_mask(reg);
-	int mode = lcd->registers[ENTRY_MODE_REG];
-	uint16_t old_value = lcd->registers[reg];
+	int mode = LCD_REG(ENTRY_MODE_REG);
 	lcd->registers[reg] = value;
 	switch (reg) { 
 	case ENTRY_MODE_REG:
@@ -295,14 +297,14 @@ static void set_register(ColorLCD_t *lcd, uint16_t reg, uint16_t value) {
 				reset_x(lcd, mode);
 			}
 		} else {
-			lcd->base.x = lcd->registers[CUR_X_REG];
-			lcd->base.y = lcd->registers[CUR_Y_REG];
+			lcd->base.x = LCD_REG(CUR_X_REG);
+			lcd->base.y = LCD_REG(CUR_Y_REG);
 		}
 		break;
 	}
 	case WINDOW_HORZ_START_REG: {
 		if ((mode & ORG_MASK) && (mode & COL_INC_MASK)) {
-			lcd->base.y = lcd->registers[WINDOW_HORZ_START_REG];
+			lcd->base.y = LCD_REG(WINDOW_HORZ_START_REG);
 		}
 		break;
 	}
@@ -314,13 +316,13 @@ static void set_register(ColorLCD_t *lcd, uint16_t reg, uint16_t value) {
 	}
 	case WINDOW_VERT_START_REG: {
 		if ((mode & ORG_MASK) && (mode & ROW_INC_MASK)) {
-			lcd->base.x = lcd->registers[WINDOW_VERT_START_REG];
+			lcd->base.x = LCD_REG(WINDOW_VERT_START_REG);
 		}
 		break;
 	}
 	case WINDOW_VERT_END_REG: {
 		if ((mode & ORG_MASK) && !(mode & ROW_INC_MASK)) {
-			lcd->base.x = lcd->registers[WINDOW_VERT_END_REG];
+			lcd->base.x = LCD_REG(WINDOW_VERT_END_REG);
 		}
 		break;
 	}
@@ -361,17 +363,17 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 	if (cpu->output) {
 		lcd->write_buffer = lcd->write_buffer << 8 | cpu->bus;
 		if (reg_index == GRAM_REG) {
-			int mode = lcd->registers[ENTRY_MODE_REG] & TRI_MASK;
+			int mode = LCD_REG_MASK(ENTRY_MODE_REG, TRI_MASK);
 			if (mode & EIGHTEEN_BIT_MASK) {
 				lcd->write_step++;
 				if (lcd->write_step >= 3) {
 					lcd->write_step = 0;
-					write_pixel18(lcd);
+					write_pixel18(lcd, cpu->timer_c);
 				}
 			} else {
 				lcd->write_step = !lcd->write_step;
 				if (!lcd->write_step) {
-					write_pixel16(lcd);
+					write_pixel16(lcd, cpu->timer_c);
 				}
 			}
 		} else {
@@ -417,7 +419,7 @@ static int read_pixel(ColorLCD_t *lcd) {
 	int y = lcd->base.y % COLOR_LCD_HEIGHT;
 	uint8_t *pixel_ptr = &lcd->display[PIXEL_OFFSET(x, y)];
 	int pixel;
-	if (lcd->registers[ENTRY_MODE_REG] & BGR_MASK) {
+	if (LCD_REG_MASK(ENTRY_MODE_REG, BGR_MASK)) {
 		pixel = (pixel_ptr[2] << 16) | (pixel_ptr[1] << 8) | pixel_ptr[0];
 	} else {
 		pixel = (pixel_ptr[0] << 16) | (pixel_ptr[1] << 8) | pixel_ptr[2];
@@ -426,17 +428,16 @@ static int read_pixel(ColorLCD_t *lcd) {
 	return pixel;
 }
 
-static void write_pixel(ColorLCD_t *lcd, int red, int green, int blue) {
+static void write_pixel(ColorLCD_t *lcd, timerc *timer_c, int red, int green, int blue) {
 	int x = lcd->base.x;
 	int y = lcd->base.y;
-	int mode = lcd->registers[ENTRY_MODE_REG];
 
-	if (lcd->registers[DRIVER_OUTPUT_CONTROL1_REG] & FLIP_COLS_MASK) {
+	if (LCD_REG_MASK(DRIVER_OUTPUT_CONTROL1_REG, FLIP_COLS_MASK)) {
 		y = COLOR_LCD_HEIGHT - y - 1;
 	}
 
 	uint8_t *pixel_ptr = &lcd->display[PIXEL_OFFSET(x, y)];
-	if (mode & BGR_MASK) {
+	if (LCD_REG_MASK(ENTRY_MODE_REG, BGR_MASK)) {
 		pixel_ptr[2] = red & 0x3F;
 		pixel_ptr[1] = green & 0x3F;
 		pixel_ptr[0] = blue & 0x3F;
@@ -446,20 +447,17 @@ static void write_pixel(ColorLCD_t *lcd, int red, int green, int blue) {
 		pixel_ptr[2] = blue & 0x3F;
 	}
 
-	// TODO: fix
-	//lcd->time = tc_elapsed(cpu->timer_c);
-	if (mode & CUR_DIR_MASK) {
+	if (LCD_REG_MASK(ENTRY_MODE_REG, CUR_DIR_MASK)) {
 		update_x(lcd, TRUE);
 	} else {
 		update_y(lcd, TRUE);
 	}
 }
 
-static void write_pixel18(ColorLCD_t *lcd) {
-	int mode = lcd->registers[ENTRY_MODE_REG];
+static void write_pixel18(ColorLCD_t *lcd, timerc *timerc) {
 	int pixel_val;
 	int red, green, blue;
-	if (mode & UNPACKED_MASK) {
+	if (LCD_REG_MASK(ENTRY_MODE_REG, UNPACKED_MASK)) {
 		pixel_val = lcd->write_buffer & 0xfcfcfc;
 		red = (pixel_val >> 18);
 		green = (pixel_val >> 10);
@@ -471,36 +469,35 @@ static void write_pixel18(ColorLCD_t *lcd) {
 		blue = pixel_val;
 	}
 
-	write_pixel(lcd, red, green, blue);
+	write_pixel(lcd, timerc, red, green, blue);
 }
 
-static void write_pixel16(ColorLCD_t *lcd) {
+static void write_pixel16(ColorLCD_t *lcd, timerc *timerc) {
 	int pixel_val = lcd->write_buffer;
 	int red = ((pixel_val >> 10) & ~1) | ((pixel_val >> 15) & 1);
 	int green = (pixel_val >> 5);
 	int blue = (pixel_val << 1) | ((pixel_val >> 4) & 1);
 
-	write_pixel(lcd, red, green, blue);
+	write_pixel(lcd, timerc, red, green, blue);
 }
 
 static void update_y(ColorLCD_t *lcd, BOOL should_update) {
-	int mode = lcd->registers[ENTRY_MODE_REG];
-	if (mode & ROW_INC_MASK) {
-		if (lcd->base.y < lcd->registers[WINDOW_HORZ_END_REG]) {
+	if (LCD_REG_MASK(ENTRY_MODE_REG, ROW_INC_MASK)) {
+		if (lcd->base.y < LCD_REG(WINDOW_HORZ_END_REG)) {
 			lcd->base.y++;
 			return;
 		}
 
 		// back to top of the window
-		lcd->base.y = lcd->registers[WINDOW_HORZ_START_REG];
+		lcd->base.y = LCD_REG(WINDOW_HORZ_START_REG);
 	} else {
-		if (lcd->base.y > lcd->registers[WINDOW_HORZ_START_REG]) {
+		if (lcd->base.y > LCD_REG(WINDOW_HORZ_START_REG)) {
 			lcd->base.y--;
 			return;
 		}
 
 		// to bottom of the window
-		lcd->base.y = lcd->registers[WINDOW_HORZ_END_REG];
+		lcd->base.y = LCD_REG(WINDOW_HORZ_END_REG);
 	}
 
 	if (should_update) {
@@ -509,23 +506,22 @@ static void update_y(ColorLCD_t *lcd, BOOL should_update) {
 }
 
 static void update_x(ColorLCD_t *lcd, BOOL should_update) {
-	int mode = lcd->registers[ENTRY_MODE_REG];
-	if (mode & COL_INC_MASK) {
-		if (lcd->base.x < lcd->registers[WINDOW_VERT_END_REG]) {
+	if (LCD_REG_MASK(ENTRY_MODE_REG, COL_INC_MASK)) {
+		if (lcd->base.x < LCD_REG(WINDOW_VERT_END_REG)) {
 			lcd->base.x++;
 			return;
 		}
 
 		// back to the beginning of the window
-		lcd->base.x = lcd->registers[WINDOW_VERT_START_REG];
+		lcd->base.x = LCD_REG(WINDOW_VERT_START_REG);
 	} else {
-		if (lcd->base.x > lcd->registers[WINDOW_VERT_START_REG]) {
+		if (lcd->base.x > LCD_REG(WINDOW_VERT_START_REG)) {
 			lcd->base.x--;
 			return;
 		}
 
 		// to the end of the window
-		lcd->base.x = lcd->registers[WINDOW_VERT_END_REG];
+		lcd->base.x = LCD_REG(WINDOW_VERT_END_REG);
 	}
 
 	if (should_update) {
@@ -566,30 +562,30 @@ static void draw_row_floating(uint8_t *dest, int size) {
 
 static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int size) {
 	uint8_t *red, *green, *blue;
-	BOOL level_invert = (lcd->registers[BASE_IMAGE_DISPLAY_CONTROL_REG] & LEVEL_INVERT_MASK);
-	BOOL color8bit = (lcd->registers[DISPLAY_CONTROL1_REG] & COLOR8_MASK);
+	BOOL level_invert = !LCD_REG_MASK(BASE_IMAGE_DISPLAY_CONTROL_REG, LEVEL_INVERT_MASK);
+	BOOL color8bit = LCD_REG_MASK(DISPLAY_CONTROL1_REG, COLOR8_MASK);
 
 	if (level_invert) {
 		red = src;
 		green = src + 1;
 		blue = src + 2;
 
-		BOOL flip_rows = (lcd->registers[GATE_SCAN_CONTROL_REG] & GATE_SCAN_DIR_MASK);
+		BOOL flip_rows = LCD_REG_MASK(GATE_SCAN_CONTROL_REG, GATE_SCAN_DIR_MASK);
 
 		if (flip_rows) {
 			red += size - 3;
 			green += size - 3;
 			blue += size - 3;
 			for (int i = 0; i < size; i += 3) {
-				dest[i] = red[-i] ^ 0x3f;
-				dest[i+1] = green[-i] ^ 0x3f;
-				dest[i+2] = blue[-i] ^ 0x3f;
+				dest[i] = TRUCOLOR(red[-i] ^ 0x3f, 6);
+				dest[i + 1] = TRUCOLOR(green[-i] ^ 0x3f, 6);
+				dest[i + 2] = TRUCOLOR(blue[-i] ^ 0x3f, 6);
 			}
 		} else {
 			for (int i = 0; i < size; i += 3) {
-				dest[i] = red[i] ^ 0x3f;
-				dest[i+1] = green[i] ^ 0x3f;
-				dest[i+2] = blue[i] ^ 0x3f;
+				dest[i] = TRUCOLOR(red[i] ^ 0x3f, 6);
+				dest[i + 1] = TRUCOLOR(green[i] ^ 0x3f, 6);
+				dest[i + 2] = TRUCOLOR(blue[i] ^ 0x3f, 6);
 			}
 		}
 	} else {
@@ -600,7 +596,8 @@ static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int siz
 
 	if (color8bit) {
 		for (int i = 0; i < size; i++) {
-			dest[i] = (dest[i] >> 5) * 0x3f;
+			//dest[i] = (dest[i] >> 5) * 0x3f;
+			dest[i] = TRUCOLOR(dest[i] >> 5, 3);
 		}
 	}
 }
@@ -615,7 +612,7 @@ static void draw_partial_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src,
 	if (offset + size > COLOR_LCD_WIDTH * COLOR_LCD_DEPTH) {
 		int right_margin_size = (COLOR_LCD_WIDTH * COLOR_LCD_DEPTH) - offset;
 		int left_margin_size = size - right_margin_size;
-		BOOL flip_rows = (lcd->registers[GATE_SCAN_CONTROL_REG] & GATE_SCAN_DIR_MASK);
+		BOOL flip_rows = LCD_REG_MASK(GATE_SCAN_CONTROL_REG, GATE_SCAN_DIR_MASK);
 
 		if (flip_rows) {
 			draw_row_image(lcd, dest + left_margin_size, src + offset, right_margin_size);
@@ -638,18 +635,12 @@ static void draw_row(ColorLCD_t *lcd, uint8_t *dest, uint8_t* src,
 	int imgpos1, int imgoffs1, int imgsize1,
 	int imgpos2, int imgoffs2, int imgsize2)
 {
-	uint8_t *optr;
 	uint8_t interlace_buf[COLOR_LCD_WIDTH * COLOR_LCD_DEPTH];
-	int i;
 
-	int non_display_area_color = lcd->registers[BASE_IMAGE_DISPLAY_CONTROL_REG] & NDL_MASK ? 0x3F : 0x00;
-	BOOL interlace_cols = (lcd->registers[DRIVER_OUTPUT_CONTROL1_REG] & INTERLACED_MASK);
+	int non_display_area_color = LCD_REG_MASK(BASE_IMAGE_DISPLAY_CONTROL_REG, NDL_MASK) ? 0x3F : 0x00;
+	BOOL interlace_cols = LCD_REG_MASK(DRIVER_OUTPUT_CONTROL1_REG, INTERLACED_MASK);
 
-	if (interlace_cols) {
-		optr = interlace_buf;
-	} else {
-		optr = dest;
-	}
+	uint8_t *optr = interlace_cols ? interlace_buf : dest;
 
 	if (start_x) {
 		if (interlace_cols) {
@@ -686,7 +677,7 @@ static void draw_row(ColorLCD_t *lcd, uint8_t *dest, uint8_t* src,
 
 	if (interlace_cols) {
 		optr = interlace_buf;
-		for (i = 0; i < COLOR_LCD_WIDTH / 2; i++, optr += 3) {
+		for (int i = 0; i < COLOR_LCD_WIDTH / 2; i++, optr += 3) {
 			*dest++ = optr[0];
 			*dest++ = optr[1];
 			*dest++ = optr[2];
@@ -710,8 +701,8 @@ uint8_t *ColorLCD_Image(LCDBase_t *lcdBase) {
 		return buffer;
 	}
 
-	int start_x = (lcd->registers[GATE_SCAN_CONTROL_REG] & BASE_START_MASK) << 3;
-	int pixel_width = ((lcd->registers[GATE_SCAN_CONTROL_REG] & BASE_NLINES_MASK) >> 5) + 8;
+	int start_x = LCD_REG_MASK(GATE_SCAN_CONTROL_REG, BASE_START_MASK) << 3;
+	int pixel_width = (LCD_REG_MASK(GATE_SCAN_CONTROL_REG, BASE_NLINES_MASK) >> 5) + 8;
 	if (start_x > COLOR_LCD_WIDTH) {
 		start_x = COLOR_LCD_WIDTH;
 	}
@@ -721,23 +712,23 @@ uint8_t *ColorLCD_Image(LCDBase_t *lcdBase) {
 	}
 
 	start_x = start_x * COLOR_LCD_DEPTH;
-	int display_width = (COLOR_LCD_WIDTH - (start_x + pixel_width)) * 3;
+	int display_width = (COLOR_LCD_WIDTH - (start_x + pixel_width)) * COLOR_LCD_DEPTH;
 
-	if (lcd->registers[DISPLAY_CONTROL1_REG] & SHOW_BASE_MASK) {
+	if (LCD_REG_MASK(DISPLAY_CONTROL1_REG, BASEE_MASK)) {
 		p2pos = 0;
 		p2width = pixel_width;
-		if (lcd->registers[BASE_IMAGE_DISPLAY_CONTROL_REG] & SCROLL_ENABLED_MASK) {
-			p2start = (lcd->registers[VERTICAL_SCROLL_CONTROL_REG] & SCROLL_MASK) * COLOR_LCD_DEPTH;
+		if (LCD_REG_MASK(BASE_IMAGE_DISPLAY_CONTROL_REG, SCROLL_ENABLED_MASK)) {
+			p2start = LCD_REG_MASK(VERTICAL_SCROLL_CONTROL_REG, SCROLL_MASK);
 		} else {
 			p2start = 0;
 		}
 
 		p1pos = p1start = p1width = 0;
 	} else {
-		if (lcd->registers[DISPLAY_CONTROL1_REG] & SHOW_PARTIAL1_MASK) {
-			p1pos = (lcd->registers[PARTIAL_IMAGE1_DISPLAY_POSITION_REG] & p2_POS_MASK) % COLOR_LCD_WIDTH;
-			p1start = (lcd->registers[PARTIAL_IMAGE1_START_LINE_REG] & p2_START_MASK) % COLOR_LCD_WIDTH;
-			p1end = (lcd->registers[PARTIAL_IMAGE1_END_LINE_REG] & p2_END_MASK) % COLOR_LCD_WIDTH;
+		if (LCD_REG_MASK(DISPLAY_CONTROL1_REG, SHOW_PARTIAL1_MASK)) {
+			p1pos = LCD_REG_MASK(PARTIAL_IMAGE1_DISPLAY_POSITION_REG, P1_POS_MASK) % COLOR_LCD_WIDTH;
+			p1start = LCD_REG_MASK(PARTIAL_IMAGE1_START_LINE_REG, P1_START_MASK) % COLOR_LCD_WIDTH;
+			p1end = LCD_REG_MASK(PARTIAL_IMAGE1_END_LINE_REG, P1_END_MASK) % COLOR_LCD_WIDTH;
 
 			p1width = p1end + 1 - p1start;
 			if (p1width < 0)
@@ -754,10 +745,10 @@ uint8_t *ColorLCD_Image(LCDBase_t *lcdBase) {
 			p1pos = p1start = p1width = 0;
 		}
 
-		if (lcd->registers[DISPLAY_CONTROL1_REG] & SHOW_PARTIAL2_MASK) {
-			p2pos = (lcd->registers[PARTIAL_IMAGE2_DISPLAY_POSITION_REG] & P2_POS_MASK) % COLOR_LCD_WIDTH;
-			p2start = (lcd->registers[PARTIAL_IMAGE2_START_LINE_REG] & P2_START_MASK) % COLOR_LCD_WIDTH;
-			p2end = (lcd->registers[PARTIAL_IMAGE2_END_LINE_REG] & P2_END_MASK) % COLOR_LCD_WIDTH;
+		if (LCD_REG_MASK(DISPLAY_CONTROL1_REG, SHOW_PARTIAL2_MASK)) {
+			p2pos = LCD_REG_MASK(PARTIAL_IMAGE2_DISPLAY_POSITION_REG, P2_POS_MASK) % COLOR_LCD_WIDTH;
+			p2start = LCD_REG_MASK(PARTIAL_IMAGE2_START_LINE_REG, P2_START_MASK) % COLOR_LCD_WIDTH;
+			p2end = LCD_REG_MASK(PARTIAL_IMAGE2_END_LINE_REG, P2_END_MASK) % COLOR_LCD_WIDTH;
 
 			p2width = p2end + 1 - p2start;
 			if (p2width < 0) {
@@ -776,7 +767,7 @@ uint8_t *ColorLCD_Image(LCDBase_t *lcdBase) {
 		}
 	}
 
-	BOOL flip_rows = (lcd->registers[GATE_SCAN_CONTROL_REG] & GATE_SCAN_DIR_MASK);
+	BOOL flip_rows = LCD_REG_MASK(GATE_SCAN_CONTROL_REG, GATE_SCAN_DIR_MASK);
 	if (flip_rows) {
 		int tmp = display_width;
 		display_width = start_x;

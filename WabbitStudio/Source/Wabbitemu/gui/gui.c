@@ -6,8 +6,9 @@
 #include "calc.h"
 #include "label.h"
 
-#include "gifhandle.h"
 #include "gif.h"
+#include "screenshothandle.h"
+#include "pngexport.h"
 
 #include "var.h"
 #include "link.h"
@@ -261,7 +262,6 @@ int gui_frame(LPCALC lpCalc) {
 	ReleaseDC(lpCalc->hwndFrame, hdc);
 	return 0;
 }
-
 
 /*
 * Searches for a window with Wabbit's registered lcd class
@@ -914,9 +914,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						calcs[i].running = FALSE;
 					}
 				}
-				BOOL start_screenshot = get_gif_filename();
+				BOOL start_screenshot = get_screenshot_filename(gifext);
 				FILE *file;
-				_tfopen_s(&file, gif_file_name, _T("wb"));
+				_tfopen_s(&file, screenshot_file_name, _T("wb"));
 				if (!file && start_screenshot) { 
 					MessageBox(hwnd, _T("Invalid file name."), _T("Error"), MB_OK);
 					start_screenshot = FALSE;
@@ -961,24 +961,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						   }
 		case IDM_FILE_STILLGIF: {
 			lpCalc->running = FALSE;
-			BOOL start_screenshot = get_gif_filename();
+			BOOL start_screenshot = get_screenshot_filename(pngext);
 			if (start_screenshot) {
-				LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
-				gif_xs = lcd->width * gif_size;
-				gif_ys = lcd->height * gif_size;
-				uint8_t *gif = generate_gif_image(lcd);
-
-				unsigned int i, j;
-				for (i = 0; i < lcd->height * gif_size; i++) {
-					for (j = 0; j < lcd->width * gif_size; j++) {
-						gif_frame[i * gif_xs + j] = gif[i * gif_xs + j];
-					}
-				}
-				gif_write_state = GIF_START;
-				gif_writer(MAX_SHADES);
-
-				gif_write_state = GIF_END;
-				gif_writer(MAX_SHADES);
+				export_png(lpCalc, screenshot_file_name);
 			}
 			lpCalc->running = TRUE;
 			break;
@@ -1050,7 +1035,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			char *charData = (char *) GlobalLock(hClipboardData);
 
-			for (int i = 0; i < _tcslen(charData); i++) {
+			for (u_int i = 0; i < _tcslen(charData); i++) {
 				char num = charData[i];
 				if (!IsCharAlphaNumeric(num)) {
 					continue;

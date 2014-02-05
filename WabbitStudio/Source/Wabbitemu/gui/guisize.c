@@ -6,7 +6,7 @@
 
 extern BOOL silent_mode;
 
-int GetDefaultKeymapScale(int model) {
+unsigned int GetDefaultKeymapScale(int model) {
 	switch (model) {
 	case TI_84PCSE:
 		return DEFAULT_84PCSE_KEYMAP_SCALE;
@@ -21,10 +21,10 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabl
 	RECT rc, clientRect;
 	CopyRect(&rc, &lpCalc->rectLCD);
 
-	int default_scale = GetDefaultKeymapScale(lpCalc->model);
-	int scale = skinEnabled ? default_scale : lpCalc->scale;
+	unsigned int default_scale = GetDefaultKeymapScale(lpCalc->model);
+	unsigned int scale = skinEnabled ? default_scale : lpCalc->scale;
 	int silentMode = silent_mode ? SWP_HIDEWINDOW : 0;
-	int lcdWidth = skinEnabled ? (rc.right - rc.left) / default_scale : lpCalc->cpu.pio.lcd->display_width;
+	unsigned int lcdWidth = skinEnabled ? (rc.right - rc.left) / default_scale : lpCalc->cpu.pio.lcd->display_width;
 	lcdWidth *= scale;
 	int lcdHeight = skinEnabled ? (rc.bottom - rc.top) / default_scale : lpCalc->cpu.pio.lcd->height;
 	lcdHeight *= scale;

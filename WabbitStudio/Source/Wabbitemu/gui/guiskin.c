@@ -119,8 +119,8 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 		FillRect(lpCalc->hdcSkin, &lpCalc->rectSkin, GetStockBrush(GRAY_BRUSH));
 	}
 
-	int skinWidth = lpCalc->rectSkin.right;
-	int skinHeight = lpCalc->rectSkin.bottom;
+	unsigned int skinWidth = lpCalc->rectSkin.right;
+	unsigned int skinHeight = lpCalc->rectSkin.bottom;
 	BOOL drawFaceplate = lpCalc->model == TI_84PSE || lpCalc->model == TI_84PCSE && !lpCalc->bCustomSkin;
 	if (drawFaceplate) {
 		if (DrawFaceplateRegion(lpCalc->hdcSkin, lpCalc->FaceplateColor)) {

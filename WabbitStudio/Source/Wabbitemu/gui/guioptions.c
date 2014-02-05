@@ -642,21 +642,21 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 			SetWindowText(hwndMaxSpeed, lpszMax);
 
 			chkAutosave = GetDlgItem(hwndDlg, IDC_CHKENABLEAUTOSAVE);
-			Button_SetCheck(chkAutosave, gif_autosave);
-			GIFOptionsToggleAutosave(hwndDlg, gif_autosave);
+			Button_SetCheck(chkAutosave, screenshot_autosave);
+			GIFOptionsToggleAutosave(hwndDlg, screenshot_autosave);
 
 			edtGIFFilename = GetDlgItem(hwndDlg, IDC_EDTGIFFILENAME);
-			Edit_SetText(edtGIFFilename, gif_file_name);
+			Edit_SetText(edtGIFFilename, screenshot_file_name);
 
 			chkUseIncreasing = GetDlgItem(hwndDlg, IDC_CHKUSEINCREASING);
-			Button_SetCheck(chkUseIncreasing, gif_use_increasing);
+			Button_SetCheck(chkUseIncreasing, screenshot_use_increasing);
 
 			rbnScreen = GetDlgItem(hwndDlg, IDC_RBNSCREEN);
 			rbnGray = GetDlgItem(hwndDlg, IDC_RBNGRAYSCALE);
 			Button_SetCheck(gif_bw ? rbnGray : rbnScreen, BST_CHECKED);
 
 			chkSize = GetDlgItem(hwndDlg, IDC_CHKGIF2X);
-			Button_SetCheck(chkSize, (gif_size == 2) ? BST_CHECKED : BST_UNCHECKED);
+			Button_SetCheck(chkSize, (screenshot_size == 2) ? BST_CHECKED : BST_UNCHECKED);
 			return TRUE;
 		}
 		case WM_NOTIFY:
@@ -669,15 +669,15 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 						gif_base_delay_start = 	(100 / (9 + (speedPos * TBRSTEP)));
 					}
 
-					gif_autosave = Button_GetState(chkAutosave) & 0x0003 ? TRUE : FALSE;
-					gif_use_increasing = Button_GetState(chkUseIncreasing) & 0x0003 ? TRUE : FALSE;
+					screenshot_autosave = Button_GetState(chkAutosave) & 0x0003 ? TRUE : FALSE;
+					screenshot_use_increasing = Button_GetState(chkUseIncreasing) & 0x0003 ? TRUE : FALSE;
 					gif_bw = Button_GetCheck(rbnGray);
 
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
 
-					gif_size = Button_GetState(chkSize) & 0x0003 ? 2 : 1;
+					screenshot_size = Button_GetState(chkSize) & 0x0003 ? 2 : 1;
 
-					Edit_GetText(edtGIFFilename, gif_file_name, ARRAYSIZE(gif_file_name));
+					Edit_GetText(edtGIFFilename, screenshot_file_name, ARRAYSIZE(screenshot_file_name));
 					return TRUE;
 				}
 				case PSN_KILLACTIVE:
@@ -701,9 +701,9 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 							break;
 						}
 						case IDC_BTNGIFBROWSE:
-							BrowseFile(gif_file_name, _T("Graphics Interchange Format  (*.gif)\0*.gif\0All Files (*.*)\0*.*\0\0"),
+							BrowseFile(screenshot_file_name, _T("Graphics Interchange Format  (*.gif)\0*.gif\0All Files (*.*)\0*.*\0\0"),
 								_T("Wabbitemu GIF File Target"), _T("gif"), 0, 1);
-							Edit_SetText(edtGIFFilename, gif_file_name);
+							Edit_SetText(edtGIFFilename, screenshot_file_name);
 							break;
 						case IDC_CHKUSEINCREASING:
 						case IDC_CHKGIF2X:
@@ -792,10 +792,12 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					lpCalc->cpu.cpu_version = Button_GetCheck(old83p_check) ? 1 : 0;
 					Edit_GetText(edtLCD_delay,buf, ARRAYSIZE(buf));
 					delay = _ttoi(buf);
-					// TODO: fix
-					//if (delay != 0) {
-					//	lpCalc->cpu.pio.lcd->lcd_delay = delay;
-					//}
+					if (delay != 0) {
+						if (lpCalc->model < TI_84PCSE) {
+							LCD_t *lcd = (LCD_t *)lpCalc->cpu.pio.lcd;
+							lcd->lcd_delay = delay;
+						}
+					}
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -808,8 +810,15 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		// Update all of the ROM attributes
 		case WM_USER: {
 			TCHAR buf[64];
-			// TODO: fix
-			//StringCbPrintf(buf, sizeof(buf), _T("%i"), lpCalc->cpu.pio.lcd->lcd_delay);
+			int delay = 0;
+			if (lpCalc->model < TI_84PCSE) {
+				LCD_t *lcd = (LCD_t *)lpCalc->cpu.pio.lcd;
+				delay = lcd->lcd_delay;
+				EnableWindow(edtLCD_delay, TRUE);
+			} else {
+				EnableWindow(edtLCD_delay, FALSE);
+			}
+			StringCbPrintf(buf, sizeof(buf), _T("%i"), delay);
 			Button_SetCheck(saveState_check, exit_save_state);
 			Edit_SetText(edtRom_path, lpCalc->rom_path);
 			Edit_SetText(edtLCD_delay, buf);

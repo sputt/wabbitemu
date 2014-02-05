@@ -4,7 +4,7 @@
 #include "guisavestate.h"
 
 extern HINSTANCE g_hInst;
-extern BITMAPINFO *bi;
+extern BITMAPINFO *bi, *colorbi;
 
 static TCHAR save_filename[MAX_PATH];
 
@@ -42,21 +42,23 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 #endif
 			SendMessage(edtModel, WM_SETTEXT, 0, (LPARAM) CalcModelTxt[lpCalc->model]);
 			
-			
-			HBITMAP hbmPreview = CreateBitmap(96, 64, 1, 32, NULL);
-			
 			LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
+
+			HBITMAP hbmPreview = CreateBitmap(lcd->display_width, lcd->height, 1, 32, NULL);
 			
 			HDC hdc = CreateCompatibleDC(NULL);
 			HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmPreview);
 			
-			// TODO: fix for everything not 96x64
-			StretchDIBits(hdc, 0, 0, 96, 64,
-				0, 0, 96, 64,
-				lcd->image(lcd),
-				bi,
+
+			unsigned char *image = lcd->image(lcd);
+			StretchDIBits(hdc, 0, 0, lcd->display_width, lcd->height,
+				0, 0, lcd->display_width, lcd->height,
+				image,
+				lpCalc->model >= TI_84PCSE ? colorbi : bi,
 				DIB_RGB_COLORS,
 				SRCCOPY);
+
+			free(image);
 
 			SelectObject(hdc, hbmOld);
 			DeleteDC(hdc);

@@ -2,6 +2,7 @@
 #define SAVESTATE_H
 
 #include "lcd.h"
+#include "colorlcd.h"
 
 typedef struct {
 	char tag[4];
@@ -68,6 +69,7 @@ SAVESTATE_t* ReadSave(FILE *ifile);
 void FreeSave(SAVESTATE_t *);
 char* GetRomOnly(SAVESTATE_t *save, int *);
 void LoadLCD(SAVESTATE_t *, LCD_t *);
+void LoadColorLCD(SAVESTATE_t *, ColorLCD_t *);
 
 #endif
 

@@ -172,7 +172,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					}
 					buf =  (char *) malloc(fd->nFileSizeLow);
 					FillFileBuffer(item, buf);
-					if (SetVarName(fd)) {
+					if (SetVarName(fd, lpCalc->model)) {
 						free(buf);
 						free(fd);
 						break;
@@ -310,20 +310,51 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
    return FALSE;
 }
 
-int SetVarName(FILEDESCRIPTOR *fd) {
+TCHAR *GetFilterString(int model) {
+	switch (model) {
+	case TI_73:
+		return _T("Programs  (*.73p)\0*.73p\0\
+				  Applications (*.73k)\0*.73k\0\
+				  App Vars (*.73v)\0*.73v\0\
+				  Lists  (*.73l)\0*.73l\0\
+				  Real/Complex Variables  (*.73n)\0*.73n\0\
+				  Pictures  (*.73i)\0*.73i\0\
+				  GDBs  (*.73d)\0*.73d\0\
+				  Matrices  (*.73m)\0*.73m\0\
+				  Strings  (*.73s)\0*.73s\0\
+				  Groups  (*.73g)\0*.73g\0\
+				  All Files (*.*)\0*.*\0\0");
+	case TI_84PCSE:
+		return _T("Programs  (*.8xp)\0*.8xp\0\
+				  Applications (*.8ck)\0*.8ck\0\
+				  App Vars (*.8xv)\0*.8xv\0\
+				  Lists  (*.8xl)\0*.8xl\0\
+				  Real/Complex Variables  (*.8xn)\0*.8xn\0\
+				  Pictures  (*.8xi)\0*.8xi\0\
+				  GDBs  (*.8xd)\0*.8xd\0\
+				  Matrices  (*.8xm)\0*.8xm\0\
+				  Strings  (*.8xs)\0*.8xs\0\
+				  Groups  (*.8xg)\0*.8xg\0\
+				  All Files (*.*)\0*.*\0\0");
+	default:
+		return _T("Programs  (*.8xp)\0*.8xp\0\
+				  Applications (*.8xk)\0*.8xk\0\
+				  App Vars (*.8xv)\0*.8xv\0\
+				  Lists  (*.8xl)\0*.8xl\0\
+				  Real/Complex Variables  (*.8xn)\0*.8xn\0\
+				  Pictures  (*.8xi)\0*.8xi\0\
+				  GDBs  (*.8xd)\0*.8xd\0\
+				  Matrices  (*.8xm)\0*.8xm\0\
+				  Strings  (*.8xs)\0*.8xs\0\
+				  Groups  (*.8xg)\0*.8xg\0\
+				  All Files (*.*)\0*.*\0\0");
+	}
+}
+
+int SetVarName(FILEDESCRIPTOR *fd, int model) {
 	TCHAR *defExt;
 	int filterIndex;
-	const TCHAR lpstrFilter[] = _T("Programs  (*.8xp)\0*.8xp\0\
-									Applications (*.8xk)\0*.8xk\0\
-									App Vars (*.8xv)\0*.8xv\0\
-									Lists  (*.8xl)\0*.8xl\0\
-									Real/Complex Variables  (*.8xn)\0*.8xn\0\
-									Pictures  (*.8xi)\0*.8xi\0\
-									GDBs  (*.8xd)\0*.8xd\0\
-									Matrices  (*.8xm)\0*.8xm\0\
-									Strings  (*.8xs)\0*.8xs\0\
-									Groups  (*.8xg)\0*.8xg\0\
-									All Files (*.*)\0*.*\0\0");
+	const TCHAR *lpstrFilter = GetFilterString(model);
 	const TCHAR lpstrTitle[] = _T("Wabbitemu Export");
 	TCHAR lpstrFile[MAX_PATH];
 	StringCbCopy(lpstrFile, sizeof(lpstrFile), fd->cFileName);

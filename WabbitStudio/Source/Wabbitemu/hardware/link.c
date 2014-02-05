@@ -495,11 +495,11 @@ LINK_ERR link_send_var(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 	// the correct software state to receive link data.
 	// Turn it on by simulating pressing the 'ON' button
 	if (!cpu->pio.lcd->active) {
-		link_wait(cpu, MHZ_6);
+		link_wait(cpu, cpu->timer_c->freq);
 		cpu->pio.keypad->on_pressed |= KEY_FALSEPRESS;
-		link_wait(cpu, MHZ_6/2);
+		link_wait(cpu, cpu->timer_c->freq/2);
 		cpu->pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
-		link_wait(cpu, MHZ_6);
+		link_wait(cpu, cpu->timer_c->freq);
 
 		if (!cpu->pio.lcd->active)
 			return LERR_LINK;
