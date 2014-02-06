@@ -270,6 +270,37 @@ void check_bootfree_and_update(LPCALC lpCalc) {
 #endif
 }
 
+int calc_init_model(LPCALC lpCalc, int model, char *verString) {
+	int error;
+	switch (model) {
+	case TI_82:
+	case TI_83: {
+		error = calc_init_83(lpCalc, verString);
+		break;
+	}
+	case TI_73:
+	case TI_83P:
+		error = calc_init_83p(lpCalc);
+		break;
+	case TI_84PSE:
+	case TI_83PSE:
+		error = calc_init_83pse(lpCalc);
+		break;
+	case TI_84PCSE:
+		error = calc_init_84pcse(lpCalc);
+		break;
+	case TI_84P:
+		error = calc_init_84p(lpCalc);
+		break;
+	case TI_85:
+	case TI_86:
+		error = calc_init_86(lpCalc);
+		break;
+	default:
+		return -1;
+	}
+}
+
 BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	if (lpCalc == NULL) {
 		return FALSE;
@@ -288,38 +319,14 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	int error = 0;
 	if (tifile->type == SAV_TYPE) {
 		lpCalc->active 	= TRUE;
-		switch (tifile->model) {
-			case TI_82:
-			case TI_83: {
-				int size;
-				char *rom = GetRomOnly(tifile->save, &size);
-				char VerString[64];
-				FindRomVersion(VerString, (unsigned char *) rom, size);
-				error = calc_init_83(lpCalc, VerString);
-				break;
-			}
-			case TI_73:
-			case TI_83P:
-				error = calc_init_83p(lpCalc);
-				break;
-			case TI_84PSE:
-			case TI_83PSE:
-				error = calc_init_83pse(lpCalc);
-				break;
-			case TI_84PCSE:
-				error = calc_init_84pcse(lpCalc);
-				break;
-			case TI_84P:
-				error = calc_init_84p(lpCalc);
-				break;
-			case TI_85:
-			case TI_86:
-				error = calc_init_86(lpCalc);
-				break;
-			default:
-				FreeTiFile(tifile);
-				return FALSE;
+		char VerString[64] = { 0 };
+		if (tifile->model == TI_82 || tifile->model == TI_83) {
+			int size;
+			char *rom = GetRomOnly(tifile->save, &size);
+			FindRomVersion(VerString, (unsigned char *)rom, size);
 		}
+
+		calc_init_model(lpCalc, tifile->model, VerString);
 		if (error) {
 			FreeTiFile(tifile);
 			return FALSE;

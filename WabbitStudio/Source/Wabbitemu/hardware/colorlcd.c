@@ -8,27 +8,61 @@
 #define LCD_REG_MASK(reg, mask) (LCD_REG(reg) & (mask))
 
 typedef enum {
-	DRIVER_CODE_REG = 0x00,
-	DRIVER_OUTPUT_CONTROL1_REG = 0x01,
-	ENTRY_MODE_REG = 0x03,
-	DISPLAY_CONTROL1_REG = 0x07,
-	CUR_Y_REG = 0x20,
-	CUR_X_REG = 0x21,
+	DRIVER_CODE_REG = 0x00, 
+	DRIVER_OUTPUT_CONTROL1_REG = 0x01,				DRIVER_OUTPUT_CONTROL1_MASK = 0x0500,
+	ENTRY_MODE_REG = 0x03,							ENTRY_MODE_MASK = 0xD0B8,
+	DATA_FORMAT_16BIT_REG = 0x05,					DATA_FORMAT_16BIT_MASK = 0x0003,
+	DISPLAY_CONTROL1_REG = 0x07,					DISPLAY_CONTROL1_MASK= 0x313B,
+	DISPLAY_CONTROL2_REG = 0x08,					DISPLAY_CONTROL2_MASK = 0xFFFF,
+	DISPLAY_CONTROL3_REG = 0x09,					DISPLAY_CONTROL3_MASK = 0x073F,
+	DISPLAY_CONTROL4_REG = 0x0A,					DISPLAY_CONTROL4_MASK = 0x000F,
+	RGB_DISPLAY_INTERFACE_CONTROL1_REG = 0x0C,		RGB_DISPLAY_INTERFACE_CONTROL1_MASK = 0x7133,
+	FRAME_MARKER_REG = 0x0D,						FRAME_MARKER_MASK = 0x01FF,
+	RGB_DISPLAY_INTERFACE_CONTROL2_REG = 0x0F,		RGB_DISPLAY_INTERFACE_CONTROL2_MASK = 0x001B,
+	POWER_CONTROL1_REG = 0x10,						POWER_CONTROL1_MASK = 0x17F3,
+	POWER_CONTROL2_REG = 0x11,						POWER_CONTROL2_MASK = 0x0777,
+	POWER_CONTROL3_REG = 0x12,						POWER_CONTROL3_MASK = 0x008F,
+	POWER_CONTROL4_REG = 0x13,						POWER_CONTROL4_MASK = 0x1F00,
+	CUR_Y_REG = 0x20,								CUR_Y_MASK = 0x00FF,
+	CUR_X_REG = 0x21,								CUR_X_MASK = 0x01FF,
 	GRAM_REG = 0x22,
-	WINDOW_HORZ_START_REG = 0x50,
-	WINDOW_HORZ_END_REG = 0x51,
-	WINDOW_VERT_START_REG = 0x52,
-	WINDOW_VERT_END_REG = 0x53,
-	GATE_SCAN_CONTROL_REG = 0x60,
-	BASE_IMAGE_DISPLAY_CONTROL_REG = 0x61,
-	VERTICAL_SCROLL_CONTROL_REG = 0x6A,
-	PARTIAL_IMAGE1_DISPLAY_POSITION_REG = 0x80,
-	PARTIAL_IMAGE1_START_LINE_REG = 0x81,
-	PARTIAL_IMAGE1_END_LINE_REG = 0x82,
-	PARTIAL_IMAGE2_DISPLAY_POSITION_REG = 0x83,
-	PARTIAL_IMAGE2_START_LINE_REG = 0x84,
-	PARTIAL_IMAGE2_END_LINE_REG = 0x85,
+	POWER_CONTROL7_REG = 0x29,						POWER_CONTROL7_MASK = 0x003F,
+	FRAME_RATE_COLOR_CONTROL_REG = 0x2B,			FRAME_RATE_COLOR_CONTROL_MASK = 0x000F,
+	GAMMA_CONTROL1_REG = 0x30,						GAMMA_CONTROL1_MASK = 0x0707,
+	GAMMA_CONTROL2_REG = 0x31,						GAMMA_CONTROL2_MASK = 0x0707,
+	GAMMA_CONTROL3_REG = 0x32,						GAMMA_CONTROL3_MASK = 0x0707,
+	GAMMA_CONTROL4_REG = 0x35,						GAMMA_CONTROL4_MASK = 0x0707,
+	GAMMA_CONTROL5_REG = 0x36,						GAMMA_CONTROL5_MASK = 0x1F0F,
+	GAMMA_CONTROL6_REG = 0x37,						GAMMA_CONTROL6_MASK = 0x0707,
+	GAMMA_CONTROL7_REG = 0x38,						GAMMA_CONTROL7_MASK = 0x0707,
+	GAMMA_CONTROL8_REG = 0x39,						GAMMA_CONTROL8_MASK = 0x0707,
+	GAMMA_CONTROL9_REG = 0x3C,						GAMMA_CONTROL9_MASK = 0x0707,
+	GAMMA_CONTROL10_REG = 0x3D,						GAMMA_CONTROL10_MASK = 0x1F0F,
+	WINDOW_HORZ_START_REG = 0x50,					WINDOW_HORZ_START_MASK = 0x00FF,
+	WINDOW_HORZ_END_REG = 0x51,						WINDOW_HORZ_END_MASK = 0x00FF,
+	WINDOW_VERT_START_REG = 0x52,					WINDOW_VERT_START_MASK = 0x01FF,
+	WINDOW_VERT_END_REG = 0x53,						WINDOW_VERT_END_MASK = 0x01FF,
+	GATE_SCAN_CONTROL_REG = 0x60,					GATE_SCAN_CONTROL_MASK = 0xBF3F,
+	BASE_IMAGE_DISPLAY_CONTROL_REG = 0x61,			BASE_IMAGE_DISPLAY_CONTROL_MASK = 0x0007,
+	VERTICAL_SCROLL_CONTROL_REG = 0x6A,				VERTICAL_SCROLL_CONTROL_MASK = 0x01FF,
+	PARTIAL_IMAGE1_DISPLAY_POSITION_REG = 0x80,		PARTIAL_IMAGE1_DISPLAY_POSITION_MASK = 0x01FF,
+	PARTIAL_IMAGE1_START_LINE_REG = 0x81,			PARTIAL_IMAGE1_START_LINE_MASK = 0x01FF,
+	PARTIAL_IMAGE1_END_LINE_REG = 0x82,				PARTIAL_IMAGE1_END_LINE_MASK = 0x01FF,
+	PARTIAL_IMAGE2_DISPLAY_POSITION_REG = 0x83,		PARTIAL_IMAGE2_DISPLAY_POSITION_MASK = 0x01FF,
+	PARTIAL_IMAGE2_START_LINE_REG = 0x84,			PARTIAL_IMAGE2_START_LINE_MASK = 0x01FF,
+	PARTIAL_IMAGE2_END_LINE_REG = 0x85,				PARTIAL_IMAGE2_END_LINE_MASK = 0x01FF,
+	PANEL_INTERFACE_CONTROL1_REG = 0x90,			PANEL_INTERFACE_CONTROL1_MASK = 0x031F,
+	PANEL_INTERFACE_CONTROL2_REG = 0x92,			PANEL_INTERFACE_CONTROL2_MASK = 0x0700,
+	PANEL_INTERFACE_CONTROL4_REG = 0x95,			PANEL_INTERFACE_CONTROL4_MASK = 0x0300,
+	PANEL_INTERFACE_CONTROL5_REG = 0x97,			PANEL_INTERFACE_CONTROL5_MASK = 0x0F00,
+	OTP_VCM_PROGRAMMING_CONTROL_REG = 0xA1,			OTP_VCM_PROGRAMMING_CONTROL_MASK = 0x083F,
+	OTP_VCM_STATUS_AND_ENABLE_REG = 0xA2,			OTP_VCM_STATUS_AND_ENABLE_MASK = 0xFF01,
+	OTP_PROGRAMMING_ID_KEY_REG = 0xA5,				OTP_PROGRAMMING_ID_KEY_MASK = 0xFFFF,
+	DEEP_STAND_BY_MODE_CONTROL_REG = 0xE6,			DEEP_STAND_BY_MODE_CONTROL_MASK = 0x0001
 } COLOR_LCD_COMMAND;
+
+// 0
+#define DRIVER_CODE_VER 0x9335
 
 // 1
 #define FLIP_COLS_MASK BIT(8)
@@ -107,159 +141,6 @@ ColorLCD_t *ColorLCD_init(CPU_t *cpu, int model) {
 }
 
 
-static uint16_t get_register(ColorLCD_t *lcd, uint16_t reg) {
-	switch (reg) {
-	case DRIVER_CODE_REG:
-		return 0x9335;
-	default:
-		return lcd->registers[reg];
-	}
-}
-
-static uint16_t get_register_mask(uint8_t index) {
-	switch (index) {
-	case 0x01:
-		return 0x0500;
-	case 0x03:
-		return 0xD0B8;
-	case 0x04:
-		return 0x0777;
-	case 0x05:
-		return 0x0003;
-	case 0x06:
-		return 0x0001;
-	case 0x07:
-		return 0x313B;
-	case 0x08:
-		return 0xFFFF;
-	case 0x09:
-		return 0x073F;
-	case 0x0A:
-		return 0x000F;
-	case 0x0C:
-		return 0x7133;
-	case 0x0D:
-		return 0x01FF;
-	case 0x0F:
-		return 0x001B;
-	case 0x10:
-		return 0x17F3;
-	case 0x11:
-		return 0x0777;
-	case 0x12:
-		return 0x008F;
-	case 0x13:
-		return 0x1F00;
-	case 0x20: 
-		return 0x00FF;
-	case 0x21: 
-		return 0x01FF;
-	case 0x29: 
-		return 0x003F;
-	case 0x2B:
-		return 0x000F;
-	case 0x30: 
-		return 0x0707;
-	case 0x31: 
-		return 0x0707;
-	case 0x32: 
-		return 0x0707;
-	case 0x35:
-		return 0x0707;
-	case 0x36:
-		return 0x1F0F;
-	case 0x37:
-		return 0x0707;
-	case 0x38:
-		return 0x0707;
-	case 0x39:
-		return 0x0707;
-	case 0x3C:
-		return 0x0707;
-	case 0x3D:
-		return 0x1F0F;
-	case 0x50:
-		return 0x00FF;
-	case 0x51:
-		return 0x00FF;
-	case 0x52:
-		return 0x01FF;
-	case 0x53:
-		return 0x01FF;
-	case 0x60:
-		return 0xBF3F;
-	case 0x61:
-		return 0x0007;
-	case 0x6A:
-		return 0x01FF;
-	case 0x80:
-		return 0x01FF;
-	case 0x81:
-		return 0x01FF;
-	case 0x82:
-		return 0x01FF;
-	case 0x83:
-		return 0x01FF;
-	case 0x84:
-		return 0x01FF;
-	case 0x85:
-		return 0x01FF;
-	case 0x90:
-		return 0x031F;
-	case 0x92:
-		return 0x0700;
-	case 0x95:
-		return 0x0300;
-	case 0x97:
-		return 0x0F00;
-	case 0xA1:
-		return 0x083F;
-	case 0xA2:
-		return 0x0001;
-	case 0xA3:
-		return 0x0003;
-	case 0xA4:
-		return 0xF7FF;
-	case 0xA5:
-		return 0xFFFF;
-	case 0xE2:
-		return 0x9FFF;
-	case 0xE3:
-		return 0xF0FF;
-	case 0xE4:
-		return 0x1F3C;
-	case 0xE5:
-		return 0x1FC7;
-	case 0xE6:
-		return 0x0001;
-	case 0xE7:
-		return 0x3FFF;
-	case 0xE8:
-		return 0x003F;
-	case 0xE9:
-		return 0x000F;
-	case 0xEA:
-		return 0xFFFF;
-	case 0xEB:
-		return 0xB37F;
-	case 0xEC:
-		return 0x7FFF;
-	case 0xED:
-		return 0x7FFF;
-	case 0xEE:
-		return 0x0F7F;
-	case 0xEF:
-		return 0xFB37;
-	case 0xFE:
-		return 0x0001;
-	case 0xFF:
-		return 0x000F;
-	default:
-		return 0xFFFF;
-	}
-}
-
-
 static void reset_y(ColorLCD_t *lcd, uint16_t mode) {
 	if (mode & ROW_INC_MASK) {
 		lcd->base.y = lcd->registers[WINDOW_HORZ_START_REG];
@@ -277,19 +158,61 @@ static void reset_x(ColorLCD_t *lcd, uint16_t mode) {
 }
 
 static void set_register(ColorLCD_t *lcd, uint16_t reg, uint16_t value) {
-	value = value & get_register_mask(reg);
 	int mode = LCD_REG(ENTRY_MODE_REG);
-	lcd->registers[reg] = value;
-	switch (reg) { 
-	case ENTRY_MODE_REG:
+	switch (reg) {
+	case DRIVER_OUTPUT_CONTROL1_REG:
+		lcd->registers[DRIVER_OUTPUT_CONTROL1_REG] = value & DRIVER_OUTPUT_CONTROL1_MASK;
+		break;
+	case ENTRY_MODE_REG: {
+		lcd->registers[ENTRY_MODE_REG] = value & ENTRY_MODE_MASK;
+		LCD_CURSOR_MODE row_mode = LCD_REG_MASK(ENTRY_MODE_REG, ROW_INC_MASK) ? Y_UP : Y_DOWN;
+		LCD_CURSOR_MODE col_mode = LCD_REG_MASK(ENTRY_MODE_REG, COL_INC_MASK) ? X_UP : X_DOWN;
+		lcd->base.cursor_mode = (LCD_CURSOR_MODE) (row_mode | col_mode);
 		reset_x(lcd, value);
 		reset_y(lcd, value);
 		break;
+	}
+	case DATA_FORMAT_16BIT_REG:
+		lcd->registers[DATA_FORMAT_16BIT_REG] = value & DATA_FORMAT_16BIT_MASK;
+		break;
 	case DISPLAY_CONTROL1_REG:
+		lcd->registers[DISPLAY_CONTROL1_REG] = value & DISPLAY_CONTROL1_MASK;
 		lcd->base.active = value & DISPLAY_ON_MASK ? TRUE : FALSE;
+		break;
+	case DISPLAY_CONTROL2_REG:
+		lcd->registers[DISPLAY_CONTROL2_REG] = value & DISPLAY_CONTROL2_MASK;
+		break;
+	case DISPLAY_CONTROL3_REG:
+		lcd->registers[DISPLAY_CONTROL3_REG] = value & DISPLAY_CONTROL3_MASK;
+		break;
+	case DISPLAY_CONTROL4_REG:
+		lcd->registers[DISPLAY_CONTROL4_REG] = value & DISPLAY_CONTROL4_MASK;
+		break;
+	case RGB_DISPLAY_INTERFACE_CONTROL1_REG:
+		lcd->registers[RGB_DISPLAY_INTERFACE_CONTROL1_REG] = value & RGB_DISPLAY_INTERFACE_CONTROL1_MASK;
+		break;
+	case FRAME_MARKER_REG:
+		lcd->registers[FRAME_MARKER_REG] = value & FRAME_MARKER_MASK;
+		break;
+	case RGB_DISPLAY_INTERFACE_CONTROL2_REG:
+		lcd->registers[RGB_DISPLAY_INTERFACE_CONTROL2_REG] = value & RGB_DISPLAY_INTERFACE_CONTROL2_MASK;
+		break;
+	case POWER_CONTROL1_REG:
+		lcd->registers[POWER_CONTROL1_REG] = value & POWER_CONTROL1_MASK;
+		break;
+	case POWER_CONTROL2_REG:
+		lcd->registers[POWER_CONTROL2_REG] = value & POWER_CONTROL2_MASK;
+		break;
+	case POWER_CONTROL3_REG:
+		lcd->registers[POWER_CONTROL3_REG] = value & POWER_CONTROL3_MASK;
+		break;
+	case POWER_CONTROL4_REG:
+		lcd->registers[POWER_CONTROL4_REG] = value & POWER_CONTROL4_MASK;
 		break;
 	case CUR_X_REG:
 	case CUR_Y_REG: {
+		lcd->registers[reg] = value & (reg == CUR_X_REG ? CUR_X_MASK : CUR_Y_MASK);
+
 		if (mode & ORG_MASK) {
 			if (reg == CUR_Y_REG) {
 				reset_y(lcd, mode);
@@ -302,30 +225,109 @@ static void set_register(ColorLCD_t *lcd, uint16_t reg, uint16_t value) {
 		}
 		break;
 	}
+	case POWER_CONTROL7_REG:
+		lcd->registers[POWER_CONTROL7_REG] = value & POWER_CONTROL7_MASK;
+		break;
+	case FRAME_RATE_COLOR_CONTROL_REG:
+		lcd->registers[FRAME_RATE_COLOR_CONTROL_REG] = value & FRAME_RATE_COLOR_CONTROL_MASK;
+		break;
+	case GAMMA_CONTROL1_REG:
+	case GAMMA_CONTROL2_REG:
+	case GAMMA_CONTROL3_REG:
+	case GAMMA_CONTROL4_REG:
+	case GAMMA_CONTROL6_REG:
+	case GAMMA_CONTROL7_REG:
+	case GAMMA_CONTROL8_REG:
+	case GAMMA_CONTROL9_REG:
+		lcd->registers[reg] = value & GAMMA_CONTROL1_MASK;
+		break;
+	case GAMMA_CONTROL5_REG:
+	case GAMMA_CONTROL10_REG:
+		lcd->registers[reg] = value & GAMMA_CONTROL5_MASK;
+		break;
 	case WINDOW_HORZ_START_REG: {
+		lcd->registers[WINDOW_HORZ_START_REG] = value & WINDOW_HORZ_START_MASK;
 		if ((mode & ORG_MASK) && (mode & COL_INC_MASK)) {
 			lcd->base.y = LCD_REG(WINDOW_HORZ_START_REG);
 		}
 		break;
 	}
 	case WINDOW_HORZ_END_REG: {
+		lcd->registers[WINDOW_HORZ_END_REG] = value & WINDOW_HORZ_END_MASK;
 		if ((mode & ORG_MASK) && !(mode & COL_INC_MASK)) {
 			lcd->base.y = lcd->registers[WINDOW_HORZ_END_REG];
 		}
 		break;
 	}
 	case WINDOW_VERT_START_REG: {
+		lcd->registers[WINDOW_VERT_START_REG] = value & WINDOW_VERT_START_MASK;
 		if ((mode & ORG_MASK) && (mode & ROW_INC_MASK)) {
 			lcd->base.x = LCD_REG(WINDOW_VERT_START_REG);
 		}
 		break;
 	}
 	case WINDOW_VERT_END_REG: {
+		lcd->registers[WINDOW_VERT_END_REG] = value & WINDOW_VERT_END_MASK;
 		if ((mode & ORG_MASK) && !(mode & ROW_INC_MASK)) {
 			lcd->base.x = LCD_REG(WINDOW_VERT_END_REG);
 		}
 		break;
 	}
+	case GATE_SCAN_CONTROL_REG:
+		lcd->registers[GATE_SCAN_CONTROL_REG] = value & GATE_SCAN_CONTROL_MASK;
+		break;
+	case BASE_IMAGE_DISPLAY_CONTROL_REG:
+		lcd->registers[BASE_IMAGE_DISPLAY_CONTROL_REG] = value & BASE_IMAGE_DISPLAY_CONTROL_MASK;
+		break;
+	case VERTICAL_SCROLL_CONTROL_REG:
+		lcd->base.z = 
+			lcd->registers[VERTICAL_SCROLL_CONTROL_REG] = value & VERTICAL_SCROLL_CONTROL_MASK;
+		break;
+	case PARTIAL_IMAGE1_DISPLAY_POSITION_REG:
+		lcd->registers[PARTIAL_IMAGE1_DISPLAY_POSITION_REG] = value & PARTIAL_IMAGE1_DISPLAY_POSITION_MASK;
+		break;
+	case PARTIAL_IMAGE1_START_LINE_REG:
+		lcd->registers[PARTIAL_IMAGE1_START_LINE_REG] = value & PARTIAL_IMAGE1_START_LINE_MASK;
+		break;
+	case PARTIAL_IMAGE1_END_LINE_REG:
+		lcd->registers[PARTIAL_IMAGE1_END_LINE_REG] = value & PARTIAL_IMAGE1_END_LINE_MASK;
+		break;
+	case PARTIAL_IMAGE2_DISPLAY_POSITION_REG:
+		lcd->registers[PARTIAL_IMAGE2_DISPLAY_POSITION_REG] = value & PARTIAL_IMAGE2_DISPLAY_POSITION_MASK;
+		break;
+	case PARTIAL_IMAGE2_START_LINE_REG:
+		lcd->registers[PARTIAL_IMAGE2_START_LINE_REG] = value & PARTIAL_IMAGE2_START_LINE_MASK;
+		break;
+	case PARTIAL_IMAGE2_END_LINE_REG:
+		lcd->registers[PARTIAL_IMAGE2_END_LINE_REG] = value & PARTIAL_IMAGE2_END_LINE_MASK;
+		break;
+	case PANEL_INTERFACE_CONTROL1_REG:
+		lcd->registers[PANEL_INTERFACE_CONTROL1_REG] = value & PANEL_INTERFACE_CONTROL1_MASK;
+		break;
+	case PANEL_INTERFACE_CONTROL2_REG:
+		lcd->registers[PANEL_INTERFACE_CONTROL2_REG] = value & PANEL_INTERFACE_CONTROL2_MASK;
+		break;
+	case PANEL_INTERFACE_CONTROL4_REG:
+		lcd->registers[PANEL_INTERFACE_CONTROL4_REG] = value & PANEL_INTERFACE_CONTROL4_MASK;
+		break;
+	case PANEL_INTERFACE_CONTROL5_REG:
+		lcd->registers[PANEL_INTERFACE_CONTROL5_REG] = value & PANEL_INTERFACE_CONTROL5_MASK;
+		break;
+	case OTP_VCM_PROGRAMMING_CONTROL_REG:
+		lcd->registers[OTP_VCM_PROGRAMMING_CONTROL_REG] = value & OTP_VCM_PROGRAMMING_CONTROL_MASK;
+		break;
+	case OTP_VCM_STATUS_AND_ENABLE_REG:
+		lcd->registers[OTP_VCM_STATUS_AND_ENABLE_REG] = value & OTP_VCM_STATUS_AND_ENABLE_MASK;
+		break;
+	case OTP_PROGRAMMING_ID_KEY_REG:
+		lcd->registers[OTP_PROGRAMMING_ID_KEY_REG] = value & OTP_PROGRAMMING_ID_KEY_MASK;
+		break;
+	case DEEP_STAND_BY_MODE_CONTROL_REG:
+		lcd->registers[DEEP_STAND_BY_MODE_CONTROL_REG] = value & DEEP_STAND_BY_MODE_CONTROL_MASK;
+		break;
+	default:
+		lcd->registers[reg] = value & 0xFFFF;
+		break;
 	}
 }
 
@@ -334,6 +336,10 @@ static void set_register(ColorLCD_t *lcd, uint16_t reg, uint16_t value) {
 */
 static void ColorLCD_free(CPU_t *cpu) {
 	free(cpu->pio.lcd);
+}
+
+static void ColorLCD_enqueue(ColorLCD_t *lcd) {
+	memcpy(lcd->queued_image, lcd->display, COLOR_LCD_DISPLAY_SIZE);
 }
 
 void ColorLCD_command(CPU_t *cpu, device_t *device) {
@@ -401,7 +407,7 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 
 			lcd->read_buffer = pixel;
 		} else {
-			int val = get_register(lcd, reg_index);
+			int val = LCD_REG(reg_index);
 			lcd->read_step = !lcd->read_step;
 			if (lcd->read_step) {
 				cpu->bus = val >> 8;
@@ -411,6 +417,19 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 		}
 
 		cpu->input = FALSE;
+	}
+
+#define COLOR_LCD_FREQ 30
+	// Make sure timers are valid
+	if (lcd->base.time > tc_elapsed(cpu->timer_c))
+		lcd->base.time = tc_elapsed(cpu->timer_c);
+
+	else if (tc_elapsed(cpu->timer_c) - lcd->base.time > (2.0 / STEADY_FREQ_MIN))
+		lcd->base.time = tc_elapsed(cpu->timer_c) - (2.0 / STEADY_FREQ_MIN);
+
+	if ((tc_elapsed(cpu->timer_c) - lcd->base.time) >= (1.0 / COLOR_LCD_FREQ)) {
+		ColorLCD_enqueue(lcd);
+		lcd->base.time += (1.0 / COLOR_LCD_FREQ);
 	}
 }
 
@@ -482,7 +501,7 @@ static void write_pixel16(ColorLCD_t *lcd, timerc *timerc) {
 }
 
 static void update_y(ColorLCD_t *lcd, BOOL should_update) {
-	if (LCD_REG_MASK(ENTRY_MODE_REG, ROW_INC_MASK)) {
+	if (lcd->base.cursor_mode & Y_UP) {
 		if (lcd->base.y < LCD_REG(WINDOW_HORZ_END_REG)) {
 			lcd->base.y++;
 			return;
@@ -506,7 +525,7 @@ static void update_y(ColorLCD_t *lcd, BOOL should_update) {
 }
 
 static void update_x(ColorLCD_t *lcd, BOOL should_update) {
-	if (LCD_REG_MASK(ENTRY_MODE_REG, COL_INC_MASK)) {
+	if (lcd->base.cursor_mode & X_UP) {
 		if (lcd->base.x < LCD_REG(WINDOW_VERT_END_REG)) {
 			lcd->base.x++;
 			return;
@@ -542,6 +561,7 @@ void ColorLCD_LCDreset(ColorLCD_t *lcd) {
 	lcd->base.display_width = COLOR_LCD_WIDTH;
 	lcd->base.height = COLOR_LCD_HEIGHT;
 
+	lcd->registers[DRIVER_CODE_REG] = DRIVER_CODE_VER;
 	lcd->base.x = 319;
 	lcd->base.y = 239;
 	lcd->base.bytes_per_pixel = 3;
@@ -590,13 +610,12 @@ static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int siz
 		}
 	} else {
 		for (int i = 0; i < size; i++) {
-			dest[i] = TRUCOLOR(src[i], 6);
+			dest[i] = TRUCOLOR(src[i], 6);;
 		}
 	}
 
 	if (color8bit) {
 		for (int i = 0; i < size; i++) {
-			//dest[i] = (dest[i] >> 5) * 0x3f;
 			dest[i] = TRUCOLOR(dest[i] >> 5, 3);
 		}
 	}
@@ -718,7 +737,7 @@ uint8_t *ColorLCD_Image(LCDBase_t *lcdBase) {
 		p2pos = 0;
 		p2width = pixel_width;
 		if (LCD_REG_MASK(BASE_IMAGE_DISPLAY_CONTROL_REG, SCROLL_ENABLED_MASK)) {
-			p2start = LCD_REG_MASK(VERTICAL_SCROLL_CONTROL_REG, SCROLL_MASK);
+			p2start = lcd->base.z;
 		} else {
 			p2start = 0;
 		}
@@ -777,7 +796,7 @@ uint8_t *ColorLCD_Image(LCDBase_t *lcdBase) {
 		p2pos = COLOR_LCD_WIDTH - (p2pos + p2width);
 	}
 
-	uint8_t *src = lcd->display;
+	uint8_t *src = lcd->queued_image;
 	uint8_t *dest = buffer;
 
 	imgpos1 = p2pos * COLOR_LCD_DEPTH;

@@ -210,30 +210,6 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
-void ModelInit(LPCALC lpCalc)
-{
-	switch(model) {
-		case TI_73:
-			calc_init_83p(lpCalc);
-			break;
-		case TI_83P:
-			calc_init_83p(lpCalc);
-			break;
-		case TI_83PSE:
-			calc_init_83pse(lpCalc);
-			break;
-		case TI_84P:
-			calc_init_84p(lpCalc);
-			break;
-		case TI_84PSE:
-			calc_init_83pse(lpCalc);
-			break;
-		case TI_84PCSE:
-			calc_init_84pcse(lpCalc);
-			break;
-	}
-}
-
 INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static BOOL inited = FALSE;
 	static HWND hQuestion, hTI73, hTI82, hTI83, hTI83P, hTI83PSE, hTI84P, hTI84PSE, hTI84PCSE, hTI85, hTI86;
@@ -553,7 +529,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					//outside this function...
 					TCHAR hexFile[MAX_PATH];
 					ExtractBootFree(model, hexFile);
-					ModelInit(lpCalc);
+					calc_init_model(lpCalc, model, NULL);
 					//slot stuff
 					LoadRegistrySettings(lpCalc);
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
@@ -937,7 +913,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					SaveFile(buffer, _T("ROMs (*.rom)\0*.rom\0Bins (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST, 0);
 					LPCALC lpCalc = calc_slot_new();
-					ModelInit(lpCalc);
+					calc_init_model(lpCalc, model, NULL);
 
 					//slot stuff
 					lpCalc->active = TRUE;

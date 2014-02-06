@@ -11,7 +11,7 @@
 #define PORT_ROW_SIZE 15
 
 extern HINSTANCE g_hInst;
-static CPU_t *port_cpu = NULL;
+static LPCALC duplicate_calc = NULL;
 static int port_map[0xFF];
 static HWND hwndEditControl;
 static WNDPROC wpOrigEditProc;
@@ -125,6 +125,18 @@ static int GetValue(TCHAR *str)
 	return value;
 }
 
+static void DuplicateCalc(LPCALC lpCalc) {
+	SAVESTATE_t *save = SaveSlot(lpCalc, _T(""), _T(""));
+	if (duplicate_calc) {
+		calc_slot_free(duplicate_calc);
+	}
+
+	duplicate_calc = calc_slot_new();
+	calc_init_model(duplicate_calc, save->model, NULL);
+	LoadSlot(save, duplicate_calc);
+	free(save);
+}
+
 static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 	if (hwndEditControl) {
 		TCHAR buf[10];
@@ -144,9 +156,7 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		lpCalc->cpu.output = output_backup;
 		lpCalc->cpu.bus = bus_backup;
 
-		if (port_cpu != NULL)
-			free(port_cpu);
-		port_cpu = CPU_clone(&lpCalc->cpu);
+		DuplicateCalc(lpCalc);
 
 		DestroyWindow(hwndEditControl);
 	}
@@ -171,19 +181,15 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	}
 } 
 
-LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndListView;
 	static LPCALC lpCalc;
 	static LPDEBUGWINDOWINFO lpDebugInfo;
 	switch(Message) {
-		case WM_INITDIALOG: {
-			HICON hIcon = LoadIcon(g_hInst, _T("w"));
-			SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)	hIcon);
-			DeleteObject(hIcon);
-
-			lpCalc = (LPCALC) lParam;
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, lParam);
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+		case WM_CREATE: {
+			lpDebugInfo = (LPDEBUGWINDOWINFO)((LPCREATESTRUCT)lParam)->lpCreateParams;;
+			lpCalc = (LPCALC) lpDebugInfo->lpCalc;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 
 			hwndListView = CreateListView(hwnd);
 			int count = 0;
@@ -225,6 +231,10 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				case IDM_PORT_EXIT:
 					SendMessage(hwnd, WM_CLOSE, 0, 0);
 					break;
+				default: {
+					SendMessage(lpDebugInfo->hDebug, WM_COMMAND, wParam, lParam);
+					break;
+				}
 			}
 			return FALSE;
 		}
@@ -282,21 +292,21 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				{
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
 					int port_num = port_map[plvdi->item.iItem];
-					port_cpu->input = TRUE;
-					port_cpu->pio.devices[port_num].code(port_cpu, &(port_cpu->pio.devices[port_num]));
+					duplicate_calc->cpu.input = TRUE;
+					duplicate_calc->cpu.pio.devices[port_num].code(&duplicate_calc->cpu, &(duplicate_calc->cpu.pio.devices[port_num]));
 					switch (plvdi->item.iSubItem)
 					{
 						case 0:
 							StringCchPrintf(plvdi->item.pszText, 10, _T("%02X"), port_num);
 							break;
 						case 1:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("$%02X"), port_cpu->bus);
+							StringCbPrintf(plvdi->item.pszText, 10, _T("$%02X"), duplicate_calc->cpu.bus);
 							break;	
 						case 2:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("%d"), port_cpu->bus);
+							StringCbPrintf(plvdi->item.pszText, 10, _T("%d"), duplicate_calc->cpu.bus);
 							break;
 						case 3:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("%%%s"), byte_to_binary(port_cpu->bus)); 
+							StringCbPrintf(plvdi->item.pszText, 10, _T("%%%s"), byte_to_binary(duplicate_calc->cpu.bus));
 							break;
 					}
 
@@ -328,27 +338,29 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			}
 			return FALSE;
 		}
+		case WM_SIZE: {
+			RECT rc;
+			GetClientRect(hwnd, &rc);
+			SetWindowPos(hwndListView, NULL, rc.left, rc.top,
+				rc.right - rc.left, rc.bottom - rc.top, SWP_NOZORDER);
+			return FALSE;
+		}
 		case WM_USER: {
 			switch (wParam) {
 				case DB_CREATE:
-					if (port_cpu != NULL) {
-						free(port_cpu);
-					}
-					port_cpu = CPU_clone(&lpCalc->cpu);
+					DuplicateCalc(lpCalc);
 					break;
 				case DB_UPDATE: {
-					RECT rc;
-					GetClientRect(hwnd, &rc);
-					InvalidateRect(hwnd, &rc, FALSE);
+					InvalidateRect(hwnd, NULL, FALSE);
 					break;
 				}
 			}
 			return TRUE;
 		}
 		case WM_CLOSE:
-			lpDebugInfo->hPortMon = NULL;
-			EndDialog(hwnd, IDOK);
 			return FALSE;
+		default:
+			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
 	return FALSE;
 }

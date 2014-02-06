@@ -15,13 +15,14 @@ int BrowseTxtFile(TCHAR *);
 #define ID_MEMTAB		2
 #define ID_MEM			3
 #define ID_STACK		4
-#define ID_WABBIT		5
+#define ID_WATCH		5
 #define ID_DISASMSIZE	6
 #define ID_SIZE			6
 #define ID_TOOLBAR		7
 #define ID_SUBBAR		8
 #define ID_DISASMTAB	9
 #define ID_PANECONTAINER 10
+#define ID_PORTMON 11
 
 #define MAX_MEM_TABS MAX_TABS * 3
 #define MAX_DISASM_TABS MAX_TABS * 3

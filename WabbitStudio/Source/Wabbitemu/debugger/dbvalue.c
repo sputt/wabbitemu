@@ -308,10 +308,10 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					SendMessage(hwnd, WM_LBUTTONDBLCLK, 0, 0);
 					return 0;
 				case IDM_REGPANE_VIEW_MEM:
-					SendMessage(GetParent(vfs->lpDebugInfo->hmem), WM_COMMAND, MAKEWPARAM(DB_REGULAR_MEM_GOTO_ADDR, 0), (LPARAM) xtoi(vfs->szValue));
+					SendMessage(vfs->lpDebugInfo->hDebug, WM_COMMAND, MAKEWPARAM(DB_REGULAR_MEM_GOTO_ADDR, 0), (LPARAM) xtoi(vfs->szValue));
 					return 0;
 				case IDM_REGPANE_VIEW_DISASM:
-					SendMessage(GetParent(vfs->lpDebugInfo->hdisasm), WM_COMMAND, MAKEWPARAM(DB_REGULAR_DISASM_GOTO_ADDR, 0), (LPARAM) xtoi(vfs->szValue));
+					SendMessage(vfs->lpDebugInfo->hDebug, WM_COMMAND, MAKEWPARAM(DB_REGULAR_DISASM_GOTO_ADDR, 0), (LPARAM) xtoi(vfs->szValue));
 					return 0;
 			}
 			

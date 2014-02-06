@@ -13,7 +13,8 @@ typedef struct ColorLCD {
 	LCDBase_t base;
 
 	uint16_t current_register;
-	unsigned char display[COLOR_LCD_DISPLAY_SIZE];
+	uint8_t display[COLOR_LCD_DISPLAY_SIZE];
+	uint8_t queued_image[COLOR_LCD_DISPLAY_SIZE];
 	uint16_t registers[0xFF];
 
 	int read_buffer;
