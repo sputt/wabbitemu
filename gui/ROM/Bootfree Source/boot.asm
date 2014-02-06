@@ -45,20 +45,29 @@
 	ld a,BOOT_PAGE		; + 2 = 4002
 	out (6),a		; + 2 = 4004
 	out (7),a		; + 2 = 4006
+#if HW_VERSION >= 4
+	ld a, 3			
+	out (0eh),a
+	out (0fh),a
+#endif
 	jp Init+4000h		; + 3 = 4009
 
-	.db 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh ; + 6 = 400F
+.fill $400F - $, $FF		; + x = 400F
 
 ;;; Boot code version string
 
 VersionStr:
-	.db "11.246", 0		; + 7 = 4016
+	.db "11.258", 0		; + 7 = 4016
 	.db 0FFh, 0FFh		; + 2 = 4018
 
 ;;; B_CALL address table
 #macro BCPT(xx)
 .dw xx
+#if HW_VERSION >= 4
+.db N_FLASH_PAGES - 1
+#else
 .db BOOT_PAGE
+#endif
 #endmacro
 
 	BCPT(MD5Final
@@ -136,9 +145,14 @@ VersionStr:
 	ld a,BOOT_PAGE		; + 2 = 40D7
 	out (6),a		; + 2 = 40D9
 	out (7),a		; + 2 = 40.db
-	jp Init+4000h		; + 3 = 40DE
+#if HW_VERSION >= 4
+	ld a, 3			
+	out (0eh),a
+	out (0fh),a
+#endif
+	jp Init+4000h
 
-	.db 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh ; + 6 = 40E4
+.fill $40E4 - $, $FF
 
    BCPT(UnknownBC ;	BCPT(USBMainLoop
    BCPT(UnknownBC ;	BCPT(DisplaySysMessage
@@ -182,6 +196,12 @@ Init:	di
 	ld a,BOOT_PAGE
 	out (6),a
 	out (7),a
+#if HW_VERSION >= 4
+	ld a, 3
+	out (0eh),a
+	out (0fh),a
+#endif
+
 #ifdef HW_VERSION >= 2
 	ld a,06h
 #else
@@ -219,14 +239,7 @@ InitMain:
 	out (3),a
 
 ;;; LCD
-	ld a,18h		; reset test mode
-	call LCDOut
-	ld a,01h		; 8 bit mode
-	call LCDOut
-	ld a,05h		; increment down
-	call LCDOut
-	ld a,0f0h		; reasonable default contrast
-	call LCDOut
+	call LCDInit
 
 ;;; Protected hardware...
 	call FlashWE
@@ -264,7 +277,10 @@ InitMain:
 	xor a
 	out (8),a
 
-;;; Unknown - related to memory mapping?
+;;; Used for 4MB and 8MB flash chips
+#if HW_VERSION >= 4
+	ld a, 3
+#endif
 	out (0eh),a
 	out (0fh),a
 
@@ -309,16 +325,6 @@ InitMain:
 	out (27h),a
 	out (28h),a
 
-;;; LCD delay
-	ld a,14h
-	out (29h),a
-	ld a,27h
-	out (2Ah),a
-	ld a,2Fh
-	out (2Bh),a
-	ld a,3Bh
-	out (2Ch),a
-
 ;;; Unknown
 	ld a,01h
 	out (2Dh),a
@@ -327,9 +333,6 @@ InitMain:
 	ld a,44h
 	out (2Eh),a
 
-;;; LCD delay timer
-	ld a,4Ah
-	out (2Fh),a
 #endif
 
 	call FlashWD
@@ -340,8 +343,10 @@ InitMain:
 	sbc hl,bc
 	jp z,0053h
 
+#if HW_VERSION < 4
 	ld a,3
 	call LCDOut
+#endif
 	call ClearLCD
 	ld hl,1
 	ld (curRow),hl
@@ -371,7 +376,11 @@ OSNotLoadedStr:
 #include "field.asm"
 #include "flash.asm"
 #include "font.asm"
+#if HW_VERSION >=4
+#include "colorlcd.asm"
+#else
 #include "lcd.asm"
+#endif
 #include "md5.asm"
 #include "math.asm"
 #include "mem.asm"

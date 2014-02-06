@@ -755,9 +755,6 @@
     <None Include="gui\ROM\bf84pbe.hex">
       <Filter>Resource Files\Wizard</Filter>
     </None>
-    <None Include="gui\ROM\rom8x.8xp">
-      <Filter>Resource Files\Wizard</Filter>
-    </None>
     <None Include="gui\TI-73.png">
       <Filter>Resource Files\Skins</Filter>
     </None>
@@ -911,6 +908,10 @@
     <None Include="gui\ROM\bf84pcse.hex">
       <Filter>Resource Files\Wizard</Filter>
     </None>
+    <None Include="gui\ROM\rom8x\rom8xcolor.8xp">
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\ROM\rom8x\rom8x.8xp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">

@@ -34,6 +34,20 @@
 ;;;  LCD Routines
 ;;;
 
+#define LCD_WIDTH 320
+#define LCD_HEIGHT 240
+#define LCD_DEPTH 3
+
+#define DISPLAY_CONTROL1_REG $07
+#define POWER_CONTROL1_REG $10
+#define LCD_Y_REG $20
+#define LCD_X_REG $21
+#define LCD_GRAM_REG $22
+#define WINDOW_Y_START_REG $50
+#define WINDOW_Y_END_REG $51
+#define WINDOW_X_START_REG $52
+#define WINDOW_X_END_REG $53
+
 ;;
 ;; LCDInit
 ;;
@@ -43,6 +57,14 @@
 ;;  Output: LCD is initialized
 ;;  Destroys: AF
 LCDInit:
+#if HW_VERSION >= 4
+	ld a, DISPLAY_CONTROL1_REG
+	ld hl, $0000
+	call LCDWriteReg	; turn off the lcd
+	ld a, POWER_CONTROL1_REG
+	ld hl, $07F1
+	call LCDWriteReg	; set power
+#else
 	ld a,18h		; reset test mode
 	call LCDOut
 	ld a,01h		; 8 bit mode
@@ -51,7 +73,24 @@ LCDInit:
 	call LCDOut
 	ld a,0f0h		; reasonable default contrast
 	call LCDOut
+#endif
 	
+#if HW_VERSION >= 4
+	;;; LCD delay
+	ld a,17h
+	out (29h),a
+	ld a,0Fh
+	out (2Ah),a
+	ld a,2Fh
+	out (2Bh),a
+	ld a,3Bh
+	out (2Ch),a
+	ld a,45h
+	out (2Eh),a
+	;;; LCD delay timer
+	ld a,4Bh
+	out (2Fh),a
+#else
 #ifdef SILVER
 	;;; LCD delay
 	ld a,14h
@@ -67,47 +106,53 @@ LCDInit:
 	ld a,4Ah
 	out (2Fh),a
 #endif
+#endif
 	ret
 
 ;;
-;; LCDOut
+;; LCDWriteReg
 ;;
 ;;  Safely output an LCD command to port 10h.
 ;;
-;;  Input: A = LCD command
+;;  Input: A = Register
+;;		   HL = Value
 ;;  Output: None
 ;;  Destroys: F
 
-LCDOut:
+LCDWriteReg:
 	push bc
-	 ld c,10h
-LCDOut_loop:
-	 in f,(c)
-	 jp m,LCDOut_loop
-	 pop bc
-	out (10h),a
+	 ld c, $10
+	 out (c),a
+	 out (c),a
+	 inc c
+	 out (c),h
+	 out (c),l
+	pop bc
 	ret
 
-
-;;
-;; LCDDataOut
-;; 
-;;  Safely output a data byte to port 11h.
-;; 
-;;  Input: A = data byte
-;;  Output: None
-;;  Destroys: F
-
-LCDDataOut:
-	push bc
-	 ld c,10h
-LCDDataOut_loop:
-	 in f,(c)
-	 jp m,LCDDataOut_loop
-	 pop bc
-	out (11h),a
+ResetCursor:
+	ld a, LCD_X_REG
+	ld hl, $0000
+	call LCDWriteReg
+	ld a, LCD_Y_REG
+	ld hl, $0000
+	call LCDWriteReg
 	ret
 
+ResetWindow:
+	ld a, WINDOW_Y_START_REG
+	ld hl, $0000
+	call LCDWriteReg
+	ld a, WINDOW_Y_END_REG
+	ld hl, $00EF
+	call LCDWriteReg
+	ld a, WINDOW_X_START_REG
+	ld hl, $0000
+	call LCDWriteReg
+	ld a, WINDOW_X_END_REG
+	ld hl, $013F
+	call LCDWriteReg
+	ret
 
 ;;
 ;; ClearLCD
@@ -119,27 +164,34 @@ LCDDataOut_loop:
 ;;  Destroys: None
 
 ClearLCD:
-	push af
-	 push bc
-	  ld a,80h
-	  call LCDOut
-	  ld a,20h
-ClearLCD_Loop:
-	  ld c,a
-	  call LCDOut
-	  ld b,64
+	push hl
+	 push de
+	
+ 	  call ResetWindow
+ 	  call ResetCursor
 	  xor a
-ClearLCD_SubLoop:
-	  call LCDDataOut
-	  djnz ClearLCD_SubLoop
-	  ld a,c
-	  inc a
-	  cp 2Ch
-	  jr c,ClearLCD_Loop
-	  pop bc
-	 pop af
-	ret
-
+	  out ($10),a
+	  ld a, LCD_GRAM_REG
+	  out ($10),a
+	  ld de,19200
+_:
+	  ld a, $FF
+ 	  out ($11),a
+ 	  out ($11),a
+ 	  out ($11),a
+ 	  out ($11),a
+ 	  out ($11),a
+ 	  out ($11),a
+ 	  out ($11),a
+ 	  out ($11),a
+ 	  dec de
+ 	  ld a,d
+ 	  or e
+ 	  jp nz,-_
+ 	
+ 	 pop de
+ 	pop hl
+ 	ret
 
 ;;
 ;; PutC
@@ -151,57 +203,8 @@ ClearLCD_SubLoop:
 ;;  Destroys: None
 
 PutC:
-	cp 0D6h
-	jr z,NewLine2
-	push af
-	 push bc
-	  push de
-	   push hl
-	    ld l,a
-	    ld h,0
-	    ld a,i
-	    push af
-	     di
-	     ld a,h
- 	     call LCDOut	; set to 6-bit mode
-	     ld a,(curRow)
-	     add a,a
-	     add a,a
-	     add a,a
-	     add a,80h
-	     call LCDOut	; set row
-	     add hl,hl
-	     add hl,hl
-	     add hl,hl
-	     ld de,LargeFont+1
-	     add hl,de
-	     ld a,(curCol)
-	     add a,20h
-	     call LCDOut	; set column
-	     ld b,7
-PutC_Loop:
-	     ld a,(hl)
-	     rla
-	     inc hl
-	     call LCDDataOut
-	     djnz PutC_Loop
-	     ld a,(curCol)
-	     inc a
-	     ld (curCol),a
-	     cp 10h
-	     call nc,NewLine2
-	     ld a,1
-	     call LCDOut	; set back to 8-bit mode
-	     pop af
-	    jp po,PutC_DI
-	    ei
-PutC_DI:
-	    pop hl
-	   pop de
-	  pop bc
-	 pop af
+	;; TODO
 	ret
-
 
 ;;
 ;; NewLine2

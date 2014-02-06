@@ -753,20 +753,20 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 		return LERR_FILE;
 	}
 
-	int rotate;
+	int start_page;
 	switch (cpu->pio.model) {
 	case TI_84P:
-		rotate = 1;
+		start_page = 0x2F;
 		break;
 	case TI_83PSE:
 	case TI_84PSE:
-		rotate = 2;
+		start_page = 0x5F;
 		break;
 	case TI_84PCSE:
-		rotate = 1;
+		start_page = 0x80;
 		break;
 	default:
-		rotate = 0;
+		start_page = 0x00;
 		break;
 	}
 
@@ -776,7 +776,7 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 		}
 
 		if (i > 0x10) {
-			page = (i << rotate) | ((1 << rotate) - 1);
+			page = start_page + i;
 		} else {
 			page = i;
 		}
@@ -798,7 +798,7 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 		}
 
 		if (i > 0x10) {
-			page = (i << rotate) | ((1 << rotate) - 1);
+			page = start_page + i;
 		} else {
 			page = i;
 		}

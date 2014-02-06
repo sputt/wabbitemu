@@ -435,7 +435,8 @@
     <None Include="gui\ROM\Rom83.83p" />
     <None Include="gui\ROM\Rom85.85s" />
     <None Include="gui\ROM\Rom86.86p" />
-    <None Include="gui\ROM\rom8x.8xp" />
+    <None Include="gui\ROM\rom8x\rom8x.8xp" />
+    <None Include="gui\ROM\rom8x\rom8xcolor.8xp" />
     <None Include="gui\run.bmp" />
     <None Include="gui\SkinPicker.bmp" />
     <None Include="gui\small_close.bmp" />
