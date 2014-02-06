@@ -723,6 +723,7 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 						case TI_83PSE:
 						case TI_84P:
 						case TI_84PSE:
+						case TI_84PCSE:
 							filter = _T("83 Plus Program (*.8xp)\0*.8xp\0All Files (*.*)\0*.*\0\0");
 							ext = _T("8xp");
 							break;
@@ -876,25 +877,32 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					}
 					TCHAR buf[1024];
 					TCHAR name[12];
-					StringCbCopy(name, sizeof(name), _T("D83PBE1.8xv"));
+					TCHAR name2[12];
 					switch(model) {
 						case TI_83P:
 						case TI_83PSE:
-							if (model != TI_83P) {
-								name[4] = 'S';
+							if (model == TI_83P) {
+								StringCbCopy(name, sizeof(name), _T("D83PBE1.8xv"));
+							} else {
+								StringCbCopy(name, sizeof(name), _T("D83PSE1.8xv"));
 							}
 							StringCbPrintf(buf, sizeof(buf), _T("%s %s%s"), _T("The program will create an application variable"),
 								name, _T(". You need to send this back to the computer, and locate it with the button below"));
 							break;
 						case TI_84P:
 						case TI_84PSE:
-							name[2] = '4';
-							if (model != TI_84P) {
-								name[4] = 'S';
+						case TI_84PCSE:
+							if (model == TI_84P) {
+								StringCbCopy(name, sizeof(name), _T("D84PBE1.8xv"));
+								StringCbCopy(name2, sizeof(name2), _T("D84PBE2.8xv"));
+							} else if (model == TI_84PSE) {
+								StringCbCopy(name, sizeof(name), _T("D84PSE1.8xv"));
+								StringCbCopy(name2, sizeof(name2), _T("D84PSE2.8xv"));
+							} else {
+								StringCbCopy(name, sizeof(name), _T("D84CSE1.8xv"));
+								StringCbCopy(name2, sizeof(name2), _T("D84CSE2.8xv"));
 							}
-							TCHAR name2[12];
-							StringCbCopy(name2, sizeof(name2), name);
-							name2[6] = '2';
+
 							StringCbPrintf(buf, sizeof(buf), _T("%s %s %s %s%s"), _T("The program will create two application variables"),
 								name, _T("and"), name2, 
 								_T(". You need to send these back to the computer, and locate them with the buttons below"));
@@ -920,26 +928,60 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					lpCalc->model = model;
 					lpCalc->cpu.pio.model = model;
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
+
+					//if you don't want to load an OS, fine...
+					if (_tcslen(osPath) > 0) {
+						TIFILE_t *tifile = importvar(osPath, FALSE);
+						if (tifile == NULL || tifile->type != FLASH_TYPE) {
+							MessageBox(hwnd, _T("Error: OS file is corrupt or invalid"), _T("Error"), MB_OK);
+						}
+						else {
+							forceload_os(&lpCalc->cpu, tifile);
+						}
+					}
+
 					FILE *file;
 					_tfopen_s(&file, browse, _T("rb"));
 					if (file == NULL) {
 						MessageBox(NULL, _T("Error opening first boot page file"), _T("Error"), MB_OK);
 						break;
 					}
+
 					//goto the name to see which one we have (in TI var header)
 					fseek(file, 66, SEEK_SET);
 					char ch = fgetc(file);
 					//goto the first byte of data
 					fseek(file, 74, SEEK_SET);
-					int page;
+					int current_page;
+					int boot_page, boot_page2;
 					BYTE (*flash)[PAGE_SIZE] = (BYTE(*)[PAGE_SIZE]) lpCalc->mem_c.flash;
-					page = lpCalc->mem_c.flash_pages - 1;
-					if (ch == '2' && model >= TI_83PSE) {
-						page = lpCalc->mem_c.flash_pages - 0x11;
+					switch (model) {
+					case TI_83P:
+					case TI_83PSE:
+						boot_page = lpCalc->mem_c.flash_pages - 1;
+						break;
+					case TI_84P:
+					case TI_84PSE:
+						boot_page = lpCalc->mem_c.flash_pages - 1;
+						boot_page2 = lpCalc->mem_c.flash_pages - 0x11;
+						break;
+					case TI_84PCSE:
+						boot_page = lpCalc->mem_c.flash_pages - 1;
+						boot_page2 = lpCalc->mem_c.flash_pages - 3;
+						break;
 					}
+
+					if (ch == '1') {
+						current_page = boot_page;
+					}
+					else {
+						current_page = boot_page2;
+					}
+
 					for (int i = 0; i < PAGE_SIZE; i++) {
-						flash[page][i] = fgetc(file);
+						flash[current_page][i] = fgetc(file);
 					}
+
 					fclose(file);
 					//second boot page
 					if (model >= TI_84P) {
@@ -955,24 +997,17 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						//goto the first byte of data
 						fseek(file, 74, SEEK_SET);
 						if (ch == '1') {
-							page = lpCalc->mem_c.flash_pages - 1;
+							current_page = boot_page;
 						} else {
-							page = lpCalc->mem_c.flash_pages - 0x11;
+							current_page = boot_page2;
 						}
 						for (int i = 0; i < PAGE_SIZE; i++) {
-							flash[page][i] = fgetc(file);
+							flash[current_page][i] = fgetc(file);
 						}
+
+						fclose(file);
 					}
 
-					//if you don't want to load an OS, fine...
-					if (_tcslen(osPath) > 0) {
-						TIFILE_t *tifile = importvar(osPath, FALSE);
-						if (tifile == NULL || tifile->type != FLASH_TYPE) {
-							MessageBox(hwnd, _T("Error: OS file is corrupt or invalid"), _T("Error"), MB_OK);
-						} else {
-							forceload_os(&lpCalc->cpu, tifile);
-						}
-					}
 					calc_erase_certificate(lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
 					calc_reset(lpCalc);
 					//calc_turn_on(lpCalc);
@@ -1038,6 +1073,10 @@ void ExtractDumperProg() {
 		case TI_84P:
 		case TI_84PSE:
 			hrDumpProg = FindResource(hModule, MAKEINTRESOURCE(ROM8X), _T("CALCPROG"));
+			StringCbCat(dumperPath, sizeof(dumperPath), _T(".8xp"));
+			break;
+		case TI_84PCSE:
+			hrDumpProg = FindResource(hModule, MAKEINTRESOURCE(ROM8XC), _T("CALCPROG"));
 			StringCbCat(dumperPath, sizeof(dumperPath), _T(".8xp"));
 			break;
 		case TI_82:

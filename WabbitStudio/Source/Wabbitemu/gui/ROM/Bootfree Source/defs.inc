@@ -56,9 +56,23 @@ BOOT_MINOR	.equ 246
 #define HW_VERSION 3
 #ENDIF
 
+#IFDEF TI84PCSE
+#define SILVER
+#define USB
+#define PORT_21 1
+#define N_FLASH_PAGES 100h
+#define FIRST_APP 0E9h
+#define RAM_PAGE 80h
+#define PRODUCT_ID 0Ah
+#define HW_VERSION 4
+#define FLASH_MASK	(N_FLASH_PAGES - 1) & $7F
+#define BOOT_PAGE	(N_FLASH_PAGES - 1) & $7F
+#define CERT_PAGE	(N_FLASH_PAGES - 2) & $7F
+#else
 #define FLASH_MASK	N_FLASH_PAGES - 1
 #define BOOT_PAGE	N_FLASH_PAGES - 1
 #define CERT_PAGE	N_FLASH_PAGES - 2
+#ENDIF
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

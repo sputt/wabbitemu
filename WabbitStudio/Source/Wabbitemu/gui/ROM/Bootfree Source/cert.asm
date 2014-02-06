@@ -224,4 +224,11 @@ IsAppFreeware:
 	or a
 	sbc hl,de
 #endif
+#if HW_VERSION >= 4
+	ret z
+	add hl,de
+	ld de,$0F01
+	or a
+	sbc hl,de
+#endif
 	ret

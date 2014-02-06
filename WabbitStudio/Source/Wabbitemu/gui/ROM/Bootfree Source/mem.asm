@@ -53,7 +53,7 @@ rc_LoadAIndPaged:
 	push af
 	 ld a,BOOT_PAGE
 	 out (6),a
-	 pop af
+	pop af
 	ret
  END_RAM_CODE
 

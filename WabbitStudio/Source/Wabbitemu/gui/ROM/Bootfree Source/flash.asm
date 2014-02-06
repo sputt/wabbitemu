@@ -179,15 +179,17 @@ rc_WriteFlash:
 	out (6),a
 	and RAM_PAGE
 	jr nz,rc_WriteFlash_Done
-	;needed for an unlock exploit
-	;bit 7,d
-	;jr nz,rc_WriteFlash_Done
 
 	ld a,b
 	or c
 	jr z,rc_WriteFlash_Done
 
 rc_WriteFlash_Loop:
+	; this should not be necessary, but if we write to RAM instead
+	; of flash, we should reset this
+	ld a,0f0h		; return chip to read mode
+	ld (3fffh),a
+
 	push bc
 	 in a,(6)
 	 ld b,a
@@ -239,14 +241,34 @@ rc_WriteFlash_Next:
 	jr z,rc_WriteFlash_Done
 
 	;; calculate next address
-	; BuckeyeDude 2/17
-	; there is an unlock exploit that writes to ram, by overwriting
-	; the stack. For now were going to check if it just hit 0x80XX range
-	; since you shouldn't write to ram with this anyway, I think it 
-	; should be fine
-	ld a, $80
-	cp d
+	; flash unlocks usually rely on writing to RAM, but we still
+	; want to support rolling over to the next page
+	push hl
+	ld hl, $8000
+	or a
+	sbc hl,de
+	pop hl
 	jr nz,rc_WriteFlash_Loop
+	jr rc_WriteFlash_RollOver
+rc_WriteFlash_Done:
+	ld a,BOOT_PAGE
+	out (6),a
+	push hl
+	push hl
+	push hl
+.fill($8166-$)
+	jr _			; axe relies on an unlock that modifies a jr at $8167
+_				; this is right here in the routine, so we can finish
+				; the routine and jump into their code which should
+				; clean up after itself anyway
+	pop hl
+	pop hl
+	pop hl
+	ld a,0f0h		; return chip to read mode
+	ld (3fffh),a
+	ret
+rc_WriteFlash_RollOver:
+; if de == $8000 we've rolled pages, move to the next one
 	ld a,d
 	sub 40h
 	ld d,a
@@ -259,12 +281,7 @@ rc_WriteFlash_Next:
 rc_WriteFlash_Error:
 	 pop bc
 	or 0ffh
-rc_WriteFlash_Done:
-	ld a,0f0h		; return chip to read mode
-	ld (3fffh),a
-	ld a,BOOT_PAGE
-	out (6),a
-	ret
+	jr rc_WriteFlash_Done
  END_RAM_CODE()
 
 
