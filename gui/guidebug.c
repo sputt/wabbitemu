@@ -47,7 +47,7 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 			tabRc.top = 0;
 			tabRc.bottom = debugInfo->cyDisasm - CY_TOOLBAR;
 			TabCtrl_AdjustRect(hwndChild, FALSE, &tabRc);
-			HWND curTab = debugInfo->hdisasmlist[index];
+			HWND curTab = index == debugInfo->total_disasm_pane ? debugInfo->hPortMon : debugInfo->hdisasmlist[index];
 			MoveWindow(curTab, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, FALSE);
 			SendMessage(curTab, WM_USER, DB_UPDATE, 0);
 			break;
@@ -262,6 +262,28 @@ void AddWatchTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
 	TabCtrl_SetCurSel(debugInfo->hmem, 0);
 }
 
+void AddPortsTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
+	if (debugInfo->hPortMon) {
+		return;
+	}
+
+	debugInfo->hPortMon = CreateWindow(
+		g_szPortMonitor,
+		_T(""),
+		WS_VISIBLE | WS_CHILD,
+		3, 20, 400, 200,
+		debugInfo->hdisasm,
+		(HMENU)ID_PORTMON,
+		g_hInst, (LPVOID)debugInfo);
+	TCITEM tie;
+	tie.mask = TCIF_TEXT | TCIF_IMAGE;
+	tie.iImage = -1;
+	tie.pszText = _T("Port Monitor");
+	tie.lParam = (LPARAM)debugInfo->hPortMon;
+	TabCtrl_InsertItem(debugInfo->hdisasm, 0, &tie);
+	TabCtrl_SetCurSel(debugInfo->hdisasm, 0);
+}
+
 extern HWND hwndPrev;
 
 LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -341,6 +363,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			    (HMENU) ID_DISASMTAB,
 			    g_hInst, NULL);
 			SetWindowFont(lpDebugInfo->hdisasm, lpDebugInfo->hfontSegoe, TRUE);
+
+			AddPortsTab(lpCalc, lpDebugInfo);
 
 			/* Create disassembly window */
 			lpDebugInfo->total_disasm_pane = 0;
@@ -862,17 +886,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				Debug_UpdateWindow(hwnd);
 				break;
 			}
-			case DB_PORTMONITOR:
-			case IDM_VIEW_PORTMONITOR: {
-				if (IsWindow(lpDebugInfo->hPortMon)) {
-					SwitchToThisWindow(lpDebugInfo->hPortMon, TRUE);
-				} else {
-					lpDebugInfo->hPortMon = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_PORT_MONITOR),
-						hwnd, (DLGPROC) PortMonitorDialogProc, (LPARAM) lpDebugInfo->lpCalc);
-					ShowWindow(lpDebugInfo->hPortMon, SW_SHOW);
-				}
-				break;
-			}
 			case DB_BREAKPOINTS:
 			case IDM_VIEW_BREAKPOINTS: {
 				if (IsWindow(lpDebugInfo->hBreakpoints)) {
@@ -957,7 +970,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 
 			default: {
-				SendMessage(lpDebugInfo->hdisasmlist[TabCtrl_GetCurSel(lpDebugInfo->hdisasm)], Message, wParam, lParam);
+				// TODO: add code for port monitor
+				int index = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
+				SendMessage(lpDebugInfo->hdisasmlist[index], Message, wParam, lParam);
 				break;
 			}
 			}
@@ -978,6 +993,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 								ShowWindow(lpDebugInfo->hmemlist[i], SW_HIDE);
 							}
 						}
+
 						if (index == lpDebugInfo->total_mem_pane) {
 							ShowWindow(lpDebugInfo->hwatch, SW_SHOW);
 						} else {
@@ -993,6 +1009,13 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 							} else {
 								ShowWindow(lpDebugInfo->hdisasmlist[i], SW_HIDE);
 							}
+						}
+
+						if (index == lpDebugInfo->total_disasm_pane) {
+							ShowWindow(lpDebugInfo->hPortMon, SW_SHOW);
+						}
+						else {
+							ShowWindow(lpDebugInfo->hPortMon, SW_HIDE);
 						}
 						SendMessage(hwnd, WM_SIZE, 0 , 0);
 					}

@@ -24,6 +24,7 @@
 #define g_szRegName 	_T("reg")
 #define g_szMemName		_T("mem")
 #define g_szWatchName	_T("watchpoints")
+#define g_szPortMonitor	_T("portmonitor")
 #define g_szLinkName	_T("link")
 #define g_szLCDName 	_T("wabbitlcd")
 #define g_szWabbitName 	_T("wabbit")

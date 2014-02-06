@@ -177,8 +177,9 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	case WM_COMMAND:
 	{
 		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr((HWND) lParam, GWLP_USERDATA);
-		if (!_tcscmp(vfs->szName, _T("pc")))
-			SendMessage(GetParent(lpDebugInfo->hdisasm), WM_COMMAND, DB_CYCLEPCS, 0);
+		if (!_tcscmp(vfs->szName, _T("pc"))) {
+			SendMessage(lpDebugInfo->hDebug, WM_COMMAND, DB_CYCLEPCS, 0);
+		}
 		Debug_UpdateWindow(lpCalc->hwndDebug);
 		return 0;
 	}

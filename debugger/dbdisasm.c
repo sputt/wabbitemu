@@ -65,8 +65,8 @@ void sprint_data(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 		waddr.addr = zinf->waddr.addr + j;
 		if (waddr.addr % PAGE_SIZE < zinf->waddr.addr % PAGE_SIZE) {
 			waddr.page++;
-			//we don't handle ram changes here because things should never cross pages
-			//therefore i don't really care
+			// we don't handle ram changes here because things should never cross pages
+			// therefore i don't really care
 		}
 		StringCbPrintf(s + (j*2), sizeof(s), _T("%02x"), wmem_read(lpCalc->cpu.mem_c, waddr));
 	}
@@ -748,7 +748,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			dps->last_pagedown = 32;
 			return 0;
 		}
-		case WM_SIZE:	{
+		case WM_SIZE: {
 			RECT rc;
 			WINDOWPOS wp;
 			HDLAYOUT hdl;

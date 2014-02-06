@@ -35,10 +35,10 @@
  * directions the cursor can be in.
  */
 typedef enum _LCD_CURSOR_MODE {
-	X_DOWN,
-	X_UP,
-	Y_DOWN,
-	Y_UP,
+	X_DOWN = 0,
+	X_UP = 1,
+	Y_DOWN = 2,
+	Y_UP = 4,
 	MODE_NONE,
 } LCD_CURSOR_MODE;
 

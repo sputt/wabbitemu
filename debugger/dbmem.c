@@ -784,6 +784,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case DB_STEP:
 				case DB_STEPOVER:
 				case DB_STEPBACK:
+					// FIXME: forward to parent
 					SendMessage(lpTabInfo->lpDebugInfo->hdisasm, WM_COMMAND, wParam, 0);
 					break;
 			}

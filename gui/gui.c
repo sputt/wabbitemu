@@ -21,6 +21,7 @@
 #include "dbtoolbar.h"
 #include "dbdisasm.h"
 #include "dbwatch.h"
+#include "dbmonitor.h"
 
 #include "guibuttons.h"
 #include "guicontext.h"
@@ -363,6 +364,13 @@ void RegisterWindowClasses(void) {
 	wc.style = CS_DBLCLKS;
 	wc.lpfnWndProc = WatchProc;
 	wc.lpszClassName = g_szWatchName;
+	wc.hbrBackground = NULL;
+	RegisterClassEx(&wc);
+
+	// Port Monitor
+	wc.style = CS_DBLCLKS;
+	wc.lpfnWndProc = PortMonitorProc;
+	wc.lpszClassName = g_szPortMonitor;
 	wc.hbrBackground = NULL;
 	RegisterClassEx(&wc);
 
