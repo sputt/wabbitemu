@@ -404,6 +404,9 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 									ComboBox_AddString(hComboOS, _T("OS 2.43"));
 									ComboBox_AddString(hComboOS, _T("OS 2.55 MP"));
 									break;
+								case TI_84PCSE:
+									ComboBox_AddString(hComboOS, _T("OS 4.0"));
+									break;
 								}
 							}
 							ComboBox_SetCurSel(hComboOS, 0);
@@ -466,7 +469,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						case TI_83P:
 						case TI_83PSE:
 						case TI_84P:
-						case TI_84PSE: {
+						case TI_84PSE:
+						case TI_84PCSE: {
 							Button_Enable(hRadioDownload, TRUE);
 							Button_SetCheck(hRadioDownload, BST_CHECKED);
 							Button_SetCheck(hRadioBrowse, BST_UNCHECKED);
@@ -602,7 +606,7 @@ static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version)
 			break;
 		case TI_84PCSE:
 			// TODO: find the correct link
-			//url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS.8Xu");
+			url = _T("http://education.ti.com/download/en/ASIA/5F0CBAC101194542B16B80BCE6CB3602/4D5547F48BBA4384BB85A645D7772A1A/TI84PlusC_OS.8Cu");
 			break;
 	}
 	HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, callback);

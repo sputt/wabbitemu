@@ -113,7 +113,7 @@ BOOT_MINOR	.equ 246
 ;;;  RAM Areas
 ;;;
 
-#IFDEF TI73
+#ifdef TI73
 
 appData         .equ 8000h
 ramCode         .equ 8100h
@@ -139,7 +139,33 @@ OP6             .equ 8462h
 lFont_record    .equ 84A3h
 
 fontFlags       .equ 37
-#ELSE
+#else
+#ifdef TI84PCSE
+appData         .equ 8000h
+ramCode         .equ 8100h
+bootTemp        .equ 8251h
+
+MD5_Temp        .equ 8251h
+MD5_AltRegs     .equ 8259h
+MD5_Length      .equ 8269h
+MD5_Hash        .equ 8292h
+appID           .equ 839Bh
+MD5_Buffer      .equ 83A5h
+
+curRow          .equ 8459h
+curCol          .equ 845Ah
+
+OP1             .equ 84AEh
+OP2             .equ 84B9h
+OP3             .equ 84C4h
+OP4             .equ 84CFh
+OP5             .equ 84DAh
+OP6             .equ 84E5h
+
+lFont_record    .equ 8463h
+
+fontFlags       .equ 50
+#else
 
 appData         .equ 8000h
 ramCode         .equ 8100h
@@ -166,7 +192,8 @@ lFont_record    .equ 845Ah
 
 fontFlags       .equ 50
 
-#ENDIF
+#endif
+#endif
 
 ;;; MD5 registers
 
