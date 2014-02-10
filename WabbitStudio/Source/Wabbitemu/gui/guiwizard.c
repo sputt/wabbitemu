@@ -561,7 +561,9 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					}
 					calc_erase_certificate(lpCalc->mem_c.flash,lpCalc->mem_c.flash_size);
 					calc_reset(lpCalc);
-					//calc_turn_on(lpCalc);
+					if (auto_turn_on) {
+						calc_turn_on(lpCalc);
+					}
 					gui_frame(lpCalc);
 					//write the output from file
 					Static_SetText(hOSStaticProgress, _T("Saving File"));
@@ -1014,7 +1016,9 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 
 					calc_erase_certificate(lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
 					calc_reset(lpCalc);
-					//calc_turn_on(lpCalc);
+					if (auto_turn_on) {
+						calc_turn_on(lpCalc);
+					}
 					gui_frame(lpCalc);
 					//write the output from file
 					MFILE *mfile = ExportRom(buffer, lpCalc);

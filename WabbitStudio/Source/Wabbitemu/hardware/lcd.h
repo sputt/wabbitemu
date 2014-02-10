@@ -94,6 +94,7 @@ typedef struct LCD {
 	u_int shades;					// number of shades of grey
 	LCD_MODE mode;					// Mode of LCD rendering
 	double steady_frame;			// Length of a steady frame in seconds
+	uint16_t screen_addr;			// mem mapped screen address
 } LCD_t;
 
 /* Device functions */

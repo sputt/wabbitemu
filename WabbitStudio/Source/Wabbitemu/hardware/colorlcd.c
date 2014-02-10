@@ -644,7 +644,7 @@ static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int siz
 		green = src + 1;
 		blue = src + 2;
 
-		BOOL flip_rows = LCD_REG_MASK(GATE_SCAN_CONTROL_REG, GATE_SCAN_DIR_MASK);
+		BOOL flip_rows = LCD_REG_MASK(GATE_SCAN_CONTROL_REG, GATE_SCAN_DIR_MASK) ? TRUE : FALSE;
 
 		if (flip_rows) {
 			red += size - 3;
@@ -664,7 +664,7 @@ static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int siz
 		}
 	} else {
 		for (int i = 0; i < size; i++) {
-			dest[i] = TRUCOLOR(src[i], 6);;
+			dest[i] = TRUCOLOR(src[i], 6);
 		}
 	}
 
@@ -685,7 +685,7 @@ static void draw_partial_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src,
 	if (offset + size > COLOR_LCD_WIDTH * COLOR_LCD_DEPTH) {
 		int right_margin_size = (COLOR_LCD_WIDTH * COLOR_LCD_DEPTH) - offset;
 		int left_margin_size = size - right_margin_size;
-		BOOL flip_rows = LCD_REG_MASK(GATE_SCAN_CONTROL_REG, GATE_SCAN_DIR_MASK);
+		BOOL flip_rows = LCD_REG_MASK(GATE_SCAN_CONTROL_REG, GATE_SCAN_DIR_MASK) ? TRUE : FALSE;
 
 		if (flip_rows) {
 			draw_row_image(lcd, dest + left_margin_size, src + offset, right_margin_size);
@@ -711,7 +711,7 @@ static void draw_row(ColorLCD_t *lcd, uint8_t *dest, uint8_t* src,
 	uint8_t interlace_buf[COLOR_LCD_WIDTH * COLOR_LCD_DEPTH];
 
 	int non_display_area_color = LCD_REG_MASK(BASE_IMAGE_DISPLAY_CONTROL_REG, NDL_MASK) ? 0x3F : 0x00;
-	BOOL interlace_cols = LCD_REG_MASK(DRIVER_OUTPUT_CONTROL1_REG, INTERLACED_MASK);
+	BOOL interlace_cols = LCD_REG_MASK(DRIVER_OUTPUT_CONTROL1_REG, INTERLACED_MASK) ? TRUE : FALSE;
 
 	uint8_t *optr = interlace_cols ? interlace_buf : dest;
 
@@ -767,8 +767,6 @@ uint8_t *ColorLCD_Image(LCDBase_t *lcdBase) {
 	ZeroMemory(buffer, COLOR_LCD_DISPLAY_SIZE);
 
 	int p1pos, p1start, p1end, p1width, p2pos, p2start, p2end, p2width;
-	int imgpos1, imgoffs1, imgsize1;
-	int imgpos2, imgoffs2, imgsize2;
 
 	if (!lcdBase->active) {
 		return buffer;
@@ -840,7 +838,7 @@ uint8_t *ColorLCD_Image(LCDBase_t *lcdBase) {
 		}
 	}
 
-	BOOL flip_rows = LCD_REG_MASK(GATE_SCAN_CONTROL_REG, GATE_SCAN_DIR_MASK);
+	BOOL flip_rows = LCD_REG_MASK(GATE_SCAN_CONTROL_REG, GATE_SCAN_DIR_MASK) ? TRUE : FALSE;
 	if (flip_rows) {
 		int tmp = display_width;
 		display_width = start_x;
@@ -853,12 +851,12 @@ uint8_t *ColorLCD_Image(LCDBase_t *lcdBase) {
 	uint8_t *dest = buffer;
 	uint8_t *src = lcd->queued_image;
 
-	imgpos1 = p2pos * COLOR_LCD_DEPTH;
-	imgoffs1 = p2start * COLOR_LCD_DEPTH;
-	imgsize1 = p2width * COLOR_LCD_DEPTH;
-	imgpos2 = p1pos * COLOR_LCD_DEPTH;
-	imgoffs2 = p1start * COLOR_LCD_DEPTH;
-	imgsize2 = p1width * COLOR_LCD_DEPTH;
+	int imgpos1 = p2pos * COLOR_LCD_DEPTH;
+	int imgoffs1 = p2start * COLOR_LCD_DEPTH;
+	int imgsize1 = p2width * COLOR_LCD_DEPTH;
+	int imgpos2 = p1pos * COLOR_LCD_DEPTH;
+	int imgoffs2 = p1start * COLOR_LCD_DEPTH;
+	int imgsize2 = p1width * COLOR_LCD_DEPTH;
 
 	for (int i = 0; i < COLOR_LCD_HEIGHT; i++) {
 		draw_row(lcd, dest, src,
