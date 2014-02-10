@@ -543,7 +543,9 @@ LINK_ERR link_send_var(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 			link_recv_pkt(cpu, &rpkt, data);
 			if (rpkt.command_ID != CID_CTS) {
 				if (rpkt.command_ID == CID_EXIT) {
-					link_send_pkt(cpu, CID_ACK, NULL);
+					if (cpu->pio.model < TI_84PCSE) {
+						link_send_pkt(cpu, CID_ACK, NULL);
+					}
 					return LERR_MEM;
 				} else
 					return LERR_LINK;

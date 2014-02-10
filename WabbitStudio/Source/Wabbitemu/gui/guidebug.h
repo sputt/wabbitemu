@@ -29,6 +29,9 @@ int BrowseTxtFile(TCHAR *);
 #define CY_TOOLBAR 32
 #define MAX_TABS 2
 
+#define EXTRA_DISASM_PANES 1
+#define EXTRA_MEM_PANES 1
+
 typedef struct tagDEBUGWINDOWINFO
 {
 	unsigned int cyGripper;

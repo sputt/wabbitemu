@@ -12,16 +12,20 @@
 typedef struct ColorLCD {
 	LCDBase_t base;
 
-	uint16_t current_register;
+	int current_register;
 	uint8_t display[COLOR_LCD_DISPLAY_SIZE];
 	uint8_t queued_image[COLOR_LCD_DISPLAY_SIZE];
 	uint16_t registers[0xFF];
+
+	int front;
 
 	int read_buffer;
 	int write_buffer;
 
 	int read_step;
 	int write_step;
+
+	int frame_rate;
 } ColorLCD_t;
 
 ColorLCD_t *ColorLCD_init(CPU_t *cpu, int model);

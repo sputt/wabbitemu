@@ -41,7 +41,7 @@ void get_next_filename(TCHAR *ext) {
 #ifdef _WINDOWS
 		_tfopen_s(&test, screenshot_file_name, _T("r"));
 #else
-		test = fopen(gif_file_name, "r");
+		test = fopen(screenshot_file_name, "r");
 #endif
 		i++;
 		if (test) {

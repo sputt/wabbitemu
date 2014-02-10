@@ -2,6 +2,11 @@
 #define GIF_H
 
 #include "calc.h"
+#include "coretypes.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define GIF_FRAME_MAX (320 * 240 * MAX_CALCS)
 
@@ -9,8 +14,6 @@
 #define GIF_START 1
 #define GIF_FRAME 2
 #define GIF_END 3
-
-#include "coretypes.h"
 
 extern int gif_write_state;
 extern int gif_file_size;
@@ -36,4 +39,7 @@ void gif_writer(int shades);
 int gif_convert_color_to_index(int r, int g, int b);
 void gif_clear_palette();
 
+#ifdef __cplusplus
+}
+#endif
 #endif // GIF_H

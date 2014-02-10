@@ -38,8 +38,8 @@ typedef enum _LCD_CURSOR_MODE {
 	X_DOWN = 0,
 	X_UP = 1,
 	Y_DOWN = 2,
-	Y_UP = 4,
-	MODE_NONE,
+	Y_UP = 3,
+	MODE_NONE = 4,
 } LCD_CURSOR_MODE;
 
 /*

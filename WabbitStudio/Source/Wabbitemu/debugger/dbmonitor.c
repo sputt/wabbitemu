@@ -131,8 +131,14 @@ static void DuplicateCalc(LPCALC lpCalc) {
 		calc_slot_free(duplicate_calc);
 	}
 
-	duplicate_calc = calc_slot_new();
-	calc_init_model(duplicate_calc, save->model, NULL);
+	duplicate_calc = (LPCALC) malloc(sizeof(calc_t));
+	ZeroMemory(duplicate_calc, sizeof(calc_t));
+	duplicate_calc->active = TRUE;
+	duplicate_calc->gif_disp_state = GDS_IDLE;
+	duplicate_calc->speed = 100;
+	//calcs[i].breakpoint_callback = calc_debug_callback;
+	
+	calc_init_model(duplicate_calc, save->model, lpCalc->rom_version);
 	LoadSlot(save, duplicate_calc);
 	free(save);
 }
@@ -223,16 +229,13 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		}
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
-				case IDM_PORT_SETBREAKPOINT: {
+				case DB_BREAKPOINT: {
 					int port = port_map[ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED)];
 					lpCalc->cpu.pio.devices[port].breakpoint = !lpCalc->cpu.pio.devices[port].breakpoint;
 					break;
 				}
-				case IDM_PORT_EXIT:
+				case IDM_PORT_EXIT: {
 					SendMessage(hwnd, WM_CLOSE, 0, 0);
-					break;
-				default: {
-					SendMessage(lpDebugInfo->hDebug, WM_COMMAND, wParam, lParam);
 					break;
 				}
 			}

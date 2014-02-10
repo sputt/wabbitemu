@@ -911,7 +911,9 @@
     <None Include="gui\ROM\rom8x\rom8xcolor.8xp">
       <Filter>Resource Files\Wizard</Filter>
     </None>
-    <None Include="gui\ROM\rom8x\rom8x.8xp" />
+    <None Include="gui\ROM\rom8x\rom8x.8xp">
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">
