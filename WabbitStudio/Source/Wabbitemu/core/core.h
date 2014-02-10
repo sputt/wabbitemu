@@ -307,6 +307,7 @@ typedef struct CPU {
 	void(*invalid_flash_callback)(struct CPU *);
 	void(*mem_read_break_callback)(struct CPU *);
 	void(*mem_write_break_callback)(struct CPU *);
+	void(*lcd_enqueue_callback)(struct CPU *);
 } CPU_t;
 
 typedef void (*opcodep)(CPU_t*);

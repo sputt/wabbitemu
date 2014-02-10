@@ -160,8 +160,13 @@ static void reset_x(ColorLCD_t *lcd, uint16_t mode) {
 	}
 }
 
-static void set_register(ColorLCD_t *lcd, uint16_t reg, uint16_t value) {
+static void set_register(CPU_t *cpu, ColorLCD_t *lcd, uint16_t reg, uint16_t value) {
 	int mode = LCD_REG(ENTRY_MODE_REG);
+	BOOL isBreakpoint = lcd->register_breakpoint[reg];
+	if (isBreakpoint) {
+		cpu->pio.breakpoint_callback(cpu, lcd);
+	}
+
 	switch (reg) {
 	case DRIVER_OUTPUT_CONTROL1_REG:
 		lcd->registers[DRIVER_OUTPUT_CONTROL1_REG] = value & DRIVER_OUTPUT_CONTROL1_MASK;
@@ -386,8 +391,10 @@ static void ColorLCD_free(CPU_t *cpu) {
 	free(cpu->pio.lcd);
 }
 
-static void ColorLCD_enqueue(ColorLCD_t *lcd) {
+static void ColorLCD_enqueue(CPU_t *cpu, ColorLCD_t *lcd) {
 	memcpy(lcd->queued_image, lcd->display, COLOR_LCD_DISPLAY_SIZE);
+
+	cpu->lcd_enqueue_callback(cpu);
 }
 
 void ColorLCD_command(CPU_t *cpu, device_t *device) {
@@ -438,7 +445,7 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 		} else {
 			lcd->write_step = !lcd->write_step;
 			if (!lcd->write_step) {
-				set_register(lcd, reg_index, lcd->write_buffer);
+				set_register(cpu, lcd, reg_index, lcd->write_buffer);
 			}
 		}
 
@@ -477,7 +484,7 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 		lcd->base.time = tc_elapsed(cpu->timer_c);
 
 	if ((tc_elapsed(cpu->timer_c) - lcd->base.time) >= (1.0 / lcd->frame_rate)) {
-		ColorLCD_enqueue(lcd);
+		ColorLCD_enqueue(cpu, lcd);
 		lcd->base.time += (1.0 / lcd->frame_rate);
 	}
 }

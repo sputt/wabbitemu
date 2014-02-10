@@ -12,7 +12,6 @@
 
 extern HINSTANCE g_hInst;
 static LPCALC duplicate_calc = NULL;
-static int port_map[0xFF];
 static HWND hwndEditControl;
 static WNDPROC wpOrigEditProc;
 #define COLOR_BREAKPOINT		(RGB(230, 160, 180))
@@ -125,24 +124,6 @@ static int GetValue(TCHAR *str)
 	return value;
 }
 
-static void DuplicateCalc(LPCALC lpCalc) {
-	SAVESTATE_t *save = SaveSlot(lpCalc, _T(""), _T(""));
-	if (duplicate_calc) {
-		calc_slot_free(duplicate_calc);
-	}
-
-	duplicate_calc = (LPCALC) malloc(sizeof(calc_t));
-	ZeroMemory(duplicate_calc, sizeof(calc_t));
-	duplicate_calc->active = TRUE;
-	duplicate_calc->gif_disp_state = GDS_IDLE;
-	duplicate_calc->speed = 100;
-	//calcs[i].breakpoint_callback = calc_debug_callback;
-	
-	calc_init_model(duplicate_calc, save->model, lpCalc->rom_version);
-	LoadSlot(save, duplicate_calc);
-	free(save);
-}
-
 static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 	if (hwndEditControl) {
 		TCHAR buf[10];
@@ -152,17 +133,10 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		int col_num = HIWORD(value);
 		//handles getting the user input and converting it to an int
 		//can convert bin, hex, and dec
-		value = GetValue(buf) & 0xFF;
-		int port_num = port_map[row_num];
+		value = GetValue(buf) & 0xFFFF;
 		BOOL output_backup = lpCalc->cpu.output;
-		int bus_backup = lpCalc->cpu.bus;
-		lpCalc->cpu.bus = value;
-		lpCalc->cpu.output = TRUE;
-		lpCalc->cpu.pio.devices[port_num].code(&lpCalc->cpu, &(lpCalc->cpu.pio.devices[port_num]));
-		lpCalc->cpu.output = output_backup;
-		lpCalc->cpu.bus = bus_backup;
-
-		DuplicateCalc(lpCalc);
+		ColorLCD_t *lcd = (ColorLCD_t *) lpCalc->cpu.pio.lcd;
+		lcd->registers[row_num] = value;
 
 		DestroyWindow(hwndEditControl);
 	}
@@ -187,7 +161,7 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	}
 } 
 
-LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndListView;
 	static LPCALC lpCalc;
 	static LPDEBUGWINDOWINFO lpDebugInfo;
@@ -198,17 +172,10 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 
 			hwndListView = CreateListView(hwnd);
-			int count = 0;
-			for (int i = 0; i < 0xFF; i++) {
-				if (lpCalc->cpu.pio.devices[i].active) {
-					port_map[count] = i;
-					count++;
-				}
-			}
 			LVCOLUMN listCol;
 			memset(&listCol, 0, sizeof(LVCOLUMN));
 			listCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-			listCol.pszText = _T("Port Number");
+			listCol.pszText = _T("Register Index");
 			listCol.cx = 100;
 			ListView_InsertColumn(hwndListView, 0, &listCol);
 			listCol.cx = 90;
@@ -222,7 +189,7 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			ListView_InsertColumn(hwndListView, 3, &listCol);
 			SetWindowFont(hwndListView, lpDebugInfo->hfontSegoe, TRUE);
 
-			InsertListViewItems(hwndListView, count);
+			InsertListViewItems(hwndListView, 0xFF);
 
 			Debug_CreateWindow(hwnd);
 			return TRUE;
@@ -235,8 +202,9 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
 				case DB_BREAKPOINT: {
-					int port = port_map[ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED)];
-					lpCalc->cpu.pio.devices[port].breakpoint = !lpCalc->cpu.pio.devices[port].breakpoint;
+					ColorLCD_t *lcd = (ColorLCD_t *)lpCalc->cpu.pio.lcd;
+					int index = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED);
+					lcd->register_breakpoint[index] = !lcd->register_breakpoint[index];
 					break;
 				}
 				case IDM_PORT_EXIT: {
@@ -299,22 +267,21 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 				case LVN_GETDISPINFO: 
 				{
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
-					int port_num = port_map[plvdi->item.iItem];
-					duplicate_calc->cpu.input = TRUE;
-					duplicate_calc->cpu.pio.devices[port_num].code(&duplicate_calc->cpu, &(duplicate_calc->cpu.pio.devices[port_num]));
+					ColorLCD_t *lcd = (ColorLCD_t *) lpCalc->cpu.pio.lcd;
+					int index = plvdi->item.iItem;
 					switch (plvdi->item.iSubItem)
 					{
 						case 0:
-							StringCchPrintf(plvdi->item.pszText, 10, _T("%02X"), port_num);
+							StringCchPrintf(plvdi->item.pszText, 10, _T("%02X"), index);
 							break;
 						case 1:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("$%02X"), duplicate_calc->cpu.bus);
+							StringCbPrintf(plvdi->item.pszText, 10, _T("$%04X"), lcd->registers[index]);
 							break;	
 						case 2:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("%d"), duplicate_calc->cpu.bus);
+							StringCbPrintf(plvdi->item.pszText, 10, _T("%d"), lcd->registers[index]);
 							break;
 						case 3:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("%%%s"), byte_to_binary(duplicate_calc->cpu.bus));
+							StringCbPrintf(plvdi->item.pszText, 10, _T("%%%s"), byte_to_binary(lcd->registers[index]));
 							break;
 					}
 
@@ -330,14 +297,16 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW); 
 						return TRUE;
 					case CDDS_ITEMPREPAINT: 
-					case CDDS_ITEMPREPAINT | CDDS_SUBITEM: 
+					case CDDS_ITEMPREPAINT | CDDS_SUBITEM:  {
+						ColorLCD_t *lcd = (ColorLCD_t *)lpCalc->cpu.pio.lcd;
 						iRow = (int)pListDraw->nmcd.dwItemSpec; 
-						if (lpCalc->cpu.pio.devices[port_map[iRow]].breakpoint) { 
+						if (lcd->register_breakpoint[iRow]) {
 							// pListDraw->clrText   = RGB(252, 177, 0); 
 							pListDraw->clrTextBk = COLOR_BREAKPOINT; 
 							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NEWFONT); 
 						}
 						return TRUE;
+					}
 					default: 
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_DODEFAULT);
 						return TRUE;
@@ -356,7 +325,6 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		case WM_USER: {
 			switch (wParam) {
 				case DB_CREATE:
-					DuplicateCalc(lpCalc);
 					break;
 				case DB_UPDATE: {
 					InvalidateRect(hwnd, NULL, FALSE);

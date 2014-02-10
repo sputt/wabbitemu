@@ -16,6 +16,7 @@ typedef struct ColorLCD {
 	uint8_t display[COLOR_LCD_DISPLAY_SIZE];
 	uint8_t queued_image[COLOR_LCD_DISPLAY_SIZE];
 	uint16_t registers[0xFF];
+	BOOL register_breakpoint[0xFF];
 
 	int front;
 

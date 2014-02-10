@@ -64,7 +64,7 @@ while ((CRD_TEST & (CRD_##zz##_MASK))==CRD_##zz) {LINECAT(A)
  * Prototypes
  */
 static void LCD_advance_cursor(LCD_t *);
-static void LCD_enqueue(LCD_t *);
+static void LCD_enqueue(CPU_t *cpu, LCD_t *lcd);
 static void LCD_free(CPU_t *);
 static void LCD_reset(CPU_t *);
 static void LCD_timer_refresh(CPU_t * cpu);
@@ -129,18 +129,11 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	}
 	
 	// Set all values to the defaults
-	// TODO: remove
-#ifdef WINVER
-	lcd->shades = (u_int) QueryWabbitKey(_T("shades"));
-	lcd->mode = (LCD_MODE) QueryWabbitKey(_T("lcd_mode"));
-	lcd->steady_frame = 1.0 / QueryWabbitKey(_T("lcd_freq"));
-	lcd->lcd_delay = (u_int) QueryWabbitKey(_T("lcd_delay"));
-#else
 	lcd->shades = LCD_DEFAULT_SHADES;
 	lcd->mode = MODE_PERFECT_GRAY;
 	lcd->steady_frame = 1.0 / FPS;
 	lcd->lcd_delay = NORMAL_DELAY;
-#endif
+
 	if (lcd->shades > LCD_MAX_SHADES) {
 		lcd->shades = LCD_MAX_SHADES;
 	} else if (lcd->shades == 0) {
@@ -244,7 +237,7 @@ static void LCD_command(CPU_t *cpu, device_t *dev) {
 				break;
 			CRD_CASE(SZE):
 				lcd->base.z = CRD_DATA(SZE);
-				LCD_enqueue(lcd);
+				LCD_enqueue(cpu, lcd);
 				break;
 			CRD_CASE(SXE):
 				lcd->base.x = CRD_DATA(SXE);
@@ -315,14 +308,14 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 			lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
 			
 			if (lcd->mode == MODE_PERFECT_GRAY) {
-				LCD_enqueue(lcd);
+				LCD_enqueue(cpu, lcd);
 				lcd->base.time = tc_elapsed(cpu->timer_c);
 			}
 		}
 		
 		if (lcd->mode == MODE_GAME_GRAY) {
 			if ((lcd->base.x == 0) && (lcd->base.y == 0)) {
-				LCD_enqueue(lcd);
+				LCD_enqueue(cpu, lcd);
 				lcd->base.time = tc_elapsed(cpu->timer_c);
 			}
 		}
@@ -366,12 +359,12 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 	// proper grayscale (essentially a fallback on steady freq)
 	if (lcd->mode == MODE_PERFECT_GRAY || lcd->mode == MODE_GAME_GRAY) {	
 		if ((tc_elapsed(cpu->timer_c) - lcd->base.time) >= (1.0 / STEADY_FREQ_MIN)) {
-			LCD_enqueue(lcd);
+			LCD_enqueue(cpu, lcd);
 			lcd->base.time += (1.0 / STEADY_FREQ_MIN);
 		}
 	} else if (lcd->mode == MODE_STEADY) {
 		if ((tc_elapsed(cpu->timer_c) - lcd->base.time) >= lcd->steady_frame) {
-			LCD_enqueue(lcd);
+			LCD_enqueue(cpu, lcd);
 			lcd->base.time += lcd->steady_frame;
 		}
 	}
@@ -410,7 +403,7 @@ static void LCD_advance_cursor(LCD_t *lcd) {
 /* 
  * Add a black and white LCD image to the LCD grayscale queue
  */
-static void LCD_enqueue(LCD_t *lcd) {
+static void LCD_enqueue(CPU_t *cpu, LCD_t *lcd) {
 
 	if (lcd->front == 0) lcd->front = lcd->shades;
 	lcd->front--;
@@ -418,6 +411,8 @@ static void LCD_enqueue(LCD_t *lcd) {
 	for (int i = 0; i < LCD_HEIGHT; i++)
 		for (int j = 0; j < LCD_MEM_WIDTH; j++)
 			lcd->queue[lcd->front][LCD_OFFSET(j, i, LCD_HEIGHT - lcd->base.z)] = lcd->display[LCD_OFFSET(j, i, 0)];
+
+	cpu->lcd_enqueue_callback(cpu);
 	//7/8/11 BuckeyeDude: does not work with z-addressing properly
 	//we now copy to display assuming z offset is 0 always here 
 	//when we enqueue the lcd->z property is taken into account

@@ -220,7 +220,8 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 	static LCD_t *lcd;
 	static CPU_t cpu;
 	static HANDLE hdlThread = NULL;
-	static int shades, freq;
+	static int shades;
+	static double freq;
 	static LCD_MODE mode;
 	switch (Message) {
 		case WM_INITDIALOG: {

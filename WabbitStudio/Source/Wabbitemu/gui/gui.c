@@ -22,6 +22,7 @@
 #include "dbdisasm.h"
 #include "dbwatch.h"
 #include "dbmonitor.h"
+#include "dbcolorlcd.h"
 
 #include "guibuttons.h"
 #include "guicontext.h"
@@ -59,6 +60,8 @@
 #define KEY_TIMER 1
 #define MIN_KEY_DELAY 400
 #define MENU_FILE 0
+#define BOOTFREE_VER_MAJOR 11
+#define BOOTFREE_VER_MINOR 258
 
 CWabbitemuModule _Module;
 
@@ -126,12 +129,6 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 			difference -= TPF;
 		}
 
-		int i;
-		for (i = 0; i < MAX_CALCS; i++) {
-			if (calcs[i].active) {
-				gui_draw(&calcs[i]);
-			}
-		}
 		// Frame skip if we're too far ahead.
 	} else {
 		difference += TPF;
@@ -271,6 +268,58 @@ HWND find_existing_lcd(HWND hwndParent)
 	return FindChildhwnd;
 }
 
+void load_settings(LPCALC lpCalc) {
+	if (lpCalc->model < TI_84PCSE) {
+		LCD_t *lcd = (LCD_t *) lpCalc->cpu.pio.lcd;
+		lcd->shades = (u_int)QueryWabbitKey(_T("shades"));
+		lcd->mode = (LCD_MODE)QueryWabbitKey(_T("lcd_mode"));
+		lcd->steady_frame = 1.0 / QueryWabbitKey(_T("lcd_freq"));
+		lcd->lcd_delay = (u_int)QueryWabbitKey(_T("lcd_delay"));
+	}
+}
+
+void check_bootfree_and_update(LPCALC lpCalc) {
+	if (lpCalc->model < TI_73) {
+		return;
+	}
+
+	u_char *bootFreeString = lpCalc->mem_c.flash + (lpCalc->mem_c.flash_pages - 1) * PAGE_SIZE + 0x0F;
+	if (*bootFreeString != '1') {
+		//not using bootfree
+		return;
+	}
+	if (bootFreeString[1] == '.') {
+		//using normal bootpage
+		return;
+	}
+
+	int majorVer, minorVer;
+	sscanf_s((char *)bootFreeString, "%d.%d", &majorVer, &minorVer);
+	if (MAKELONG(BOOTFREE_VER_MINOR, BOOTFREE_VER_MAJOR) > MAKELONG(minorVer, majorVer)) {
+		TCHAR hexFile[MAX_PATH];
+		ExtractBootFree(lpCalc->model, hexFile);
+		FILE *file;
+		_tfopen_s(&file, hexFile, _T("rb"));
+		writeboot(file, &lpCalc->mem_c, -1);
+		fclose(file);
+		_tfopen_s(&file, lpCalc->rom_path, _T("wb"));
+		if (file) {
+			fclose(file);
+			MFILE *mfile = ExportRom(lpCalc->rom_path, lpCalc);
+			mclose(mfile);
+		}
+	}
+}
+
+LPCALC create_calc_register_events() {
+	LPCALC lpCalc = calc_slot_new();
+	calc_register_event(lpCalc, LCD_ENQUEUE_EVENT, &gui_draw);
+	calc_register_event(lpCalc, ROM_LOAD_EVENT, &load_settings);
+	calc_register_event(lpCalc, ROM_LOAD_EVENT, &check_bootfree_and_update);
+	LoadRegistrySettings(lpCalc);
+	return lpCalc;
+}
+
 /*
 * Checks based on the existence of the main window and the LCD window whether we need
 * to spawn a new process
@@ -367,6 +416,13 @@ void RegisterWindowClasses(void) {
 	wc.style = CS_DBLCLKS;
 	wc.lpfnWndProc = PortMonitorProc;
 	wc.lpszClassName = g_szPortMonitor;
+	wc.hbrBackground = NULL;
+	RegisterClassEx(&wc);
+
+	// Color LCD Monitor
+	wc.style = CS_DBLCLKS;
+	wc.lpfnWndProc = ColorLCDMonitorProc;
+	wc.lpszClassName = g_szLCDMonitor;
 	wc.hbrBackground = NULL;
 	RegisterClassEx(&wc);
 
@@ -556,8 +612,7 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 
 	silent_mode = m_parsedArgs.silent_mode;
 
-	LPCALC lpCalc = calc_slot_new();
-	LoadRegistrySettings(lpCalc);
+	LPCALC lpCalc = create_calc_register_events();
 
 	BOOL loadedRom = FALSE;
 	// ROMs are special, we need to load them first before anything else
@@ -838,17 +893,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	case WM_COMMAND: {
 		switch (LOWORD(wParam)) {
 		case IDM_FILE_NEW: {
-			LPCALC lpCalcNew = calc_slot_new();
+			LPCALC lpCalcNew = create_calc_register_events();
 			if (rom_load(lpCalcNew, lpCalc->rom_path) || 
 				rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey(_T("rom_path"))))
 			{
-				// TODO: this should be handled by the ROM load event
 				lpCalcNew->bSkinEnabled = lpCalc->bSkinEnabled;
 				lpCalcNew->bCutout = lpCalc->bCutout;
 				lpCalcNew->scale = lpCalc->scale;
 				lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
 				lpCalcNew->bAlphaBlendLCD = lpCalc->bAlphaBlendLCD;
-				//lpCalcNew->cpu.pio.lcd->shades = lpCalc->cpu.pio.lcd->shades;
+				if (lpCalcNew->model < TI_84PCSE) {
+					LCD_t *lcd = (LCD_t *) lpCalcNew->cpu.pio.lcd;
+					lcd->shades = ((LCD_t *)lpCalc->cpu.pio.lcd)->shades;
+				}
 
 				if (!lpCalcNew->cpu.pio.lcd->active) {
 					calc_turn_on(lpCalcNew);
