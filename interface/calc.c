@@ -302,6 +302,8 @@ int calc_init_model(LPCALC lpCalc, int model, char *verString) {
 	default:
 		return -1;
 	}
+
+	return error;
 }
 
 BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
@@ -576,9 +578,14 @@ void calc_turn_on(LPCALC lpCalc) {
 	BOOL running = lpCalc->running;
 	lpCalc->fake_running = TRUE;
 	lpCalc->running = TRUE;
-	calc_run_tstates(lpCalc, lpCalc->cpu.timer_c->freq);
+	int time = lpCalc->cpu.timer_c->freq;
+	if (lpCalc->model >= TI_84PCSE) {
+		time *= 2;
+	}
+
+	calc_run_tstates(lpCalc, time);
 	keypad_press(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
-	calc_run_tstates(lpCalc, lpCalc->cpu.timer_c->freq / 2);
+	calc_run_tstates(lpCalc, time / 2);
 	keypad_release(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
 	lpCalc->running = running;
 	lpCalc->fake_running = FALSE;

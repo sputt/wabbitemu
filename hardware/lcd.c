@@ -440,6 +440,7 @@ void LCD_clear(LCD_t *lcd) {
 u_char *LCD_update_image(LCD_t *lcd) {
 	LCDBase_t *lcdBase = (LCDBase_t *) lcd;
 	u_char *screen = (u_char *) malloc(GRAY_DISPLAY_SIZE);
+	ZeroMemory(screen, GRAY_DISPLAY_SIZE);
 	int level = abs((int) lcdBase->contrast - (int) lcd->base_level);
 	int base = (lcdBase->contrast - 54) * 24;
 	if (base < 0) {

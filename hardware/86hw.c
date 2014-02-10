@@ -18,9 +18,9 @@ static void port0(CPU_t *cpu, device_t *dev) {
 		cpu->bus = 0;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		dev->aux = (LPVOID) (0x100 * ((cpu->bus % 0x40) + 0xC0));
+		LCD_t *lcd = (LCD_t *)cpu->pio.lcd;
+		lcd->screen_addr = 0x100 * ((cpu->bus % 0x40) + 0xC0);
 		port10(cpu, dev);
-		cpu->pio.devices[0x10].aux = dev->aux;
 		cpu->output = FALSE;
 		device_t lcd_dev;
 		lcd_dev.aux = cpu->pio.lcd;
@@ -173,9 +173,9 @@ static void port7(CPU_t *cpu, device_t *dev) {
 
 
 static void port10(CPU_t *cpu, device_t *dev) {
-	int screen_addr = (int) dev->aux;
+	LCD_t *lcd = (LCD_t *)dev->aux;
+	int screen_addr = lcd->screen_addr;
 	// Output the entire LCD
-	LCD_t *lcd = (LCD_t *) cpu->pio.lcd;
 	memcpy(lcd->display, cpu->mem_c->banks[mc_bank(screen_addr)].addr + mc_base(screen_addr), DISPLAY_SIZE);
 
 }
@@ -260,7 +260,7 @@ int device_init_86(CPU_t *cpu) {
 	cpu->pio.devices[0x07].code = (devp) &port7;
 
 	cpu->pio.devices[0x10].active = TRUE;
-	cpu->pio.devices[0x10].aux = (void *) 0xFC00;
+	cpu->pio.devices[0x10].aux = lcd;
 	cpu->pio.devices[0x10].code = (devp) &port10;
 
 	cpu->pio.devices[0x11].active = TRUE;

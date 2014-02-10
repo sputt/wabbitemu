@@ -501,8 +501,6 @@ void SaveMEM(SAVESTATE_t* save, memc* mem) {
 	WriteInt(chunk, mem->ram_size);
 	WriteInt(chunk, mem->ram_pages);
 	WriteInt(chunk, mem->step);
-	// compatibility
-	WriteChar(chunk, 0);
 	
 	WriteInt(chunk, mem->boot_mapped);
 	WriteInt(chunk, mem->flash_locked);
@@ -696,6 +694,7 @@ void SaveLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	WriteDouble(chunk, lcd->base.lastgifframe);
 	WriteDouble(chunk, lcd->base.write_avg);
 	WriteDouble(chunk, lcd->base.write_last);
+	WriteInt(chunk, lcd->screen_addr);
 }
 
 void SaveColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
@@ -823,9 +822,12 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	mem->ram_size	= ReadInt(chunk);
 	mem->ram_pages	= ReadInt(chunk);
 	mem->step		= (FLASH_COMMAND) ReadInt(chunk);
-	// dummy read for compatibility. this used to read mem_c->cmd but 
-	// is no longer needed
-	ReadChar(chunk);
+	if (save->version_build <= MEM_C_CMD_BUILD) {
+		// dummy read for compatibility. this used to read mem_c->cmd but 
+		// is no longer needed
+		ReadChar(chunk);
+	}
+
 	mem->boot_mapped= ReadInt(chunk);
 	mem->flash_locked= ReadInt(chunk);
 	mem->flash_version = ReadInt(chunk);
@@ -970,6 +972,13 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	lcd->base.lastgifframe = ReadDouble(chunk);
 	lcd->base.write_avg	= ReadDouble(chunk);
 	lcd->base.write_last = ReadDouble(chunk);
+	if (save->version_build >= LCD_SCREEN_ADDR_BUILD) {
+		lcd->screen_addr = ReadInt(chunk);
+	} else {
+		// use the default and hope you were not
+		// using a custom location
+		lcd->screen_addr = 0xFC00;
+	}
 }
 
 void LoadColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {

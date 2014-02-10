@@ -758,11 +758,11 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	int start_page;
 	switch (cpu->pio.model) {
 	case TI_84P:
-		start_page = 0x2F;
+		start_page = 0x20;
 		break;
 	case TI_83PSE:
 	case TI_84PSE:
-		start_page = 0x5F;
+		start_page = 0x60;
 		break;
 	case TI_84PCSE:
 		start_page = 0x80;

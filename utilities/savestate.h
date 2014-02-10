@@ -28,8 +28,11 @@ typedef struct {
 
 #define CUR_MAJOR 0
 #define CUR_MINOR 1
-#define CUR_BUILD 1
+#define CUR_BUILD 2
 
+// old save state compatibility
+#define MEM_C_CMD_BUILD 1
+#define LCD_SCREEN_ADDR_BUILD 2
 
 #define DETECT_STR		"*WABBIT*"
 #define DETECT_CMP_STR	"*WABCMP*"
