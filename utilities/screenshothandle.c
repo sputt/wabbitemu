@@ -96,9 +96,9 @@ uint8_t* generate_gif_image(LCDBase_t *lcd, int gif_size) {
 			uint8_t color = 0;
 			if (lcd->bytes_per_pixel > 1) {
 				int idx = (row / gif_size) * lcd->width * lcd->bytes_per_pixel + (col / gif_size) * lcd->bytes_per_pixel;
-				double b = image[idx];
-				double g = image[idx+1];
-				double r = image[idx+2];
+				uint8_t b = image[idx];
+				uint8_t g = image[idx + 1];
+				uint8_t r = image[idx + 2];
 				color = (uint8_t) gif_convert_color_to_index(r, g, b);
 			}
 			else {

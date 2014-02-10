@@ -948,10 +948,10 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					break;
 				}
 				case 1000:
-					SendMessage(hwndLastFocus, WM_COMMAND, DB_BREAKPOINT, 0);
+					SendMessage(GetParent(hwnd), WM_COMMAND, DB_BREAKPOINT, 0);
 					break;
 				case 1001:
-					SendMessage(hwndLastFocus, WM_COMMAND, DB_MEMPOINT_WRITE, 0);
+					SendMessage(GetParent(hwnd), WM_COMMAND, DB_MEMPOINT_WRITE, 0);
 					break;
 				case 1002:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEP, 0);
@@ -960,7 +960,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEPOVER, 0);
 					break;
 				case 1004:
-					SendMessage(hwndLastFocus, WM_COMMAND, DB_GOTO, 0);
+					SendMessage(GetParent(hwnd), WM_COMMAND, DB_GOTO, 0);
 					break;
 				case 1005:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEPBACK, 0);

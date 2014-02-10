@@ -188,7 +188,7 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					{
 						TCHAR szROMPath[MAX_PATH];
 						Edit_GetText(hEditRom, szROMPath, ARRAYSIZE(szROMPath));
-						LPCALC lpCalc = calc_slot_new();
+						LPCALC lpCalc = create_calc_register_events();
 						if (rom_load(lpCalc, szROMPath) == TRUE) {
 							gui_frame(lpCalc);
 						} else {
@@ -528,7 +528,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					} else {
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
-					LPCALC lpCalc = calc_slot_new();
+					LPCALC lpCalc = create_calc_register_events();
 					//ok yes i know this is retarded...but this way we can use Load_8xu
 					//outside this function...
 					TCHAR hexFile[MAX_PATH];
@@ -926,7 +926,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					TCHAR buffer[MAX_PATH];
 					SaveFile(buffer, _T("ROMs (*.rom)\0*.rom\0Bins (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST, 0);
-					LPCALC lpCalc = calc_slot_new();
+					LPCALC lpCalc = create_calc_register_events();
 					calc_init_model(lpCalc, model, NULL);
 
 					//slot stuff
@@ -979,8 +979,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 
 					if (ch == '1') {
 						current_page = boot_page;
-					}
-					else {
+					} else {
 						current_page = boot_page2;
 					}
 

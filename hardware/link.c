@@ -833,7 +833,6 @@ u_char *find_field(u_char *dest, u_char id1, u_char id2) {
  * If the identifiers cannot be found, 0 is returned.
  */
 int get_page_size(u_char *dest) {
-	int i;
 	//apparently non user apps have a slightly different header
 	//therefore we have to actually find the identifier
 	dest = find_field(dest, 0x80, 0x81);

@@ -102,18 +102,25 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			return FALSE;
 		case WM_USER:
 		{
-			if (lParam == 0) goto NoFilePreview;
-			
-			FILE *prgFile;
-			_tfopen_s(&prgFile, (TCHAR *) lParam, _T("rb"));
-			if (!prgFile) goto NoFilePreview;
-	
-			SAVESTATE_t *save = ReadSave(prgFile);
-			if (!save) goto NoFilePreviewNotSave;
-			
 			CPU_t cpu = { 0 };
 			timer_context_t tc = { 0 };
 			cpu.timer_c = &tc;
+
+			if (lParam == 0) {
+				goto NoFilePreview;
+			}
+			
+			FILE *prgFile;
+			_tfopen_s(&prgFile, (TCHAR *) lParam, _T("rb"));
+			if (!prgFile) {
+				goto NoFilePreview;
+			}
+	
+			SAVESTATE_t *save = ReadSave(prgFile);
+			if (!save) {
+				goto NoFilePreviewNotSave;
+			}
+			
 			LCD_t *lcd;
 			LCDBase_t *lcdBase;
 			ColorLCD_t *colorlcd;

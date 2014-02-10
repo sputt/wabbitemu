@@ -20,8 +20,12 @@ extern HINSTANCE g_hInst;
 void WriteHumanReadableDump(LPCALC lpCalc, TCHAR *path);
 
 HWND GetDisasmPaneHWND(LPDEBUGWINDOWINFO lpDebugInfo, int index) {
-	if (index == lpDebugInfo->total_disasm_pane) {
+	if (index == lpDebugInfo->total_disasm_pane + 1) {
 		return lpDebugInfo->hPortMon;
+	}
+
+	if (index == lpDebugInfo->total_disasm_pane) {
+		return lpDebugInfo->hLCDMon;
 	}
 	
 	return lpDebugInfo->hdisasmlist[index];
@@ -83,14 +87,7 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 			break;
 		case ID_REG:
 			SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
-			//MoveWindow(hwndChild, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, FALSE);
-			//ShowWindow(hwndChild, SW_HIDE);
 			break;
-		/*case ID_PANECONTAINER:
-			{
-				SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
-				break;
-			}*/
 	}
 	SendMessage(hwndChild, WM_USER, DB_UPDATE, 0);
 	return TRUE;
@@ -300,6 +297,28 @@ void AddPortsTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
 	TabCtrl_SetCurSel(debugInfo->hdisasm, 0);
 }
 
+void AddColorLCDTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
+	if (debugInfo->hLCDMon) {
+		return;
+	}
+
+	debugInfo->hLCDMon = CreateWindow(
+		g_szLCDMonitor,
+		_T(""),
+		WS_VISIBLE | WS_CHILD,
+		3, 20, 400, 200,
+		debugInfo->hdisasm,
+		(HMENU)ID_LCDMON,
+		g_hInst, (LPVOID)debugInfo);
+	TCITEM tie;
+	tie.mask = TCIF_TEXT | TCIF_IMAGE;
+	tie.iImage = -1;
+	tie.pszText = _T("Color LCD Monitor");
+	tie.lParam = (LPARAM)debugInfo->hLCDMon;
+	TabCtrl_InsertItem(debugInfo->hdisasm, 0, &tie);
+	TabCtrl_SetCurSel(debugInfo->hdisasm, 0);
+}
+
 extern HWND hwndPrev;
 
 LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -381,6 +400,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			SetWindowFont(lpDebugInfo->hdisasm, lpDebugInfo->hfontSegoe, TRUE);
 
 			AddPortsTab(lpCalc, lpDebugInfo);
+			if (lpCalc->model >= TI_84PCSE) {
+				AddColorLCDTab(lpCalc, lpDebugInfo);
+			}
 
 			/* Create disassembly window */
 			lpDebugInfo->total_disasm_pane = 0;

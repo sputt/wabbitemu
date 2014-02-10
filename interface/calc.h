@@ -28,9 +28,15 @@ typedef enum {
 	GDS_ENDING
 } gif_disp_states;
 
+typedef enum {
+	ROM_LOAD_EVENT = 1,
+	LCD_ENQUEUE_EVENT,
+} EVENT_TYPE;
+
 #define MIN_BLOCK_SIZE 16
 #define MAX_FLASH_PAGE_SIZE 0x80
 #define MAX_RAM_PAGE_SIZE 0x08
+#define MAX_REGISTERED_EVENTS 0xFF
 typedef struct profiler {
 	BOOL running;
 	int blockSize;
@@ -66,29 +72,6 @@ typedef struct tagCALC {
 	timer_context_t timer_c;
 	AUDIO_t *audio;
 
-#ifdef WINVER
-	CDropTarget *pDropTarget;
-	HWND hwndFrame;
-	HWND hwndLCD;
-	HWND hwndDetachedFrame;
-	HWND hwndDetachedLCD;
-	HWND hwndStatusBar;
-	HWND hwndDebug;
-	HWND hwndButtonOverlay;
-	HWND hwndSmallClose;
-	HWND hwndSmallMinimize;
-	HWND hwndKeyListDialog;
-
-	HDC hdcSkin;
-	HDC hdcButtons;
-	HDC hdcKeymap;
-	
-	clock_t sb_refresh;
-
-	key_string *last_keypress_head;
-	int num_keypresses;
-#endif
-
 	union {
 		struct {
 			breakpoint_t **flash_cond_break;
@@ -118,7 +101,35 @@ typedef struct tagCALC {
 
 	gif_disp_states gif_disp_state;
 
+	typedef struct {
+		EVENT_TYPE type;
+		void(*callback)(tagCALC *);
+	} registered_event_t;
+
+	registered_event_t registered_events[MAX_REGISTERED_EVENTS];
+
 #ifdef _WINDOWS
+	CDropTarget *pDropTarget;
+	HWND hwndFrame;
+	HWND hwndLCD;
+	HWND hwndDetachedFrame;
+	HWND hwndDetachedLCD;
+	HWND hwndStatusBar;
+	HWND hwndDebug;
+	HWND hwndButtonOverlay;
+	HWND hwndSmallClose;
+	HWND hwndSmallMinimize;
+	HWND hwndKeyListDialog;
+
+	HDC hdcSkin;
+	HDC hdcButtons;
+	HDC hdcKeymap;
+
+	clock_t sb_refresh;
+
+	key_string *last_keypress_head;
+	int num_keypresses;
+
 	RECT rectSkin;
 	RECT rectLCD;
 	COLORREF FaceplateColor;
@@ -127,7 +138,7 @@ typedef struct tagCALC {
 	CWabbitemu *pWabbitemu;
 #endif
 
-} calc_t;
+} calc_t, CALC, *LPCALC;
 
 #ifdef WITH_BACKUPS
 typedef struct DEBUG_STATE {
@@ -143,8 +154,6 @@ typedef struct DEBUG_STATE {
 #endif
 #define MAX_SPEED 100*50
 
-typedef struct tagCALC CALC, *LPCALC;
-
 void calc_turn_on(LPCALC);
 LPCALC calc_slot_new(void);
 u_int calc_count(void);
@@ -156,6 +165,7 @@ int calc_run_timed(LPCALC, time_t);
 int calc_run_all(void);
 BOOL calc_start_screenshot(LPCALC calc, const TCHAR *filename);
 void calc_stop_screenshot(LPCALC calc);
+void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, void(*callback)(tagCALC *));
 
 #ifdef WITH_BACKUPS
 void do_backup(LPCALC);
@@ -226,8 +236,7 @@ GLOBAL TCHAR portSettingsPath[MAX_PATH];
 
 GLOBAL const TCHAR *CalcModelTxt[]
 #ifdef CALC_C
-= {	//"???",
-	_T("TI-81"),
+= {	_T("TI-81"),
 	_T("TI-82"),
 	_T("TI-83"),
 	_T("TI-85"),

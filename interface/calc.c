@@ -26,8 +26,6 @@
 #endif
 
 #define FRAME_SUBDIVISIONS 1024
-#define BOOTFREE_VER_MAJOR 11
-#define BOOTFREE_VER_MINOR 258
 
 static void calc_debug_callback(LPCALC lpCalc);
 void exe_violation_callback(CPU_t *cpu);
@@ -35,6 +33,7 @@ void invalid_flash_callback(CPU_t *cpu);
 void mem_read_callback(CPU_t *cpu);
 void mem_write_callback(CPU_t *cpu);
 void port_debug_callback(void *arg1, void *arg2);
+void lcd_enqueue_callback(CPU_t *cpu);
 
 /*
  * Determine the slot for a new calculator.  Return a pointer to the calc
@@ -93,19 +92,19 @@ static void setup_callbacks(LPCALC lpCalc) {
 	lpCalc->cpu.invalid_flash_callback = invalid_flash_callback;
 	lpCalc->cpu.mem_read_break_callback = mem_read_callback;
 	lpCalc->cpu.mem_write_break_callback = mem_write_callback;
+	lpCalc->cpu.lcd_enqueue_callback = lcd_enqueue_callback;
 	lpCalc->cpu.pio.breakpoint_callback = port_debug_callback;
 	lpCalc->cpu.mem_c->breakpoint_manager_callback = check_break_callback;
 }
 
 /* 81 */
 int calc_init_81(LPCALC lpCalc, char *version) {
-	int error = 0;
 	/* INTIALIZE 81 */
-	error |= memory_init_81(&lpCalc->mem_c);
+	int error = memory_init_81(&lpCalc->mem_c);
 	error |= tc_init(&lpCalc->timer_c, MHZ_2);
 	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
-	//v2 is basically an 82
+	// v2 is basically an 82
 	if (*version == '2') {
 		BOOL isBad82 = TRUE;
 		error |= device_init_83(&lpCalc->cpu, isBad82);
@@ -237,37 +236,6 @@ void calc_erase_certificate(unsigned char *mem, int size) {
 	mem[size - 0x8000 + 0x1FE0]		= 0x00;
 	mem[size - 0x8000 + 0x1FE1]		= 0x00;
 	return;
-}
-
-// TODO: move this
-void check_bootfree_and_update(LPCALC lpCalc) {
-	u_char *bootFreeString = lpCalc->mem_c.flash + (lpCalc->mem_c.flash_pages - 1) * PAGE_SIZE + 0x0F;
-	if (*bootFreeString != '1') {
-		//not using bootfree
-		return;
-	}
-	if (bootFreeString[1] == '.') {
-		//using normal bootpage
-		return;
-	}
-#ifdef WINVER
-	int majorVer, minorVer;
-	sscanf_s((char *) bootFreeString, "%d.%d", &majorVer, &minorVer);
-	if (MAKELONG(BOOTFREE_VER_MINOR, BOOTFREE_VER_MAJOR) > MAKELONG(minorVer, majorVer)) {
-		TCHAR hexFile[MAX_PATH];
-		ExtractBootFree(lpCalc->model, hexFile);
-		FILE *file;
-		_tfopen_s(&file, hexFile, _T("rb"));
-		writeboot(file, &lpCalc->mem_c, -1);
-		fclose(file);
-		_tfopen_s(&file, lpCalc->rom_path, _T("wb"));
-		if (file) {
-			fclose(file);
-			MFILE *mfile = ExportRom(lpCalc->rom_path, lpCalc);
-			mclose(mfile);
-		}
-	}
-#endif
 }
 
 int calc_init_model(LPCALC lpCalc, int model, char *verString) {
@@ -413,9 +381,6 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 
 	if (lpCalc != NULL) {
 		lpCalc->cpu.pio.model = lpCalc->model;
-		if (lpCalc->model >= TI_73) {
-			check_bootfree_and_update(lpCalc);
-		}
 
 		if (tifile->save == NULL) {
 			calc_reset(lpCalc);
@@ -423,6 +388,12 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 
 		if (auto_turn_on) {
 			calc_turn_on(lpCalc);
+		}
+
+		for (int i = 0; i < MAX_REGISTERED_EVENTS; i++) {
+			if (lpCalc->registered_events[i].type == ROM_LOAD_EVENT) {
+				lpCalc->registered_events[i].callback(lpCalc);
+			}
 		}
 	}
 
@@ -591,6 +562,22 @@ void calc_turn_on(LPCALC lpCalc) {
 	lpCalc->fake_running = FALSE;
 }
 
+void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, void(*callback)(tagCALC *)) {
+	int i;
+	for (i = 0; i < MAX_REGISTERED_EVENTS; i++) {
+		if (lpCalc->registered_events[i].type == NULL) {
+			break;
+		}
+	}
+
+	if (i == MAX_REGISTERED_EVENTS) {
+		return;
+	}
+
+	lpCalc->registered_events[i].type = event_type;
+	lpCalc->registered_events[i].callback = callback;
+}
+
 BOOL calc_start_screenshot(LPCALC calc, const TCHAR *filename) {
 	if (gif_write_state == GIF_IDLE) {
 		gif_write_state = GIF_START;
@@ -716,17 +703,42 @@ void invalid_flash_callback(CPU_t *cpu) {
 	}
 
 	LPCALC lpCalc = calc_from_cpu(cpu);
+	if (lpCalc == NULL) {
+		return;
+	}
+
 	lpCalc->breakpoint_callback(lpCalc);
 }
 
 void mem_read_callback(CPU_t *cpu) {
 	LPCALC lpCalc = calc_from_cpu(cpu);
+	if (lpCalc == NULL) {
+		return;
+	}
+
 	lpCalc->breakpoint_callback(lpCalc);
 }
 
 void mem_write_callback(CPU_t *cpu) {
 	LPCALC lpCalc = calc_from_cpu(cpu);
+	if (lpCalc == NULL) {
+		return;
+	}
+
 	lpCalc->breakpoint_callback(lpCalc);
+}
+
+void lcd_enqueue_callback(CPU_t *cpu) {
+	LPCALC lpCalc = calc_from_cpu(cpu);
+	if (lpCalc == NULL) {
+		return;
+	}
+
+	for (int i = 0; i < MAX_REGISTERED_EVENTS; i++) {
+		if (lpCalc->registered_events[i].type == LCD_ENQUEUE_EVENT) {
+			lpCalc->registered_events[i].callback(lpCalc);
+		}
+	}
 }
 
 #ifdef WITH_BACKUPS

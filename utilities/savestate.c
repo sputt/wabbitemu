@@ -715,12 +715,15 @@ void SaveColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
 	WriteDouble(chunk, lcd->base.write_last);
 
 	WriteBlock(chunk, lcd->display, COLOR_LCD_DISPLAY_SIZE);
+	WriteBlock(chunk, lcd->queued_image, COLOR_LCD_DISPLAY_SIZE);
 	WriteBlock(chunk, (unsigned char *) &lcd->registers, sizeof(lcd->registers));
 	WriteShort(chunk, lcd->current_register);
 	WriteShort(chunk, lcd->read_buffer);
 	WriteShort(chunk, lcd->write_buffer);
 	WriteInt(chunk, lcd->read_step);
 	WriteInt(chunk, lcd->write_step);
+	WriteInt(chunk, lcd->frame_rate);
+	WriteInt(chunk, lcd->front);
 }
 
 SAVESTATE_t* SaveSlot(void *lpInput, TCHAR *author, TCHAR *comment) {
@@ -999,12 +1002,15 @@ void LoadColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
 	lcd->base.write_last = ReadDouble(chunk);
 
 	ReadBlock(chunk, lcd->display, COLOR_LCD_DISPLAY_SIZE);
+	ReadBlock(chunk, lcd->queued_image, COLOR_LCD_DISPLAY_SIZE);
 	ReadBlock(chunk, (unsigned char *) &lcd->registers, sizeof(lcd->registers));
 	lcd->current_register = ReadShort(chunk);
 	lcd->read_buffer = ReadShort(chunk);
 	lcd->write_buffer = ReadShort(chunk);
 	lcd->read_step = ReadInt(chunk);
 	lcd->write_step = ReadInt(chunk);
+	lcd->frame_rate = ReadInt(chunk);
+	lcd->front = ReadInt(chunk);
 }
 
 void LoadLINK(SAVESTATE_t* save, link_t* link) {

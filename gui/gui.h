@@ -25,6 +25,7 @@
 #define g_szMemName		_T("mem")
 #define g_szWatchName	_T("watchpoints")
 #define g_szPortMonitor	_T("portmonitor")
+#define g_szLCDMonitor	_T("lcdmonitor")
 #define g_szLinkName	_T("link")
 #define g_szLCDName 	_T("wabbitlcd")
 #define g_szWabbitName 	_T("wabbit")
@@ -61,6 +62,7 @@ void gui_debug(LPCALC lpCalc);
 int gui_frame(LPCALC lpCalc);
 void gui_draw(LPCALC lpCalc);
 void GetFileCurrentVersionString(TCHAR *buf, size_t len);
+LPCALC create_calc_register_events();
 extern HACCEL haccelmain;
 
 void RegisterWindowClasses(void);

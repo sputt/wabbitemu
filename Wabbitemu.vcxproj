@@ -78,6 +78,7 @@
     <ClCompile Include="core\reverse_info.c" />
     <ClCompile Include="DBPaneContainer.cpp" />
     <ClCompile Include="debugger\dbbreakpoints.c" />
+    <ClCompile Include="debugger\dbcolorlcd.c" />
     <ClCompile Include="debugger\dbcommon.c" />
     <ClCompile Include="debugger\dbdisasm.c" />
     <ClCompile Include="debugger\dbmem.c" />
@@ -301,6 +302,7 @@
     <ClInclude Include="core\reverse_info_table.h" />
     <ClInclude Include="DBPaneContainer.h" />
     <ClInclude Include="debugger\dbbreakpoints.h" />
+    <ClInclude Include="debugger\dbcolorlcd.h" />
     <ClInclude Include="debugger\dbcommon.h" />
     <ClInclude Include="debugger\dbdisasm.h" />
     <ClInclude Include="debugger\dbmem.h" />

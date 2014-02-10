@@ -370,6 +370,9 @@
     <ClCompile Include="utilities\gif.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="debugger\dbcolorlcd.c">
+      <Filter>Source Files\Debugger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -713,6 +716,9 @@
     </ClInclude>
     <ClInclude Include="GUI\pngexport.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="debugger\dbcolorlcd.h">
+      <Filter>Header Files\Debugger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
