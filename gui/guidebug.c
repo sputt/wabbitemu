@@ -19,6 +19,22 @@ extern HINSTANCE g_hInst;
 
 void WriteHumanReadableDump(LPCALC lpCalc, TCHAR *path);
 
+HWND GetDisasmPaneHWND(LPDEBUGWINDOWINFO lpDebugInfo, int index) {
+	if (index == lpDebugInfo->total_disasm_pane) {
+		return lpDebugInfo->hPortMon;
+	}
+	
+	return lpDebugInfo->hdisasmlist[index];
+}
+
+HWND GetMemPaneHWND(LPDEBUGWINDOWINFO lpDebugInfo, int index) {
+	if (index == lpDebugInfo->total_mem_pane) {
+		return lpDebugInfo->hwatch;
+	}
+
+	return lpDebugInfo->hmemlist[index];
+}
+
 BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 	int idChild;
 	RECT rc;
@@ -47,7 +63,7 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 			tabRc.top = 0;
 			tabRc.bottom = debugInfo->cyDisasm - CY_TOOLBAR;
 			TabCtrl_AdjustRect(hwndChild, FALSE, &tabRc);
-			HWND curTab = index == debugInfo->total_disasm_pane ? debugInfo->hPortMon : debugInfo->hdisasmlist[index];
+			HWND curTab = GetDisasmPaneHWND(debugInfo, index);
 			MoveWindow(curTab, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, FALSE);
 			SendMessage(curTab, WM_USER, DB_UPDATE, 0);
 			break;
@@ -56,7 +72,7 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 			MoveWindow(hwndChild, 3, debugInfo->cyDisasm + debugInfo->cyGripper, rcParent->right - 103 - REG_PANE_WIDTH - 8,
 						debugInfo->cyMem - debugInfo->cyGripper - 3, FALSE);
 			int index = TabCtrl_GetCurSel(hwndChild);
-			HWND curTab = index == debugInfo->total_mem_pane ? debugInfo->hwatch : debugInfo->hmemlist[index];
+			HWND curTab = GetMemPaneHWND(debugInfo, index);
 			MoveWindow(curTab, 3, 24, rcParent->right - REG_PANE_WIDTH - 118, debugInfo->cyMem - debugInfo->cyGripper - 32, FALSE);
 			SendMessage(curTab, WM_USER, DB_UPDATE, 0);
 			break;
@@ -625,7 +641,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			case IDM_FILE_RESET: {
 				LPCALC lpCalc = lpDebugInfo->lpCalc;
 				calc_reset(lpCalc);
-				DisasmGotoAddress(lpDebugInfo->hdisasmlist[TabCtrl_GetCurSel(lpDebugInfo->hdisasm)], 0);
+				HWND hTab = GetDisasmPaneHWND(lpDebugInfo, TabCtrl_GetCurSel(lpDebugInfo->hdisasm));
+				DisasmGotoAddress(hTab, 0);
 				Debug_UpdateWindow(hwnd);
 				break;
 			}
@@ -905,7 +922,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				TabCtrl_SetCurSel(lpDebugInfo->hdisasm, 0);
 				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
 				free(pnmhdr);
-				DisasmGotoAddress(lpDebugInfo->hdisasmlist[TabCtrl_GetCurSel(lpDebugInfo->hdisasm)], (int) lParam);
+				HWND hTab = GetDisasmPaneHWND(lpDebugInfo, TabCtrl_GetCurSel(lpDebugInfo->hdisasm));
+				DisasmGotoAddress(hTab, (int) lParam);
 				break;
 			}
 			case DB_REGULAR_MEM_GOTO_ADDR: {
@@ -916,7 +934,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				TabCtrl_SetCurSel(lpDebugInfo->hdisasm, 0);
 				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
 				free(pnmhdr);
-				MemGotoAddress(lpDebugInfo->hmemlist[TabCtrl_GetCurSel(lpDebugInfo->hmem)], (int) lParam);
+				HWND hTab = GetMemPaneHWND(lpDebugInfo, TabCtrl_GetCurSel(lpDebugInfo->hdisasm));
+				MemGotoAddress(hTab, (int) lParam);
 				break;
 			}
 			case DB_DISASM_GOTO_ADDR: {
@@ -960,19 +979,23 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			case DB_BREAKPOINT:
 			case DB_MEMPOINT_READ:
 			case DB_MEMPOINT_WRITE: {
-				if (lpDebugInfo->hmemlist[TabCtrl_GetCurSel(lpDebugInfo->hmem)] == hwndLastFocus) {
-					SendMessage(lpDebugInfo->hmemlist[TabCtrl_GetCurSel(lpDebugInfo->hmem)], Message, wParam, lParam);
-				} else if (lpDebugInfo->hdisasmlist[TabCtrl_GetCurSel(lpDebugInfo->hdisasm)] == hwndLastFocus) {
-					SendMessage(lpDebugInfo->hdisasmlist[TabCtrl_GetCurSel(lpDebugInfo->hdisasm)], Message, wParam, lParam);
+				int memIndex = TabCtrl_GetCurSel(lpDebugInfo->hmem);
+				int disasmIndex = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
+				HWND hMemTab = GetMemPaneHWND(lpDebugInfo, memIndex);
+				HWND hDisasmTab = GetDisasmPaneHWND(lpDebugInfo, disasmIndex);
+				if (hMemTab == hwndLastFocus) {
+					SendMessage(hMemTab, Message, wParam, lParam);
+				} else if (hDisasmTab == hwndLastFocus) {
+					SendMessage(hDisasmTab, Message, wParam, lParam);
 				}
 				Debug_UpdateWindow(hwnd);
 				break;
 			}
 
 			default: {
-				// TODO: add code for port monitor
 				int index = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
-				SendMessage(lpDebugInfo->hdisasmlist[index], Message, wParam, lParam);
+				HWND hTab = GetDisasmPaneHWND(lpDebugInfo, index);
+				SendMessage(hTab, Message, wParam, lParam);
 				break;
 			}
 			}
@@ -986,37 +1009,28 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					if (header->hwndFrom == lpDebugInfo->hmem) {
 						int i;
 						int index = TabCtrl_GetCurSel(lpDebugInfo->hmem);
-						for (i = 0; i < lpDebugInfo->total_mem_pane; i++) {
+						for (i = 0; i < lpDebugInfo->total_mem_pane + EXTRA_MEM_PANES; i++) {
+							HWND hTab = GetMemPaneHWND(lpDebugInfo, i);
 							if (i == index) {
-								ShowWindow(lpDebugInfo->hmemlist[i], SW_SHOW);
+								ShowWindow(hTab, SW_SHOW);
 							} else {
-								ShowWindow(lpDebugInfo->hmemlist[i], SW_HIDE);
+								ShowWindow(hTab, SW_HIDE);
 							}
 						}
 
-						if (index == lpDebugInfo->total_mem_pane) {
-							ShowWindow(lpDebugInfo->hwatch, SW_SHOW);
-						} else {
-							ShowWindow(lpDebugInfo->hwatch, SW_HIDE);
-						}
 						SendMessage(hwnd, WM_SIZE, 0 , 0);
 					} else if (header->hwndFrom == lpDebugInfo->hdisasm) {
 						int i;
 						int index = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
-						for (i = 0; i < lpDebugInfo->total_disasm_pane; i++) {
+						for (i = 0; i < lpDebugInfo->total_disasm_pane + EXTRA_DISASM_PANES; i++) {
+							HWND hTab = GetDisasmPaneHWND(lpDebugInfo, i);
 							if (i == index) {
-								ShowWindow(lpDebugInfo->hdisasmlist[i], SW_SHOW);
+								ShowWindow(hTab, SW_SHOW);
 							} else {
-								ShowWindow(lpDebugInfo->hdisasmlist[i], SW_HIDE);
+								ShowWindow(hTab, SW_HIDE);
 							}
 						}
 
-						if (index == lpDebugInfo->total_disasm_pane) {
-							ShowWindow(lpDebugInfo->hPortMon, SW_SHOW);
-						}
-						else {
-							ShowWindow(lpDebugInfo->hPortMon, SW_HIDE);
-						}
 						SendMessage(hwnd, WM_SIZE, 0 , 0);
 					}
 				}

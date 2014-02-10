@@ -302,6 +302,10 @@ BOOL WriteBlock(CHUNK_t* chunk, unsigned char *pnt, int length) {
 
 	
 unsigned char ReadChar(CHUNK_t* chunk) {
+	if (chunk->data == NULL) {
+		return 0;
+	}
+
 	unsigned char value;
 	value = chunk->data[chunk->pnt];
 	chunk->pnt += sizeof(unsigned char);
@@ -310,6 +314,10 @@ unsigned char ReadChar(CHUNK_t* chunk) {
 }
 
 unsigned short ReadShort(CHUNK_t* chunk) {
+	if (chunk->data == NULL) {
+		return 0;
+	}
+
 	int i;
 	uint16_t value;
 	unsigned char *pnt = (unsigned char *)(&value);
@@ -326,6 +334,10 @@ unsigned short ReadShort(CHUNK_t* chunk) {
 }
 
 unsigned int ReadInt(CHUNK_t* chunk) {
+	if (chunk->data == NULL) {
+		return 0;
+	}
+
 	int i;
 	uint32_t value;
 	unsigned char *pnt = (unsigned char *)(&value);
@@ -342,6 +354,10 @@ unsigned int ReadInt(CHUNK_t* chunk) {
 }
 
 float ReadFloat(CHUNK_t* chunk) {
+	if (chunk->data == NULL) {
+		return 0;
+	}
+
 	int i;
 	float value;
 	unsigned char *pnt = (unsigned char *)(&value);
@@ -359,6 +375,10 @@ float ReadFloat(CHUNK_t* chunk) {
 
 
 double ReadDouble(CHUNK_t* chunk) {
+	if (chunk->data == NULL) {
+		return 0;
+	}
+
 	int i;
 	double value;
 	unsigned char *pnt = (unsigned char *)(&value);
@@ -374,8 +394,11 @@ double ReadDouble(CHUNK_t* chunk) {
 	return value;
 }
 
-uint64_t ReadLong(CHUNK_t* chunk)
-{
+uint64_t ReadLong(CHUNK_t* chunk) {
+	if (chunk->data == NULL) {
+		return 0;
+	}
+
 	int i;
 	uint64_t value;
 	unsigned char *pnt = (unsigned char *)(&value);
@@ -392,6 +415,11 @@ uint64_t ReadLong(CHUNK_t* chunk)
 }
 
 void ReadBlock(CHUNK_t* chunk, unsigned char *pnt, int length) {
+	if (chunk->data == NULL) {
+		ZeroMemory(pnt, length);
+		return;
+	}
+
 	int i;
 	// we do this min because if the length and the chunk are not
 	// the same size we could end up reading bad data. CheckPNT will

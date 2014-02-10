@@ -6,7 +6,7 @@
 
 void add_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 {
-	breakpoint_t *new_break = (breakpoint_t *)malloc(sizeof(breakpoint_t));
+	LPBREAKPOINT new_break = (LPBREAKPOINT)malloc(sizeof(breakpoint_t));
 	new_break->active = TRUE;
 	new_break->end_addr = waddr.addr % PAGE_SIZE;
 	new_break->type = type;
@@ -15,15 +15,23 @@ void add_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 	new_break->num_conditions = 0;
 	StringCbPrintf(new_break->label, sizeof(new_break->label), _T("%04X"), waddr.addr);
 	LPCALC lpCalc = calc_from_memc(mem);
-	lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] = new_break;
+	if (lpCalc != NULL) {
+		lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] = new_break;
+	}
 }
 
 void rem_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 {
 	LPCALC lpCalc = calc_from_memc(mem);
-	breakpoint_t *lpBreak = lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)];
-	if (lpBreak == NULL)
+	if (lpCalc == NULL) {
 		return;
+	}
+
+	LPBREAKPOINT lpBreak = lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)];
+	if (lpBreak == NULL) {
+		return;
+	}
+
 	free(lpBreak);
 	lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] = NULL;
 }

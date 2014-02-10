@@ -60,6 +60,7 @@ typedef struct tagCALC {
 	time_t time_error;
 
 	BOOL active;
+	BOOL fake_running;
 	CPU_t cpu;
 	memory_context_t mem_c;
 	timer_context_t timer_c;

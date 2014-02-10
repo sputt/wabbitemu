@@ -120,9 +120,24 @@ void DoPropertySheet(HWND hwndOwner) {
 	return;
 }
 
-
 static HWND imgDisplayPreview;
 static double displayFPS = 48.0f;
+
+LCD_t *DupLCDConfig(LCD_t *lcd_dest, const LCD_t *lcd_source, BOOL deep_copy) {
+	if (lcd_dest == NULL || lcd_source == NULL || lcd_dest == lcd_source)
+		return lcd_dest;
+
+	if (deep_copy) {
+		memcpy(lcd_dest, lcd_source, sizeof(LCD_t));
+		ZeroMemory(lcd_dest->queue, sizeof(lcd_dest->queue));
+	}
+	else {
+		lcd_dest->mode = lcd_source->mode;
+		lcd_dest->steady_frame = lcd_source->steady_frame;
+		lcd_dest->shades = lcd_source->shades;
+	}
+	return lcd_dest;
+}
 
 DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 	CPU_t *cpu = (CPU_t *) lpParam;
@@ -144,6 +159,7 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 		case 2: buffer = displayoptionstest_draw_gradient((int)(displayFPS / 10.0f), displayFPS, Time); break;
 		case 3: lcd = lpCalc->cpu.pio.lcd;
 		}
+
 		if (cpu->imode != 3) {
 			fastcopy(buffer, cpu);
 		}
@@ -153,6 +169,7 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 		} else {
 			Time += 1 / displayFPS;
 		}
+
 		screenImage = lcd->image(lcd);
 		
 		StretchDIBits(hdc, 0, 0, 192, 128,
@@ -162,6 +179,7 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 			DIB_RGB_COLORS,
 			SRCCOPY);
 
+		free(screenImage);
 		ReleaseDC(imgDisplayPreview, hdc);
 
 		for(i = 0; i < 16; i++) {
@@ -196,29 +214,14 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 	}
 }
 
-
-LCD_t *DupLCDConfig(LCD_t *lcd_dest, const LCD_t *lcd_source, BOOL deep_copy) {
-	if (lcd_dest == NULL || lcd_source == NULL || lcd_dest == lcd_source)
-		return lcd_dest;
-
-	if (deep_copy) {
-		memcpy(lcd_dest, lcd_source, sizeof(LCD_t));
-		ZeroMemory(lcd_dest->queue, sizeof(lcd_dest->queue));
-	} else {
-		lcd_dest->mode = lcd_source->mode;
-		lcd_dest->steady_frame = lcd_source->steady_frame;
-		lcd_dest->shades = lcd_source->shades;
-	}
-	return lcd_dest;
-}
-
-
 INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND cbMode,  cbSource;
 	static HWND trbShades, trbSteady, trbFPS;
-	static LCD_t *lcd, *lcd_old;
+	static LCD_t *lcd;
 	static CPU_t cpu;
 	static HANDLE hdlThread = NULL;
+	static int shades, freq;
+	static LCD_MODE mode;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			static timer_context_t timer_c;
@@ -227,10 +230,14 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			cpu.timer_c = &timer_c;
 			cpu.imode = 0;
 
-			lcd = LCD_init(&cpu, TI_83P);
-			lcd_old = lcd;
+			LCD_t *current_lcd = (LCD_t *) lpCalc->cpu.pio.lcd;
+			shades = current_lcd->shades;
+			mode = current_lcd->mode;
+			freq = current_lcd->steady_frame;
 
-			DupLCDConfig(lcd, (LCD_t *) lpCalc->cpu.pio.lcd, TRUE);
+			lcd = LCD_init(&cpu, TI_83P);
+
+			DupLCDConfig(lcd, current_lcd, TRUE);
 			lcd->base.active = TRUE;
 			lcd->word_len = 1;
 			lcd->base.contrast = 52;
@@ -302,20 +309,35 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
-				case PSN_KILLACTIVE:
+				case PSN_QUERYCANCEL: {
+					LCD_t *current_lcd = (LCD_t *)lpCalc->cpu.pio.lcd;
+					current_lcd->shades = shades;
+					current_lcd->mode = mode;
+					current_lcd->steady_frame = freq;
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, FALSE);
 					return TRUE;
+				}
+				case PSN_KILLACTIVE: {
+					LCD_t *current_lcd = (LCD_t *)lpCalc->cpu.pio.lcd;
+					current_lcd->shades = shades;
+					current_lcd->mode = mode;
+					current_lcd->steady_frame = freq;
+					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, FALSE);
+					return TRUE;
+				}
 			}
 			break;
 		case WM_COMMAND:
 			switch (HIWORD(wParam)) {
 				case CBN_SELCHANGE:
 					switch (LOWORD(wParam)) {
-					case IDC_CBODISPLAYMODE:
-						lcd->mode = (LCD_MODE) ComboBox_GetCurSel(cbMode);
+					case IDC_CBODISPLAYMODE: {
+						LCD_t *current_lcd = (LCD_t *)lpCalc->cpu.pio.lcd;
+						current_lcd->mode = lcd->mode = (LCD_MODE)ComboBox_GetCurSel(cbMode);
 						EnableWindow(trbSteady, lcd->mode == MODE_STEADY);
 						PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 						return TRUE;
+					}
 					case IDC_CBODISPLAYSOURCE: {
 						int index = ComboBox_GetCurSel(cbSource);
 						BOOL bEnable = TRUE;
@@ -350,13 +372,14 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 		}
 		case WM_HSCROLL:
 		case WM_VSCROLL:
+			LCD_t *current_lcd = (LCD_t *)lpCalc->cpu.pio.lcd;
 			if ((HWND) lParam == trbShades) {
-				lcd->shades = (u_int) SendMessage(trbShades, TBM_GETPOS, 0, 0) - 1;
+				current_lcd->shades = lcd->shades = (u_int)SendMessage(trbShades, TBM_GETPOS, 0, 0) - 1;
 				PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 				return TRUE;
 			}
 			if ((HWND) lParam == trbSteady) {
-				lcd->steady_frame = 1.0 / SendMessage(trbSteady, TBM_GETPOS, 0, 0);
+				current_lcd->steady_frame = lcd->steady_frame = 1.0 / SendMessage(trbSteady, TBM_GETPOS, 0, 0);
 				PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 				return TRUE;
 			}
@@ -364,6 +387,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 				displayFPS = (double) SendMessage(trbFPS, TBM_GETPOS, 0, 0);
 				return TRUE;
 			}
+
 			return FALSE;
 
 	}

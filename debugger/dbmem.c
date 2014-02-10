@@ -686,8 +686,19 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					u_char data[8];
 					ValueSubmit(hwndVal, data, mps->mode + (2 * mps->bText));
 					int i;
+					
 					for (i = 0; i < mps->mode; i++) {
-						mem_write(&mps->lpCalc->mem_c, mps->sel + i, data[i]);
+						waddr_t waddr;
+						int addr = mps->sel + i;
+						if (mps->type == REGULAR) {
+							addr_to_waddr(&mps->lpCalc->mem_c, addr);
+						} else {
+							waddr.addr = addr % PAGE_SIZE;
+							waddr.page = addr / PAGE_SIZE;
+							waddr.is_ram = mps->type == RAM;
+						}
+
+						wmem_write(&mps->lpCalc->mem_c, waddr, data[i]);
 					}
 					Debug_UpdateWindow(GetParent(hwnd));
 					hwndVal = NULL;

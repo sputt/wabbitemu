@@ -61,7 +61,7 @@ static void port3(CPU_t *cpu, device_t *dev) {
 		if ((cpu->bus & 0x01) == 0)
 			stdint->on_latch = FALSE;
 		
-		stdint->intactive = cpu->bus;
+		stdint->intactive = cpu->bus & (BIT(2) | BIT(0));
 		cpu->output = FALSE;
 	}
 	
@@ -240,7 +240,7 @@ int device_init_81(CPU_t *cpu) {
 
 	cpu->pio.devices[0x11].active = TRUE;
 	cpu->pio.devices[0x11].aux = lcd;
-	cpu->pio.devices[0x11].code = (devp) &lcd->base.data;
+	cpu->pio.devices[0x11].code = (devp)lcd->base.data;
 	
 	cpu->pio.lcd		= (LCDBase_t *) lcd;
 	cpu->pio.keypad		= keyp;

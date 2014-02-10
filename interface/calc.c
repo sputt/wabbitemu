@@ -252,7 +252,7 @@ void check_bootfree_and_update(LPCALC lpCalc) {
 	}
 #ifdef WINVER
 	int majorVer, minorVer;
-	scanf_s((char *) bootFreeString, "%d.%d", &majorVer, &minorVer);
+	sscanf_s((char *) bootFreeString, "%d.%d", &majorVer, &minorVer);
 	if (MAKELONG(BOOTFREE_VER_MINOR, BOOTFREE_VER_MAJOR) > MAKELONG(minorVer, majorVer)) {
 		TCHAR hexFile[MAX_PATH];
 		ExtractBootFree(lpCalc->model, hexFile);
@@ -273,6 +273,9 @@ void check_bootfree_and_update(LPCALC lpCalc) {
 int calc_init_model(LPCALC lpCalc, int model, char *verString) {
 	int error;
 	switch (model) {
+	case TI_81:
+		error = calc_init_81(lpCalc, verString);
+		break;
 	case TI_82:
 	case TI_83: {
 		error = calc_init_83(lpCalc, verString);
@@ -411,8 +414,13 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 		if (lpCalc->model >= TI_73) {
 			check_bootfree_and_update(lpCalc);
 		}
+
 		if (tifile->save == NULL) {
 			calc_reset(lpCalc);
+		}
+
+		if (auto_turn_on) {
+			calc_turn_on(lpCalc);
 		}
 	}
 
@@ -469,24 +477,9 @@ void calc_slot_free(LPCALC lpCalc) {
 	}
 }
 
-void calc_turn_on(LPCALC lpCalc)
-{
-	BOOL running = lpCalc->running;
-	lpCalc->running = TRUE;
-	calc_run_seconds(lpCalc, 1.0);
-	keypad_press(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
-	calc_run_seconds(lpCalc, 1.0);
-	keypad_release(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
-#ifdef QUICKLOOK
-	calc_run_seconds(lpCalc, 0.5);
-#endif
-	lpCalc->running = running;
-}
-
 int calc_reset(LPCALC lpCalc) {
 	CPU_reset(&lpCalc->cpu);
 	lpCalc->cpu.pio.lcd->reset(&lpCalc->cpu);
-	//calc_turn_on(lpCalc);
 	return 0;
 }
 
@@ -575,6 +568,22 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	return 0;
 }
 
+void calc_turn_on(LPCALC lpCalc) {
+	if (lpCalc->cpu.pio.lcd->active) {
+		return;
+	}
+
+	BOOL running = lpCalc->running;
+	lpCalc->fake_running = TRUE;
+	lpCalc->running = TRUE;
+	calc_run_tstates(lpCalc, lpCalc->cpu.timer_c->freq);
+	keypad_press(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
+	calc_run_tstates(lpCalc, lpCalc->cpu.timer_c->freq / 2);
+	keypad_release(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
+	lpCalc->running = running;
+	lpCalc->fake_running = FALSE;
+}
+
 BOOL calc_start_screenshot(LPCALC calc, const TCHAR *filename) {
 	if (gif_write_state == GIF_IDLE) {
 		gif_write_state = GIF_START;
@@ -629,7 +638,7 @@ int calc_run_all(void) {
 					}
 				}
 			}
-			if (calcs[j].active) {
+			if (calcs[j].active && !calcs[j].fake_running) {
 				/*if (link_hub[j] != NULL && (!link_hub[MAX_CALCS]->host || link_hub[MAX_CALCS]->host != link_hub[j]->host)
 					&& calcs[j].cpu.is_link_instruction || ((int) (calcs[j].cpu.linking_time - calcs[j].cpu.timer_c->tstates) >= 100000)) {
 					calcs[j].cpu.is_link_instruction = FALSE;

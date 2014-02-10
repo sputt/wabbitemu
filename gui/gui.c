@@ -256,10 +256,6 @@ int gui_frame(LPCALC lpCalc) {
 	CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
 	gui_frame_update(lpCalc);
 
-	if (auto_turn_on) {
-		calc_turn_on(lpCalc);
-	}
-
 	ReleaseDC(lpCalc->hwndFrame, hdc);
 	return 0;
 }

@@ -348,9 +348,6 @@ int gif_convert_color_to_index(int r, int g, int b)
 	int rgb = (r << 16) | (g << 8) | b;
 	auto it = palette.find(rgb);
 	if (it != palette.end()) {
-		if (it->first != rgb) {
-			throw 10;
-		}
 		return it->second;
 	}
 
@@ -427,7 +424,7 @@ void gif_writer(int shades) {
 #ifdef WINVER
 			_tfopen_s(&fp, screenshot_file_name, _T("wb"));
 #else
-			fp = fopen(gif_file_name, "wb");
+			fp = fopen(screenshot_file_name, "wb");
 #endif
 			fwrite(gif_header, 13 + (3 * (1 << (palette_bits))), 1, fp);
 			fwrite(gif_info, 31, 1, fp);
