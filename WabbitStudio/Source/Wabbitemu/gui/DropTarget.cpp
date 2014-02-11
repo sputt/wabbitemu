@@ -4,6 +4,7 @@
 #include "DropTarget.h"
 #include "SendFilesWindows.h"
 #include "fileutilities.h"
+#include "var.h"
 
 extern POINT drop_pt;
 
@@ -250,7 +251,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 							TCHAR szTemp[L_tmpnam_s];
 							_ttmpnam_s(szTemp);
 
-							GetAppDataString(path, sizeof(path));
+							GetStorageString(path, sizeof(path));
 							StringCbCat(path, sizeof(path), szTemp);
 
 							FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
@@ -333,7 +334,7 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 									ZeroMemory(szTemp, sizeof(szTemp));	
 									_ttmpnam_s(szTemp);
 
-									GetAppDataString(szFileName, sizeof(szFileName));
+									GetStorageString(szFileName, sizeof(szFileName));
 									StringCbCat(szFileName, sizeof(szFileName), szTemp);
 
 									FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};

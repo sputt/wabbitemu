@@ -421,11 +421,7 @@ void gif_writer(int shades) {
 			gif_header[7] = gif_xs >> 8;
 			gif_header[8] = gif_ys;
 			gif_header[9] = gif_ys >> 8;
-#ifdef WINVER
 			_tfopen_s(&fp, screenshot_file_name, _T("wb"));
-#else
-			fp = fopen(screenshot_file_name, "wb");
-#endif
 			fwrite(gif_header, 13 + (3 * (1 << (palette_bits))), 1, fp);
 			fwrite(gif_info, 31, 1, fp);
 			gif_file_size = 236;

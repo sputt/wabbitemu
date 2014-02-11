@@ -5,6 +5,7 @@
 #include "guioptions.h"
 #include "gui.h"
 #include "fileutilities.h"
+#include "linksendvar.h"
 #include "registry.h"
 #include "exportvar.h"
 #include "osdownloadcallback.h"
@@ -335,7 +336,7 @@ void ExtractBootFree(int model, TCHAR *hexFile) {
 			resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84PCSE), _T("HEX"));
 			break;
 	}
-	GetAppDataString(hexFile, MAX_PATH);
+	GetStorageString(hexFile, MAX_PATH);
 	//extract and write the open source boot page
 	StringCbCat(hexFile, MAX_PATH, _T("boot.hex"));
 	ExtractResource(hexFile, resource);
@@ -587,7 +588,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version)
 {
 	TCHAR downloaded_file[MAX_PATH];
-	GetAppDataString(downloaded_file, sizeof(downloaded_file));
+	GetStorageString(downloaded_file, sizeof(downloaded_file));
 	StringCbCat(downloaded_file, sizeof(downloaded_file), _T("OS.8xu"));
 	StringCbCopy(osPath, sizeof(osPath), downloaded_file);
 	TCHAR *url;
@@ -1070,7 +1071,7 @@ INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 }
 
 void ExtractDumperProg() {
-	GetAppDataString(dumperPath, sizeof(dumperPath));
+	GetStorageString(dumperPath, sizeof(dumperPath));
 	StringCbCat(dumperPath, sizeof(dumperPath), _T("\\dumper"));
 	HMODULE hModule = GetModuleHandle(NULL);
 	HRSRC hrDumpProg;
@@ -1242,7 +1243,7 @@ int calc_rom_dump(CalcHandle *calc_handle)
 		return err;
 
 	// Get data from dumper
-	GetAppDataString(tmp_filename, sizeof(tmp_filename));
+	GetStorageString(tmp_filename, sizeof(tmp_filename));
 	StringCbCat(tmp_filename, sizeof(tmp_filename), _T("\\temp.rom"));
 
 	err = ticalcs_calc_dump_rom_2(calc_handle, ROMSIZE_AUTO, tmp_filename);

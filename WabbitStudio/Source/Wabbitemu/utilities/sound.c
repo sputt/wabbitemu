@@ -7,7 +7,7 @@
 #include "gif.h"
 
 
-#ifdef WINVER
+#ifdef _WINDOWS
 static void CALLBACK FillSoundBuffer(HWAVEOUT hWaveOut,
 									 UINT uMsg,
 									 DWORD_PTR dwInstance,
@@ -126,7 +126,7 @@ int soundinit(AUDIO_t *audio) {
 	
 	audio->volume			= 0.33f;
 
-#ifdef WINVER
+#ifdef _WINDOWS
 	audio->wfx.nSamplesPerSec	= SAMPLE_RATE;
 	audio->wfx.wBitsPerSample	= SampleSizeBits;
 	audio->wfx.nChannels		= CHANNELS;
@@ -175,7 +175,7 @@ void KillSound(AUDIO_t* audio) {
 		audio->endsnd = 0;
 		audio->enabled	= FALSE;
 		audio->init = 0;
-#ifdef WINVER
+#ifdef _WINDOWS
 		for(i = 0; audio->endsnd < BUFFER_BANKS && i < 200; i++) Sleep(5);
 		waveOutClose(audio->hWaveOut);
 		for(i = 0; audio->endsnd < 100 && i < 200; i++) Sleep(5);
@@ -202,7 +202,7 @@ int playsound(AUDIO_t *audio) {
 			}
 		}
 
-#ifdef WINVER
+#ifdef _WINDOWS
 		waveOutRestart(audio->hWaveOut);
 #endif
 		audio->enabled = 1;
@@ -213,7 +213,7 @@ int playsound(AUDIO_t *audio) {
 int pausesound(AUDIO_t *audio) {
 	if (audio->init == 0) return 0;
 	audio->enabled = 0;
-#ifdef WINVER
+#ifdef _WINDOWS
 	waveOutPause(audio->hWaveOut);
 #endif
 	return 0;

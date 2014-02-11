@@ -159,7 +159,7 @@ static LRESULT CALLBACK TestButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 /* Using a layered window, make the frame window transparent.
  * Also create buttons to allow minimize and close while in skin mode
  */
-int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
+int EnableCutout(LPCALC lpCalc) {
 	if (!lpCalc || !lpCalc->bSkinEnabled) {
 		return 1;
 	}

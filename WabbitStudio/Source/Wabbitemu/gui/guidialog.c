@@ -77,7 +77,7 @@ void SendBugReport(TCHAR *nameBuffer, TCHAR *emailBuffer, TCHAR *titleBuffer, TC
 
 	TCHAR tempFile[MAX_PATH];
 	TCHAR timeStringText[MAX_PATH];
-	GetAppDataString(tempFile, sizeof(tempFile));
+	GetStorageString(tempFile, sizeof(tempFile));
 	time_t timeUploaded;
 	time(&timeUploaded);
 	TCHAR timeString[256];

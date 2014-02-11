@@ -113,7 +113,7 @@ static voidpf ZCALLBACK fopen64_file_func (voidpf opaque, const void* filename, 
         mode_fopen = _T("wb");
 
     if ((filename!=NULL) && (mode_fopen != NULL))
-        file = fopen64((const TCHAR *) filename, mode_fopen);
+        fopen64(&file, (const TCHAR *) filename, mode_fopen);
     return file;
 }
 

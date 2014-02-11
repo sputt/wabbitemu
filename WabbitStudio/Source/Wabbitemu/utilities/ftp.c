@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ftp.h"
 
-#ifdef WINVER
+#ifdef _WINDOWS
 
 HINTERNET OpenFtpConnection() {
 	HINTERNET hInternet = InternetOpen(NULL, INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, NULL);

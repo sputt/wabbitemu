@@ -204,7 +204,7 @@ static STDINT_t* INT86_init(CPU_t* cpu) {
 	return stdint;
 }
 
-static link_t* link_init(CPU_t* cpu) {
+static link_t* link86_init(CPU_t* cpu) {
 	link_t * link = (link_t *) malloc(sizeof(link_t));
 	if (!link) {
 		printf("Couldn't allocate memory for link\n");
@@ -222,7 +222,7 @@ int device_init_86(CPU_t *cpu) {
 
 	keypad_t *keyp = keypad_init(cpu);
 	STDINT_t* stdint = INT86_init(cpu);
-	link_t * link = link_init(cpu);
+	link_t * link = link86_init(cpu);
 	LCD_t *lcd = LCD_init(cpu, TI_86);
 	
 	cpu->pio.devices[0x00].active = TRUE;

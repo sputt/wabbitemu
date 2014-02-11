@@ -265,9 +265,6 @@
     <ClCompile Include="utilities\sendfileswindows.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="utilities\SendFile.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="utilities\expandpane.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -372,6 +369,12 @@
     </ClCompile>
     <ClCompile Include="debugger\dbcolorlcd.c">
       <Filter>Source Files\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\linksendvar.c">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\sendfile.c">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -555,9 +558,6 @@
     <ClInclude Include="Debugger\dbmonitor.h">
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>
-    <ClInclude Include="interface\backups.h">
-      <Filter>Header Files\Interface</Filter>
-    </ClInclude>
     <ClInclude Include="Hardware\81hw.h">
       <Filter>Header Files\Hardware</Filter>
     </ClInclude>
@@ -589,9 +589,6 @@
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="utilities\sendfileswindows.h">
-      <Filter>Source Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="utilities\SendFile.h">
       <Filter>Source Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="debugger\dbbreakpoints.h">
@@ -719,6 +716,15 @@
     </ClInclude>
     <ClInclude Include="debugger\dbcolorlcd.h">
       <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="utilties\linksendvar.h">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\linksendvar.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\SendFile.h">
+      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -10,6 +10,7 @@
 #include "link.h"
 #include "sound.h"
 #include "breakpoint.h"
+#include "state.h"
 
 #ifdef _WINDOWS
 #include "DropTarget.h"
@@ -19,7 +20,6 @@ class CWabbitemu;
 
 
 #include "label.h"
-#include "savestate.h"
 
 typedef enum {
 	GDS_IDLE,
@@ -29,6 +29,7 @@ typedef enum {
 } gif_disp_states;
 
 typedef enum {
+	NO_EVENT = 0,
 	ROM_LOAD_EVENT = 1,
 	LCD_ENQUEUE_EVENT,
 } EVENT_TYPE;
@@ -37,6 +38,8 @@ typedef enum {
 #define MAX_FLASH_PAGE_SIZE 0x80
 #define MAX_RAM_PAGE_SIZE 0x08
 #define MAX_REGISTERED_EVENTS 0xFF
+#define KEY_STRING_SIZE 56
+
 typedef struct profiler {
 	BOOL running;
 	int blockSize;
@@ -45,13 +48,23 @@ typedef struct profiler {
 	uint64_t ram_data[MAX_RAM_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
 } profiler_t;
 
-#define KEY_STRING_SIZE 56
+
 struct key_string {
 	TCHAR *text;
 	int group;
 	int bit;
 	struct key_string *next;
 };
+
+struct tagCALC;
+
+typedef void(*event_callback)(struct tagCALC *);
+
+typedef struct registered_event {
+	EVENT_TYPE type;
+	event_callback callback;
+} registered_event_t;
+
 
 typedef struct tagCALC {
 #ifdef MACVER
@@ -101,11 +114,6 @@ typedef struct tagCALC {
 
 	gif_disp_states gif_disp_state;
 
-	typedef struct {
-		EVENT_TYPE type;
-		void(*callback)(tagCALC *);
-	} registered_event_t;
-
 	registered_event_t registered_events[MAX_REGISTERED_EVENTS];
 
 #ifdef _WINDOWS
@@ -140,13 +148,6 @@ typedef struct tagCALC {
 
 } calc_t, CALC, *LPCALC;
 
-#ifdef WITH_BACKUPS
-typedef struct DEBUG_STATE {
-	SAVESTATE_t *save;
-	struct DEBUG_STATE *next, *prev;
-} debugger_backup;
-#endif
-
 #ifdef QUICKLOOK
 #define MAX_CALCS	1
 #else
@@ -165,15 +166,7 @@ int calc_run_timed(LPCALC, time_t);
 int calc_run_all(void);
 BOOL calc_start_screenshot(LPCALC calc, const TCHAR *filename);
 void calc_stop_screenshot(LPCALC calc);
-void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, void(*callback)(tagCALC *));
-
-#ifdef WITH_BACKUPS
-void do_backup(LPCALC);
-void restore_backup(int index, LPCALC);
-void init_backups();
-void free_backups(LPCALC);
-void free_backup(debugger_backup *);
-#endif
+void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback);
 
 BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName);
 void calc_slot_free(LPCALC);
@@ -197,15 +190,6 @@ void calc_erase_certificate(unsigned char *, int);
 #endif
 
 GLOBAL calc_t calcs[MAX_CALCS];
-//GLOBAL LPCALC lpDebuggerCalc;
-
-#ifdef WITH_BACKUPS
-#define MAX_BACKUPS 10
-GLOBAL debugger_backup * backups[MAX_CALCS];
-GLOBAL int number_backup;
-GLOBAL int current_backup_index;
-GLOBAL int num_backup_per_sec;
-#endif
 
 #ifdef USE_AVI
 #include "avi_utils.h"

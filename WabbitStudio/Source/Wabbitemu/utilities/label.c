@@ -79,22 +79,14 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 #endif
 	TCHAR buffer[1024];
 	TCHAR name[256];
-#ifdef _WINDOWS
 	TCHAR *fileName = ((TCHAR *) lpszFileName) + _tcslen(lpszFileName);
-#else
-	TCHAR *fileName = ((TCHAR *) lpszFileName) + strlen(lpszFileName);
-#endif
 	while (*--fileName != '\\');
 	fileName++;
 
 	unsigned int equate;
 	label_struct *label = &lpCalc->labels[0];	
 
-#ifdef _WINDOWS
 	_tfopen_s(&labelFile, lpszFileName, _T("r"));
-#else
-	labelFile = fopen(lpszFileName, "r");
-#endif
 	if (labelFile == NULL) {
 		_putts(_T("Error opening label files."));
 		return 1;
@@ -116,21 +108,13 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 #endif
 		i = 0;
 		if (buffer[0] != ';')
-#ifdef _WINDOWS
 			i = _stscanf_s(buffer, _T("%s = $%X"), name, &equate);
-#else
-			i = sscanf(buffer, "%s = $%X", name, &equate);
-#endif
 		if (i == 2) {
 			length = (int) _tcslen(name);
 			if (!label_search_tios(name, equate)) {
 				
 				label->name = (TCHAR *) malloc((length + 1) * sizeof(TCHAR));
-#ifdef _WINDOWS
 				StringCchCopy(label->name, length + 1, name);
-#else
-				strcpy(label->name, name);
-#endif
 
 				label->addr = equate & 0xFFFF;
 

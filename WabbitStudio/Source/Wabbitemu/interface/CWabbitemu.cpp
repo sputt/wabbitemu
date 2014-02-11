@@ -8,6 +8,7 @@
 #include "dbdisasm.h"
 #include "calc.h"
 #include "registry.h"
+#include "var.h"
 
 #include "CMemoryContext.h"
 

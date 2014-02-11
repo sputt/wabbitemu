@@ -314,7 +314,7 @@ static STDINT_t* INT83P_init(CPU_t* cpu) {
 	return stdint;
 }
 
-static link_t* link83p_init(CPU_t* cpu) {
+static link_t* link83p_init() {
 	link_t * link = (link_t *) malloc(sizeof(link_t));
 	if (!link) {
 		printf("Couldn't allocate memory for link\n");
@@ -331,7 +331,7 @@ int device_init_83p(CPU_t *cpu) {
 	
 	LINKASSIST_t *assist = (LINKASSIST_t *) malloc(sizeof(LINKASSIST_t));
 	assist->link_enable = 0;
-	link_t *link = link83p_init(cpu);
+	link_t *link = link83p_init();
 	cpu->pio.devices[0x00].active = TRUE;
 	cpu->pio.devices[0x00].aux = assist;
 	cpu->pio.devices[0x00].code = (devp) port0;

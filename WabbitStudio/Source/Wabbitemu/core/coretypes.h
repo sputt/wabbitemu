@@ -18,7 +18,7 @@ typedef uint32_t DWORD, *LPDWORD;
 #endif
 #endif
 
-#ifdef WINVER
+#ifdef _WINDOWS
 typedef int BOOL;
 #else
 #ifndef OBJC_BOOL_DEFINED

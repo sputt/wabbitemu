@@ -13,7 +13,7 @@ extern HINSTANCE g_hInst;
 #define LCD_MARKER_COLOR 0xFFFF0000
 
 BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, u_int skinWidth, u_int skinHeight, RECT *rectLCD) {
-	u_int foundX = -1, foundY = -1;
+	int foundX = -1, foundY = -1;
 	Color pixel;
 	//find the top left corner
 	for (u_int y = 0; y < skinHeight && foundX == -1; y++) {
@@ -129,7 +129,7 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 	}
 
 	//this needs to be done so we can alpha blend the screen
-	HBITMAP oldSkin = (HBITMAP) SelectObject(hdcOverlay, hbmSkinOld);
+	SelectObject(hdcOverlay, hbmSkinOld);
 	BLENDFUNCTION bf;
 	bf.BlendOp = AC_SRC_OVER;
 	bf.BlendFlags = 0;
@@ -324,7 +324,7 @@ int gui_frame_update(LPCALC lpCalc) {
 	}
 
 	if (lpCalc->bCutout && lpCalc->bSkinEnabled)	{
-		if (EnableCutout(lpCalc, hbmTemp) != 0) {
+		if (EnableCutout(lpCalc) != 0) {
 			MessageBox(lpCalc->hwndFrame, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
 		}
 	} else {

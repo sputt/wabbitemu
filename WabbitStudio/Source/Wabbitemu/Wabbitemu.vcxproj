@@ -168,6 +168,7 @@
     <ClCompile Include="utilities\fileutilities.c" />
     <ClCompile Include="utilities\ftp.c" />
     <ClCompile Include="utilities\gif.cpp" />
+    <ClCompile Include="utilities\linksendvar.c" />
     <ClCompile Include="utilities\screenshothandle.c" />
     <ClCompile Include="utilities\ioapi.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -227,7 +228,7 @@
     </ClCompile>
     <ClCompile Include="utilities\print.c" />
     <ClCompile Include="utilities\savestate.c" />
-    <ClCompile Include="utilities\SendFile.cpp" />
+    <ClCompile Include="utilities\sendfile.c" />
     <ClCompile Include="utilities\sendfileswindows.cpp" />
     <ClCompile Include="utilities\sound.c" />
     <ClCompile Include="utilities\unzip.c">
@@ -357,7 +358,6 @@
     <ClInclude Include="hardware\lcd.h" />
     <ClInclude Include="hardware\link.h" />
     <ClInclude Include="hardware\ti_stdint.h" />
-    <ClInclude Include="interface\backups.h" />
     <ClInclude Include="interface\calc.h" />
     <ClInclude Include="interface\CBank.h" />
     <ClInclude Include="interface\CBreakpoint.h" />
@@ -385,6 +385,7 @@
     <ClInclude Include="utilities\flags.h" />
     <ClInclude Include="utilities\ftp.h" />
     <ClInclude Include="utilities\gif.h" />
+    <ClInclude Include="utilities\linksendvar.h" />
     <ClInclude Include="utilities\screenshothandle.h" />
     <ClInclude Include="utilities\ioapi.h" />
     <ClInclude Include="utilities\iowin32.h" />
@@ -400,6 +401,7 @@
     <ClInclude Include="utilities\zconf.h" />
     <ClInclude Include="utilities\zip.h" />
     <ClInclude Include="utilities\zlib.h" />
+    <ClInclude Include="utilties\linksendvar.h" />
     <ClInclude Include="VariantAdapt.h" />
     <ClInclude Include="Wabbitemu_h.h" />
   </ItemGroup>
@@ -744,7 +746,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;USE_AVI;ZLIB_WINAPI;STRSAFE_NO_DEPRECATE;STRFILEVER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

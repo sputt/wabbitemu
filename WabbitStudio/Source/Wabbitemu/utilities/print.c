@@ -219,11 +219,8 @@ void mysprintf(LPCALC lpCalc, TCHAR *output, int outputLength, Z80_info_t* zinf,
 				case 'h': {//offset
 					int val	= (int) va_arg(argp, INT_PTR);
 					TCHAR szOffset[8];
-#ifdef WINVER
 					_stprintf_s(szOffset, _T("%+d"),val);
-#else
-					sprintf(szOffset, "%+d",val);
-#endif
+
 					StringCbCat(output, outputLength, szOffset);
 					break;
 				}
@@ -231,11 +228,7 @@ void mysprintf(LPCALC lpCalc, TCHAR *output, int outputLength, Z80_info_t* zinf,
 				{
 					int val	= (int) va_arg(argp, INT_PTR);
 					TCHAR szAddr[16];
-#ifdef WINVER
 					_stprintf_s(szAddr, _T("%d"), val);
-#else
-					sprintf(szAddr, "%d",val);
-#endif
 					StringCbCat(output, outputLength, szAddr);		
 					break;
 				}

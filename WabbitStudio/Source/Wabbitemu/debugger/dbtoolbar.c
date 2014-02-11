@@ -235,26 +235,6 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				case DB_MEMPOINT_WRITE:
 					SendMessage(hwndLastFocus, WM_COMMAND, wParam, 0);
 					break;
-#ifdef WITH_BACKUPS
-				case IDM_05SECOND:
-				case IDM_10SECOND:
-				case IDM_15SECOND:
-				case IDM_20SECOND:
-				case IDM_25SECOND:
-				case IDM_30SECOND:
-				case IDM_35SECOND:
-				case IDM_40SECOND:
-				case IDM_45SECOND:
-				case IDM_50SECOND:
-				{
-					TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					LPCALC lpCalc = tbb->lpDebugInfo->lpCalc;
-
-					restore_backup(((int) wParam) - IDM_05SECOND, lpCalc);
-					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
-					break;
-				}
-#endif
 			}
 			break;
 		}
@@ -850,16 +830,6 @@ BOOL CALLBACK EnumToolbarRedraw(HWND hwndChild, LPARAM lParam) {
 static HMENU rewindmenu;
 HMENU CreateRewindMenu() {
 	rewindmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_DISASM_REWIND_MENU));
-#if WITH_BACKUPS
-	TCHAR buf[256];
-	int i;
-	float j = 1 / ((float) num_backup_per_sec);
-	for (i = 0; i < MAX_BACKUPS; i++) {
-		StringCbPrintf(buf, sizeof(buf), _T("%.2f"), j * (i + 1));
-		StringCbCat(buf, sizeof(buf), _T(" seconds"));
-		ModifyMenu(rewindmenu, IDM_05SECOND + i, MF_BYCOMMAND | MF_STRING, 0, buf);
-	}
-#endif
 	return rewindmenu;
 }
 
@@ -920,23 +890,6 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case DB_MEMPOINT_WRITE:
 					SendMessage(hwndLastFocus, WM_COMMAND, wParam, 0);
 					break;
-#ifdef WITH_BACKUPS
-				case IDM_05SECOND:
-				case IDM_10SECOND:
-				case IDM_15SECOND:
-				case IDM_20SECOND:
-				case IDM_25SECOND:
-				case IDM_30SECOND:
-				case IDM_35SECOND:
-				case IDM_40SECOND:
-				case IDM_45SECOND:
-				case IDM_50SECOND:
-				{
-					restore_backup(((int) wParam) - IDM_05SECOND, lpCalc);
-					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
-					break;
-				}
-#endif
 				case 999: {
 					TBBTN *tbb = (TBBTN *) GetWindowLongPtr((HWND) lParam, GWLP_USERDATA);
 					if (lpCalc->running) {
