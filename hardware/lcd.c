@@ -407,7 +407,9 @@ static void LCD_enqueue(CPU_t *cpu, LCD_t *lcd) {
 		for (int j = 0; j < LCD_MEM_WIDTH; j++)
 			lcd->queue[lcd->front][LCD_OFFSET(j, i, LCD_HEIGHT - lcd->base.z)] = lcd->display[LCD_OFFSET(j, i, 0)];
 
-	cpu->lcd_enqueue_callback(cpu);
+	if (cpu->lcd_enqueue_callback != NULL) {
+		cpu->lcd_enqueue_callback(cpu);
+	}
 	//7/8/11 BuckeyeDude: does not work with z-addressing properly
 	//we now copy to display assuming z offset is 0 always here 
 	//when we enqueue the lcd->z property is taken into account

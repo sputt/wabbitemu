@@ -8,16 +8,21 @@
 extern HINSTANCE g_hInst;
 
 #define EXPAND_PANE_BASE_ID	1137
-static int ID = EXPAND_PANE_BASE_ID;
-
-//#define MAX_SLIDE_SPEED 	8
-//#define SLIDE_ACCEL 		0.65
+static int IDArray[MAX_CALCS] = {
+	EXPAND_PANE_BASE_ID,
+	EXPAND_PANE_BASE_ID,
+	EXPAND_PANE_BASE_ID,
+	EXPAND_PANE_BASE_ID,
+	EXPAND_PANE_BASE_ID,
+	EXPAND_PANE_BASE_ID,
+	EXPAND_PANE_BASE_ID,
+	EXPAND_PANE_BASE_ID
+};
 
 #define MAX_SLIDE_SPEED 	20
 #define SLIDE_ACCEL 		1.3
 
 #define MAX_FADE (600/20)
-//static int expand_pane_selection = -1;
 
 typedef enum {
 	EP_CLOSED,
@@ -56,7 +61,7 @@ HWND CreateExpandPane(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *nam
 	eps->lpDebugInfo = lpDebugInfo;
 	//eps->bFading = TRUE;
 
-	if (ID == EXPAND_PANE_BASE_ID) {
+	if (IDArray[lpDebugInfo->lpCalc->slot] == EXPAND_PANE_BASE_ID) {
 		lpDebugInfo->TotalPanes = 0;
 	}
 
@@ -65,7 +70,7 @@ HWND CreateExpandPane(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *nam
 			name,
 			WS_VISIBLE | WS_CHILD,
 			0, 0, 1, 1,
-			hwndParent, (HMENU) ID++, g_hInst,
+			hwndParent, (HMENU)IDArray[lpDebugInfo->lpCalc->slot]++, g_hInst,
 			eps);
 	if (hwndExp == NULL)
 		return NULL;
@@ -573,7 +578,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			TCHAR name[256];
 			GetWindowText(hwnd, name, ARRAYSIZE(name));
 			SaveDebugKey(name, REG_DWORD, &eps->ExpandState);
-			ID--;
+			IDArray[eps->lpDebugInfo->lpCalc->slot]--;
 			free(eps);
 		}
 		default:

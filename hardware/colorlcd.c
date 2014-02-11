@@ -394,7 +394,9 @@ static void ColorLCD_free(CPU_t *cpu) {
 static void ColorLCD_enqueue(CPU_t *cpu, ColorLCD_t *lcd) {
 	memcpy(lcd->queued_image, lcd->display, COLOR_LCD_DISPLAY_SIZE);
 
-	cpu->lcd_enqueue_callback(cpu);
+	if (cpu->lcd_enqueue_callback != NULL) {
+		cpu->lcd_enqueue_callback(cpu);
+	}
 }
 
 void ColorLCD_command(CPU_t *cpu, device_t *device) {
