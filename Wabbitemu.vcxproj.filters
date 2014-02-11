@@ -717,9 +717,6 @@
     <ClInclude Include="debugger\dbcolorlcd.h">
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>
-    <ClInclude Include="utilties\linksendvar.h">
-      <Filter>Header Files\Interface</Filter>
-    </ClInclude>
     <ClInclude Include="utilities\linksendvar.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
