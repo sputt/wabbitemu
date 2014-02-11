@@ -401,7 +401,6 @@
     <ClInclude Include="utilities\zconf.h" />
     <ClInclude Include="utilities\zip.h" />
     <ClInclude Include="utilities\zlib.h" />
-    <ClInclude Include="utilties\linksendvar.h" />
     <ClInclude Include="VariantAdapt.h" />
     <ClInclude Include="Wabbitemu_h.h" />
   </ItemGroup>
