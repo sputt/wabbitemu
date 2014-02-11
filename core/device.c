@@ -2,15 +2,6 @@
 
 #include "device.h"
 
-#ifdef DEBUG
-void console_output(CPU_t *cpu, device_t *dev) {
-	if (cpu->output) {
-		printf("output byte: %d\n",cpu->bus);
-		cpu->output = FALSE;
-	}
-}
-#endif
-
 void ClearDevices(CPU_t* cpu) {
 	int i;
 	for (i = 0; i < ARRAYSIZE(cpu->pio.interrupt); i++) {

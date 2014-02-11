@@ -64,7 +64,7 @@ int SaveFile(TCHAR *lpstrFile, const TCHAR *lpstrFilter, const TCHAR *lpstrTitle
 
 BOOL ValidPath(TCHAR *lpstrFile) {
 	FILE *file;
-#ifdef WINVER
+#ifdef _WINDOWS
 	errno_t error = _tfopen_s(&file, lpstrFile, _T("r"));
 	if (file)
 		fclose(file);
@@ -77,8 +77,8 @@ BOOL ValidPath(TCHAR *lpstrFile) {
 #endif
 }
 
-void GetAppDataString(TCHAR *buffer, int len) {
-#ifdef WINVER
+void GetStorageString(TCHAR *buffer, int len) {
+#ifdef _WINDOWS
 	TCHAR *env;
 	size_t envLen;
 	_tdupenv_s(&env, &envLen, _T("appdata"));
@@ -89,7 +89,6 @@ void GetAppDataString(TCHAR *buffer, int len) {
 	StringCbCat(buffer, len, _T("\\Wabbitemu\\"));
 	free(env);
 #else
-	strcpy(temp_save, getenv("appdata"));
-	strcat(temp_save, tmpfn);
+	strcpy(buffer, "~/.wabbitemu");
 #endif
 }

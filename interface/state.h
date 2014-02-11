@@ -2,7 +2,6 @@
 #define STATE_H_
 
 #include "core.h"
-#include "var.h"		// TIFILE
 
 typedef struct apphdr {
 	TCHAR name[12];

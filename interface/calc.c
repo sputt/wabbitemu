@@ -16,12 +16,9 @@
 #include "keys.h"
 #include "lcd.h"
 #include "colorlcd.h"
+#include "savestate.h"
 
 #ifdef _WINDOWS
-#include "CCalcAddress.h"
-#include "CPage.h"
-#include "exportvar.h"
-#include "guiwizard.h"
 #include "CWabbitemu.h"
 #endif
 
@@ -39,9 +36,6 @@ void lcd_enqueue_callback(CPU_t *cpu);
  * Determine the slot for a new calculator.  Return a pointer to the calc
  */
 LPCALC calc_slot_new(void) {
-#ifdef WITH_BACKUPS
-	current_backup_index = 10;
-#endif
 	if (link_hub[MAX_CALCS] == NULL) {
 		memset(link_hub, 0, sizeof(link_hub));
 		link_t *hub_link = (link_t *) malloc(sizeof(link_t)); 
@@ -443,10 +437,6 @@ void calc_slot_free(LPCALC lpCalc) {
 		free(lpCalc->cpu.pio.lcd);
 		lpCalc->cpu.pio.lcd = NULL;
 
-#ifdef WITH_BACKUPS
-		if (do_backups)
-			free_backups(lpCalc);
-#endif
 	}
 }
 
@@ -461,7 +451,7 @@ int calc_reset(LPCALC lpCalc) {
  */
 static void calc_debug_callback(LPCALC lpCalc)
 {
-#ifdef WINVER
+#ifdef _WINDOWS
 	if (lpCalc->pWabbitemu != NULL) {
 		waddr_t addr = addr_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc);
 		lpCalc->pWabbitemu->Fire_OnBreakpoint(&addr);
@@ -562,10 +552,10 @@ void calc_turn_on(LPCALC lpCalc) {
 	lpCalc->fake_running = FALSE;
 }
 
-void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, void(*callback)(tagCALC *)) {
+void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback) {
 	int i;
 	for (i = 0; i < MAX_REGISTERED_EVENTS; i++) {
-		if (lpCalc->registered_events[i].type == NULL) {
+		if (lpCalc->registered_events[i].type == NO_EVENT) {
 			break;
 		}
 	}
@@ -740,76 +730,6 @@ void lcd_enqueue_callback(CPU_t *cpu) {
 		}
 	}
 }
-
-#ifdef WITH_BACKUPS
-void do_backup(LPCALC lpCalc) {
-	if (!lpCalc->running)
-		return;
-	int slot = lpCalc->slot;
-	if (number_backup > MAX_BACKUPS) {
-		debugger_backup* oldestBackup = backups[slot];
-		while(oldestBackup->prev != NULL)
-			oldestBackup = oldestBackup->prev;
-		oldestBackup->next->prev = NULL;
-		free_backup(oldestBackup);
-	}
-	debugger_backup *backup = (debugger_backup *) malloc(sizeof(debugger_backup));
-	backup->save = SaveSlot(lpCalc, _T("Backup save"), _T("Wabbitemu"));
-	backup->next = NULL;
-	backup->prev = backups[slot];
-	if (backups[slot] != NULL)
-		backups[slot]->next = backup;
-	backups[slot] = backup;
-	number_backup++;
-}
-void restore_backup(int index, LPCALC lpCalc) {
-	int slot = lpCalc->slot;
-	debugger_backup* backup = backups[slot];
-	while (index > 0) {
-		if (backup->prev == NULL)
-			break;
-		backup = backup->prev;
-		free_backup(backup->next);
-		index--;
-	}
-	//shouldn't happen
-	if (backup != NULL)
-		LoadSlot(backup->save, lpCalc);
-	backups[slot] = backup;
-}
-
-void init_backups() {
-	int i;
-	number_backup = 0;
-	for(i = 0; i < MAX_CALCS; i++)
-		backups[i] = NULL;
-}
-
-void free_backup(debugger_backup* backup) {
-	if (backup == NULL)
-		return;
-	FreeSave(backup->save);
-	free(backup);
-	number_backup--;
-}
-
-/*
- * Frees all backups from memory
- */
-void free_backups(LPCALC lpCalc) {
-	int slot = lpCalc->slot;
-	debugger_backup *backup_prev, *backup = backups[slot];
-	if (backup == NULL)
-		return;
-	do {
-		backup_prev = backup->prev;
-		free_backup(backup);
-		backup = backup_prev;
-	} while(backup != NULL);
-	backups[slot] = NULL;
-	number_backup = 0;
-}
-#endif
 
 int calc_run_seconds(LPCALC lpCalc, double seconds) {
 	time_t time = (time_t ) (seconds * CLOCKS_PER_SEC);

@@ -365,9 +365,6 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	sync_cores = (BOOL) QueryWabbitKey(_T("sync_cores"));
 	startX = (int) QueryWabbitKey(_T("startX"));
 	startY = (int) QueryWabbitKey(_T("startY"));
-#ifdef WITH_BACKUPS
-	num_backup_per_sec = (int) QueryWabbitKey(_T("num_backup_per_sec"));
-#endif
 	lpCalc->bAlwaysOnTop = (BOOL) QueryWabbitKey(_T("always_on_top"));
 	lpCalc->bCustomSkin = (BOOL) QueryWabbitKey(_T("custom_skin"));
 	lpCalc->mem_c.ram_version = (int) QueryWabbitKey(_T("ram_version"));
@@ -494,9 +491,6 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 			SaveWabbitKey(_T("lcd_freq"), REG_DWORD, &steady);
 			SaveWabbitKey(_T("lcd_delay"), REG_DWORD, &lcd->lcd_delay);
 		}
-#ifdef WITH_BACKUPS
-		SaveWabbitKey(_T("num_backup_per_sec"), REG_DWORD, &num_backup_per_sec);
-#endif
 		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->scale);
 
 		TCHAR versionBuffer[32];

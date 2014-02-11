@@ -612,7 +612,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					// Create the GIF that is going to be produced by the drag
 					TCHAR fn[MAX_PATH];
-					GetAppDataString(fn, sizeof(fn));
+					GetStorageString(fn, sizeof(fn));
 					StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.png"));
 
 					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);

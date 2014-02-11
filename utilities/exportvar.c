@@ -60,11 +60,7 @@ MFILE *mopen(const TCHAR *filename, const TCHAR * mode) {
 	MFILE* mf= (MFILE *) malloc(sizeof(MFILE));
 	memset(mf, 0, sizeof(MFILE));
 	if (filename) {
-#ifdef WINVER
 		_tfopen_s(&mf->stream, filename, mode);
-#else
-		mf->stream = fopen(filename, mode);
-#endif
 		if (!mf->stream) {
 			free(mf);
 			return NULL;

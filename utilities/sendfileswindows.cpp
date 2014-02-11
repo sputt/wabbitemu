@@ -7,7 +7,7 @@
 #include "label.h"
 #include "state.h"
 #include "var.h"
-#include "link.h"
+#include "linksendvar.h"
 #include "fileutilities.h"
 
 typedef class SENDINFO
@@ -251,7 +251,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 			HANDLE hFind;
 			TCHAR path[MAX_PATH];
 			TCHAR search[MAX_PATH];
-			GetAppDataString(path, sizeof(path));
+			GetStorageString(path, sizeof(path));
 			StringCbCat(path, sizeof(path), _T("Zip\\"));
 			StringCbCopy(search, sizeof(search), path);
 			StringCbCat(search, sizeof(search), _T("*"));

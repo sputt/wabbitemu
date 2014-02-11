@@ -190,30 +190,18 @@ int ReadIntelHex(FILE *ifile, INTELHEX_t *ihex) {
 	if (!fgets((char*) str, 580, ifile))
 		return 0;
 	if (str[0] == 0) memcpy(str, str+1, 579);
-#ifdef WINVER
 	if (sscanf_s((const char*) str, ":%02X%04X%02X%*s", &size, &addr, &type) != 3)
-#else
-	if (sscanf((const char*) str, ":%02X%04X%02X%*s", &size, &addr, &type) != 3)
-#endif
 		return 0;
 	ihex->DataSize = size;
 	ihex->Address = addr;
 	ihex->Type = type;
 	memset(ihex->Data, 0x00, 256);
 	for (i = 0; i < size; i++) {
-#ifdef WINVER
 		if (sscanf_s((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
-#else
-		if (sscanf((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
-#endif
 			return 0;
 		ihex->Data[i] = (BYTE) byte;
 	}
-#ifdef WINVER
 	if (sscanf_s((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
-#else
-	if (sscanf((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
-#endif
 		return 0;
 	ihex->CheckSum = byte;
 	return 1;
@@ -224,7 +212,7 @@ TIFILE_t* ImportZipFile(LPCTSTR filePath, TIFILE_t *tifile) {
 	unzFile uf;
 	TCHAR path[MAX_PATH];
 	uf = unzOpen(filePath);
-	GetAppDataString(path, sizeof(path));
+	GetStorageString(path, sizeof(path));
 	StringCbCat(path, sizeof(path), _T("\\Zip"));
 	int err = extract_zip(uf, path);
 	unzClose(uf);
@@ -659,11 +647,7 @@ TIFILE_t* importvar(LPCTSTR filePath, BOOL only_check_header) {
 	const TCHAR *pext = _tcsrchr(filePath, _T('.'));
 	if (pext != NULL)
 	{
-#ifdef _WINDOWS
 		StringCbCopy(extension, sizeof(extension), pext);
-#else
-		_tcscpy_s(extension, pext);
-#endif
 	}
 
 	tifile = InitTiFile();
@@ -690,20 +674,17 @@ TIFILE_t* importvar(LPCTSTR filePath, BOOL only_check_header) {
 		return tifile;
 	}
 #endif
-#ifdef WINVER
+
 	_tfopen_s(&infile, filePath, _T("rb"));
-#else
-	infile = fopen(filePath, "rb");
-#endif
 	if (infile == NULL) {
 		return FreeTiFile(tifile);
 	}
 
 	ReadTiFileHeader(infile, tifile);
-	//the last part is to make sure we don't allow files that cant be imported but
-	//assumed to be ROMs until we try to read data. Why? because we don't read the
-	//size of the data till we import. Since importing a ROM is fast and I don't
-	//care enough to fix and this was meant for speed checking files on drop its fine
+	// the last part is to make sure we don't allow files that cant be imported but
+	// assumed to be ROMs until we try to read data. Why? because we don't read the
+	// size of the data till we import. Since importing a ROM is fast and I don't
+	// care enough to fix and this was meant for speed checking files on drop its fine
 	if (only_check_header && tifile->type != ROM_TYPE) {
 		fclose(infile);
 		return tifile;

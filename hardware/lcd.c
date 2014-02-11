@@ -3,11 +3,6 @@
 #include "lcd.h"
 #include "83psehw.h"
 #include "screenshothandle.h"
-#ifdef WINVER
-#include "registry.h"
-#endif
-
-#include "calc.h"
 
 /* 
  * Differing interpretations of contrast require that

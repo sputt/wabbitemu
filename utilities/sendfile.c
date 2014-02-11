@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "calc.h"
-#include "link.h"
+#include "linksendvar.h"
 #include "label.h"
 
 //Sends a file to the given calculator

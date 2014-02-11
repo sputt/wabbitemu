@@ -5,9 +5,7 @@
 #include "lcd.h"
 #include "colorlcd.h"
 #include "screenshothandle.h"
-#ifdef WINVER
 #include "fileutilities.h"
-#endif
 
 TCHAR pngext[5] = _T("png");
 TCHAR gifext[5] = _T("ext");
@@ -38,11 +36,7 @@ void get_next_filename(TCHAR *ext) {
 
 	do {
 		generate_screenshot_name(screenshot_fn_backup, i, screenshot_file_name, ext);
-#ifdef _WINDOWS
 		_tfopen_s(&test, screenshot_file_name, _T("r"));
-#else
-		test = fopen(screenshot_file_name, "r");
-#endif
 		i++;
 		if (test) {
 			fclose(test);

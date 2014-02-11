@@ -34,7 +34,7 @@ typedef struct {
 	int init;
 	int enabled;
 	volatile int endsnd;
-#ifdef WINVER
+#ifdef _WINDOWS
 	HWAVEOUT hWaveOut;
 	WAVEFORMATEX wfx;
 

@@ -11,8 +11,8 @@
 #include "pngexport.h"
 
 #include "var.h"
-#include "link.h"
 #include "keys.h"
+#include "linksendvar.h"
 #include "fileutilities.h"
 #include "exportvar.h"
 
@@ -313,6 +313,10 @@ void check_bootfree_and_update(LPCALC lpCalc) {
 
 LPCALC create_calc_register_events() {
 	LPCALC lpCalc = calc_slot_new();
+	if (lpCalc == NULL) {
+		return NULL;
+	}
+
 	calc_register_event(lpCalc, LCD_ENQUEUE_EVENT, &gui_draw);
 	calc_register_event(lpCalc, ROM_LOAD_EVENT, &load_settings);
 	calc_register_event(lpCalc, ROM_LOAD_EVENT, &check_bootfree_and_update);
@@ -458,7 +462,7 @@ LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 
 	hasCrashed = TRUE;
 	TCHAR szDumpPath[MAX_PATH], szTempDumpPath[MAX_PATH];
-	GetAppDataString(szDumpPath, sizeof(szDumpPath));
+	GetStorageString(szDumpPath, sizeof(szDumpPath));
 	StringCbCopy(szTempDumpPath, sizeof(szTempDumpPath), szDumpPath);
 	StringCbCat(szTempDumpPath, sizeof(szDumpPath), _T("Wabbitemu.dmp"));
 	StringCbCat(szDumpPath, sizeof(szDumpPath), _T("Wabbitemu.dmp.zip"));
@@ -566,7 +570,7 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 
 	//Create our appdata folder
 	TCHAR appData[MAX_PATH];
-	GetAppDataString(appData, sizeof(appData));
+	GetStorageString(appData, sizeof(appData));
 	int error = CreateDirectory(appData, NULL);
 	if (!error) {
 		error = GetLastError();
@@ -894,6 +898,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		switch (LOWORD(wParam)) {
 		case IDM_FILE_NEW: {
 			LPCALC lpCalcNew = create_calc_register_events();
+			if (lpCalcNew == NULL) {
+				MessageBox(hwnd, _T("Unable to open any more calculators"), _T("Error"), MB_OK | MB_ICONERROR);
+				break;
+			}
+
 			if (rom_load(lpCalcNew, lpCalc->rom_path) || 
 				rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey(_T("rom_path"))))
 			{
@@ -1576,7 +1585,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 								tempSave[i] = '\0';
 							}
 						} else {
-							GetAppDataString(tempSave, sizeof(tempSave));
+							GetStorageString(tempSave, sizeof(tempSave));
 						}
 						StringCbCat(tempSave, sizeof(tempSave), _T("\\wabbitemu.sav"));
 						StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), tempSave);

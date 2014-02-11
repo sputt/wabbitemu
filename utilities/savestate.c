@@ -1,9 +1,9 @@
 #include "stdafx.h"
 
-#include "core.h"
-#include "savestate.h"
-#include "link.h"
 #include "calc.h"
+#include "core.h"
+#include "link.h"
+#include "savestate.h"
 #include "83psehw.h"
 #include "fileutilities.h"
 
@@ -52,7 +52,7 @@ SAVESTATE_t* CreateSave(TCHAR *author, TCHAR *comment , int model) {
 
 	memset(save->author, 0, sizeof(save->author));
 	memset(save->comment, 0, sizeof(save->comment));
-#ifdef WINVER
+#ifdef _WINDOWS
 #ifdef _UNICODE
 	size_t numConv;
 	wcstombs_s(&numConv, save->author, author, sizeof(save->author));
@@ -694,7 +694,7 @@ void SaveLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	WriteDouble(chunk, lcd->base.lastgifframe);
 	WriteDouble(chunk, lcd->base.write_avg);
 	WriteDouble(chunk, lcd->base.write_last);
-	WriteInt(chunk, lcd->screen_addr);
+	WriteShort(chunk, lcd->screen_addr);
 }
 
 void SaveColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
@@ -717,20 +717,19 @@ void SaveColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
 	WriteBlock(chunk, lcd->display, COLOR_LCD_DISPLAY_SIZE);
 	WriteBlock(chunk, lcd->queued_image, COLOR_LCD_DISPLAY_SIZE);
 	WriteBlock(chunk, (unsigned char *) &lcd->registers, sizeof(lcd->registers));
-	WriteShort(chunk, lcd->current_register);
-	WriteShort(chunk, lcd->read_buffer);
-	WriteShort(chunk, lcd->write_buffer);
+	WriteInt(chunk, lcd->current_register);
+	WriteInt(chunk, lcd->read_buffer);
+	WriteInt(chunk, lcd->write_buffer);
 	WriteInt(chunk, lcd->read_step);
 	WriteInt(chunk, lcd->write_step);
 	WriteInt(chunk, lcd->frame_rate);
 	WriteInt(chunk, lcd->front);
 }
 
-SAVESTATE_t* SaveSlot(void *lpInput, TCHAR *author, TCHAR *comment) {
-	LPCALC lpCalc = (LPCALC) lpInput;
+SAVESTATE_t* SaveSlot(LPCALC lpCalc, TCHAR *author, TCHAR *comment) {
 	SAVESTATE_t* save;
 	BOOL runsave;
-	if (lpCalc->active == FALSE) {
+	if (lpCalc == NULL || lpCalc->active == FALSE) {
 		return NULL;
 	}
 
@@ -806,9 +805,9 @@ void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	int i;
 	for(i = 0; i < 256; i++) {
 		interrupt_t *val = &cpu->pio.interrupt[i];
-		val->interrupt_val = ReadInt(chunk);
-		val->skip_factor = ReadInt(chunk);
-		val->skip_count = ReadInt(chunk);
+		val->interrupt_val = (unsigned char)ReadInt(chunk);
+		val->skip_factor = (unsigned char)ReadInt(chunk);
+		val->skip_count = (unsigned char)ReadInt(chunk);
 	}
 	
 }
@@ -859,8 +858,8 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	mem->read_NOP_ram_tstates	= ReadInt(chunk);
 	mem->write_ram_tstates		= ReadInt(chunk);
 
-	mem->flash_upper = ReadInt(chunk);
-	mem->flash_lower = ReadInt(chunk);
+	mem->flash_upper = (unsigned short)ReadInt(chunk);
+	mem->flash_lower = (unsigned short)ReadInt(chunk);
 
 	chunk = FindChunk(save, ROM_tag);
 	chunk->pnt = 0;
@@ -880,8 +879,8 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	chunk = FindChunk(save, RAM_LIMIT_tag);
 	if (chunk) {
 		chunk->pnt = 0;
-		mem->ram_upper = ReadInt(chunk);
-		mem->ram_lower = ReadInt(chunk);
+		mem->ram_upper = (unsigned short)ReadInt(chunk);
+		mem->ram_lower = (unsigned short)ReadInt(chunk);
 	}
 
 	chunk = FindChunk(save, NUM_FLASH_BREAKS_tag);
@@ -893,8 +892,8 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 			{
 				int addr = ReadInt(chunk);
 				waddr_t waddr;
-				waddr.addr = addr % PAGE_SIZE;
-				waddr.page = addr / PAGE_SIZE;
+				waddr.addr = (uint16_t) (addr % PAGE_SIZE);
+				waddr.page = (uint8_t) (addr / PAGE_SIZE);
 				waddr.is_ram = FALSE;
 				BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
 				switch (type) {
@@ -921,8 +920,8 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 			{
 				int addr = ReadInt(chunk);
 				waddr_t waddr;
-				waddr.addr = addr % PAGE_SIZE;
-				waddr.page = addr / PAGE_SIZE;
+				waddr.addr = (uint16_t)(addr % PAGE_SIZE);
+				waddr.page = (uint8_t)(addr / PAGE_SIZE);
 				waddr.is_ram = TRUE;
 				BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
 				switch (type) {
@@ -976,7 +975,7 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	lcd->base.write_avg	= ReadDouble(chunk);
 	lcd->base.write_last = ReadDouble(chunk);
 	if (save->version_build >= LCD_SCREEN_ADDR_BUILD) {
-		lcd->screen_addr = ReadInt(chunk);
+		lcd->screen_addr = ReadShort(chunk);
 	} else {
 		// use the default and hope you were not
 		// using a custom location
@@ -1134,11 +1133,10 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 }
 
 
-void LoadSlot(SAVESTATE_t *save, void *lpInput) {
+void LoadSlot(SAVESTATE_t *save, LPCALC lpCalc) {
 	BOOL runsave;
-	LPCALC lpCalc = (LPCALC) lpInput;
 	
-	if (lpCalc->active == FALSE){
+	if (lpCalc == NULL || lpCalc->active == FALSE) {
 		puts("Slot was not active");
 		return;
 	}
@@ -1182,20 +1180,12 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 		_putts(_T("Save was null for write"));
 		return;
 	}
-#ifdef WINVER
+
 	if (compress == 0) {
 		_tfopen_s(&ofile, fn, _T("wb"));
 	} else {
 		tmpfile_s(&ofile);
 	}
-#else
-	if (compress == 0) {
-		ofile = fopen(fn, "wb");
-	}
-	else {
-		ofile = tmpfile();
-	}
-#endif
 		
 	if (!ofile) {
 		_putts(_T("Could not open save file for write"));
@@ -1230,11 +1220,7 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 		fflush(ofile);
 		rewind(ofile);
 
-#ifdef WINVER
 		_tfopen_s(&cfile, fn, _T("wb"));
-#else
-		cfile = fopen(fn, "wb");
-#endif
 		if (!cfile) {
 			_putts(_T("Could not open compress file for write"));
 			return;
@@ -1247,7 +1233,7 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 				{
 					fputc(ZLIB_CMP, cfile);
 				
-					int error = def(ofile, cfile, 9);
+					def(ofile, cfile, 9);
 					break;
 				}
 #endif
@@ -1281,11 +1267,7 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 	string[8] = 0;
 	if (strncmp(DETECT_CMP_STR, string, 8) == 0) {
 		i = fgetc(ifile);
-#ifdef WINVER
 		tmpfile_s(&tmpFile);
-#else
-		tmpFile = tmpfile();
-#endif
 		if (!tmpFile) {
 			return NULL;
 		}
@@ -1359,10 +1341,10 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 
 	save->chunk_count = 0;
 	for(i = 0; i < chunk_count; i++) {
-		string[0]	= fgetc(ifile);
-		string[1]	= fgetc(ifile);
-		string[2]	= fgetc(ifile);
-		string[3]	= fgetc(ifile);
+		string[0]	= (char)fgetc(ifile);
+		string[1]	= (char)fgetc(ifile);
+		string[2]	= (char)fgetc(ifile);
+		string[3]	= (char)fgetc(ifile);
 		string[4]	= 0;
 		if (feof(ifile)) {
 			FreeSave(save);

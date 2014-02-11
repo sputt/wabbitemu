@@ -48,7 +48,7 @@
 #define fseeko64 fseek
 #else
 #ifdef _MSC_VER
- #define fopen64 _tfopen
+ #define fopen64 _tfopen_s
  #if (_MSC_VER >= 1400) && (!(defined(NO_MSCVER_FILE64_FUNC)))
   #define ftello64 _ftelli64
   #define fseeko64 _fseeki64

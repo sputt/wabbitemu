@@ -13,7 +13,7 @@ extern HINSTANCE g_hInst;
 
 void UpdateWabbitemu() {
 	TCHAR buffer[MAX_PATH];
-	GetAppDataString(buffer, sizeof(buffer));
+	GetStorageString(buffer, sizeof(buffer));
 	StringCbCat(buffer, sizeof(buffer), _T("Revsoft.Autoupdater.exe"));
 	HRSRC hrDumpProg = FindResource(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_UPDATER), _T("EXE"));
 	ExtractResource(buffer, hrDumpProg);

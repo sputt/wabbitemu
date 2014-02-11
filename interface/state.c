@@ -122,6 +122,7 @@ symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 	if (stp < end || stp < prog) return NULL;
 	if (end > prog || end < 0x9D95) return NULL;
 	if (prog < 0x9D95) return NULL;
+	if (symlist == NULL) return NULL;
 
 	symbol83P_t *sym;
 	// Loop through while stp is still in the symbol table
@@ -274,11 +275,7 @@ TCHAR *GetRealAns(CPU_t *cpu) {
 		return NULL;
 	}
 
-#ifdef WINVER
-	TCHAR *buffer = (TCHAR *) LocalAlloc(LMEM_FIXED, 2048);
-#else
-	char *buffer = (char *) malloc(2048);
-#endif
+	TCHAR *buffer = (TCHAR *) malloc(2048);
 	
 	symbol_to_string(cpu, sym, buffer);
 	free(symlist);

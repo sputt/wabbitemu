@@ -3,6 +3,7 @@
 
 #include "lcd.h"
 #include "colorlcd.h"
+#include "calc.h"
 
 typedef struct {
 	char tag[4];
@@ -65,8 +66,8 @@ typedef struct {
 #define MAX_SAVESTATE_COMMENT_LENGTH 64
 
 void WriteSave(const TCHAR *, SAVESTATE_t *, int);
-void LoadSlot(SAVESTATE_t* , void *);
-SAVESTATE_t* SaveSlot(void *, TCHAR *author, TCHAR *comment);
+void LoadSlot(SAVESTATE_t* , LPCALC);
+SAVESTATE_t* SaveSlot(LPCALC, TCHAR *author, TCHAR *comment);
 SAVESTATE_t* CreateSave(TCHAR *, TCHAR *, int);
 SAVESTATE_t* ReadSave(FILE *ifile);
 void FreeSave(SAVESTATE_t *);

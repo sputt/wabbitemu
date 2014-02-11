@@ -587,15 +587,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					double persec = _ttof(buf);
 					if (persec == 0.0)
 						persec = 50.0;
-#ifdef WITH_BACKUPS
-					int i;
-					num_backup_per_sec = (int) (100 / persec);
-					do_backups = Button_GetCheck(doBackups_check);
-					if (!do_backups) {
-						for (i = 0; i < MAX_CALCS; i++)
-							free_backups(&calcs[i]);
-					}
-#endif
+
 					lpCalc->bAlwaysOnTop = Button_GetCheck(alwaysTop_check);
 					lpCalc->bTIOSDebug = !Button_GetCheck(tiosDebug_check);
 					check_updates = Button_GetCheck(checkUpdates_check);
@@ -618,12 +610,6 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 		case WM_USER: {
 			Button_SetCheck(saveState_check, exit_save_state);
 			Button_SetCheck(loadFiles_check, new_calc_on_load_files);
-#ifdef WITH_BACKUPS
-			Button_SetCheck(doBackups_check, do_backups);
-			TCHAR buf[256];
-			StringCbPrintf(buf, sizeof(buf), _T("%.2f"), 100 / ((float) num_backup_per_sec));
-			Edit_SetText(backupTime_edit, buf);
-#endif
 			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);
 			Button_SetCheck(portableMode_check, portable_mode);
 			Button_SetCheck(exeViolation_check, break_on_exe_violation);

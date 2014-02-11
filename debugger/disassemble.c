@@ -732,7 +732,7 @@ int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, Z80_info
 		}
 		result->size = abs(((unsigned short)(waddr.addr - start_addr.addr)) & 0xFF);
 
-#ifndef WINVER
+#ifndef _WINDOWS
 		INT_PTR mod_a1 = result->a1;
 		INT_PTR mod_a2 = result->a2;
 

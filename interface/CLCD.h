@@ -1,6 +1,9 @@
 #pragma once
 
 #include "lcd.h"
+#include "colorlcd.h"
+
+// TODO: support color lcd
 
 class CLCD :
 	public CComObjectRootEx<CComObjectThreadModel>,

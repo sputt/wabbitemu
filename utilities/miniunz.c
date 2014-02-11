@@ -109,7 +109,7 @@ int do_extract_currentfile(unzFile uf, TCHAR *dirToExtractTo)
 
 	if (err == UNZ_OK)
 	{
-		fout = fopen64(write_filename, _T("wb"));
+		fopen64(&fout, write_filename, _T("wb"));
 
 		if (fout == NULL)
 		{

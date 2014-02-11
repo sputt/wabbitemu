@@ -355,7 +355,7 @@ STDINT_t* INT83_init(CPU_t* cpu) {
 	return stdint;
 }
 
-link_t* link83_init(CPU_t* cpu) {
+link_t* link83_init() {
 	link_t * link = (link_t *) malloc(sizeof(link_t));
 	if (!link) {
 		printf("Couldn't allocate memory for link\n");
@@ -370,7 +370,7 @@ link_t* link83_init(CPU_t* cpu) {
 int device_init_83(CPU_t *cpu, BOOL bad82) {
 	ClearDevices(cpu);
 
-	link_t * link = link83_init(cpu);
+	link_t * link = link83_init();
 	cpu->pio.devices[0x00].active = TRUE;
 	cpu->pio.devices[0x00].aux = link;
 	if (bad82 == 1) {

@@ -6,6 +6,7 @@
 #include "resource.h"
 #include "dbcommon.h"
 #include "device.h"
+#include "savestate.h"
 
 #define PORT_MIN_COL_WIDTH 40
 #define PORT_ROW_SIZE 15
