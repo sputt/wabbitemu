@@ -113,7 +113,7 @@ static void port4(CPU_t *cpu, device_t *dev) {
 }
 
 // ROM port
-static void port5(CPU_t *cpu, device_t *dev) {
+static void port5(CPU_t *cpu, device_t *) {
 	if ( cpu->input ) {
 		cpu->bus = (cpu->mem_c->banks[1].ram << 6) + cpu->mem_c->banks[1].page;
 		cpu->input = FALSE;
@@ -136,7 +136,7 @@ static void port5(CPU_t *cpu, device_t *dev) {
 }
 
 // RAM port
-static void port6(CPU_t *cpu, device_t *dev) {
+static void port6(CPU_t *cpu, device_t *) {
 	if (cpu->input) {
 		cpu->bus = (cpu->mem_c->banks[2].ram << 6) + cpu->mem_c->banks[2].page;
 		cpu->input = FALSE;
@@ -204,7 +204,7 @@ static STDINT_t* INT86_init(CPU_t* cpu) {
 	return stdint;
 }
 
-static link_t* link86_init(CPU_t* cpu) {
+static link_t* link86_init() {
 	link_t * link = (link_t *) malloc(sizeof(link_t));
 	if (!link) {
 		printf("Couldn't allocate memory for link\n");
@@ -220,9 +220,9 @@ static link_t* link86_init(CPU_t* cpu) {
 int device_init_86(CPU_t *cpu) {
 	ClearDevices(cpu);
 
-	keypad_t *keyp = keypad_init(cpu);
+	keypad_t *keyp = keypad_init();
 	STDINT_t* stdint = INT86_init(cpu);
-	link_t * link = link86_init(cpu);
+	link_t * link = link86_init();
 	LCD_t *lcd = LCD_init(cpu, TI_86);
 	
 	cpu->pio.devices[0x00].active = TRUE;

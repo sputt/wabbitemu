@@ -53,7 +53,7 @@ BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
 		switch (lpBreak->conditions[i].type) {
 		case CONDITION_HIT_COUNT: {
 			condition_hitcount_t *cond = (condition_hitcount_t *)lpBreak->conditions[i].data;
-			waddr_t pcWaddr = addr_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc);
+			waddr_t pcWaddr = addr16_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc);
 			if (pcWaddr.addr % PAGE_SIZE == waddr.addr && pcWaddr.page == waddr.page && pcWaddr.is_ram == waddr.is_ram) {
 				cond->hit_count++;
 			}

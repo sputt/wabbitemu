@@ -236,7 +236,7 @@ HRESULT __stdcall CDataObject::EnumFormatEtc (DWORD dwDirection, IEnumFORMATETC 
 }
 
 
-HRESULT __stdcall CDataObject::DAdvise(FORMATETC *pFormatEtc, DWORD advf, IAdviseSink *pAdvSink, DWORD *pdwConnection) {
+HRESULT __stdcall CDataObject::DAdvise(FORMATETC *, DWORD, IAdviseSink *, DWORD *) {
 	return OLE_E_ADVISENOTSUPPORTED;
 }
 

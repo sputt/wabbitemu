@@ -7,7 +7,7 @@ void ClearDevices(CPU_t* cpu) {
 	for (i = 0; i < ARRAYSIZE(cpu->pio.interrupt); i++) {
 		cpu->pio.devices[i].active = FALSE;
 		interrupt_t *intVal = &cpu->pio.interrupt[i];
-		intVal->interrupt_val = -1;
+		intVal->interrupt_val = 0xFF;
 		intVal->skip_factor = 1;
 		intVal->skip_count = intVal->skip_factor;
 	}
@@ -49,14 +49,14 @@ int device_input(CPU_t *cpu, unsigned char dev) {
 	return 0;
 }
 
-void Append_interrupt_device(CPU_t *cpu, int port, int skip) {
+void Append_interrupt_device(CPU_t *cpu, unsigned char port, unsigned char skip) {
 	interrupt_t *intVal = &cpu->pio.interrupt[cpu->pio.num_interrupt];
 	intVal->interrupt_val = port;
 	intVal->skip_factor = skip;
 	cpu->pio.num_interrupt++;
 }
 
-void Modify_interrupt_device(CPU_t *cpu, int port, int skip) {
+void Modify_interrupt_device(CPU_t *cpu, unsigned char port, unsigned char skip) {
 	for(int i = 0; i < cpu->pio.num_interrupt; i++) {
 		if (cpu->pio.interrupt[i].interrupt_val == port) {
 			cpu->pio.interrupt[i].skip_factor = skip;

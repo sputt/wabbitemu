@@ -3,6 +3,12 @@
 #include "core.h"
 #include "alu.h"
 
+#pragma warning(push)
+// byte conversion
+#pragma warning(disable : 4244)
+// uninit var
+#pragma warning(disable : 4701)
+
 //---------------------------------------------
 // ED OPCODES
 
@@ -1472,3 +1478,5 @@ void rrca(CPU_t *cpu) {
 	cpu->a =result;
 	
 }
+
+#pragma warning(pop)

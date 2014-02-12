@@ -18,12 +18,12 @@ int GetWaddrData(HWND hwnd, waddr_t *waddr) {
 	int val = xtoi(buf);
 	if (val == INT_MAX)
 		return -1;
-	waddr->addr = val;
+	waddr->addr = (uint16_t) val;
 	Edit_GetText(GetDlgItem(hwnd, IDC_EDT_PAGE), buf, ARRAYSIZE(buf));
 	val = xtoi(buf);
 	if (val == INT_MAX)
 		return -1;
-	waddr->page = val;
+	waddr->page = (uint8_t) val;
 	return 0;
 }
 

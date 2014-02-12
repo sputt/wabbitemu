@@ -41,7 +41,7 @@ public:
 
 	STDMETHOD (get_Width)(LPWORD lpWidth) 
 	{
-		*lpWidth = m_lcd->width;
+		*lpWidth = (WORD) m_lcd->width;
 		return S_OK;
 	}
 

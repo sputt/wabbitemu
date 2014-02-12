@@ -67,16 +67,30 @@ uint8_t wmem_write(memc *mem, waddr_t waddr, uint8_t data) {
 /*
  * Convert a Z80 address to a waddr
  */
-waddr_t addr_to_waddr(memc *mem_c, uint16_t addr) {
+waddr_t addr16_to_waddr(memc *mem_c, uint16_t addr) {
 	waddr_t waddr;
 	bank_t *bank = &mem_c->banks[mc_bank(addr)];
 
 	waddr.addr = addr;
-	waddr.page = bank->page;
+	waddr.page = (uint8_t) bank->page;
 	waddr.is_ram = bank->ram;
 
 	return waddr;
 }
+
+/*
+* Convert a 32 bit address to a waddr
+*/
+waddr_t addr32_to_waddr(unsigned int addr, BOOL is_ram) {
+	waddr_t waddr;
+
+	waddr.page = (uint8_t)(addr / PAGE_SIZE);
+	waddr.addr = (uint16_t)(addr % PAGE_SIZE);
+	waddr.is_ram = is_ram;
+
+	return waddr;
+}
+
 
 BOOL check_break(memc *mem, waddr_t waddr) {
 	if (!(mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & NORMAL_BREAK))
@@ -517,7 +531,7 @@ static unsigned char flash_read(CPU_t *cpu, unsigned short addr) {
 }
 
 unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
-	if (check_mem_read_break(cpu->mem_c, addr_to_waddr(cpu->mem_c, addr))) {
+	if (check_mem_read_break(cpu->mem_c, addr16_to_waddr(cpu->mem_c, addr))) {
 		if (cpu->mem_read_break_callback) {
 			cpu->mem_read_break_callback(cpu);
 		}
@@ -700,7 +714,7 @@ BOOL check_flash_write_valid(CPU_t *cpu, int page) {
 }
 
 void CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
-	if (check_mem_write_break(cpu->mem_c, addr_to_waddr(cpu->mem_c, addr))) {
+	if (check_mem_write_break(cpu->mem_c, addr16_to_waddr(cpu->mem_c, addr))) {
 		if (cpu->mem_write_break_callback) {
 			cpu->mem_write_break_callback(cpu);
 		}
@@ -883,7 +897,7 @@ static void handle_interrupt(CPU_t *cpu) {
 			tc_add(cpu->timer_c, 19);
 			cpu->halt = FALSE;
 			unsigned short vector = (cpu->i << 8) + cpu->bus;
-			int reg = CPU_mem_read(cpu, vector++);
+			unsigned short reg = CPU_mem_read(cpu, vector++);
 			reg += CPU_mem_read(cpu, vector) << 8;
 			CPU_mem_write(cpu, --cpu->sp, (cpu->pc >> 8) & 0xFF);
 			CPU_mem_write(cpu, --cpu->sp, cpu->pc & 0xFF);

@@ -23,7 +23,7 @@ typedef struct KEYPROG {
 #define VKF_RBRACKET 0xDD
 #define VKF_QUOTE	0xDE
 
-keypad_t *keypad_init(CPU_t*);
+keypad_t *keypad_init();
 void keypad(CPU_t *, device_t *);
 
 keyprog_t *keypad_key_press(CPU_t*, unsigned int vk, BOOL *changed);

@@ -139,21 +139,14 @@ void MemGotoAddress(HWND hwnd, int addr) {
 	Debug_UpdateWindow(hwnd);
 }
 
-static waddr_t GetWaddr(mempane_settings *mps, int addr) {
+static waddr_t GetWaddr(mempane_settings *mps, unsigned int addr) {
 	waddr_t waddr;
 	switch (mps->type) {
 		case REGULAR:
-			return addr_to_waddr(mps->lpCalc->cpu.mem_c, addr);
-		case FLASH:
-			waddr.addr = addr % PAGE_SIZE;
-			waddr.is_ram = FALSE;
-			waddr.page = addr / PAGE_SIZE;
-			break;
+			return addr16_to_waddr(mps->lpCalc->cpu.mem_c, addr);
 		case RAM:
-			waddr.addr = addr % PAGE_SIZE;
-			waddr.is_ram = TRUE;
-			waddr.page = addr / PAGE_SIZE;
-			break;
+		case FLASH:
+			return addr32_to_waddr(addr, mps->type == RAM);
 	}
 	return waddr;
 }
@@ -691,11 +684,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						waddr_t waddr;
 						int addr = mps->sel + i;
 						if (mps->type == REGULAR) {
-							addr_to_waddr(&mps->lpCalc->mem_c, addr);
+							waddr = addr16_to_waddr(&mps->lpCalc->mem_c, addr);
 						} else {
-							waddr.addr = addr % PAGE_SIZE;
-							waddr.page = addr / PAGE_SIZE;
-							waddr.is_ram = mps->type == RAM;
+							waddr = addr32_to_waddr(addr, mps->type == RAM);
 						}
 
 						wmem_write(&mps->lpCalc->mem_c, waddr, data[i]);

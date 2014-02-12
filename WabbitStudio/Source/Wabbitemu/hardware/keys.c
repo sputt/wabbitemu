@@ -435,7 +435,7 @@ keyprog_t keysti86[256];
 keyprog_t keygrps[256];
 #endif
 	
-keypad_t *keypad_init(CPU_t *cpu) {
+keypad_t *keypad_init() {
 	keypad_t *keypad;
 	
 	keypad = (keypad_t *) malloc(sizeof(keypad_t));

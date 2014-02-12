@@ -78,7 +78,7 @@ void sprint_command(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	MyDrawText(lpCalc, hdc, r, zinf, REGULAR, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
 }
 
-void sprint_size(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
+void sprint_size(LPCALC, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (zinf->size == 0) return;
@@ -157,19 +157,15 @@ waddr_t * DisasmFindValue(dp_settings *dps, int valueToFind, BOOL search_backwar
 	waddr_t waddr;
 	if (search_backwards) {
 		if (dps->type == REGULAR) {
-			waddr = addr_to_waddr(&dps->lpCalc->mem_c, dps->nSel - 1);
+			waddr = addr16_to_waddr(&dps->lpCalc->mem_c, dps->nSel - 1);
 		} else {
-			waddr.addr = (dps->nSel - 1) % PAGE_SIZE;
-			waddr.page = (dps->nSel - 1) / PAGE_SIZE;
-			waddr.is_ram = dps->type == RAM;
+			waddr = addr32_to_waddr(dps->nSel - 1, dps->type == RAM);
 		}
 	} else {
 		if (dps->type == REGULAR) {
-			waddr = addr_to_waddr(&dps->lpCalc->mem_c, dps->nSel + 1);
+			waddr = addr16_to_waddr(&dps->lpCalc->mem_c, dps->nSel + 1);
 		} else {
-			waddr.addr = (dps->nSel + 1) % PAGE_SIZE;
-			waddr.page = (dps->nSel + 1) / PAGE_SIZE;
-			waddr.is_ram = dps->type == RAM;
+			waddr = addr32_to_waddr(dps->nSel + 1, dps->type == RAM);
 		}
 	}
 	
@@ -383,7 +379,7 @@ void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int o
 }
 
 static BOOL had_exe_violation = FALSE;
-void stepoverout_exe_callback(CPU_t *cpu) {
+void stepoverout_exe_callback(CPU_t *) {
 	had_exe_violation = TRUE;
 }
 
@@ -400,12 +396,12 @@ void CPU_stepout(LPCALC lpCalc) {
 
 	uint64_t tstates15seconds = 15 * cpu->timer_c->freq;
 	while ((tc_tstates(cpu->timer_c) - time) < tstates15seconds && !had_exe_violation) {
-		waddr_t old_pc = addr_to_waddr(cpu->mem_c, cpu->pc);
+		waddr_t old_pc = addr16_to_waddr(cpu->mem_c, cpu->pc);
 		CPU_step(cpu);
 
 		if (cpu->sp > old_sp) {
 			Z80_info_t zinflocal;
-			disassemble(lpCalc, REGULAR, addr_to_waddr(cpu->mem_c, old_pc.addr), 1, &zinflocal);
+			disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, old_pc.addr), 1, &zinflocal);
 
 			if (zinflocal.index == DA_RET 		||
 				zinflocal.index == DA_RET_CC 	||
@@ -438,7 +434,7 @@ void CPU_stepover(LPCALC lpCalc) {
 	void (*backupFunction)(CPU_t *) = cpu->exe_violation_callback;
 	cpu->exe_violation_callback = stepoverout_exe_callback;
 
-	disassemble(lpCalc, REGULAR, addr_to_waddr(cpu->mem_c, cpu->pc), 1, &zinflocal);
+	disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, cpu->pc), 1, &zinflocal);
 
 	if (cpu->halt) {
 		if (cpu->iff1) {
@@ -460,7 +456,7 @@ void CPU_stepover(LPCALC lpCalc) {
 
 				if ((cpu->sp >= old_sp || (old_sp - cpu->sp) >= 0xFF00) && (cpu->pc >= return_pc && (cpu->pc <= return_pc + 2))) {
 					Z80_info_t zinflocal;
-					disassemble(lpCalc, REGULAR, addr_to_waddr(cpu->mem_c, old_pc), 1, &zinflocal);
+					disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, old_pc), 1, &zinflocal);
 
 					if (zinflocal.index == DA_RET 		||
 						zinflocal.index == DA_RET_CC 	||
@@ -487,13 +483,6 @@ void CPU_stepover(LPCALC lpCalc) {
 
 	cpu->exe_violation_callback = backupFunction;
 	break_on_exe_violation = backup_exe_violation;
-}
-
-
-void disasmhdr_show(HWND hwndHeader, disasmhdr_t* hdrs) {
-	int lpiNewArray[8];
-	int iSize = Header_GetItemCount(hwndHeader);
-	Header_GetOrderArray(hwndHeader, iSize, lpiNewArray);
 }
 
 int disasmhdr_insert(HWND hwndHeader, disasmhdr_t* dhdr) {
@@ -598,7 +587,7 @@ void db_step_finish(HWND hwnd, dp_settings *dps, BOOL step_back = FALSE) {
 		dps->nKey = dps->nSel = dps->lpCalc->cpu.pc;
 		dps->iSel = 0;
 	} else {
-		waddr_t waddr = addr_to_waddr(dps->lpCalc->cpu.mem_c, dps->lpCalc->cpu.pc);
+		waddr_t waddr = addr16_to_waddr(dps->lpCalc->cpu.mem_c, dps->lpCalc->cpu.pc);
 		if ((waddr.is_ram && dps->type == RAM) || (!waddr.is_ram && dps->type == FLASH)) {
 			dps->nKey = dps->nSel = waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE);
 			dps->iSel = 0;
@@ -784,14 +773,12 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			waddr_t waddr;
 			if (dps->type == REGULAR) {
 				do {
-					waddr = addr_to_waddr(dps->lpCalc->cpu.mem_c, ++last_top_page_addr);
+					waddr = addr16_to_waddr(dps->lpCalc->cpu.mem_c, ++last_top_page_addr);
 					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, zup);
 				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= 0xFFFF);
 			} else {
 				do {
-					waddr.page = ++last_top_page_addr / PAGE_SIZE;
-					waddr.addr = last_top_page_addr % PAGE_SIZE;
-					waddr.is_ram = dps->type == RAM;
+					waddr = addr32_to_waddr(++last_top_page_addr, dps->type == RAM);
 					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, zup);
 				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= 4);
 					
@@ -1025,9 +1012,10 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 				int pc_i;
 				for (pc_i = 0; pc_i < PC_TRAILS && !do_gradient; pc_i++) {
-					waddr_t pc_waddr = addr_to_waddr(calc_mem, dps->nPCs[pc_i]);
+					waddr_t pc_waddr = addr16_to_waddr(calc_mem, dps->nPCs[pc_i]);
 					if ((pc_waddr.addr % PAGE_SIZE == dps->zinf[i].waddr.addr % PAGE_SIZE) && pc_waddr.page == dps->zinf[i].waddr.page
-						&& pc_waddr.is_ram == dps->zinf[i].waddr.is_ram && (dps->zinf[i].index != DA_LABEL)) {
+						&& pc_waddr.is_ram == dps->zinf[i].waddr.is_ram && (dps->zinf[i].index != DA_LABEL)) 
+					{
 						///dps->iPC = i;
 						vert[0].Red = 0xFF00;
 						vert[0].Green = 0xFF00;
@@ -1171,7 +1159,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						//print the data
 						for (j = 0; j < zinf_line->size; j++) {
 							StringCbPrintf(buf + (j*2), sizeof(buf), _T("%02x"), 
-								mem_read(dps->lpCalc->cpu.mem_c, zinf_line->waddr.addr+j));
+								mem_read(dps->lpCalc->cpu.mem_c, (unsigned short) (zinf_line->waddr.addr+j)));
 						}
 						StringCbCat(copy_line, sizeof(copy_line), buf);
 						StringCbCat(copy_line, sizeof(copy_line), _T(":\t"));
@@ -1226,11 +1214,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					u_int addr = (u_int) lParam;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
-						waddr = addr_to_waddr(dps->lpCalc->cpu.mem_c, addr);
+						waddr = addr16_to_waddr(dps->lpCalc->cpu.mem_c, (uint16_t) addr);
 					} else {
-						waddr.page = addr / PAGE_SIZE;
-						waddr.addr = addr % PAGE_SIZE;
-						waddr.is_ram = dps->type == RAM;
+						waddr = addr32_to_waddr(addr, dps->type == RAM);
 					}
 					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, dps->zinf);
 					break;
@@ -1399,11 +1385,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
-						waddr = addr_to_waddr(&dps->lpCalc->mem_c, dps->nSel);
+						waddr = addr16_to_waddr(&dps->lpCalc->mem_c, (uint16_t)dps->nSel);
 					} else {
-						waddr.page = dps->nSel / PAGE_SIZE;
-						waddr.addr = dps->nSel % PAGE_SIZE;
-						waddr.is_ram = dps->type == RAM;
+						waddr = addr32_to_waddr(dps->nSel, dps->type == RAM);
 					}
 
 					if (check_break(&dps->lpCalc->mem_c, waddr)) {
@@ -1420,11 +1404,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
-						waddr = addr_to_waddr(&dps->lpCalc->mem_c, dps->nSel);
+						waddr = addr16_to_waddr(&dps->lpCalc->mem_c, (uint16_t)dps->nSel);
 					} else {
-						waddr.page = dps->nSel / PAGE_SIZE;
-						waddr.addr = dps->nSel % PAGE_SIZE;
-						waddr.is_ram = dps->type == RAM;
+						waddr = addr32_to_waddr(dps->nSel, dps->type == RAM);
 					}
 
 					if (check_mem_write_break(&dps->lpCalc->mem_c, waddr)) {
@@ -1441,11 +1423,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
-						waddr = addr_to_waddr(&dps->lpCalc->mem_c, dps->nSel);
+						waddr = addr16_to_waddr(&dps->lpCalc->mem_c, (uint16_t) dps->nSel);
 					} else {
-						waddr.page = dps->nSel / PAGE_SIZE;
-						waddr.addr = dps->nSel % PAGE_SIZE;
-						waddr.is_ram = dps->type == RAM;
+						waddr = addr32_to_waddr(dps->nSel, dps->type == RAM);
 					}
 
 					if (check_mem_read_break(&dps->lpCalc->mem_c, waddr)) {
@@ -1766,12 +1746,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					// Disasm 6 commands such that the 6th is equal to the first
 					// visible command
 					do {
+						dps->nPane--;
 						if (dps->type == REGULAR) {
-							waddr = addr_to_waddr(dps->lpCalc->cpu.mem_c, --dps->nPane);
+							waddr = addr16_to_waddr(dps->lpCalc->cpu.mem_c, (uint16_t)dps->nPane);
 						} else {
-							waddr.page = --dps->nPane / PAGE_SIZE;
-							waddr.addr = dps->nPane % PAGE_SIZE;
-							waddr.is_ram = dps->type == RAM;
+							waddr = addr32_to_waddr(dps->nPane, dps->type == RAM);
 						}
 						disassemble(dps->lpCalc, dps->type, waddr, LINEUP_DEPTH, zup);
 					} while (zup[LINEUP_DEPTH - 2].waddr.addr > dps->zinf[0].waddr.addr && dps->nPane);

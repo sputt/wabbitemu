@@ -21,7 +21,7 @@ static unsigned char ball[] = {
 static u_char display_test[LCD_HEIGHT][LCD_MEM_WIDTH];
 
 
-void fastcopy(u_char *buffer, CPU_t *cpu) {
+void fastcopy(CPU_t *cpu) {
 	int x, y;
 	//was LCD_MEM_WIDTH, but most calcs don't do that.
 	for (x = 0; x < 12; x++) {

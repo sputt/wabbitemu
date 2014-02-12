@@ -42,7 +42,7 @@ public:
 			int nPage = 0;
 			if (SUCCEEDED(pPage->get_Index(&nPage)))
 			{
-				waddr.page = nPage;
+				waddr.page = (uint8_t) nPage;
 			}
 
 

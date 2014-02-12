@@ -18,8 +18,8 @@ typedef struct STDINT {
 	double timermax2;
 	double freq[4];
 #endif
-	int mem;
-	int xy;	
+	unsigned char mem;
+	unsigned char xy;	
 	BOOL on_backup;
 	BOOL on_latch;
 } STDINT_t;

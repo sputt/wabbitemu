@@ -48,7 +48,7 @@ LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destinati
 		case BACKUP_TYPE:
 			lpCalc->cpu.pio.link->vlink_size = var->length;
 			lpCalc->cpu.pio.link->vlink_send = 0;
-			result = link_send_backup(&lpCalc->cpu, var, (SEND_FLAG) Destination);
+			result = link_send_backup(&lpCalc->cpu, var);
 			break;
 		case ROM_TYPE:
 		case SAV_TYPE:

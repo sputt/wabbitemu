@@ -167,7 +167,7 @@ static TCHAR bli[4][4][8]	= {
 waddr_t GetNextAddr(memory_context_t *memc, ViewType type, waddr_t waddr) {
 	switch (type) {
 		case REGULAR:
-			waddr = addr_to_waddr(memc, waddr.addr + 1);
+			waddr = addr16_to_waddr(memc, waddr.addr + 1);
 			break;
 		case RAM:
 		case FLASH:
@@ -184,7 +184,7 @@ waddr_t GetNextAddr(memory_context_t *memc, ViewType type, waddr_t waddr) {
 waddr_t OffsetWaddr(memory_context_t *memc, ViewType type, waddr_t waddr, int offset) {
 	switch (type) {
 		case REGULAR:
-			waddr = addr_to_waddr(memc, waddr.addr + offset);
+			waddr = addr16_to_waddr(memc, waddr.addr + offset);
 			break;
 		case RAM:
 		case FLASH: {

@@ -151,17 +151,16 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 			continue;
 		}
 		uint8_t *screenImage;
-		u_char *buffer = NULL;
 		LCDBase_t *lcd = cpu->pio.lcd;
 		switch (cpu->imode) {
-		case 0: buffer = displayoptionstest_draw_bounce(4, displayFPS, Time); break;
-		case 1: buffer = displayoptionstest_draw_scroll(4, displayFPS, Time); break;
-		case 2: buffer = displayoptionstest_draw_gradient((int)(displayFPS / 10.0f), displayFPS, Time); break;
+		case 0: displayoptionstest_draw_bounce(4, displayFPS, Time); break;
+		case 1: displayoptionstest_draw_scroll(4, displayFPS, Time); break;
+		case 2: displayoptionstest_draw_gradient((int)(displayFPS / 10.0f), displayFPS, Time); break;
 		case 3: lcd = lpCalc->cpu.pio.lcd;
 		}
 
 		if (cpu->imode != 3) {
-			fastcopy(buffer, cpu);
+			fastcopy(cpu);
 		}
 
 		if (cpu->imode == 2) {
@@ -1407,18 +1406,12 @@ void RecurseAddItems(HMENU hMenu, TCHAR *base) {
 			StringCbCat(temp, sizeof(temp), _T(" > "));
 			RecurseAddItems(mi.hSubMenu, temp);
 		} else {
-			if(!IsValidCmdRange(mi.wID))
-				continue;
 			li.pszText = (LPTSTR)(LPCTSTR)temp;
 			li.iItem = ListView_GetItemCount(hListMenu);
 			li.lParam = mi.wID;			// is this mixed icon/nie mode going to make list view funny?
 			ListView_InsertItem(hListMenu, &li);
 		}
 	}
-}
-
-BOOL IsValidCmdRange(WORD cmdid) {	// return FALSE to exclude certain commands from customization
-	return TRUE;
 }
 
 TCHAR* GetFriendlyMenuText(HMENU hMenu, int nItem, UINT uFlag) {

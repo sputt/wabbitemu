@@ -311,7 +311,7 @@ void port04_83(CPU_t *cpu, device_t *dev) {
 }
 
 
-void port14_83(CPU_t *cpu, device_t *dev) {
+void port14_83(CPU_t *cpu, device_t *) {
 	if (cpu->input) {
 		cpu->bus = 1;
 		cpu->input = FALSE;
@@ -327,7 +327,7 @@ void port14_83(CPU_t *cpu, device_t *dev) {
 /*----------------------------------------------*/
 
 
-STDINT_t* INT83_init(CPU_t* cpu) {
+STDINT_t* INT83_init(timer_context_t *timer_c) {
 	STDINT_t * stdint = (STDINT_t *) malloc(sizeof(STDINT_t));
 	if (!stdint) {
 		printf("Couldn't allocate memory for standard interrupt\n");
@@ -341,9 +341,9 @@ STDINT_t* INT83_init(CPU_t* cpu) {
 	
 	stdint->intactive = 0;
 	stdint->timermax1 = stdint->freq[3];
-	stdint->lastchk1 = tc_elapsed(cpu->timer_c);
+	stdint->lastchk1 = tc_elapsed(timer_c);
 	stdint->timermax2 = stdint->freq[3]/2.0f;
-	stdint->lastchk2 = tc_elapsed(cpu->timer_c)+stdint->freq[3]/4.0f;
+	stdint->lastchk2 = tc_elapsed(timer_c)+stdint->freq[3]/4.0f;
 	
 	
 	stdint->mem	=0;
@@ -380,12 +380,12 @@ int device_init_83(CPU_t *cpu, BOOL bad82) {
 		puts("83 port");
 		cpu->pio.devices[0x00].code = (devp) port00_83;
 	}
-	keypad_t *keyp = keypad_init(cpu);
+	keypad_t *keyp = keypad_init();
 	cpu->pio.devices[0x01].active = TRUE;
 	cpu->pio.devices[0x01].aux = keyp;
 	cpu->pio.devices[0x01].code = (devp) keypad;
 	
-	STDINT_t* stdint = INT83_init(cpu);
+	STDINT_t* stdint = INT83_init(cpu->timer_c);
 	cpu->pio.devices[0x02].active = TRUE;
 	cpu->pio.devices[0x02].aux = stdint;
 	cpu->pio.devices[0x02].code = (devp) port02_83;

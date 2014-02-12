@@ -145,6 +145,6 @@ void port4_83pse(CPU_t *, device_t *);
 void port6_83pse(CPU_t *, device_t *);
 void port7_83pse(CPU_t *, device_t *);
 void port14_83pse(CPU_t *, device_t *);
-int GetCPUSpeed(CPU_t *);
+uint8_t GetCPUSpeed(CPU_t *);
 
 #endif 
