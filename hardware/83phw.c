@@ -53,7 +53,7 @@ static void port0(CPU_t *cpu, device_t *dev) {
 	}
 }
 
-static void port2(CPU_t *cpu, device_t *dev) {
+static void port2(CPU_t *cpu, device_t *) {
 	if (cpu->input) {
 		cpu->bus = (cpu->pio.model == TI_73 ? 0x39 : 0x3B) | (cpu->mem_c->flash_locked ? 0 : 4);
 		cpu->input = FALSE;
@@ -236,36 +236,38 @@ static void port5(CPU_t *cpu, device_t *dev) {
 	}
 }
 
-static void port6(CPU_t *cpu, device_t *dev) {
+static void port6(CPU_t *cpu, device_t *) {
 	if (cpu->input) {
-		cpu->bus = (cpu->mem_c->banks[1].ram << 6) + cpu->mem_c->banks[1].page;
+		cpu->bus = (unsigned char)((cpu->mem_c->banks[1].ram << 6) + cpu->mem_c->banks[1].page);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		BOOL ram = (cpu->bus >> 6) & 1;
-		if (ram)
+		if (ram) {
 			change_page(cpu->mem_c, 1, (cpu->bus & 0x1f) % cpu->mem_c->ram_pages, ram);
-		else
+		} else {
 			change_page(cpu->mem_c, 1, (cpu->bus & 0x1f) % cpu->mem_c->flash_pages, ram);
+		}
 		cpu->output = FALSE;
 	}
 }
 
-static void port7(CPU_t *cpu, device_t *dev) {
+static void port7(CPU_t *cpu, device_t *) {
 	if (cpu->input) {
-		cpu->bus = ((cpu->mem_c->banks[2].ram) << 6) + cpu->mem_c->banks[2].page;
+		cpu->bus = (unsigned char)((cpu->mem_c->banks[2].ram << 6) + cpu->mem_c->banks[2].page);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		BOOL ram = (cpu->bus >> 6) & 1;
-		if (ram)
+		if (ram) {
 			change_page(cpu->mem_c, 2, (cpu->bus & 0x1f) % cpu->mem_c->ram_pages, ram);
-		else
+		} else {
 			change_page(cpu->mem_c, 2, (cpu->bus & 0x1f) % cpu->mem_c->flash_pages, ram);
+		}
 		cpu->output = FALSE;
 	}
 }
 
 
-static void port14(CPU_t *cpu, device_t *dev) {
+static void port14(CPU_t *cpu, device_t *) {
 	if (cpu->input) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
@@ -336,7 +338,7 @@ int device_init_83p(CPU_t *cpu) {
 	cpu->pio.devices[0x00].aux = assist;
 	cpu->pio.devices[0x00].code = (devp) port0;
 
-	keypad_t *keyp = keypad_init(cpu);
+	keypad_t *keyp = keypad_init();
 	cpu->pio.devices[0x01].active = TRUE;
 	cpu->pio.devices[0x01].aux = keyp;
 	cpu->pio.devices[0x01].code = (devp) keypad;

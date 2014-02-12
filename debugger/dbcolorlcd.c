@@ -131,13 +131,10 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		Edit_GetText(hwndEditControl, buf, ARRAYSIZE(buf));
 		int value = GetWindowLongPtr(hwndEditControl, GWLP_USERDATA);
 		int row_num = LOWORD(value);
-		int col_num = HIWORD(value);
 		//handles getting the user input and converting it to an int
 		//can convert bin, hex, and dec
-		value = GetValue(buf) & 0xFFFF;
-		BOOL output_backup = lpCalc->cpu.output;
 		ColorLCD_t *lcd = (ColorLCD_t *) lpCalc->cpu.pio.lcd;
-		lcd->registers[row_num] = value;
+		lcd->registers[row_num] = GetValue(buf) & 0xFFFF;
 
 		DestroyWindow(hwndEditControl);
 	}

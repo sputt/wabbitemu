@@ -10,7 +10,7 @@ extern jmp_buf exc_pkt;
 static LINK_ERR forceload_app(CPU_t *, TIFILE_t *);
 static LINK_ERR link_send_app(CPU_t *, TIFILE_t *);
 
-LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
+LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile) {
 	if (link_init(cpu))
 		return LERR_NOTINIT;
 

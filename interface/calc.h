@@ -164,8 +164,8 @@ int calc_run_frame(LPCALC);
 int calc_run_seconds(LPCALC, double);
 int calc_run_timed(LPCALC, time_t);
 int calc_run_all(void);
-BOOL calc_start_screenshot(LPCALC calc, const TCHAR *filename);
-void calc_stop_screenshot(LPCALC calc);
+BOOL calc_start_screenshot(const TCHAR *filename);
+void calc_stop_screenshot();
 void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback);
 
 BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName);

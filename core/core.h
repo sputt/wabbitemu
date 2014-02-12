@@ -319,7 +319,8 @@ uint16_t wmem_read16(memc *mem, waddr_t waddr);
 unsigned short mem_read16(memc*, unsigned short);
 unsigned char mem_write(memc*, unsigned short, char);
 uint8_t wmem_write(memc *mem, waddr_t waddr, uint8_t data);
-waddr_t addr_to_waddr(memc*, uint16_t);
+waddr_t addr16_to_waddr(memc*, uint16_t);
+waddr_t addr32_to_waddr(unsigned int addr, BOOL is_ram);
 
 void set_break(memc *, waddr_t waddr);
 void set_mem_write_break(memc *, waddr_t waddr);

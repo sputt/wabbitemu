@@ -7,6 +7,6 @@
 u_char *displayoptionstest_draw_scroll(int,double,double);
 u_char *displayoptionstest_draw_bounce(int,double,double);
 u_char *displayoptionstest_draw_gradient(int,double,double);
-void fastcopy( u_char *, CPU_t*);
+void fastcopy(CPU_t*);
 
 #endif /*DISPLAYOPTIONSTEST_H_*/

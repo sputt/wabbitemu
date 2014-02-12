@@ -5,6 +5,12 @@
 #include "device.h"
 #include "alu.h"
 
+#pragma warning(push)
+// byte conversion
+#pragma warning(disable : 4244)
+// uninit var
+#pragma warning(disable : 4701)
+
 //-----------------------------
 // ED OPCODES
 
@@ -1019,3 +1025,5 @@ void di(CPU_t *cpu) {
 	tc_add(cpu->timer_c,4);
 	cpu->iff1 = cpu->iff2 = FALSE;
 }
+
+#pragma warning(pop)

@@ -153,11 +153,11 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		int col_num = HIWORD(value);
 		//handles getting the user input and converting it to an int
 		//can convert bin, hex, and dec
-		value = GetValue(buf) & 0xFF;
+		uint8_t byte_value = GetValue(buf) & 0xFF;
 		int port_num = port_map[row_num];
 		BOOL output_backup = lpCalc->cpu.output;
 		int bus_backup = lpCalc->cpu.bus;
-		lpCalc->cpu.bus = value;
+		lpCalc->cpu.bus = byte_value;
 		lpCalc->cpu.output = TRUE;
 		lpCalc->cpu.pio.devices[port_num].code(&lpCalc->cpu, &(lpCalc->cpu.pio.devices[port_num]));
 		lpCalc->cpu.output = output_backup;

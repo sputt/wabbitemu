@@ -109,7 +109,7 @@ void gui_draw(LPCALC lpCalc) {
 	}
 }
 
-VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer) {
+VOID CALLBACK TimerProc(HWND, UINT, UINT_PTR, DWORD dwTimer) {
 	static long difference;
 	static DWORD prevTimer;
 
@@ -164,7 +164,7 @@ void gui_debug(LPCALC lpCalc) {
 	calc_pause_linked();
 	if (lpCalc->hwndDebug && IsWindow(lpCalc->hwndDebug)) {
 		SwitchToThisWindow(lpCalc->hwndDebug, TRUE);
-		waddr_t waddr = addr_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc);
+		waddr_t waddr = addr16_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc);
 		while (!lpDebugInfo->is_ready) {
 			Sleep(100);
 		}
@@ -783,8 +783,7 @@ HRESULT CWabbitemuModule::PostMessageLoop() {
 	return __super::PostMessageLoop();
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-				   LPSTR lpszCmdParam, int nCmdShow)
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int nCmdShow)
 {
 	return _Module.WinMain(nCmdShow);
 }

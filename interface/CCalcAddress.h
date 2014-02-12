@@ -43,7 +43,7 @@ public:
 		waddr.is_ram = isFlash == VARIANT_TRUE ? FALSE : TRUE;
 		int nPage;
 		pPage->get_Index(&nPage);
-		waddr.page = nPage;
+		waddr.page = (uint8_t) nPage;
 		return waddr;
 	}
 

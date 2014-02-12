@@ -152,7 +152,7 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, ViewType typ
 						TCHAR *name;
 						int val = (int) va_arg(argp, INT_PTR);
 
-						name = FindAddressLabel(lpCalc, addr_to_waddr(lpCalc->cpu.mem_c, val));
+						name = FindAddressLabel(lpCalc, addr16_to_waddr(lpCalc->cpu.mem_c, val));
 						
 						if (name) {
 							press_text(name, RGB(0, 0, 0));
@@ -267,7 +267,7 @@ void mysprintf(LPCALC lpCalc, TCHAR *output, int outputLength, Z80_info_t* zinf,
 						int val;
 						val = (int) va_arg(argp, INT_PTR);
 
-						name = FindAddressLabel(lpCalc, addr_to_waddr(lpCalc->cpu.mem_c, val));
+						name = FindAddressLabel(lpCalc, addr16_to_waddr(lpCalc->cpu.mem_c, val));
 						
 						if (name) {
 							StringCbCat(output, outputLength, name);

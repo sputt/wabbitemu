@@ -19,7 +19,7 @@ class ATL_NO_VTABLE CPageCollection :
 		return ComCollImpl<IPage, IPageCollection>::get_Item(lIndex + 1, ppPage);
 	}
 
-	STDMETHOD(put_Item)(LONG lIndex, IPage *pPage)
+	STDMETHOD(put_Item)(LONG, IPage *)
 	{
 		return E_NOTIMPL;
 	}

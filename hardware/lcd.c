@@ -182,6 +182,7 @@ static void LCD_free(CPU_t *cpu) {
 	free(cpu->pio.lcd);
 }
 
+// TODO: remove this
 static void Add_SE_Delay(CPU_t *cpu) {
 	DELAY_t *delay = (DELAY_t *) &cpu->pio.se_aux->delay;
 	int extra_time = delay->reg[GetCPUSpeed(cpu)] >> 2;
@@ -243,7 +244,7 @@ static void LCD_command(CPU_t *cpu, device_t *dev) {
 		}
 		cpu->output = FALSE;
 	} else if (cpu->input) {
-		cpu->bus = (lcd->word_len << 6) | (lcd->base.active << 5) | lcd->base.cursor_mode;
+		cpu->bus = (unsigned char)((lcd->word_len << 6) | (lcd->base.active << 5) | lcd->base.cursor_mode);
 		cpu->input = FALSE;
 	}
 }
@@ -329,7 +330,7 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 		LCD_advance_cursor(lcd);
 		cpu->output = FALSE;
 	} else if (cpu->input) {
-		cpu->bus = lcd->last_read;
+		cpu->bus = (unsigned char)(lcd->last_read);
 
 		if (lcd->word_len) {
 			lcd->last_read = cursor[0];
@@ -464,14 +465,14 @@ u_char *LCD_update_image(LCD_t *lcd) {
 			}
 			
 			u_char *scol = &screen[row * LCD_WIDTH + col * 8];
-			scol[0] = p0 * level + base;
-			scol[1] = p1 * level + base;
-			scol[2] = p2 * level + base;
-			scol[3] = p3 * level + base;
-			scol[4] = p4 * level + base;
-			scol[5] = p5 * level + base;
-			scol[6] = p6 * level + base;
-			scol[7] = p7 * level + base;
+			scol[0] = (u_char)(p0 * level + base);
+			scol[1] = (u_char)(p1 * level + base);
+			scol[2] = (u_char)(p2 * level + base);
+			scol[3] = (u_char)(p3 * level + base);
+			scol[4] = (u_char)(p4 * level + base);
+			scol[5] = (u_char)(p5 * level + base);
+			scol[6] = (u_char)(p6 * level + base);
+			scol[7] = (u_char)(p7 * level + base);
 		}
 	}
 

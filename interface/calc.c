@@ -453,7 +453,7 @@ static void calc_debug_callback(LPCALC lpCalc)
 {
 #ifdef _WINDOWS
 	if (lpCalc->pWabbitemu != NULL) {
-		waddr_t addr = addr_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc);
+		waddr_t addr = addr16_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc);
 		lpCalc->pWabbitemu->Fire_OnBreakpoint(&addr);
 	}
 #endif
@@ -496,7 +496,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	uint64_t time_end = tc_tstates(&lpCalc->timer_c) + tstates - lpCalc->time_error;
 
 	while (lpCalc->running) {
-		if (check_break(&lpCalc->mem_c, addr_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc))) {
+		if (check_break(&lpCalc->mem_c, addr16_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc))) {
 			lpCalc->running = FALSE;
 			lpCalc->breakpoint_callback(lpCalc);
 			return 0;
@@ -568,7 +568,7 @@ void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback ca
 	lpCalc->registered_events[i].callback = callback;
 }
 
-BOOL calc_start_screenshot(LPCALC calc, const TCHAR *filename) {
+BOOL calc_start_screenshot(const TCHAR *filename) {
 	if (gif_write_state == GIF_IDLE) {
 		gif_write_state = GIF_START;
 		StringCbCopy(screenshot_file_name, sizeof(screenshot_file_name), filename);
@@ -578,7 +578,7 @@ BOOL calc_start_screenshot(LPCALC calc, const TCHAR *filename) {
 	}
 }
 
-void calc_stop_screenshot(LPCALC calc) {
+void calc_stop_screenshot() {
 	gif_write_state = GIF_END;
 }
 
@@ -668,11 +668,7 @@ int calc_run_all(void) {
 	return 0;
 }
 
-void link_step(CPU_t *cpu) {
-
-}
-
-void port_debug_callback(void *arg1, void *arg2) {
+void port_debug_callback(void *arg1, void *) {
 	CPU_t *cpu = (CPU_t *) arg1;
 	LPCALC lpCalc = calc_from_cpu(cpu);
 	lpCalc->breakpoint_callback(lpCalc);

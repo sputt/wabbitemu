@@ -142,7 +142,7 @@ void CreateEditField(LPCALC lpCalc, HWND hwnd, LPDEBUGWINDOWINFO lpDebugInfo, PO
 	SubclassEdit(hwndVal, lpDebugInfo->hfontLucida, edit_width, HEX4);
 }
 
-static BOOL CALLBACK EnumDeselectChildren(HWND hwndChild, LPARAM lParam) {
+static BOOL CALLBACK EnumDeselectChildren(HWND hwndChild, LPARAM) {
 	SendMessage(hwndChild, WM_USER, VF_DESELECT, 0);
 	return TRUE;
 }

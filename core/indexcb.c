@@ -2,6 +2,11 @@
 
 #include "core.h"
 #include "indexcb.h"
+
+#pragma warning(push)
+// byte conversion
+#pragma warning(disable : 4244)
+
 //-----------------------------------------
 // CB OPCODES
 
@@ -482,3 +487,4 @@ void sra_ind(CPU_t *cpu, char offset) {
 
 // END CB OPCODES
 //---------------------------------------
+#pragma warning(pop)

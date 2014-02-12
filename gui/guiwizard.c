@@ -343,7 +343,7 @@ void ExtractBootFree(int model, TCHAR *hexFile) {
 }
 
 static HWND hOSStaticProgress, hOSProgressBar;
-HRESULT OSDownloadCallback::OnProgress(ULONG ulProgress, ULONG ulProgressMax, ULONG ulStatusCode, LPCWSTR wszStatusText) {
+HRESULT OSDownloadCallback::OnProgress(ULONG ulProgress, ULONG ulProgressMax, ULONG, LPCWSTR) {
 	if (ulProgressMax != 0) {
 		SendMessage(hOSProgressBar, PBM_SETRANGE32, 0, ulProgressMax);
 		SendMessage(hOSProgressBar, PBM_SETPOS, ulProgress, 0);
@@ -724,7 +724,8 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					if (LOWORD(wParam) == IDC_BUTTON_AUTO) {
 						CreateThread(NULL, 0, StartTIConnect, &dumperPath, 0, NULL);
 					} else {
-						TCHAR buf[MAX_PATH], ch, *filter, *ext;
+						TCHAR buf[MAX_PATH], *filter, *ext;
+						char ch;
 						switch (model) {
 						case TI_83P:
 						case TI_83PSE:
@@ -766,7 +767,7 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 								break;
 							}
 							while(!feof(start)) {
-								ch = fgetc(start);
+								ch = (char) fgetc(start);
 								fputc(ch, end);
 							}
 							fclose(start);
@@ -985,7 +986,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					}
 
 					for (int i = 0; i < PAGE_SIZE; i++) {
-						flash[current_page][i] = fgetc(file);
+						flash[current_page][i] = (unsigned char) fgetc(file);
 					}
 
 					fclose(file);
@@ -999,7 +1000,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						}
 						//goto the name to see which one we have
 						fseek(file, 66, SEEK_SET);
-						char ch = fgetc(file);
+						char ch = (char) fgetc(file);
 						//goto the first byte of data
 						fseek(file, 74, SEEK_SET);
 						if (ch == '1') {
@@ -1008,7 +1009,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 							current_page = boot_page2;
 						}
 						for (int i = 0; i < PAGE_SIZE; i++) {
-							flash[current_page][i] = fgetc(file);
+							flash[current_page][i] = (unsigned char) fgetc(file);
 						}
 
 						fclose(file);
