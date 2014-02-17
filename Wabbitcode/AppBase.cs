@@ -41,6 +41,7 @@ namespace Revsoft.Wabbitcode
 			};
 
 			ServiceFactory.Instance = new ServiceFactory(dictionary);
+            LoggingService.Instance = new LoggingService();
 		}
 
 		/// <summary>

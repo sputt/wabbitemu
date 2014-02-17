@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -55,6 +56,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
         private void okButton_Click(object sender, EventArgs e)
         {
+            string symbolString = inputBox.Text;
+            new GotoDefinitionAction(string.Empty, symbolString, 0).Execute();
             Close();
         }
     }

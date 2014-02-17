@@ -286,6 +286,28 @@ namespace Revsoft.Wabbitcode.Actions
         }
     }
 
+    public class FixCaseAction : AbstractUiAction
+    {
+        private string _newCase;
+        private readonly IDockingService _dockingService;
+
+        public FixCaseAction(string newCase)
+        {
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _newCase = newCase;
+        }
+
+        public override void Execute()
+        {
+            ITextEditor editor = _dockingService.ActiveDocument as ITextEditor;
+
+            // TODO
+            //var segment = editorBox.Document.GetLineSegment(editor.CaretLine);
+            //var word = segment.GetWord(caret.Column);
+            //editorBox.Document.Replace(segment.Offset + word.Offset, item.Text.Length, item.Text);
+        }
+    }
+
     public class FormatDocumentAction : AbstractUiAction
     {
         private readonly IDockingService _dockingService;
@@ -395,10 +417,8 @@ namespace Revsoft.Wabbitcode.Actions
     {
         public override void Execute()
         {
-            using (Preferences prefs = new Preferences())
-            {
-                prefs.ShowDialog();
-            }
+            Preferences prefs = new Preferences();
+            prefs.Show();
         }
     }
 }

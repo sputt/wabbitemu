@@ -87,13 +87,7 @@ namespace Revsoft.Wabbitcode.Actions
         public static void FromDialog()
         {
             GotoSymbol gotoSymbolBox = new GotoSymbol();
-            if (gotoSymbolBox.ShowDialog() != DialogResult.OK)
-            {
-                return;
-            }
-
-            string symbolString = gotoSymbolBox.inputBox.Text;
-            new GotoDefinitionAction(string.Empty, symbolString, 0).Execute();
+            gotoSymbolBox.ShowDialog();
         }
     }
 

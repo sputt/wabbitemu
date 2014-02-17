@@ -123,7 +123,10 @@ namespace Revsoft.TextEditor
 				textAreaSplitter.BorderStyle = BorderStyle.None ;
 				textAreaSplitter.Height = 8;
 				textAreaSplitter.Dock = DockStyle.Bottom;
-                textAreaSplitter.DoubleClick += new EventHandler(textAreaSplitter_DoubleClick);
+			    textAreaSplitter.MinExtra = 0;
+			    textAreaSplitter.MinSize = 0;
+                textAreaSplitter.DoubleClick += TextAreaSplitter_DoubleClick;
+                textAreaSplitter.SplitterMoved += TextAreaSplitter_OnSplitterMoved;
 				textAreaPanel.Controls.Add(textAreaSplitter);
 				textAreaPanel.Controls.Add(secondaryTextArea);
 				InitializeTextAreaControl(secondaryTextArea);
@@ -144,9 +147,18 @@ namespace Revsoft.TextEditor
 			}
 		}
 
-        void textAreaSplitter_DoubleClick(object sender, EventArgs e)
+	    private void TextAreaSplitter_OnSplitterMoved(object sender, SplitterEventArgs e)
+	    {
+            const int collapseSize = 25;
+	        if (e.Y < collapseSize || e.Y > Height - collapseSize)
+	        {
+	            Split();
+	        }
+	    }
+
+	    void TextAreaSplitter_DoubleClick(object sender, EventArgs e)
         {
-            this.Split();
+            Split();
         }
 		
 		[Browsable(false)]
