@@ -267,4 +267,25 @@ namespace Revsoft.Wabbitcode.Actions
             _debuggerService.CurrentDebugger.StepOut();
         }
     }
+
+    public class SetNextStatementAction : AbstractUiAction
+    {
+        private readonly IDebuggerService _debuggerService;
+        private readonly IDockingService _dockingService;
+
+        public SetNextStatementAction()
+        {
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+        }
+
+        public override void Execute()
+        {
+            ITextEditor editor = _dockingService.ActiveDocument as ITextEditor;
+            if (editor != null)
+            {
+                _debuggerService.CurrentDebugger.SetPCToSelect(editor.FileName, editor.CaretLine + 1);
+            }
+        }
+    }
 }
