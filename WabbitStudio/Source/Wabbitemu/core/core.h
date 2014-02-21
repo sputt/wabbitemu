@@ -294,6 +294,7 @@ typedef struct CPU {
 	memc *mem_c;
 	timerc *timer_c;
 	int cpu_version;
+	int model_bits;
 	reverse_time_t prev_instruction_list[512];
 	reverse_time_t *prev_instruction;
 	int reverse_instr;

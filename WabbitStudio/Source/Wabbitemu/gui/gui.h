@@ -49,7 +49,11 @@
 #define REG_CHK_IFF1	95
 #define REG_CHK_IFF2	96
 
+#define DB_CREATE		0
 #define DB_UPDATE		1
+#define DB_RESUME       2
+#define DB_GOTO_RESULT	3
+#define DB_SPRITE_CLOSE 3
 
 #define REG_UPDATE		1
 

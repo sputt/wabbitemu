@@ -395,10 +395,11 @@ BOOL check_flashpage_empty(u_char(*dest)[PAGE_SIZE], u_int page, u_int num_pages
 	return TRUE;
 }
 
-#define TI_84PCSE_CERT_APP_TRIAL_OFFSET 0x1FC8
 #define TI_83PSE_CERT_APP_TRIAL_OFFSET 0x1E50
 #define TI_83P_CERT_APP_TRIAL_OFFSET 0x1F18
-#define APP_BITMAP_VALID_OFFSET 0x1FE0
+
+#define TI_83P_APP_BITMAP_VALID_OFFSET 0x1FE0
+#define TI_84PCSE_APP_BITMAP_VALID_OFFSET 0x1FC8
 #define CERT_PAGE cpu->mem_c->flash_pages - 2
 
 /* Fixes the certificate page so that the app is no longer marked as a trial
@@ -415,26 +416,26 @@ void fix_certificate(CPU_t *cpu, u_int page) {
 	case TI_83P:
 		offset = TI_83P_CERT_APP_TRIAL_OFFSET;
 		break;
-	case TI_84PCSE:
-		offset = TI_84PCSE_CERT_APP_TRIAL_OFFSET;
-		break;
 	default:
 		offset = TI_83PSE_CERT_APP_TRIAL_OFFSET;
 		break;
 	}
 
-	// erase the part of the certificate that marks it as a trial app
-	dest[CERT_PAGE][offset + 2 * (upages.start - page)] = 0x80;
-	dest[CERT_PAGE][offset + 1 + 2 * (upages.start - page)] = 0x00;
-	// don't know which certificate slot the os expects out certificate to be in
-	// so we'll write to both
-	dest[CERT_PAGE][offset + PAGE_SIZE / 2 + 2 * (upages.start - page)] = 0x80;
-	dest[CERT_PAGE][offset + PAGE_SIZE / 2 + 1 + 2 * (upages.start - page)] = 0x00;
+	if (cpu->pio.model < TI_84PCSE) {
+		// erase the part of the certificate that marks it as a trial app
+		dest[CERT_PAGE][offset + 2 * (upages.start - page)] = 0x80;
+		dest[CERT_PAGE][offset + 1 + 2 * (upages.start - page)] = 0x00;
+		// don't know which certificate slot the os expects out certificate to be in
+		// so we'll write to both
+		dest[CERT_PAGE][offset + (PAGE_SIZE / 2) + 2 * (upages.start - page)] = 0x80;
+		dest[CERT_PAGE][offset + (PAGE_SIZE / 2) + 1 + 2 * (upages.start - page)] = 0x00;
+	}
 
+	offset = cpu->pio.model >= TI_84PCSE ? TI_84PCSE_APP_BITMAP_VALID_OFFSET : TI_83P_APP_BITMAP_VALID_OFFSET;
 	// mark all bitmaps as valid. each app has a bit, so 8 apps per byte
-	memset(dest[CERT_PAGE] + APP_BITMAP_VALID_OFFSET, 0, (upages.start - upages.end) / 8);
+	memset(dest[CERT_PAGE] + offset, 0, (upages.start - upages.end) / 8);
 	// same as above write to both possible certificates
-	memset(dest[CERT_PAGE] + APP_BITMAP_VALID_OFFSET + PAGE_SIZE / 2, 0, (upages.start - upages.end) / 8);
+	memset(dest[CERT_PAGE] + offset + (PAGE_SIZE / 2), 0, (upages.start - upages.end) / 8);
 }
 
 LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {

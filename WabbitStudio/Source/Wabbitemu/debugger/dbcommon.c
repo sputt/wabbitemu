@@ -2,51 +2,123 @@
 
 #include "dbcommon.h"
 #include "gui.h"
+#include "guidebug.h"
 #include "resource.h"
 #include "label.h"
 
 extern HINSTANCE g_hInst;
 
-int goto_addr;
 int find_value;
 BOOL big_endian;
 BOOL search_backwards;
-HWND hwndPrev;
+HWND hModelessDialog;
+static WNDPROC wpOrigEditProc;
+
+static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	switch (uMsg) {
+	case WM_KEYUP:
+		if (wParam == VK_RETURN) {
+			SendMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+			return FALSE;
+		} else if (wParam == VK_ESCAPE) {
+			SendMessage(GetParent(hwnd), WM_COMMAND, IDCANCEL, 0);
+			return FALSE;
+		}
+	case WM_KEYDOWN:
+		return FALSE;
+	case WM_CHAR:
+		if (wParam == VK_RETURN || wParam == VK_ESCAPE) {
+			return FALSE;
+		}
+		break;
+	}
+
+	return CallWindowProc(wpOrigEditProc, hwnd, uMsg,
+		wParam, lParam);
+}
+
+void position_goto_dialog(HWND hGotoDialog, int cyHeader) {
+	if (hGotoDialog == NULL) {
+		return;
+	}
+
+	RECT client_rect, parent_rect;
+	GetClientRect(GetParent(hGotoDialog), &parent_rect);
+	GetClientRect(hGotoDialog, &client_rect);
+	int client_height = client_rect.bottom - client_rect.top;
+	SetWindowPos(hGotoDialog, NULL, 0, parent_rect.bottom - client_height - 2, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+}
+
 
 INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static LPCALC lpCalc;
-	static HWND edtAddr;
 	switch (Message) {
-		case WM_INITDIALOG:
-			edtAddr = GetDlgItem(hwndDlg, IDC_EDTGOTOADDR);
-			SetFocus(edtAddr);
-			hwndPrev = GetParent(hwndDlg);
-			lpCalc = (LPCALC) lParam;
-			return FALSE;
-		case WM_COMMAND:
-			switch (LOWORD(wParam)) {
-				case IDOK: {
-					TCHAR result[64];
-					GetDlgItemText(hwndDlg, IDC_EDTGOTOADDR, result, 64);
+	case WM_INITDIALOG: {
+		HWND hEditAddr = GetDlgItem(hwndDlg, IDC_EDTGOTOADDR);
+		wpOrigEditProc = (WNDPROC)SetWindowLongPtr(hEditAddr, GWLP_WNDPROC, (LONG_PTR)EditSubclassProc);
+		LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)lParam;
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lpDebugInfo);
+		hModelessDialog = hwndDlg;
+		return TRUE;
+	}
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDOK: {
+			TCHAR result[64];
+			GetDlgItemText(hwndDlg, IDC_EDTGOTOADDR, result, 64);
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+			if (lpDebugInfo == NULL) {
+				break;
+			}
 
-					if (*result == '\0') {
-						goto_addr = lpCalc->cpu.pc;
-					} else if (result[0] != '$') {
-						label_struct *label;
-						label = lookup_label(lpCalc, result);
-						if (label == NULL) _stscanf_s(result, _T("%x"), &goto_addr);
-						else goto_addr = label->addr;
+			LPCALC lpCalc = lpDebugInfo->lpCalc;
+			int goto_addr;
+			BOOL success = FALSE;
+
+			if (*result != '\0') {
+				if (result[0] != '$') {
+					label_struct *label;
+					label = lookup_label(lpCalc, result);
+					if (label == NULL) {
+						success = _stscanf_s(result, _T("%x"), &goto_addr);
 					} else {
-						_stscanf_s(result+1, _T("%x"), &goto_addr);
+						goto_addr = label->addr;
 					}
-					EndDialog(hwndDlg, IDOK);
-					return TRUE;
+				} else {
+					success = _stscanf_s(result + 1, _T("%x"), &goto_addr);
 				}
-				case IDCANCEL:
-					EndDialog(hwndDlg, IDCANCEL);
-					break;
+			}
+
+			if (!success) {
+				goto_addr = lpCalc->cpu.pc;
+			}
+
+			SendMessage(GetParent(hwndDlg), WM_USER, DB_GOTO_RESULT, goto_addr);
+			EndDialog(hwndDlg, IDOK);
+			DestroyWindow(hwndDlg);
+			return TRUE;
+		}
+		case IDCANCEL:
+			SetWindowLong(GetDlgItem(hwndDlg, IDC_EDTGOTOADDR), GWL_WNDPROC,
+				(LONG)wpOrigEditProc);
+
+			SendMessage(GetParent(hwndDlg), WM_USER, DB_GOTO_RESULT, -1);
+			EndDialog(hwndDlg, IDCANCEL);
+			DestroyWindow(hwndDlg);
+			return TRUE;
+		}
+		switch (HIWORD(wParam)) {
+		case BN_CLICKED: {
+			switch (LOWORD(wParam)) {
+			case IDC_GOTOCLOSE:
+				SendMessage(GetParent(hwndDlg), WM_USER, DB_GOTO_RESULT, -1);
+				EndDialog(hwndDlg, IDCANCEL);
+				DestroyWindow(hwndDlg);
+				return TRUE;
 			}
 			break;
+		}
+		break;
+		}
 	}
 	return FALSE;
 }
@@ -54,54 +126,59 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 INT_PTR CALLBACK FindDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND edtAddr, forwardsCheck, backwardsCheck, littleEndianCheck, bigEndianCheck;
 	switch (Message) {
-		case WM_INITDIALOG:
-			edtAddr = GetDlgItem(hwndDlg, IDC_EDT_FIND);
-			forwardsCheck = GetDlgItem(hwndDlg, IDC_RADIO_FORWARDS);
-			backwardsCheck = GetDlgItem(hwndDlg, IDC_RADIO_BACKWARDS);
+	case WM_INITDIALOG: {
+		edtAddr = GetDlgItem(hwndDlg, IDC_EDT_FIND);
+		forwardsCheck = GetDlgItem(hwndDlg, IDC_RADIO_FORWARDS);
+		backwardsCheck = GetDlgItem(hwndDlg, IDC_RADIO_BACKWARDS);
 
-			littleEndianCheck = GetDlgItem(hwndDlg, IDC_RADIO_LITTLEENDIAN);
-			bigEndianCheck = GetDlgItem(hwndDlg, IDC_RADIO_BIGENDIAN);
+		littleEndianCheck = GetDlgItem(hwndDlg, IDC_RADIO_LITTLEENDIAN);
+		bigEndianCheck = GetDlgItem(hwndDlg, IDC_RADIO_BIGENDIAN);
 
-			SetFocus(GetDlgItem(hwndDlg, IDC_EDT_FIND));
-			hwndPrev = GetParent(hwndDlg);
-			Button_SetCheck(forwardsCheck, TRUE);
-			Button_SetCheck(bigEndianCheck, TRUE);
-			big_endian = TRUE;
-			search_backwards = FALSE;
-			return FALSE;
-		case WM_COMMAND:
-			switch (LOWORD(wParam)) {
-				case IDC_FIND_NEXT: {
-					TCHAR result[32];
-					GetDlgItemText(hwndDlg, IDC_EDT_FIND, result, 32);
-					_stscanf_s(result, _T("%x"), &find_value);
-					SendMessage(hwndPrev, WM_COMMAND, DB_FIND_NEXT, 0);
-					return TRUE;
-				}
-				case IDCANCEL:
-					EndDialog(hwndDlg, IDCANCEL);
-					break;
+		SetFocus(GetDlgItem(hwndDlg, IDC_EDT_FIND));
+		Button_SetCheck(forwardsCheck, TRUE);
+		Button_SetCheck(bigEndianCheck, TRUE);
+		big_endian = TRUE;
+		search_backwards = FALSE;
+
+		LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)lParam;
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lpDebugInfo);
+		return FALSE;
+	}
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+			case IDC_FIND_NEXT: {
+				TCHAR result[32];
+				GetDlgItemText(hwndDlg, IDC_EDT_FIND, result, 32);
+				_stscanf_s(result, _T("%x"), &find_value);
+
+				LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+				SendMessage(lpDebugInfo->hDebug, WM_COMMAND, DB_FIND_NEXT, 0);
+				return TRUE;
 			}
-			switch(HIWORD(wParam)) {
-				case BN_CLICKED: {
-					switch (LOWORD(wParam)) {
-						case IDC_RADIO_BACKWARDS:
-							search_backwards = TRUE;
-							break;
-						case IDC_RADIO_FORWARDS:
-							search_backwards = FALSE;
-							break;
-						case IDC_RADIO_LITTLEENDIAN:
-							big_endian = FALSE;
-							break;
-						case IDC_RADIO_BIGENDIAN:
-							big_endian = TRUE;
-							break;
-					}
-					break;
+			case IDCANCEL:
+				EndDialog(hwndDlg, IDCANCEL);
+				break;
+		}
+		switch(HIWORD(wParam)) {
+			case BN_CLICKED: {
+				switch (LOWORD(wParam)) {
+					case IDC_RADIO_BACKWARDS:
+						search_backwards = TRUE;
+						break;
+					case IDC_RADIO_FORWARDS:
+						search_backwards = FALSE;
+						break;
+					case IDC_RADIO_LITTLEENDIAN:
+						big_endian = FALSE;
+						break;
+					case IDC_RADIO_BIGENDIAN:
+						big_endian = TRUE;
+						break;
 				}
+				break;
 			}
-			break;
+		}
+		break;
 	}
 	return FALSE;
 }
@@ -232,4 +309,49 @@ int xtoi(const TCHAR *xs) {
 	if (error == EOF)
 		return INT_MAX;
 	return val;
+}
+
+int StringToValue(TCHAR *str) {
+	int value = 0;
+	int len = _tcslen(str) - 1;
+	BOOL is_bin = FALSE, is_hex = FALSE;
+	if (!_tcsicmp(str, _T("True"))) {
+		return TRUE;
+	} else if (!_tcsicmp(str, _T("False"))) {
+		return FALSE;
+	} 
+	
+	if (*str == '$') {
+		is_hex = TRUE;
+		str++;
+	} else if (*str == '%') {
+		str++;
+		is_bin = TRUE;
+	} else if (str[len] == 'b') {
+		str[len] = '\0';
+		is_bin = TRUE;
+	} else if (str[len] == 'h') {
+		str[len] = '\0';
+		is_hex = TRUE;
+	}
+
+	if (is_hex) {
+		value = xtoi(str);
+	} else if (is_bin) {
+		for (int i = 0; i < len; i++) {
+			value <<= 1;
+			if (str[i] == '1') {
+				value += 1;
+			}
+			else if (str[i] != '0') {
+				// error parsing assume 0
+				value = INT_MAX;
+				break;
+			}
+		}
+	} else {
+		value = _ttoi(str);
+	}
+
+	return value;
 }

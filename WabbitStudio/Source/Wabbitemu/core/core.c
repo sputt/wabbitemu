@@ -5,7 +5,6 @@
 #include "alu.h"
 #include "indexcb.h"
 #include "control.h"
-#include "83psehw.h"
 #include "optable.h"
 #ifdef WITH_REVERSE
 #include "alu_reverse.h"
@@ -709,8 +708,8 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 BOOL check_flash_write_valid(CPU_t *cpu, int page) {
 	// TODO: remove
 	return !cpu->mem_c->flash_locked && cpu->pio.model >= TI_73 &&
-		(((page != 0x3F && page != 0x2F) || (cpu->pio.se_aux->model_bits & 0x3)) &&
-		((page != 0x7F && page != 0x6F) || (cpu->pio.se_aux->model_bits & 0x2) || !(cpu->pio.se_aux->model_bits & 0x1)));
+		(((page != 0x3F && page != 0x2F) || (cpu->model_bits & 0x3)) &&
+		((page != 0x7F && page != 0x6F) || (cpu->model_bits & 0x2) || !(cpu->model_bits & 0x1)));
 }
 
 void CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data) {

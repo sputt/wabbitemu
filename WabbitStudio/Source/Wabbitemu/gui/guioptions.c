@@ -748,7 +748,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 
 INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND edtRom_path, edtRom_version, edtRom_model, edtRom_size, stcRom_image, saveState_check,
-			ramPages_check, edtLCD_delay, old83p_check;
+			ramPages_check, edtLCD_delay, old83p_check, extraSpeed_check;
 	static HBITMAP hbmTI83P = NULL;
 	switch (Message) {
 		case WM_INITDIALOG: {
@@ -759,6 +759,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			stcRom_image = GetDlgItem(hwnd, IDC_STCROMIMAGE);
 			saveState_check = GetDlgItem(hwnd, IDC_CHKSAVE);
 			ramPages_check = GetDlgItem(hwnd, IDC_CHK_RAMPAGES);
+			extraSpeed_check = GetDlgItem(hwnd, IDC_CHK_EXTRASPEED);
 			edtLCD_delay = GetDlgItem(hwnd, IDC_EDT_LCDDELAY);
 			old83p_check = GetDlgItem(hwnd, IDC_CHK_83P_OLD);
 
@@ -807,6 +808,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					exit_save_state = Button_GetCheck(saveState_check);
 					lpCalc->cpu.mem_c->ram_version = Button_GetCheck(ramPages_check) ? 2 : 0;
 					lpCalc->cpu.cpu_version = Button_GetCheck(old83p_check) ? 1 : 0;
+					lpCalc->cpu.timer_c->timer_version = Button_GetCheck(extraSpeed_check) ? 1 : 0;
 					Edit_GetText(edtLCD_delay,buf, ARRAYSIZE(buf));
 					delay = _ttoi(buf);
 					if (delay != 0) {
@@ -847,6 +849,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			Edit_SetText(edtRom_version, lpCalc->rom_version);
 #endif
 			Edit_SetText(edtRom_model, CalcModelTxt[lpCalc->model]);
+			Button_GetCheck(extraSpeed_check, lpCalc->cpu.timer_c->timer_version > 1);
 			Button_SetCheck(ramPages_check, lpCalc->cpu.mem_c->ram_version == 2);
 			Button_SetCheck(old83p_check, lpCalc->cpu.cpu_version);
 			TCHAR szRomSize[16];

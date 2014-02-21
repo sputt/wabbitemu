@@ -196,7 +196,7 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 	DeleteDC(hdcBuf);
 }
 
-VOID CALLBACK ButtonFadeProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer) {
+VOID CALLBACK ButtonFadeProc(HWND hwnd, UINT, UINT_PTR idEvent, DWORD) {
 	TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	InvalidateRect(hwnd, NULL, FALSE);
@@ -546,7 +546,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				if (hwnd == GetFocus()) {
 					bf.SourceConstantAlpha = 100;
 				} else {
-					bf.SourceConstantAlpha = 100 * tbb->trans_state / FADE_SOLID;
+					bf.SourceConstantAlpha = (BYTE) (100 * tbb->trans_state / FADE_SOLID);
 				}
 				AlphaBlend(	hdcBuf, 4, 0, rc.right - 8, rc.bottom,
 							hdcFrame, 0, 0, 1, 24,
@@ -584,7 +584,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					if (hwnd == GetFocus()) {
 						bf.SourceConstantAlpha = 100;
 					} else {
-						bf.SourceConstantAlpha = 100 * tbb->trans_state / FADE_SOLID;
+						bf.SourceConstantAlpha = (BYTE) (100 * tbb->trans_state / FADE_SOLID);
 					}
 					AlphaBlend(	hdcBuf, 4, 0, rc.right - 8, rc.bottom,
 								hdcFrame, 0, 0, 1, 24,
@@ -647,7 +647,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 
 					BYTE * pPixel = pBits;
 					for (y = 0; y < height; y++, pPixel+=4) {
-						pPixel[3] = 255*(y+1)/height/3;
+						pPixel[3] = (BYTE)(255 * (y + 1) / height / 3);
 
 						pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 						pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
@@ -655,7 +655,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 
 					}
 
-					bf.SourceConstantAlpha = 100 * tbb->trans_state / FADE_SOLID;
+					bf.SourceConstantAlpha = (BYTE)(100 * tbb->trans_state / FADE_SOLID);
 					AlphaBlend(	hdcBuf, 2, 2, rc.right - 4, rc.bottom - 4,
 								hdcGrad, 0, 0, 1, height,
 								bf);
@@ -819,7 +819,7 @@ int CreateToolbarButton(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *s
 	return x + 4 + 16 + 8 + r.right + 4 + 4 + splitSize;
 }
 
-BOOL CALLBACK EnumToolbarRedraw(HWND hwndChild, LPARAM lParam) {
+BOOL CALLBACK EnumToolbarRedraw(HWND hwndChild, LPARAM) {
 	SendMessage(hwndChild, WM_SIZE, 0, 0);
 
 	InvalidateRect(hwndChild, NULL, FALSE);
@@ -833,16 +833,27 @@ HMENU CreateRewindMenu() {
 	return rewindmenu;
 }
 
-void ChangeRunButtonIconAndText(LPCALC lpCalc, TBBTN *tbb) {
+const TCHAR *stopText = _T("Stop");
+const TCHAR *runText = _T("Run");
+
+void ChangeRunButtonIconAndText(LPCALC lpCalc, LPVOID lParam) {
+	// this will change so the run/stop button says Stop
+	HWND hButton = FindWindowEx((HWND) lParam, NULL, WC_BUTTON, lpCalc->running ? runText : stopText);
+	TBBTN *tbb = (TBBTN *)GetWindowLongPtr(hButton, GWLP_USERDATA);
+	if (tbb == NULL) {
+		return;
+	}
+
 	if (tbb->hbmIcon)
 		DeleteObject(tbb->hbmIcon);
 	if (lpCalc->running) {
 		tbb->hbmIcon = LoadBitmap(g_hInst, _T("DBStop"));
-		Edit_SetText(tbb->hwnd, _T("Stop"));
+		Edit_SetText(tbb->hwnd, stopText);
 	} else {
 		tbb->hbmIcon = LoadBitmap(g_hInst, _T("DBRun"));
-		Edit_SetText(tbb->hwnd, _T("Run"));
+		Edit_SetText(tbb->hwnd, runText);
 	}
+
 	RECT rc;
 	GetClientRect(tbb->hwnd, &rc);
 	InvalidateRect(tbb->hwnd, &rc, TRUE);
@@ -881,6 +892,8 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			}
 			next = CreateToolbarButton(hwnd, lpDebugInfo, _T(""), _T("Display additional commands."), szChevronBMP, next, 4, 1006, FALSE);
 
+			calc_register_event(lpCalc, ROM_RUNNING_EVENT, &ChangeRunButtonIconAndText, hwnd);
+
 			return 0;
 		}
 		case WM_COMMAND:
@@ -891,13 +904,11 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					SendMessage(hwndLastFocus, WM_COMMAND, wParam, 0);
 					break;
 				case 999: {
-					TBBTN *tbb = (TBBTN *) GetWindowLongPtr((HWND) lParam, GWLP_USERDATA);
 					if (lpCalc->running) {
 						SendMessage(GetParent(hwnd), WM_COMMAND, DB_STOP, 0);
 					} else {
 						SendMessage(GetParent(hwnd), WM_COMMAND, DB_RUN, 0);
 					}
-					ChangeRunButtonIconAndText(lpCalc, tbb);
 					break;
 				}
 				case 1000:
@@ -939,10 +950,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					void **ppvBits;
 					CreateDIBSection(GetDC(hwnd), &biMenu, DIB_RGB_COLORS, (void **) &ppvBits, NULL, 0);
 
-					printf("context menu\n");
-
 					TCHAR WindowText[256];
-
 					mii.cbSize = sizeof(MENUITEMINFO);
 					mii.fMask = MIIM_STATE | MIIM_ID | MIIM_STRING | MIIM_BITMAP;
 					mii.fType = MFT_STRING;
@@ -1127,7 +1135,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 				BYTE * pPixel = pBits;
 				for (x = 0; x < width; x++, pPixel+=4) {
-					pPixel[3] = 255*(x+1)/width/8;
+					pPixel[3] = (BYTE)(255 * (x + 1) / width / 8);
 
 					pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 					pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
@@ -1161,6 +1169,9 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			return 0;
 		case WM_USER:
 			InvalidateRect(hwnd, NULL, FALSE);
+			return 0;
+		case WM_DESTROY:
+			calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &ChangeRunButtonIconAndText, hwnd);
 			return 0;
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);

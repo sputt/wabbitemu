@@ -90,7 +90,6 @@ HWND CreateExpandPane(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *nam
 		//DestroyWindow(contents);
 	}
 
-
 	lpDebugInfo->ExpandPanes[lpDebugInfo->TotalPanes++] = hwndExp;
 	return hwndExp;
 }

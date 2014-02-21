@@ -26,8 +26,6 @@ typedef struct TBBTN_tag{
 	LPDEBUGWINDOWINFO lpDebugInfo;
 } TBBTN;
 
-void ChangeRunButtonIconAndText(LPCALC lpCalc, TBBTN *tbb);
-
 LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 #endif /*DBTOOLBAR_H_*/

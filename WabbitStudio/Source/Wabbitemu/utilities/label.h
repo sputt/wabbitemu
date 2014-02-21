@@ -19,7 +19,7 @@ typedef struct {
 #define _LABEL_H_PROTOTYPES
 TCHAR* FindAddressLabel(LPCALC lpCalc, waddr_t waddr);
 //void ImportBcalls(char* fn);
-TCHAR* FindBcall(int address);
+TCHAR* FindBcall(int address, int model);
 void FindFlags(int flag, int bit, TCHAR **flagstring, TCHAR **bitstring);
 
 void VoidLabels(LPCALC lpCalc);

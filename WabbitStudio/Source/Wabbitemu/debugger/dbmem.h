@@ -25,6 +25,8 @@ typedef struct mempane_settings {
 	int nRows, nCols;				// number of rows and cols
 	int cxMem;
 	int cyRow;
+	int cyHeader;
+	HWND hGotoDialog;
 } mempane_settings_t;
 
 typedef mempane_settings_t mp_settings;

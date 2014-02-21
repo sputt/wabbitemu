@@ -196,8 +196,8 @@ int calc_init_84p(LPCALC lpCalc) {
 	/* END INTIALIZE 84+ */
 
 	setup_callbacks(lpCalc);
-	lpCalc->flash_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.flash_pages, PAGE_SIZE);
-	lpCalc->ram_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.ram_pages, PAGE_SIZE);
+	lpCalc->flash_cond_break = (LPBREAKPOINT *)calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
+	lpCalc->ram_cond_break = (LPBREAKPOINT *)calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 	return error;
 }
 
@@ -266,6 +266,14 @@ int calc_init_model(LPCALC lpCalc, int model, char *verString) {
 	}
 
 	return error;
+}
+
+void notify_event(LPCALC lpCalc, EVENT_TYPE event_type) {
+	for (int i = 0; i < MAX_REGISTERED_EVENTS; i++) {
+		if (lpCalc->registered_events[i].type == event_type) {
+			lpCalc->registered_events[i].callback(lpCalc, lpCalc->registered_events[i].lParam);
+		}
+	}
 }
 
 BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
@@ -384,11 +392,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 			calc_turn_on(lpCalc);
 		}
 
-		for (int i = 0; i < MAX_REGISTERED_EVENTS; i++) {
-			if (lpCalc->registered_events[i].type == ROM_LOAD_EVENT) {
-				lpCalc->registered_events[i].callback(lpCalc);
-			}
-		}
+		notify_event(lpCalc, ROM_LOAD_EVENT);
 	}
 
 	FreeTiFile(tifile);
@@ -436,7 +440,6 @@ void calc_slot_free(LPCALC lpCalc) {
 
 		free(lpCalc->cpu.pio.lcd);
 		lpCalc->cpu.pio.lcd = NULL;
-
 	}
 }
 
@@ -497,7 +500,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 
 	while (lpCalc->running) {
 		if (check_break(&lpCalc->mem_c, addr16_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc))) {
-			lpCalc->running = FALSE;
+			calc_set_running(lpCalc, FALSE);
 			lpCalc->breakpoint_callback(lpCalc);
 			return 0;
 		}
@@ -552,7 +555,7 @@ void calc_turn_on(LPCALC lpCalc) {
 	lpCalc->fake_running = FALSE;
 }
 
-void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback) {
+void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback, LPVOID lParam) {
 	int i;
 	for (i = 0; i < MAX_REGISTERED_EVENTS; i++) {
 		if (lpCalc->registered_events[i].type == NO_EVENT) {
@@ -566,6 +569,21 @@ void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback ca
 
 	lpCalc->registered_events[i].type = event_type;
 	lpCalc->registered_events[i].callback = callback;
+	lpCalc->registered_events[i].lParam = lParam;
+}
+
+void calc_unregister_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback, LPVOID lParam) {
+	int i;
+	for (i = 0; i < MAX_REGISTERED_EVENTS; i++) {
+		if (lpCalc->registered_events[i].type == event_type && 
+			lpCalc->registered_events[i].callback == callback &&
+			lpCalc->registered_events[i].lParam == lParam) {
+			lpCalc->registered_events[i].type = NO_EVENT;
+			lpCalc->registered_events[i].callback = NULL;
+			lpCalc->registered_events[i].lParam = NULL;
+			return;
+		}
+	}
 }
 
 BOOL calc_start_screenshot(const TCHAR *filename) {
@@ -585,7 +603,7 @@ void calc_stop_screenshot() {
 void calc_pause_linked() {
 	for (int i = 0; i < MAX_CALCS; i++) {
 		if (calcs[i].active && link_connected_hub(i)) {
-			calcs[i].running = FALSE;
+			calc_set_running(&calcs[i], FALSE);
 		}
 	}
 }
@@ -593,9 +611,23 @@ void calc_pause_linked() {
 void calc_unpause_linked() {
 	for (int i = 0; i < MAX_CALCS; i++) {
 		if (calcs[i].active && link_connected_hub(i)) {
-			calcs[i].running = TRUE;
+			calc_set_running(&calcs[i], TRUE);
 		}
 	}
+}
+
+void calc_set_running(LPCALC lpCalc, BOOL running) {
+	if (!link_connected_hub(lpCalc->slot)) {
+		lpCalc->running = running;
+	}
+
+	if (running) {
+		calc_unpause_linked();
+	} else {
+		calc_pause_linked();
+	}
+
+	notify_event(lpCalc, ROM_RUNNING_EVENT);
 }
 
 int calc_run_all(void) {
@@ -668,7 +700,7 @@ int calc_run_all(void) {
 	return 0;
 }
 
-void port_debug_callback(void *arg1, void *) {
+void port_debug_callback(void *arg1, void *arg2) {
 	CPU_t *cpu = (CPU_t *) arg1;
 	LPCALC lpCalc = calc_from_cpu(cpu);
 	lpCalc->breakpoint_callback(lpCalc);
@@ -720,11 +752,7 @@ void lcd_enqueue_callback(CPU_t *cpu) {
 		return;
 	}
 
-	for (int i = 0; i < MAX_REGISTERED_EVENTS; i++) {
-		if (lpCalc->registered_events[i].type == LCD_ENQUEUE_EVENT) {
-			lpCalc->registered_events[i].callback(lpCalc);
-		}
-	}
+	notify_event(lpCalc, LCD_ENQUEUE_EVENT);
 }
 
 int calc_run_seconds(LPCALC lpCalc, double seconds) {

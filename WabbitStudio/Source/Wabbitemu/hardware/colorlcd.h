@@ -7,6 +7,7 @@
 #define COLOR_LCD_WIDTH 320
 #define COLOR_LCD_HEIGHT 240
 #define COLOR_LCD_DEPTH 3
+#define COLOR_LCD_BUFFERS 3
 #define COLOR_LCD_DISPLAY_SIZE COLOR_LCD_WIDTH * COLOR_LCD_HEIGHT * COLOR_LCD_DEPTH
 
 typedef struct ColorLCD {
@@ -20,6 +21,13 @@ typedef struct ColorLCD {
 
 	int front;
 
+	double last_draw;
+	int draw_gate;
+	double line_time;
+	BOOL is_drawing;
+
+	BOOL panic_mode;
+
 	int read_buffer;
 	int write_buffer;
 
@@ -27,8 +35,13 @@ typedef struct ColorLCD {
 	int write_step;
 
 	int frame_rate;
+	int front_porch, back_porch;
+	int display_lines;
+	int clocks_per_line;
+	int clock_divider;
 } ColorLCD_t;
 
 ColorLCD_t *ColorLCD_init(CPU_t *cpu, int model);
+void ColorLCD_set_register(CPU_t *cpu, ColorLCD_t *lcd, uint16_t reg, uint16_t value);
 
 #endif

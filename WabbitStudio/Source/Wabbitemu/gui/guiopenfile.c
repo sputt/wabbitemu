@@ -118,9 +118,9 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 void GetOpenSendFileName(HWND hwnd) {
 	OPENFILENAME ofn;
 	int result;
-	const TCHAR lpstrFilter[] 	= _T("Known File Types\0*.73?;*.82?;*.83?;*.8x?;*.85?;*.86?;*.sav;*.rom;*.lab\0\
-										Calculator Program Files  (*.73p;*.82*;*.83p*;*.8xp*)\0*.73p;*.82*;*.83p*;*.8xp*\0\
-										Calculator Applications  (*.8xk, *.73k)\0*.8xk;*.73k\0\
+	const TCHAR lpstrFilter[] = _T("Known File Types\0*.73?;*.82?;*.83?;*.8x?;*.8c?;*.85?;*.86?;*.sav;*.rom;*.lab\0\
+								   								   		Calculator Program Files  (*.73p;*.82*;*.83p*;*.8xp*)\0*.73p;*.82*;*.83p*;*.8xp*\0\
+										Calculator Applications  (*.8xk, *.8ck, *.73k)\0*.8xk;*.8ck;*.73k\0\
 										Calculator OSes (*.8xu)\0*.8xu\0\
 										Save States  (*.sav)\0*.sav\0\
 										ROMS  (*.rom)\0*.rom\0\

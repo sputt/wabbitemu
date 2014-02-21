@@ -489,6 +489,8 @@ void SaveCPU(SAVESTATE_t* save, CPU_t* cpu) {
 		WriteInt(chunk, val->skip_factor);
 		WriteInt(chunk, val->skip_count);
 	}
+
+	WriteInt(chunk, cpu->model_bits);
 }
 	
 void SaveMEM(SAVESTATE_t* save, memc* mem) {
@@ -655,7 +657,6 @@ void SaveSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 		WriteChar(chunk, se_aux->xtal.timers[i].count);
 		WriteChar(chunk, se_aux->xtal.timers[i].max);
 	}
-	WriteInt(chunk, se_aux->model_bits);
 	chunk = NewChunk(save, USB_tag);
 	WriteInt(chunk, se_aux->usb.USBLineState);
 	WriteInt(chunk, se_aux->usb.USBEvents);
@@ -810,6 +811,11 @@ void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 		val->skip_count = (unsigned char)ReadInt(chunk);
 	}
 	
+	if (save->version_build >= CPU_MODEL_BITS) {
+		cpu->model_bits = ReadInt(chunk);
+	} else {
+		cpu->model_bits = save->model == TI_84P ? 0 : 1;
+	}
 }
 
 
@@ -1003,9 +1009,9 @@ void LoadColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
 	ReadBlock(chunk, lcd->display, COLOR_LCD_DISPLAY_SIZE);
 	ReadBlock(chunk, lcd->queued_image, COLOR_LCD_DISPLAY_SIZE);
 	ReadBlock(chunk, (unsigned char *) &lcd->registers, sizeof(lcd->registers));
-	lcd->current_register = ReadShort(chunk);
-	lcd->read_buffer = ReadShort(chunk);
-	lcd->write_buffer = ReadShort(chunk);
+	lcd->current_register = ReadInt(chunk);
+	lcd->read_buffer = ReadInt(chunk);
+	lcd->write_buffer = ReadInt(chunk);
 	lcd->read_step = ReadInt(chunk);
 	lcd->write_step = ReadInt(chunk);
 	lcd->frame_rate = ReadInt(chunk);
@@ -1041,7 +1047,8 @@ void LoadSTDINT(SAVESTATE_t* save, STDINT_t* stdint) {
 	stdint->xy			= ReadInt(chunk);
 }
 
-void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
+// CPU needed for compatibility, see below
+void LoadSE_AUX(SAVESTATE_t* save, CPU_t *cpu, SE_AUX_t *se_aux) {
 	int i;
 	if (!se_aux) {
 		return;
@@ -1112,10 +1119,12 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 		se_aux->xtal.timers[i].count		= ReadChar(chunk);
 		se_aux->xtal.timers[i].max			= ReadChar(chunk);
 	}
-	if (save->version_minor >= 1)
-		se_aux->model_bits = ReadInt(chunk);
-	else
-		se_aux->model_bits = save->model == TI_84P ? 0 : 1;
+	if (save->version_minor >= 1 && save->version_build <= SEAUX_MODEL_BITS) {
+		// originally this was part of the SE_AUX struct
+		// now its contained in the core, and as such this minor hack
+		cpu->model_bits = ReadInt(chunk);
+	}
+
 	chunk = FindChunk(save, USB_tag);
 	if (!chunk) return;
 	chunk->pnt = 0;
@@ -1158,7 +1167,7 @@ void LoadSlot(SAVESTATE_t *save, LPCALC lpCalc) {
 	}
 	LoadLINK(save, lpCalc->cpu.pio.link);
 	LoadSTDINT(save, lpCalc->cpu.pio.stdint);
-	LoadSE_AUX(save, lpCalc->cpu.pio.se_aux);
+	LoadSE_AUX(save, &lpCalc->cpu, lpCalc->cpu.pio.se_aux);
 	lpCalc->running = runsave;
 }
 
@@ -1278,6 +1287,7 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 				{
 					int error = inf(ifile, tmpFile);
 					if (error) {
+						fclose(ifile);
 						return NULL;
 					}
 					// TODO: fix this so we don't need this temp file

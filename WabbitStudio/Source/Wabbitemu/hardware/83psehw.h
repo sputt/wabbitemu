@@ -118,7 +118,6 @@ typedef struct SE_AUX {
 	LINKASSIST_t linka;
 	XTAL_t xtal;
 	USB_t usb;
-	int model_bits;
 } SE_AUX_t;
 
 STDINT_t *INT83PSE_init(CPU_t*);
@@ -132,7 +131,6 @@ void mod_timer(CPU_t *cpu, XTAL_t* xtal);
 void GenerateUSBEvent(CPU_t *cpu, USB_t *usb, int bit, BOOL lowToHigh);
 void md5ports(CPU_t *cpu, device_t *dev);
 void delay_ports(CPU_t *cpu, device_t *dev);
-SE_AUX_t* SE_AUX_init(CPU_t* cpu);
 //CLOCK
 void clock_enable(CPU_t *cpu, device_t *dev);
 void clock_set(CPU_t *cpu, device_t *dev);

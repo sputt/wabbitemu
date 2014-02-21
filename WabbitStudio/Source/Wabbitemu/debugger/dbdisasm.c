@@ -24,7 +24,6 @@ extern HWND hwndLastFocus;
 extern Z80_com_t da_opcode[256];
 
 extern HINSTANCE g_hInst;
-extern int goto_addr;
 extern int find_value;
 extern BOOL search_backwards;
 extern BOOL big_endian;
@@ -627,26 +626,33 @@ void db_step_finish(HWND hwnd, dp_settings *dps, BOOL step_back = FALSE) {
 	Debug_UpdateWindow(GetParent(GetParent(hwnd)));
 }
 
+static void on_running_changed(LPCALC lpCalc, LPVOID lParam) {
+	HWND hDisasm = (HWND)lParam;
+	EnableWindow(hDisasm, !lpCalc->running);
+	Debug_UpdateWindow(hDisasm);
+}
+
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	
+	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	dp_settings *dps;
+	if (lpTabInfo != NULL) {
+		dps = (dp_settings *)lpTabInfo->tabInfo;
+	}
+
 	switch (Message) {
 		case WM_SETFOCUS: {
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			hwndLastFocus = hwnd;
 			InvalidateSel(hwnd, dps->iSel);
 			UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_KILLFOCUS: {
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			InvalidateSel(hwnd, dps->iSel);
 			UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_DESTROY: {
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			calc_unregister_event(dps->lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwnd);
 			free(lpTabInfo);
 			return 0;
 		}
@@ -661,9 +667,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			GetClientRect(hwnd, &rc);
 
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			lpTabInfo = (LPTABWINDOWINFO) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpTabInfo);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
+			dps = (dp_settings *) lpTabInfo->tabInfo;
 
 			dps->hfontDisasm = lpTabInfo->lpDebugInfo->hfontLucida;
 			dps->hfontData = lpTabInfo->lpDebugInfo->hfontLucida;
@@ -701,8 +707,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				if (dps->hdrs[i].index != -1) dps->hdrs[i].index = disasmhdr_insert(dps->hwndHeader, &dps->hdrs[i]);
 			}
 
-			dps->hwndTip = CreateWindowEx(
-					0,
+			dps->hwndTip = CreateWindow(
 					TOOLTIPS_CLASS,
 					NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
 					CW_USEDEFAULT, CW_USEDEFAULT,
@@ -735,14 +740,14 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				dps->nPCs[i] = -1;
 			}
 			dps->last_pagedown = 32;
+
+			calc_register_event(dps->lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwnd);
 			return 0;
 		}
 		case WM_SIZE: {
 			RECT rc;
 			WINDOWPOS wp;
 			HDLAYOUT hdl;
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 			GetClientRect(hwnd, &rc);
 			hdl.prc = &rc;
@@ -765,7 +770,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						*zlast 	= &dps->zinf[dps->nRows-1];
 			dps->nPage = zlast->waddr.addr + zlast->size - zfirst->waddr.addr;
 
-			//calculate the correct ending page
+			// calculate the correct ending page
 			int last_top_page_addr;
 			Z80_info_t zup[128];
 			int nPane_old = dps->nPane;
@@ -789,7 +794,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				total_size += zup[i].size;
 			}
 
-			//check if the first page is visible from the last page
+			// check if the first page is visible from the last page
 			if (zfirst->waddr.addr > zlast->waddr.addr) {
 				dps->nPane--;
 				SendMessage(hwnd, WM_SIZE, 0, 0);
@@ -803,6 +808,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			si.nMax = last_top_page_addr;
 			si.nMin = 0x0000;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
+			position_goto_dialog(dps->hGotoDialog, dps->cyHeader);
 			return 0;
 		}
 		case WM_CONTEXTMENU: {
@@ -838,8 +845,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case HDN_ITEMCHANGING:
 				case HDN_ENDTRACK:
 				{
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					HDITEM *lphdi = ((NMHEADER*) lParam)->pitem;
 					static BOOL in_changing = FALSE;
 					HDITEM hdi;
@@ -880,8 +885,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					HMENU hmenu;
 					POINT p;
 					int i;
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 					hmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_DISASM_HEADER_MENU));
 					if (!hmenu) break;
@@ -946,8 +949,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			TRIVERTEX vert[2];
 			u_int end_i;
 			GRADIENT_RECT gRect;
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 			GetClientRect(hwnd, &rc);
 
@@ -1140,13 +1141,10 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_COMMAND: {
-			static HWND hwndFind = NULL;
 			switch (LOWORD(wParam)) {
 				case DB_COPYLINE: {
 					int i, j;
 					Z80_info *zinf_line;
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					TCHAR *disassembly = (TCHAR *) LocalAlloc(LMEM_FIXED, DISASM_LINE_MAX_LEN);
 					ZeroMemory(disassembly, 2048);
 					TCHAR copy_line[1024] = {0};
@@ -1209,8 +1207,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_DISASM: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					u_int addr = (u_int) lParam;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
@@ -1221,80 +1217,19 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, dps->zinf);
 					break;
 				}
-				case IDM_RUN_RUN:
-				case DB_RUN: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
-					if (dps->lpCalc->running) {
-						SendMessage(hwnd, WM_COMMAND, DB_STOP, 0);
-						break;
-					}
-					HMENU hMenu = GetMenu(dps->lpCalc->hwndDebug);
-					MENUITEMINFO mii;
-					mii.cbSize = sizeof(MENUITEMINFO);
-					mii.fMask = MIIM_STRING;
-					mii.dwTypeData = _T("Stop\tF5");
-					SetMenuItemInfo(hMenu, IDM_RUN_RUN, FALSE, &mii);
-					int i;
-					//run the calculator
-					CPU_step(&dps->lpCalc->cpu);
-					calc_unpause_linked();
-					SendMessage(dps->lpCalc->hwndFrame, WM_COMMAND, IDM_CALC_PAUSE, 0);
-					//disable interactions
-					EnableWindow(hwnd, FALSE);
-					//this will change so the run/stop button says Stop
-					HWND hButton = FindWindowEx(lpTabInfo->lpDebugInfo->htoolbar, NULL, _T("BUTTON"), _T("Run"));
-					if (hButton) {
-						TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
-						ChangeRunButtonIconAndText(dps->lpCalc, tbb);
-					}
-					Debug_UpdateWindow(hwnd);
-					for (i = 0; i < PC_TRAILS; i++) {
-						dps->nPCs[i] = -1;
-					}
-					break;
-				}
-				case DB_STOP: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
-					HMENU hMenu = GetMenu(dps->lpCalc->hwndDebug);
-					MENUITEMINFO mii;
-					mii.cbSize = sizeof(MENUITEMINFO);
-					mii.fMask = MIIM_STRING;
-					mii.dwTypeData = _T("Run\tF5");
-					SetMenuItemInfo(hMenu, IDM_RUN_RUN, FALSE, &mii);
-					EnableWindow(hwnd, TRUE);
-					SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
-					db_step_finish(hwnd, dps);
-					dps->lpCalc->running = FALSE;
-					//this will change so the run/stop button says Run
-					HWND hButton = FindWindowEx(lpTabInfo->lpDebugInfo->htoolbar, NULL, _T("BUTTON"), _T("Stop"));
-					if (hButton) {
-						TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
-						ChangeRunButtonIconAndText(dps->lpCalc, tbb);
-					}
-					Debug_UpdateWindow(hwnd);
-					break;
-				}
 				case IDM_RUN_STEP:
 				case DB_STEP: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					CPU_step(&dps->lpCalc->cpu);
 					db_step_finish(hwnd, dps);
 					break;
 				}
 				case IDM_RUN_STEPOVER:
 				case DB_STEPOVER: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					CPU_stepover(dps->lpCalc);
 					db_step_finish(hwnd, dps);
 					break;
 				}
 				case IDM_RUN_STEPOUT: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					CPU_stepout(dps->lpCalc);
 					db_step_finish(hwnd, dps);
 					break;
@@ -1310,46 +1245,24 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 #endif
 				case DB_CYCLEPCS: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					cycle_pcs(dps);
 					break;
 				}
 				case DB_DISASM_GOTO:
 				case DB_GOTO: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
-					int result;
-					result = (int) DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd,
-						(DLGPROC) GotoDialogProc, (LPARAM) dps->lpCalc);
-					if (result == IDOK) {
-						switch (dps->type) {
-							case REGULAR:
-								goto_addr = goto_addr & 0xFFFF;
-								break;
-							case FLASH:
-								goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + ((goto_addr >> 16) * PAGE_SIZE);
-								if (goto_addr > GetMaxAddr(dps))
-									goto_addr = GetMaxAddr(dps) - 1;
-								break;
-							case RAM: {						
-								goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + (((goto_addr >> 16) & 0x7) * PAGE_SIZE);
-								if (goto_addr > GetMaxAddr(dps))
-									goto_addr = GetMaxAddr(dps) - 1;
-								break;
-							}
-						}
-						DisasmGotoAddress(hwnd, goto_addr);
+					if (dps->hGotoDialog != NULL) {
+						SetFocus(dps->hGotoDialog);
+					} else {
+						dps->hGotoDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd,
+							(DLGPROC)GotoDialogProc, (LPARAM)lpTabInfo->lpDebugInfo);
+						position_goto_dialog(dps->hGotoDialog, dps->cyHeader);
 					}
-					SetFocus(hwnd);
 					return 0;
 				}
 				case DB_FIND_NEXT: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					waddr_t *waddr = DisasmFindValue(dps, find_value, search_backwards, big_endian);
 					if (waddr == NULL) {
-						MessageBox(hwndFind, _T("Unable to find value"), _T("Find"), MB_OK);
+						MessageBox(dps->hFindDialog, _T("Unable to find value"), _T("Find"), MB_OK);
 					} else {
 						int global_addr;
 						if (dps->type == REGULAR) {
@@ -1373,16 +1286,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					return 0;
 				}
 				case DB_OPEN_FIND: {
-					if (hwndFind) {
-						DestroyWindow(hwndFind);
+					if (dps->hFindDialog) {
+						SetFocus(dps->hFindDialog);
+						break;
 					}
-					hwndFind = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC)FindDialogProc);
-					ShowWindow(hwndFind, SW_SHOW);
+					dps->hFindDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC)FindDialogProc, (LPARAM) lpTabInfo->lpDebugInfo);
+					ShowWindow(dps->hFindDialog, SW_SHOW);
 					break;
 				}
 				case DB_BREAKPOINT: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
 						waddr = addr16_to_waddr(&dps->lpCalc->mem_c, (uint16_t)dps->nSel);
@@ -1400,8 +1312,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_MEMPOINT_WRITE: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
 						waddr = addr16_to_waddr(&dps->lpCalc->mem_c, (uint16_t)dps->nSel);
@@ -1419,8 +1329,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_MEMPOINT_READ: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
+				
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
 						waddr = addr16_to_waddr(&dps->lpCalc->mem_c, (uint16_t) dps->nSel);
@@ -1441,16 +1350,12 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case IDM_DISASMDISASM:
 				case IDM_DISASMSIZE:
 				case IDM_DISASMCLOCKS: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					disasmhdr_toggle(dps->hwndHeader, &dps->hdrs[LOWORD(wParam) - IDM_DISASMADDR]);
 
 					Debug_UpdateWindow(hwnd);
 					break;
 				}
 				case DB_SET_PC: {
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					if (dps->type == REGULAR) {
 						dps->lpCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
 					} else {
@@ -1469,8 +1374,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			RECT hdrRect;
 			RECT r;
 			int y;
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 			GetWindowRect(dps->hwndHeader, &hdrRect);
 
@@ -1504,8 +1407,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 		case WM_LBUTTONUP: {
 			RECT hdrRect;
 			int y;
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 			GetWindowRect(dps->hwndHeader, &hdrRect);
 			y = GET_Y_LPARAM(lParam) - dps->cyHeader;
@@ -1518,15 +1419,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_MOUSELEAVE: {
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			InvalidateSel(hwnd, dps->iHot);
 			dps->iHot = -1;
 			return 0;
 		}
 		case WM_MOUSEMOVE: {
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			dps->MousePoint.x = GET_X_LPARAM(lParam);
 			dps->MousePoint.y = GET_Y_LPARAM(lParam);
 
@@ -1597,8 +1494,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				//update tooltip text
 				int total_bytes = 0, total = 0, total_cond = 0;
 				TCHAR szTip[64], szOldTip[64];
-				LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 				for (int j = dps->iSel; j != dps->iSel + dps->NumSel; j++) {
 					total_bytes += dps->zinf[j].size;
@@ -1633,8 +1528,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_KEYDOWN: {
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			int Q1 = dps->nRows/4, Q3 = dps->nRows - dps->nRows/4 - 1;
 
 			BOOL bCenter = FALSE;
@@ -1721,8 +1614,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_VSCROLL: {
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			SCROLLINFO si;
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_RANGE | SIF_TRACKPOS;
@@ -1855,26 +1746,44 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return dps->nPane;
 		}
 		case WM_USER: {
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			switch (wParam) {
 				case DB_UPDATE:
 					SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 					InvalidateRect(hwnd, NULL, FALSE);
 					UpdateWindow(hwnd);
 					break;
-				case DB_RESUME:
+				case DB_RESUME: {
 					dps->nPCs[0] = dps->lpCalc->cpu.pc;
 					EnableWindow(hwnd, TRUE);
-					//this will change so the run/stop button says Run
-					HWND hButton = FindWindowEx(lpTabInfo->lpDebugInfo->htoolbar, NULL, _T("BUTTON"), _T("Stop"));
-					if (hButton) {
-						TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
-						ChangeRunButtonIconAndText(dps->lpCalc, tbb);
-					}
-					
+
 					Debug_UpdateWindow(hwnd);
 					break;
+				}
+				case DB_GOTO_RESULT: {
+					dps->hGotoDialog = NULL;
+					int goto_addr = (int) lParam;
+					if (goto_addr == -1) {
+						break;
+					}
+					switch (dps->type) {
+					case REGULAR:
+						goto_addr = goto_addr & 0xFFFF;
+						break;
+					case FLASH:
+						goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + ((goto_addr >> 16) * PAGE_SIZE);
+						if (goto_addr > GetMaxAddr(dps))
+							goto_addr = GetMaxAddr(dps) - 1;
+						break;
+					case RAM: {
+						goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + (((goto_addr >> 16) & 0x7) * PAGE_SIZE);
+						if (goto_addr > GetMaxAddr(dps))
+							goto_addr = GetMaxAddr(dps) - 1;
+						break;
+					}
+					}
+					DisasmGotoAddress(hwnd, goto_addr);
+					break;
+				}
 			}
 			return 0;
 		}

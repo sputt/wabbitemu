@@ -40,7 +40,7 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_COMMAND:
 			return FALSE;
 		case WM_SIZING: {
-			return HandleSizingMessage(hwnd, lpCalc, wParam, (RECT *)lParam);
+			return HandleLCDSizingMessage(hwnd, lpCalc, wParam, (RECT *)lParam);
 		}
 		case WM_SIZE: {
 			return HandleSizeMessage(hwnd, lpCalc->hwndDetachedLCD, lpCalc, FALSE);

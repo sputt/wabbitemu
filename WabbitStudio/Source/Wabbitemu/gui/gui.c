@@ -23,6 +23,7 @@
 #include "dbwatch.h"
 #include "dbmonitor.h"
 #include "dbcolorlcd.h"
+#include "dbbreakpoints.h"
 
 #include "guibuttons.h"
 #include "guicontext.h"
@@ -87,9 +88,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 
-void gui_draw(LPCALC lpCalc) {
+void gui_draw(LPCALC lpCalc, LPVOID) {
 	if (lpCalc->hwndLCD != NULL) {
 		InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
+		UpdateWindow(lpCalc->hwndLCD);
 	}
 
 	if (lpCalc->hwndDetachedLCD != NULL) {
@@ -160,7 +162,7 @@ void gui_debug(LPCALC lpCalc) {
 		db_placement = lpDebugInfo->db_placement;
 	}
 
-	lpCalc->running = FALSE;
+	calc_set_running(lpCalc, FALSE);
 	calc_pause_linked();
 	if (lpCalc->hwndDebug && IsWindow(lpCalc->hwndDebug)) {
 		SwitchToThisWindow(lpCalc->hwndDebug, TRUE);
@@ -174,7 +176,7 @@ void gui_debug(LPCALC lpCalc) {
 	}
 
 	lpCalc->hwndDebug = CreateWindowEx(
-		0,
+		WS_EX_CONTROLPARENT,
 		g_szDebugName,
 		buf,
 		flags | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
@@ -187,6 +189,7 @@ void gui_debug(LPCALC lpCalc) {
 	}
 
 	SendMessage(lpCalc->hwndDebug, WM_SIZE, 0, 0);
+	Debug_UpdateWindow(lpCalc->hwndDebug);
 }
 
 int gui_frame(LPCALC lpCalc) {
@@ -225,6 +228,10 @@ int gui_frame(LPCALC lpCalc) {
 		startX, startY, r.right - r.left, r.bottom - r.top,
 		NULL, 0, g_hInst, (LPVOID) lpCalc);
 
+	if (lpCalc->hwndFrame == NULL) {
+		return -1;
+	}
+
 	SetWindowText(lpCalc->hwndFrame, _T("Wabbitemu"));
 	HDC hdc = GetDC(lpCalc->hwndFrame);
 	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
@@ -240,10 +247,6 @@ int gui_frame(LPCALC lpCalc) {
 		memcpy(keygrps, keysti86, sizeof(keyprog_t) * 256);
 	} else {
 		memcpy(keygrps, keysti83, sizeof(keyprog_t) * 256);
-	}
-
-	if (lpCalc->hwndFrame == NULL) {
-		return -1;
 	}
 
 	GetClientRect(lpCalc->hwndFrame, &r);
@@ -268,7 +271,7 @@ HWND find_existing_lcd(HWND hwndParent)
 	return FindChildhwnd;
 }
 
-void load_settings(LPCALC lpCalc) {
+void load_settings(LPCALC lpCalc, LPVOID) {
 	if (lpCalc->model < TI_84PCSE) {
 		LCD_t *lcd = (LCD_t *) lpCalc->cpu.pio.lcd;
 		lcd->shades = (u_int)QueryWabbitKey(_T("shades"));
@@ -276,9 +279,11 @@ void load_settings(LPCALC lpCalc) {
 		lcd->steady_frame = 1.0 / QueryWabbitKey(_T("lcd_freq"));
 		lcd->lcd_delay = (u_int)QueryWabbitKey(_T("lcd_delay"));
 	}
+
+	PostMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
 }
 
-void check_bootfree_and_update(LPCALC lpCalc) {
+void check_bootfree_and_update(LPCALC lpCalc, LPVOID) {
 	if (lpCalc->model < TI_73) {
 		return;
 	}
@@ -311,15 +316,29 @@ void check_bootfree_and_update(LPCALC lpCalc) {
 	}
 }
 
+void update_calc_running(LPCALC lpCalc, LPVOID) {
+	HMENU hMenu = GetMenu(lpCalc->hwndFrame);
+	if (!hMenu) {
+		return;
+	}
+
+	if (lpCalc->running) {
+		CheckMenuItem(GetSubMenu(hMenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_UNCHECKED);
+	} else {
+		CheckMenuItem(GetSubMenu(hMenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_CHECKED);
+	}
+}
+
 LPCALC create_calc_register_events() {
 	LPCALC lpCalc = calc_slot_new();
 	if (lpCalc == NULL) {
 		return NULL;
 	}
 
-	calc_register_event(lpCalc, LCD_ENQUEUE_EVENT, &gui_draw);
-	calc_register_event(lpCalc, ROM_LOAD_EVENT, &load_settings);
-	calc_register_event(lpCalc, ROM_LOAD_EVENT, &check_bootfree_and_update);
+	calc_register_event(lpCalc, LCD_ENQUEUE_EVENT, &gui_draw, NULL);
+	calc_register_event(lpCalc, ROM_LOAD_EVENT, &load_settings, NULL);
+	calc_register_event(lpCalc, ROM_LOAD_EVENT, &check_bootfree_and_update, NULL);
+	calc_register_event(lpCalc, ROM_RUNNING_EVENT, &update_calc_running, NULL);
 	LoadRegistrySettings(lpCalc);
 	return lpCalc;
 }
@@ -539,7 +558,6 @@ bool CWabbitemuModule::ParseCommandLine(LPCTSTR lpszCommandLine, HRESULT *phres)
 	ParseCommandLineArgs(&m_parsedArgs);
 	return __super::ParseCommandLine(lpszCommandLine, phres);
 }
-
 
 HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 {
@@ -761,7 +779,8 @@ void CWabbitemuModule::RunMessageLoop()
 			}
 		}
 
-		if (!TranslateAccelerator(hwndtop, haccel, &Msg)) {
+		extern HWND hModelessDialog;
+		if (!TranslateAccelerator(hwndtop, haccel, &Msg) && !IsDialogMessage(hModelessDialog, &Msg)) {
 			TranslateMessage(&Msg);
 			DispatchMessage(&Msg);
 		}
@@ -780,6 +799,7 @@ HRESULT CWabbitemuModule::PostMessageLoop() {
 	GdiplusShutdown(m_gdiplusToken);
 
 	OleUninitialize();
+
 	return __super::PostMessageLoop();
 }
 
@@ -790,10 +810,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int nCmdShow)
 
 void press_key(LPCALC lpCalc, UINT key) {
 	// TODO: handle remapped keys
+	lpCalc->fake_running = TRUE;
 	keypad_key_press(&lpCalc->cpu, key, NULL);
-	calc_run_seconds(lpCalc, .25);
+	calc_run_tstates(lpCalc, lpCalc->cpu.timer_c->freq / 4);
 	keypad_key_release(&lpCalc->cpu, key);
-	calc_run_seconds(lpCalc, .25);
+	calc_run_tstates(lpCalc, lpCalc->cpu.timer_c->freq / 4);
+	lpCalc->fake_running = FALSE;
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -1121,7 +1143,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 #define SHIFT_LWR_ALPHA (1 << 5)
 #define SHIFT_KEEP_ALPHA (1 << 7)
 				// we use tolower here so we just get the key not the modifier
-				SHORT vkey = VkKeyScan(tolower(num));
+				SHORT vkey = VkKeyScan((TCHAR) tolower(num));
 				BYTE shiftFlags = mem_read(&lpCalc->mem_c, SHIFT_FLAGS);
 				if (shiftFlags & SHIFT_2ND) {
 					press_key(lpCalc, VK_LSHIFT);
@@ -1211,13 +1233,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 							   }
 		case IDM_CALC_PAUSE: {
-			HMENU hmenu = GetMenu(hwnd);
 			if (lpCalc->running) {
-				CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_CHECKED);
-				lpCalc->running = FALSE;
+				calc_set_running(lpCalc, FALSE);
 			} else {
-				CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_UNCHECKED);
-				lpCalc->running = TRUE;
+				calc_set_running(lpCalc, TRUE);
 			}
 			break;
 							 }
@@ -1491,9 +1510,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		return 0;
 	case WM_SIZING:
 		if (lpCalc->bSkinEnabled) {
-			return 1;
+			return HandleSkinSizingMessage(hwnd, lpCalc, wParam, (RECT *)lParam);
 		}
-		return HandleSizingMessage(hwnd, lpCalc, wParam, (RECT *) lParam);
+		return HandleLCDSizingMessage(hwnd, lpCalc, wParam, (RECT *) lParam);
 	case WM_SIZE:
 		return HandleSizeMessage(hwnd, lpCalc->hwndLCD, lpCalc, lpCalc->bSkinEnabled);
 	case WM_MOVE: {
@@ -1532,6 +1551,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		if (!lpCalc->bSkinEnabled) {
 			break;
 		}
+
 		MINMAXINFO *info = (MINMAXINFO *) lParam;
 		RECT rc = { 0, 0, SKIN_WIDTH, SKIN_HEIGHT };
 		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW, FALSE);
@@ -1597,6 +1617,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					SaveRegistrySettings(lpCalc);
 
 				}
+
+				if (calc_count() == 1) {
+					is_exiting = TRUE;
+					free(link_hub[MAX_CALCS]);
+					link_hub[MAX_CALCS] = NULL;
+				}
+
 				DestroyWindow(hwnd);
 				calc_slot_free(lpCalc);
 				if (calc_count() == 0) {

@@ -18,7 +18,6 @@ static HWND hwndEditControl;
 static WNDPROC wpOrigEditProc;
 #define COLOR_BREAKPOINT		(RGB(230, 160, 180))
 #define COLOR_SELECTION			(RGB(153, 222, 253))
-#define DB_CREATE 0
 
 // CreateListView: Creates a list-view control in report view.
 // Returns the handle to the new control
@@ -80,56 +79,11 @@ static BOOL InsertListViewItems(HWND hWndListView, int cItems)
 	return TRUE;
 }
 
-static int GetValue(TCHAR *str) 
-{
-	int value = 0;
-	int len = _tcslen(str) - 1;
-	BOOL is_bin = FALSE, is_hex = FALSE;
-	if (!_tcsicmp(str, _T("True"))) {
-		return TRUE;
-	} else if (!_tcsicmp(str, _T("False"))) {
-		return FALSE;
-	} if (*str == '$') {
-		is_hex = TRUE;
-		str++;
-	} else if (*str == '%') {
-		str++;
-		is_bin = TRUE;
-	} else if (str[len] == 'b') {
-		str[len] = '\0';
-		is_bin = TRUE;
-	} else if (str[len] == 'h') {
-		str[len] = '\0';
-		is_hex = TRUE;
-	}
-	if (is_hex) {
-		value = xtoi(str);
-		if (value == INT_MAX)
-			value = 0;
-	} else if (is_bin) {
-		for (int i = 0; i < len; i++) {
-			value <<= 1;
-			if (str[i] == '1') {
-				value += 1;
-			} else if (str[i] != '0') {
-				//error parsing assume 0
-				value = 0;
-				break;
-			}
-		}
-	} else {
-		value = _ttoi(str);
-	}
-	//handle error parsing
-	if (value == INT_MAX || value == INT_MIN)
-		value = 0;
-	return value;
-}
-
 static void DuplicateCalc(LPCALC lpCalc) {
 	SAVESTATE_t *save = SaveSlot(lpCalc, _T(""), _T(""));
 	if (duplicate_calc) {
 		calc_slot_free(duplicate_calc);
+		free(duplicate_calc);
 	}
 
 	duplicate_calc = (LPCALC) malloc(sizeof(calc_t));
@@ -141,7 +95,7 @@ static void DuplicateCalc(LPCALC lpCalc) {
 	
 	calc_init_model(duplicate_calc, save->model, lpCalc->rom_version);
 	LoadSlot(save, duplicate_calc);
-	free(save);
+	FreeSave(save);
 }
 
 static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
@@ -153,7 +107,11 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		int col_num = HIWORD(value);
 		//handles getting the user input and converting it to an int
 		//can convert bin, hex, and dec
-		uint8_t byte_value = GetValue(buf) & 0xFF;
+		value = StringToValue(buf);
+		if (value == INT_MAX) {
+			value = 0;
+		}
+		uint8_t byte_value = value & 0xFF;
 		int port_num = port_map[row_num];
 		BOOL output_backup = lpCalc->cpu.output;
 		int bus_backup = lpCalc->cpu.bus;
@@ -173,7 +131,8 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	switch (uMsg) {
 		case WM_KEYDOWN:
 			if (wParam == VK_RETURN) {
-				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(GetParent(GetParent(hwnd)), GWLP_USERDATA);
+				LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(GetParent(GetParent(hwnd)), GWLP_USERDATA);
+				LPCALC lpCalc = lpDebugInfo->lpCalc;
 				CloseSaveEdit(lpCalc, hwnd);
 				hwndEditControl = NULL;
 			} else if (wParam == VK_ESCAPE) {
@@ -188,15 +147,25 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	}
 } 
 
+static void on_running_changed(LPCALC lpCalc, LPVOID lParam) {
+	HWND hListView = (HWND)lParam;
+	EnableWindow(hListView, !lpCalc->running);
+	UpdateWindow(hListView);
+}
+
 LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndListView;
-	static LPCALC lpCalc;
-	static LPDEBUGWINDOWINFO lpDebugInfo;
+	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPCALC lpCalc;
+	if (lpDebugInfo != NULL) {
+		lpCalc = lpDebugInfo->lpCalc;
+	}
+
 	switch(Message) {
 		case WM_CREATE: {
-			lpDebugInfo = (LPDEBUGWINDOWINFO)((LPCREATESTRUCT)lParam)->lpCreateParams;;
+			lpDebugInfo = (LPDEBUGWINDOWINFO)((LPCREATESTRUCT)lParam)->lpCreateParams;
 			lpCalc = (LPCALC) lpDebugInfo->lpCalc;
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpDebugInfo);
 
 			hwndListView = CreateListView(hwnd);
 			int count = 0;
@@ -206,6 +175,7 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					count++;
 				}
 			}
+
 			LVCOLUMN listCol;
 			memset(&listCol, 0, sizeof(LVCOLUMN));
 			listCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
@@ -224,6 +194,8 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			SetWindowFont(hwndListView, lpDebugInfo->hfontSegoe, TRUE);
 
 			InsertListViewItems(hwndListView, count);
+
+			calc_register_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwndListView);
 
 			Debug_CreateWindow(hwnd);
 			return TRUE;
@@ -266,13 +238,18 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					}
 					break;
 				}
+				case NM_SETFOCUS:
+					hwndLastFocus = hwnd;
+					InvalidateRect(hwnd, NULL, TRUE);
+					break;
 				case NM_DBLCLK: {
 					NMITEMACTIVATE *lpnmitem = (NMITEMACTIVATE *)lParam;
 					int row_num = lpnmitem->iItem;
 					int col_num = lpnmitem->iSubItem;
 					//no editing the port num
-					if (col_num == 0)
+					if (col_num == 0) {
 						return FALSE;
+					}
 
 					TCHAR buf[32];
 					ListView_GetItemText(hwndListView, row_num, col_num, buf, ARRAYSIZE(buf));
@@ -282,7 +259,7 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					lvii.iGroup = 0;
 					ListView_GetItemIndexRect(hwndListView, &lvii, col_num, LVIR_BOUNDS, &rc);
 					//rc is now the rect we want to use for the edit control
-					hwndEditControl = CreateWindow(_T("EDIT"), buf,
+					hwndEditControl = CreateWindow(WC_EDIT, buf,
 						WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT| ES_MULTILINE,
 						rc.left,
 						rc.top,
@@ -328,20 +305,18 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					switch(pListDraw->nmcd.dwDrawStage) 
 					{ 
 					case CDDS_PREPAINT: 
-						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW); 
-						return TRUE;
+						return CDRF_NOTIFYITEMDRAW;
 					case CDDS_ITEMPREPAINT: 
 					case CDDS_ITEMPREPAINT | CDDS_SUBITEM: 
 						iRow = (int)pListDraw->nmcd.dwItemSpec; 
 						if (lpCalc->cpu.pio.devices[port_map[iRow]].breakpoint) { 
 							// pListDraw->clrText   = RGB(252, 177, 0); 
 							pListDraw->clrTextBk = COLOR_BREAKPOINT; 
-							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NEWFONT); 
+							return CDRF_NEWFONT;
 						}
-						return TRUE;
+						return CDRF_DODEFAULT;
 					default: 
-						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_DODEFAULT);
-						return TRUE;
+						return CDRF_DODEFAULT;
 					}
 				}
 			}
@@ -360,13 +335,20 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					DuplicateCalc(lpCalc);
 					break;
 				case DB_UPDATE: {
+					DuplicateCalc(lpCalc);
 					InvalidateRect(hwnd, NULL, FALSE);
 					break;
 				}
 			}
 			return TRUE;
 		}
-		case WM_CLOSE:
+		case WM_DESTROY:
+			calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwndListView);
+			if (duplicate_calc != NULL) {
+				calc_slot_free(duplicate_calc);
+				free(duplicate_calc);
+			}
+			duplicate_calc = NULL;
 			return FALSE;
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);

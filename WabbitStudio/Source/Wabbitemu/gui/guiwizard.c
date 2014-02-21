@@ -530,12 +530,9 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
 					LPCALC lpCalc = create_calc_register_events();
-					//ok yes i know this is retarded...but this way we can use Load_8xu
-					//outside this function...
 					TCHAR hexFile[MAX_PATH];
 					ExtractBootFree(model, hexFile);
 					calc_init_model(lpCalc, model, NULL);
-					//slot stuff
 					LoadRegistrySettings(lpCalc);
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
 					lpCalc->active = TRUE;
@@ -548,7 +545,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					fclose(file);
 					_tremove(hexFile);
 					Static_SetText(hOSStaticProgress, _T("Loading OS"));
-					//if you don't want to load an OS, fine...
+					// if you don't want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
 						TIFILE_t *tifile = importvar(osPath, FALSE);
 						if (tifile == NULL || tifile->type != FLASH_TYPE) {
@@ -566,7 +563,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						calc_turn_on(lpCalc);
 					}
 					gui_frame(lpCalc);
-					//write the output from file
+					// write the output from file
 					Static_SetText(hOSStaticProgress, _T("Saving File"));
 					MFILE *romfile = ExportRom(buffer, lpCalc);
 					mclose(romfile);
@@ -785,9 +782,9 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			LPNMHDR pnmh = (LPNMHDR) lParam;
 			switch(pnmh->code) {
 				case PSN_SETACTIVE:
-					if (inited)
+					if (inited) {
 						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_NEXT | PSWIZB_BACK);
-					else {
+					}  else {
 						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_BACK);
 						inited = TRUE;
 					}
@@ -804,6 +801,31 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			return FALSE;
 	}
 	return FALSE;
+}
+
+int write_boot_page(LPCALC lpCalc, TCHAR *file_path, int boot_page, int boot_page2) {
+	BYTE(*flash)[PAGE_SIZE] = (BYTE(*)[PAGE_SIZE]) lpCalc->mem_c.flash;
+
+	// goto the name to see which one we have (in TI var header)
+	TIFILE_t *boot_var = importvar(file_path, FALSE);
+	if (boot_var == NULL) {
+		MessageBox(NULL, _T("Error opening first boot page file"), _T("Error"), MB_OK);
+		return -1;
+	}
+
+	int current_page;
+	if (boot_var->var->name[6] == '2') {
+		current_page = boot_page2;
+	} else {
+		current_page = boot_page;
+	}
+
+	for (int i = 0; i < PAGE_SIZE; i++) {
+		// app var will be 0x4002, with the first two bytes being the size
+		flash[current_page][i] = boot_var->var->data[i + 2];
+	}
+
+	boot_var = FreeTiFile(boot_var);
 }
 
 INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -931,38 +953,24 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					LPCALC lpCalc = create_calc_register_events();
 					calc_init_model(lpCalc, model, NULL);
 
-					//slot stuff
+					// slot stuff
 					lpCalc->active = TRUE;
 					lpCalc->model = model;
 					lpCalc->cpu.pio.model = model;
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
 
-					//if you don't want to load an OS, fine...
+					// if you don't want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
 						TIFILE_t *tifile = importvar(osPath, FALSE);
 						if (tifile == NULL || tifile->type != FLASH_TYPE) {
 							MessageBox(hwnd, _T("Error: OS file is corrupt or invalid"), _T("Error"), MB_OK);
-						}
-						else {
+						} else {
 							forceload_os(&lpCalc->cpu, tifile);
 						}
 					}
 
-					FILE *file;
-					_tfopen_s(&file, browse, _T("rb"));
-					if (file == NULL) {
-						MessageBox(NULL, _T("Error opening first boot page file"), _T("Error"), MB_OK);
-						break;
-					}
-
-					//goto the name to see which one we have (in TI var header)
-					fseek(file, 66, SEEK_SET);
-					char ch = fgetc(file);
-					//goto the first byte of data
-					fseek(file, 74, SEEK_SET);
 					int current_page;
 					int boot_page, boot_page2;
-					BYTE (*flash)[PAGE_SIZE] = (BYTE(*)[PAGE_SIZE]) lpCalc->mem_c.flash;
 					switch (model) {
 					case TI_83P:
 					case TI_83PSE:
@@ -979,40 +987,12 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						break;
 					}
 
-					if (ch == '1') {
-						current_page = boot_page;
-					} else {
-						current_page = boot_page2;
-					}
+					write_boot_page(lpCalc, browse, boot_page, boot_page2);
 
-					for (int i = 0; i < PAGE_SIZE; i++) {
-						flash[current_page][i] = (unsigned char) fgetc(file);
-					}
-
-					fclose(file);
-					//second boot page
+					// second boot page
 					if (model >= TI_84P) {
 						Edit_GetText(hEditVar2, browse, MAX_PATH);
-						_tfopen_s(&file, browse, _T("rb"));
-						if (file == NULL) {
-							MessageBox(hwnd, _T("Error opening second boot page file"), _T("Error"), MB_OK);
-							break;
-						}
-						//goto the name to see which one we have
-						fseek(file, 66, SEEK_SET);
-						char ch = (char) fgetc(file);
-						//goto the first byte of data
-						fseek(file, 74, SEEK_SET);
-						if (ch == '1') {
-							current_page = boot_page;
-						} else {
-							current_page = boot_page2;
-						}
-						for (int i = 0; i < PAGE_SIZE; i++) {
-							flash[current_page][i] = (unsigned char) fgetc(file);
-						}
-
-						fclose(file);
+						write_boot_page(lpCalc, browse, boot_page, boot_page2);
 					}
 
 					calc_erase_certificate(lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
@@ -1021,7 +1001,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						calc_turn_on(lpCalc);
 					}
 					gui_frame(lpCalc);
-					//write the output from file
+					// write the output from file
 					MFILE *mfile = ExportRom(buffer, lpCalc);
 					mclose(mfile);
 					break;

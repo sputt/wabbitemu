@@ -52,7 +52,6 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 	BOOL bChecked;
 	if (lpCalc->hwndStatusBar != NULL) {
 		DestroyWindow(lpCalc->hwndStatusBar);
-		CloseWindow(lpCalc->hwndStatusBar);
 		lpCalc->hwndStatusBar = NULL;
 	}
 
@@ -93,9 +92,6 @@ enum DRAWSKINERROR {
 	ERROR_SKIN,
 	ERROR_KEYMAP,
 };
-
-static LPBITMAPINFO bi;
-static BITMAPINFOHEADER bih;
 
 DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_pBitmapKeymap) {
 	if (!m_pBitmapSkin) {
@@ -142,31 +138,30 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 	FinalizeButtons(lpCalc);
 
 	if (drawFaceplate) {
-		if (!bi) {
-			ZeroMemory(&bih, sizeof(BITMAPINFOHEADER));
-			bih.biSize = sizeof(BITMAPINFOHEADER);
-			bih.biWidth = skinWidth;
-			bih.biHeight = skinHeight;
-			bih.biPlanes = 1;
-			bih.biBitCount = 32;
-			bih.biCompression = BI_RGB;
-			bi = (LPBITMAPINFO) malloc(sizeof(BITMAPINFOHEADER) + sizeof(DWORD) * 3);
-			bi->bmiHeader = bih;
-			bi->bmiColors[0].rgbBlue = 0;
-			bi->bmiColors[0].rgbGreen = 0;
-			bi->bmiColors[0].rgbRed = 0;
-			bi->bmiColors[0].rgbReserved = 0;
-		}
+		BITMAPINFOHEADER bih;
+		ZeroMemory(&bih, sizeof(BITMAPINFOHEADER));
+		bih.biSize = sizeof(BITMAPINFOHEADER);
+		bih.biWidth = skinWidth;
+		bih.biHeight = skinHeight;
+		bih.biPlanes = 1;
+		bih.biBitCount = 32;
+		bih.biCompression = BI_RGB;
+		BITMAPINFO bi;
+		bi.bmiHeader = bih;
+		bi.bmiColors[0].rgbBlue = 0;
+		bi.bmiColors[0].rgbGreen = 0;
+		bi.bmiColors[0].rgbRed = 0;
+		bi.bmiColors[0].rgbReserved = 0;
 		// Gets the "bits" from the bitmap and copies them into a buffer
 		// which is pointed to by lpBitmap.
 
-		DWORD dwBmpSize = ((skinWidth * bi->bmiHeader.biBitCount + 31) / 32) * 4 * skinHeight;
+		DWORD dwBmpSize = ((skinWidth * bi.bmiHeader.biBitCount + 31) / 32) * 4 * skinHeight;
 		LPBYTE bitmap = (LPBYTE) malloc(dwBmpSize);		
 
 		GetDIBits(lpCalc->hdcSkin, (HBITMAP) GetCurrentObject(lpCalc->hdcButtons, OBJ_BITMAP),
 			0, skinHeight,
 			bitmap,
-			bi, DIB_RGB_COLORS);
+			&bi, DIB_RGB_COLORS);
 
 		// this really sucked to figure out, but basically you can't touch
 		// the alpha channel in a bitmap unless you use GetDIBits to get it
@@ -187,7 +182,7 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 		SetDIBitsToDevice(lpCalc->hdcButtons, 0, 0, skinWidth, skinHeight, 0, 0, 0,
 			skinHeight,
 			bitmap,
-			bi, DIB_RGB_COLORS);
+			&bi, DIB_RGB_COLORS);
 		DeleteObject(rgn);
 		free(bitmap);
 	}

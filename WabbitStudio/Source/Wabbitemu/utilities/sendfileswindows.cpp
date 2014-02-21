@@ -20,7 +20,7 @@ public:
 	std::vector<SEND_FLAG> *DestinationList;
 	
 	// Download progress
-	u_int iCurrentFile;
+	int iCurrentFile;
 	ULONG ulBytesSent;
 	ULONG ulFileSize;
 	
@@ -55,7 +55,7 @@ LPCTSTR g_szLinkErrorDescriptions[] =
 };
 
 static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination);
+static LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination);
 
 static HANDLE hSendInfoMutex = NULL;
 static std::map<LPCALC, LPSENDINFO> g_SendInfo;
@@ -108,7 +108,7 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 	lpsi->Error = LERR_SUCCESS;
 	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)	{
 		SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);
-		lpsi->Error = SendFile(NULL, lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), lpsi->DestinationList->at(lpsi->iCurrentFile));
+		lpsi->Error = SendFile(lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), lpsi->DestinationList->at(lpsi->iCurrentFile));
 		if (lpsi->Error != LERR_SUCCESS) {
 			if (MessageBox(lpsi->hwndDlg, g_szLinkErrorDescriptions[lpsi->Error], _T("Wabbitemu"), MB_OKCANCEL | MB_ICONERROR) == IDCANCEL) {
 				break;
@@ -193,12 +193,12 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND
 		ReleaseMutex(hSendInfoMutex);
 		return TRUE;
 	} else {
-		SendFile(lpCalc->hwndLCD, lpCalc, lpszFileName, destination);
+		SendFile(lpCalc, lpszFileName, destination);
 		return TRUE;
 	}
 }
 
-static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination)
+static LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination)
 {
 	TIFILE_t *var = importvar(lpszFileName, FALSE);
 
@@ -288,10 +288,6 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 				result = LERR_LINK;
 			}
 
-			if (var->type == ROM_TYPE || var->type == SAV_TYPE) {
-				//calc_turn_on(lpCalc);
-				SendMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
-			}
 			FreeTiFile(var);
 			var = NULL;
 			break;
@@ -320,7 +316,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 	}
 }
 
-static LRESULT CALLBACK FrameSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+static LRESULT CALLBACK FrameSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR, DWORD_PTR dwRefData)
 {
 	HWND hwndTransfer = (HWND) dwRefData;
 	switch (uMsg)

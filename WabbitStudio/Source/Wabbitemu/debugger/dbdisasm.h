@@ -43,6 +43,8 @@ typedef struct disasmpane_settings {
 	POINT MousePoint;
 	TOOLINFO toolInfo;
 	ViewType type;
+	HWND hGotoDialog;
+	HWND hFindDialog;
 } disasmpane_settings_t, dp_settings;
 
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);

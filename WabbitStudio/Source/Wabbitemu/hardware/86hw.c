@@ -113,7 +113,7 @@ static void port4(CPU_t *cpu, device_t *dev) {
 }
 
 // ROM port
-static void port5(CPU_t *cpu, device_t *) {
+static void port5(CPU_t *cpu, device_t *dev) {
 	if ( cpu->input ) {
 		cpu->bus = (cpu->mem_c->banks[1].ram << 6) + cpu->mem_c->banks[1].page;
 		cpu->input = FALSE;
@@ -136,7 +136,7 @@ static void port5(CPU_t *cpu, device_t *) {
 }
 
 // RAM port
-static void port6(CPU_t *cpu, device_t *) {
+static void port6(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = (cpu->mem_c->banks[2].ram << 6) + cpu->mem_c->banks[2].page;
 		cpu->input = FALSE;
@@ -278,8 +278,8 @@ int device_init_86(CPU_t *cpu) {
 	// Interrupt
 	Append_interrupt_device(cpu, 0x03, 1);
 	// LCD
-	Append_interrupt_device(cpu, 0x10, 16000);
-	Append_interrupt_device(cpu, 0x11, 16000);
+	Append_interrupt_device(cpu, 0x10, 255);
+	Append_interrupt_device(cpu, 0x11, 255);
 	
 	return 0;
 }

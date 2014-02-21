@@ -10,7 +10,7 @@
 
 
 
-STDINT_t* INT83_init(CPU_t*);
+STDINT_t* INT83_init(timer_context_t *);
 int device_init_83(CPU_t*, BOOL);
 int memory_init_83(memc *);
 

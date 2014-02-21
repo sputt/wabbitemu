@@ -32,8 +32,10 @@ typedef struct {
 #define CUR_BUILD 2
 
 // old save state compatibility
-#define MEM_C_CMD_BUILD 1
-#define LCD_SCREEN_ADDR_BUILD 2
+#define MEM_C_CMD_BUILD			1
+#define LCD_SCREEN_ADDR_BUILD	2
+#define SEAUX_MODEL_BITS		1
+#define CPU_MODEL_BITS			2
 
 #define DETECT_STR		"*WABBIT*"
 #define DETECT_CMP_STR	"*WABCMP*"

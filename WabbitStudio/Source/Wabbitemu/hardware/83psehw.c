@@ -16,7 +16,7 @@
 
 //Interrupts on SE calculators are based on the crystal timers
 // however for now this will do.
-static double timer_freq83pse[4] = { 1.0 / 512.0, 1.0 / 227.0, 1.0 / 156.0, 1.0 / 108.0 };
+static double timer_freq83pse[4] = { 1.0 / 512.0, 1.0 / 227.0, 1.0 / 158.0, 1.0 / 108.0 };
 
 void UpdateDelays(CPU_t *cpu, DELAY_t *delay);
 
@@ -55,7 +55,7 @@ void port0_83pse(CPU_t *cpu, device_t *dev) {
 // bit 5 - 83+se or 84+
 // bit 6 - not used
 // bit 7 - SE or Basic
-void port2_83pse(CPU_t *cpu, device_t *) {
+void port2_83pse(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) cpu->pio.lcd;
 	if (cpu->input) {
 		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE1 : 0xC1) | (cpu->mem_c->flash_locked ? 0 : 4) 
@@ -70,11 +70,15 @@ void port2_83pse(CPU_t *cpu, device_t *) {
 		}
 
 		if (!(cpu->bus & BIT(1))) {
-			stdint->lastchk1 = tc_elapsed(cpu->timer_c);
+			while ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
+				stdint->lastchk1 += stdint->timermax1;
+			}
 		}
 
 		if (!(cpu->bus & BIT(2))) {
-			stdint->lastchk2 = tc_elapsed(cpu->timer_c);
+			while ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
+				stdint->lastchk2 += stdint->timermax2;
+			}
 		}
 	}
 }
@@ -209,7 +213,7 @@ void port4_83pse(CPU_t *cpu, device_t *dev) {
 	}	
 }
 
-void port5_83pse(CPU_t *cpu, device_t *) {
+void port5_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = (unsigned char) cpu->mem_c->banks[3].page;
 		cpu->input = FALSE;
@@ -243,7 +247,7 @@ static void update_bank_2(CPU_t *cpu) {
 	}
 }
 
-void port6_83pse(CPU_t *cpu, device_t *) {
+void port6_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = (unsigned char)((cpu->mem_c->banks[1].ram << 7) + (cpu->mem_c->banks[1].page & 0x7F));
 		cpu->input = FALSE;
@@ -254,7 +258,7 @@ void port6_83pse(CPU_t *cpu, device_t *) {
 	}
 }
 
-void port7_83pse(CPU_t *cpu, device_t *) {
+void port7_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = (unsigned char)((cpu->mem_c->banks[2].ram << 7) + (cpu->mem_c->banks[2].page & 0x7F));
 		cpu->input = FALSE;
@@ -267,7 +271,7 @@ void port7_83pse(CPU_t *cpu, device_t *) {
 
 //Flash locking port
 //0 if locked, 1 if unlocked
-void port14_83pse(CPU_t *cpu, device_t *) {
+void port14_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = !cpu->mem_c->flash_locked;
 		cpu->input = FALSE;
@@ -279,7 +283,7 @@ void port14_83pse(CPU_t *cpu, device_t *) {
 	}
 }
 
-void port15_83pse(CPU_t *cpu, device_t *) {
+void port15_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		if (cpu->pio.model == TI_83PSE) {
 			cpu->bus = 0x33;
@@ -491,7 +495,7 @@ void port0D_83pse(CPU_t *cpu, device_t *dev) {
 	}
 }
 
-void port0E_83pse(CPU_t *cpu, device_t *) {
+void port0E_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->input = FALSE;
 		cpu->bus = cpu->mem_c->port0E;
@@ -502,7 +506,7 @@ void port0E_83pse(CPU_t *cpu, device_t *) {
 	}
 }
 
-void port0F_83pse(CPU_t *cpu, device_t *) {
+void port0F_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->input = FALSE;
 		cpu->bus = cpu->mem_c->port0F;
@@ -601,7 +605,7 @@ uint8_t GetCPUSpeed(CPU_t *cpu) {
 	return 0;
 }
 
-void port20_83pse(CPU_t *cpu, device_t *) {
+void port20_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = GetCPUSpeed(cpu);
 		cpu->input = FALSE;
@@ -627,18 +631,17 @@ void port20_83pse(CPU_t *cpu, device_t *) {
 }
 
 void port21_83pse(CPU_t *cpu, device_t *dev) {
-	SE_AUX_t *se_aux = (SE_AUX_t *) dev->aux;
 	if (cpu->input) {
-		cpu->bus = (unsigned char) (se_aux->model_bits + ((cpu->mem_c->prot_mode) >> 4));
+		cpu->bus = (unsigned char) (cpu->model_bits + ((cpu->mem_c->prot_mode) >> 4));
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
-		se_aux->model_bits = cpu->bus & 0x3;
+		cpu->model_bits = cpu->bus & 0x3;
 		cpu->mem_c->prot_mode = (RAM_PROT_MODE) ((cpu->bus & 0x30) >> 4);
 	}
 }
 
-void port22_83pse(CPU_t *cpu, device_t *) {
+void port22_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = cpu->mem_c->flash_lower & 0xFF;
 		cpu->input = FALSE;
@@ -648,7 +651,7 @@ void port22_83pse(CPU_t *cpu, device_t *) {
 	}
 }
 
-void port23_83pse(CPU_t *cpu, device_t *) {
+void port23_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = cpu->mem_c->flash_upper & 0xFF;
 		cpu->input = FALSE;
@@ -658,7 +661,7 @@ void port23_83pse(CPU_t *cpu, device_t *) {
 	}
 }
 
-void port24_83pse(CPU_t *cpu, device_t *) {
+void port24_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->input = FALSE;
 		cpu->bus = cpu->mem_c->port24;
@@ -670,7 +673,7 @@ void port24_83pse(CPU_t *cpu, device_t *) {
 	}
 }
 
-void port25_83pse(CPU_t *cpu, device_t *) {
+void port25_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = (unsigned char)(cpu->mem_c->ram_lower / 0x400);
 		cpu->input = FALSE;
@@ -679,7 +682,7 @@ void port25_83pse(CPU_t *cpu, device_t *) {
 		cpu->mem_c->ram_lower = cpu->bus * 0x400;
 	}
 }
-void port26_83pse(CPU_t *cpu, device_t *) {
+void port26_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = (unsigned char)((cpu->mem_c->ram_upper - 0x3FF) / 0x400);
 		cpu->input = FALSE;
@@ -986,7 +989,7 @@ void GenerateUSBEvent(CPU_t *cpu, USB_t *usb, int bit, BOOL lowToHigh) {
 	cpu->interrupt = TRUE;
 }
 
-void port3A_83pse(CPU_t *cpu, device_t *) {
+void port3A_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		// if bit 7 is reset, calc thinks its charging
 		if (cpu->pio.model == TI_84PCSE) {
@@ -1189,13 +1192,13 @@ void fake_usb(CPU_t *cpu, device_t *dev) {
 /*												*/
 /*----------------------------------------------*/
 
-STDINT_t* INT83PSE_init(CPU_t* cpu) {
+STDINT_t* INT83PSE_init(CPU_t* cpu, int model) {
 	STDINT_t * stdint = (STDINT_t *) malloc(sizeof(STDINT_t));
 	if (!stdint) {
 		printf("Couldn't allocate memory for standard interrupt\n");
 		exit(1);
 	}
-	
+
 	stdint->freq[0] = timer_freq83pse[0];
 	stdint->freq[1] = timer_freq83pse[1];
 	stdint->freq[2] = timer_freq83pse[2];
@@ -1223,7 +1226,7 @@ link_t* link83pse_init() {
 	return link;
 }
 
-SE_AUX_t* SE_AUX_init(CPU_t *) {
+SE_AUX_t* SE_AUX_init() {
 	SE_AUX_t* se_aux = (SE_AUX_t *) malloc(sizeof(SE_AUX_t));
 	if (!se_aux) {
 		printf("Couldn't allocate memory for SE structs\n");
@@ -1261,7 +1264,7 @@ int device_init_83pse(CPU_t *cpu, int model) {
 	cpu->pio.devices[0x02].code = (devp) port2_83pse;
 
 /* standard interrupts */
-	STDINT_t* stdint = INT83PSE_init(cpu);
+	STDINT_t* stdint = INT83PSE_init(cpu, model);
 	cpu->pio.devices[0x03].active = TRUE;
 	cpu->pio.devices[0x03].aux = stdint;
 	cpu->pio.devices[0x03].code = (devp) port3_83pse;
@@ -1282,7 +1285,7 @@ int device_init_83pse(CPU_t *cpu, int model) {
 	cpu->pio.devices[0x07].code = (devp) port7_83pse;
 	
 	
-	SE_AUX_t *se_aux = SE_AUX_init(cpu);
+	SE_AUX_t *se_aux = SE_AUX_init();
 	
 // SE link assist
 	cpu->pio.devices[0x08].active = TRUE;
@@ -1351,17 +1354,14 @@ int device_init_83pse(CPU_t *cpu, int model) {
 	
 /* page locking and hardware */
 	cpu->pio.devices[0x21].active = TRUE;
-	cpu->pio.devices[0x21].aux = se_aux;
 	cpu->pio.devices[0x21].code = (devp) port21_83pse;
 	cpu->pio.devices[0x21].protected_port = TRUE;
 
 	cpu->pio.devices[0x22].active = TRUE;
-	cpu->pio.devices[0x22].aux = NULL;
 	cpu->pio.devices[0x22].code = (devp) port22_83pse;
 	cpu->pio.devices[0x22].protected_port = TRUE;
 
 	cpu->pio.devices[0x23].active = TRUE;
-	cpu->pio.devices[0x23].aux = NULL;
 	cpu->pio.devices[0x23].code = (devp) port23_83pse;
 	cpu->pio.devices[0x23].protected_port = TRUE;
 
@@ -1371,12 +1371,10 @@ int device_init_83pse(CPU_t *cpu, int model) {
 	cpu->pio.devices[0x24].protected_port = TRUE;
 
 	cpu->pio.devices[0x25].active = TRUE;
-	cpu->pio.devices[0x25].aux = NULL;
 	cpu->pio.devices[0x25].code = (devp) port25_83pse;
 	cpu->pio.devices[0x25].protected_port = TRUE;
 
 	cpu->pio.devices[0x26].active = TRUE;
-	cpu->pio.devices[0x26].aux = NULL;
 	cpu->pio.devices[0x26].code = (devp) port26_83pse;
 	cpu->pio.devices[0x26].protected_port = TRUE;
 

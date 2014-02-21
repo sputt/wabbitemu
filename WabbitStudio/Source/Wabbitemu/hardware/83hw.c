@@ -311,7 +311,7 @@ void port04_83(CPU_t *cpu, device_t *dev) {
 }
 
 
-void port14_83(CPU_t *cpu, device_t *) {
+void port14_83(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = 1;
 		cpu->input = FALSE;
