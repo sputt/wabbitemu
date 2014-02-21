@@ -748,7 +748,11 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 							filter = _T("86 Program (*.86p)\0*.83p\0All Files (*.*)\0*.*\0\0");
 							ext = _T("86p");
 							break;
+						default:
+							MessageBox(hwnd, _T("Invalid model selected"), _T("Error"), MB_OK);
+							return 0;
 						}
+
 						if (!SaveFile(buf, filter, _T("Wabbitemu Save ROM Dumper"), ext, 0, 0)) {
 							FILE *start, *end;
 							_tfopen_s(&start, dumperPath, _T("rb"));
@@ -808,8 +812,8 @@ int write_boot_page(LPCALC lpCalc, TCHAR *file_path, int boot_page, int boot_pag
 
 	// goto the name to see which one we have (in TI var header)
 	TIFILE_t *boot_var = importvar(file_path, FALSE);
-	if (boot_var == NULL) {
-		MessageBox(NULL, _T("Error opening first boot page file"), _T("Error"), MB_OK);
+	if (boot_var == NULL || boot_var->var == NULL) {
+		MessageBox(NULL, _T("Error opening boot page file"), _T("Error"), MB_OK);
 		return -1;
 	}
 
@@ -826,6 +830,7 @@ int write_boot_page(LPCALC lpCalc, TCHAR *file_path, int boot_page, int boot_pag
 	}
 
 	boot_var = FreeTiFile(boot_var);
+	return 0;
 }
 
 INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -969,7 +974,6 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						}
 					}
 
-					int current_page;
 					int boot_page, boot_page2;
 					switch (model) {
 					case TI_83P:
