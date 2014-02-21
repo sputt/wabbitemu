@@ -7,6 +7,7 @@
 #include "dbcommon.h"
 #include "device.h"
 #include "colorlcd.h"
+#include "dbspriteviewer.h"
 
 #define PORT_MIN_COL_WIDTH 40
 #define PORT_ROW_SIZE 15
@@ -79,52 +80,6 @@ static BOOL InsertListViewItems(HWND hWndListView, int cItems)
 	return TRUE;
 }
 
-static int GetValue(TCHAR *str) 
-{
-	int value = 0;
-	int len = _tcslen(str) - 1;
-	BOOL is_bin = FALSE, is_hex = FALSE;
-	if (!_tcsicmp(str, _T("True"))) {
-		return TRUE;
-	} else if (!_tcsicmp(str, _T("False"))) {
-		return FALSE;
-	} if (*str == '$') {
-		is_hex = TRUE;
-		str++;
-	} else if (*str == '%') {
-		str++;
-		is_bin = TRUE;
-	} else if (str[len] == 'b') {
-		str[len] = '\0';
-		is_bin = TRUE;
-	} else if (str[len] == 'h') {
-		str[len] = '\0';
-		is_hex = TRUE;
-	}
-	if (is_hex) {
-		value = xtoi(str);
-		if (value == INT_MAX)
-			value = 0;
-	} else if (is_bin) {
-		for (int i = 0; i < len; i++) {
-			value <<= 1;
-			if (str[i] == '1') {
-				value += 1;
-			} else if (str[i] != '0') {
-				//error parsing assume 0
-				value = 0;
-				break;
-			}
-		}
-	} else {
-		value = _ttoi(str);
-	}
-	//handle error parsing
-	if (value == INT_MAX || value == INT_MIN)
-		value = 0;
-	return value;
-}
-
 static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 	if (hwndEditControl) {
 		TCHAR buf[10];
@@ -134,7 +89,12 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		//handles getting the user input and converting it to an int
 		//can convert bin, hex, and dec
 		ColorLCD_t *lcd = (ColorLCD_t *) lpCalc->cpu.pio.lcd;
-		lcd->registers[row_num] = GetValue(buf) & 0xFFFF;
+		value = StringToValue(buf);
+		if (value == INT_MAX) {
+			value = 0;
+		}
+
+		ColorLCD_set_register(&lpCalc->cpu, lcd, row_num, value & 0xFFFF);
 
 		DestroyWindow(hwndEditControl);
 	}
@@ -144,7 +104,8 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	switch (uMsg) {
 		case WM_KEYDOWN:
 			if (wParam == VK_RETURN) {
-				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(GetParent(GetParent(hwnd)), GWLP_USERDATA);
+				LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(GetParent(GetParent(hwnd)), GWLP_USERDATA);
+				LPCALC lpCalc = lpDebugInfo->lpCalc;
 				CloseSaveEdit(lpCalc, hwnd);
 				hwndEditControl = NULL;
 			} else if (wParam == VK_ESCAPE) {
@@ -157,17 +118,43 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 		default:
 			return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam); 
 	}
-} 
+}
+
+static HWND hwndSprite;
+static void show_gram(HWND hwnd, LPDEBUGWINDOWINFO lpDebugInfo) {
+	if (IsWindow(hwndSprite)) {
+		ShowWindow(hwndSprite, SW_SHOW);
+		return;
+	}
+	// GRAM, show a copy of it in the sprite viewer
+	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO)malloc(sizeof(TABWINDOWINFO));
+	lpTabInfo->lpDebugInfo = lpDebugInfo;
+	lpTabInfo->tabInfo = NULL;
+	hwndSprite = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SPRITEVIEWER), hwnd, SpriteViewerDialogProc, (LPARAM)lpTabInfo);
+	ShowWindow(hwndSprite, SW_SHOW);
+	SendMessage(hwndSprite, WM_USER, DB_UPDATE, 0);
+	SetWindowPos(hwndSprite, NULL, 0, 0, COLOR_LCD_WIDTH + 30, COLOR_LCD_HEIGHT + 50, SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+}
+
+static void on_running_changed(LPCALC lpCalc, LPVOID lParam) {
+	HWND hListView = (HWND)lParam;
+	EnableWindow(hListView, !lpCalc->running);
+	UpdateWindow(hListView);
+}
 
 LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndListView;
-	static LPCALC lpCalc;
-	static LPDEBUGWINDOWINFO lpDebugInfo;
+	LPCALC lpCalc;
+	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	if (lpDebugInfo != NULL) {
+		lpCalc = lpDebugInfo->lpCalc;
+	}
+
 	switch(Message) {
 		case WM_CREATE: {
-			lpDebugInfo = (LPDEBUGWINDOWINFO)((LPCREATESTRUCT)lParam)->lpCreateParams;;
+			lpDebugInfo = (LPDEBUGWINDOWINFO)((LPCREATESTRUCT)lParam)->lpCreateParams;
 			lpCalc = (LPCALC) lpDebugInfo->lpCalc;
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpDebugInfo);
 
 			hwndListView = CreateListView(hwnd);
 			LVCOLUMN listCol;
@@ -182,12 +169,14 @@ LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPA
 			listCol.cx = 130;
 			listCol.pszText = _T("Decimal");
 			ListView_InsertColumn(hwndListView, 2, &listCol);
-			listCol.cx = 110;
+			listCol.cx = 140;
 			listCol.pszText = _T("Binary");
 			ListView_InsertColumn(hwndListView, 3, &listCol);
 			SetWindowFont(hwndListView, lpDebugInfo->hfontSegoe, TRUE);
 
 			InsertListViewItems(hwndListView, 0xFF);
+
+			calc_register_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwndListView);
 
 			Debug_CreateWindow(hwnd);
 			return TRUE;
@@ -239,6 +228,11 @@ LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPA
 					if (col_num == 0)
 						return FALSE;
 
+					if (row_num == 0x22) {
+						show_gram(hwnd, lpDebugInfo);
+						break;
+					}
+
 					TCHAR buf[32];
 					ListView_GetItemText(hwndListView, row_num, col_num, buf, ARRAYSIZE(buf));
 					RECT rc;
@@ -247,7 +241,7 @@ LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPA
 					lvii.iGroup = 0;
 					ListView_GetItemIndexRect(hwndListView, &lvii, col_num, LVIR_BOUNDS, &rc);
 					//rc is now the rect we want to use for the edit control
-					hwndEditControl = CreateWindow(_T("EDIT"), buf,
+					hwndEditControl = CreateWindow(WC_EDIT, buf,
 						WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT| ES_MULTILINE,
 						rc.left,
 						rc.top,
@@ -256,30 +250,37 @@ LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPA
 						hwndListView, 0, g_hInst, NULL);
 					SetWindowFont(hwndEditControl, lpDebugInfo->hfontSegoe, TRUE);
 					wpOrigEditProc = (WNDPROC) SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG_PTR) EditSubclassProc); 
-					Edit_LimitText(hwndEditControl, 9);
+					Edit_LimitText(hwndEditControl, 15);
 					Edit_SetSel(hwndEditControl, 0, _tcslen(buf));
 					SetWindowLongPtr(hwndEditControl, GWLP_USERDATA, MAKELPARAM(row_num, col_num));
 					SetFocus(hwndEditControl);
 					break;
 				}
+				case NM_SETFOCUS:
+					hwndLastFocus = hwnd;
+					break;
 				case LVN_GETDISPINFO: 
 				{
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
 					ColorLCD_t *lcd = (ColorLCD_t *) lpCalc->cpu.pio.lcd;
 					int index = plvdi->item.iItem;
+					if (index == 0x22 && plvdi->item.iSubItem != 0) {
+						StringCbPrintf(plvdi->item.pszText, 32, _T("Double click"));
+						break;
+					}
 					switch (plvdi->item.iSubItem)
 					{
 						case 0:
-							StringCchPrintf(plvdi->item.pszText, 10, _T("%02X"), index);
+							StringCchPrintf(plvdi->item.pszText, 32, _T("%02X"), index);
 							break;
 						case 1:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("$%04X"), lcd->registers[index]);
+							StringCbPrintf(plvdi->item.pszText, 32, _T("$%04X"), lcd->registers[index]);
 							break;	
 						case 2:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("%d"), lcd->registers[index]);
+							StringCbPrintf(plvdi->item.pszText, 32, _T("%d"), lcd->registers[index]);
 							break;
 						case 3:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("%%%s"), byte_to_binary(lcd->registers[index]));
+							StringCbPrintf(plvdi->item.pszText, 32, _T("%%%s"), byte_to_binary(lcd->registers[index], TRUE));
 							break;
 					}
 
@@ -292,8 +293,7 @@ LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPA
 					switch(pListDraw->nmcd.dwDrawStage) 
 					{ 
 					case CDDS_PREPAINT: 
-						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW); 
-						return TRUE;
+						return CDRF_NOTIFYITEMDRAW;
 					case CDDS_ITEMPREPAINT: 
 					case CDDS_ITEMPREPAINT | CDDS_SUBITEM:  {
 						ColorLCD_t *lcd = (ColorLCD_t *)lpCalc->cpu.pio.lcd;
@@ -301,13 +301,12 @@ LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPA
 						if (lcd->register_breakpoint[iRow]) {
 							// pListDraw->clrText   = RGB(252, 177, 0); 
 							pListDraw->clrTextBk = COLOR_BREAKPOINT; 
-							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NEWFONT); 
+							return CDRF_NEWFONT;
 						}
-						return TRUE;
+						return CDRF_DODEFAULT;
 					}
 					default: 
-						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_DODEFAULT);
-						return TRUE;
+						return CDRF_DODEFAULT;
 					}
 				}
 			}
@@ -326,12 +325,19 @@ LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPA
 					break;
 				case DB_UPDATE: {
 					InvalidateRect(hwnd, NULL, FALSE);
+					if (hwndSprite != NULL) {
+						Debug_UpdateWindow(hwndSprite);
+					}
+					break;
+				case DB_SPRITE_CLOSE:
+					hwndSprite = NULL;
 					break;
 				}
 			}
 			return TRUE;
 		}
-		case WM_CLOSE:
+		case WM_DESTROY:
+			calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwndListView);
 			return FALSE;
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);

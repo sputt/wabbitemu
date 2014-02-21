@@ -22,15 +22,16 @@ int BrowseTxtFile(TCHAR *);
 #define ID_SUBBAR		8
 #define ID_DISASMTAB	9
 #define ID_PANECONTAINER 10
-#define ID_PORTMON		11
-#define ID_LCDMON		12
+#define ID_BREAKPOINTS	11
+#define ID_PORTMON		12
+#define ID_LCDMON		13
 
 #define MAX_MEM_TABS MAX_TABS * 3
 #define MAX_DISASM_TABS MAX_TABS * 3
 #define CY_TOOLBAR 32
 #define MAX_TABS 2
 
-#define EXTRA_DISASM_PANES 2
+#define EXTRA_DISASM_PANES 3
 #define EXTRA_MEM_PANES 1
 
 typedef struct tagDEBUGWINDOWINFO
@@ -50,15 +51,16 @@ typedef struct tagDEBUGWINDOWINFO
 	HWND hwndSpriteViewer[MAX_WATCHPOINTS];
 	int num_watch;
 	HWND hwndListView;
-	watchpoint_t * watchpoints[MAX_WATCHPOINTS];
+	watchpoint_t watchpoints[MAX_WATCHPOINTS];
 
 	DISPLAY_BASE dispType;
 	WINDOWPLACEMENT db_placement;
-	HWND htoolbar, hdisasm, hreg, hmem, hwatch, hPortMon, hLCDMon, hBreakpoints, hDebug;
+	HWND htoolbar, hdisasm, hreg, hmem, hwatch, hBreakpoints, hDebug;
 	HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
 	int total_mem_pane, total_disasm_pane;
 	HWND hmemlist[MAX_MEM_TABS];
 	HWND hdisasmlist[MAX_DISASM_TABS];
+	HWND hdisasmextra[EXTRA_DISASM_PANES];
 	double ratioDisasm;
 	LPCALC lpCalc;
 

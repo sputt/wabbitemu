@@ -10,7 +10,6 @@
 
 extern HWND hwndLastFocus;
 extern HINSTANCE g_hInst;
-extern int goto_addr;
 extern int find_value;
 
 static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
@@ -152,22 +151,32 @@ static waddr_t GetWaddr(mempane_settings *mps, unsigned int addr) {
 }
 
 
+static void on_running_changed(LPCALC lpCalc, LPVOID lParam) {
+	HWND hDisasm = (HWND)lParam;
+	EnableWindow(hDisasm, !lpCalc->running);
+	Debug_UpdateWindow(hDisasm);
+}
+
 LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static TEXTMETRIC tm;
 	static HWND hwndVal;
 	int kMemWidth;
-	static int cyHeader;
+	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	mp_settings *mps;
+	if (lpTabInfo != NULL) {
+		mps = (mp_settings *)lpTabInfo->tabInfo;
+	}
+
 	switch (Message) {
 		case WM_SETFOCUS:
 			hwndLastFocus = hwnd;
 			return 0;
 		case WM_CREATE:
 		{
-			mp_settings *mps;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) ((CREATESTRUCT*)lParam)->lpCreateParams;
+			lpTabInfo = (LPTABWINDOWINFO) ((CREATESTRUCT*)lParam)->lpCreateParams;
 			mps = (mp_settings *) lpTabInfo->tabInfo;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpTabInfo);
 
@@ -235,13 +244,15 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			RECT r;
 			GetWindowRect(mps->hwndHeader, &r);
-			cyHeader = r.bottom - r.top;
+			mps->cyHeader = r.bottom - r.top;
 
 			mps->hfontData = lpTabInfo->lpDebugInfo->hfontLucida;
 			mps->hfontAddr = lpTabInfo->lpDebugInfo->hfontLucidaBold;
 
 			mps->cyRow = 4 * tm.tmHeight / 3;
 			SendMessage(hwnd, WM_SIZE, 0, 0);
+
+			calc_register_event(mps->lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwnd);
 
 			//we need to get the registry-stored address the user was last on
 			TCHAR buffer[64];
@@ -253,8 +264,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_SIZE:
 		{
 			RECT rc;
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 			GetClientRect(hwnd, &rc);
 
 			WINDOWPOS wp;
@@ -278,6 +287,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			//fixes drawing scrollbar arrows on stack
 			SendMessage(hwnd, WM_NCPAINT, 0, 0);
 
+			position_goto_dialog(mps->hGotoDialog, mps->cyHeader);
 			return 0;
 		}
 		case WM_PAINT:
@@ -289,15 +299,12 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			hdcDest = BeginPaint(hwnd, &ps);
 
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			mp_settings *mps = (mp_settings *) lpTabInfo->tabInfo;
-
 			hdc = CreateCompatibleDC(hdcDest);
 			HBITMAP hbm = CreateCompatibleBitmap(hdcDest, r.right, r.bottom);
 			SelectObject(hdc, hbm);
 			SetBkMode(hdc, TRANSPARENT);
 
-			r.top = cyHeader;
+			r.top = mps->cyHeader;
 			FillRect(hdc, &r, GetStockBrush(WHITE_BRUSH));
 
 			SelectObject(hdc, GetStockObject(DC_PEN));
@@ -330,7 +337,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 
 			int sidebar_width = (7 + (mps->type == REGULAR ? 0 : 3));
-			MoveToEx(hdc, tm.tmAveCharWidth * sidebar_width - 1, cyHeader, NULL);
+			MoveToEx(hdc, tm.tmAveCharWidth * sidebar_width - 1, mps->cyHeader, NULL);
 			LineTo(hdc, tm.tmAveCharWidth * sidebar_width - 1, r.bottom);
 
 			int i, j, 	rows = (r.bottom - r.top + mps->cyRow - 1)/mps->cyRow,
@@ -479,7 +486,21 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 
 			GetClientRect(hwnd, &r);
-			BitBlt(hdcDest, 0, cyHeader, r.right, r.bottom, hdc, 0, cyHeader, SRCCOPY);
+			if (IsWindowEnabled(hwnd)) {
+				BitBlt(hdcDest, 0, mps->cyHeader, r.right, r.bottom, hdc, 0, mps->cyHeader, SRCCOPY);
+			} else {
+				HBITMAP hbmSizer = CreateCompatibleBitmap(NULL, r.right - r.left, r.bottom - r.top);
+				SelectObject(hdcDest, hbmSizer);
+				FillRect(hdcDest, &r, (HBRUSH)GetStockObject(GRAY_BRUSH));
+				BLENDFUNCTION bf;
+				bf.BlendOp = AC_SRC_OVER;
+				bf.BlendFlags = 0;
+				bf.SourceConstantAlpha = 100;
+				bf.AlphaFormat = AC_SRC_ALPHA;
+				AlphaBlend(hdcDest, 0, 0, r.right - r.left, r.bottom - r.top,
+					hdc, 0, 0, r.right - r.left, r.bottom - r.top, bf);
+				DeleteObject(hbmSizer);
+			}
 
 			EndPaint(hwnd, &ps);
 
@@ -529,8 +550,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		{
 			RECT r;
 			GetClientRect(hwnd, &r);
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 			int data_length = mps->nCols * mps->nRows * mps->mode;
 			switch (wParam) {
 				case VK_NEXT:
@@ -586,8 +605,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_VSCROLL: {
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			mp_settings *mps = (mp_settings *) lpTabInfo->tabInfo;
 			int data_length = mps->nCols * mps->nRows * mps->mode;
 
 			SCROLLINFO si;
@@ -595,7 +612,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			si.fMask = SIF_PAGE | SIF_RANGE;
 			si.nPage = data_length;
 			si.nMax = GetMaxAddr(mps) + 1;
-			//if == -1 then were displaying the stack
+			// if == -1 then were displaying the stack
 			si.nMin = mps->memNum == -1 ? mps->lpCalc->cpu.sp : 0x0000;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
@@ -665,8 +682,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_COMMAND:
 		{
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 			switch (HIWORD(wParam)) {
 				case EN_KILLFOCUS:
 				{
@@ -721,30 +736,13 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case DB_GOTO: {
-					int result;
-					result = (int) DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC) GotoDialogProc, (LPARAM) lpTabInfo->lpDebugInfo->lpCalc);
-					if (result == IDOK) {
-						switch (mps->type) {
-							case REGULAR:
-								goto_addr = goto_addr & 0xFFFF;
-								break;
-							case FLASH:
-								goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + ((goto_addr >> 16) * PAGE_SIZE);
-								if (goto_addr > GetMaxAddr(mps))
-									goto_addr = GetMaxAddr(mps) - 1;
-								break;
-							case RAM: {						
-								goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + (((goto_addr >> 16) % 0x80) * PAGE_SIZE);
-								if (goto_addr > GetMaxAddr(mps))
-									goto_addr = GetMaxAddr(mps) - 1;
-								break;
-							}
-						}
-						MemGotoAddress(hwnd, goto_addr);
+					if (mps->hGotoDialog != NULL) {
+						SetFocus(mps->hGotoDialog);
+					} else {
+						mps->hGotoDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd,
+							(DLGPROC)GotoDialogProc, (LPARAM)lpTabInfo->lpDebugInfo);
+						position_goto_dialog(mps->hGotoDialog, mps->cyHeader);
 					}
-
-					SetFocus(hwnd);
-					Debug_UpdateWindow(hwnd);
 					break;
 				}
 				case DB_BREAKPOINT: {
@@ -795,8 +793,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_LBUTTONDBLCLK:
 		case WM_LBUTTONDOWN:
 		{
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 
@@ -853,21 +849,18 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_MOUSEMOVE:
 		{
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
-
 			static int addrTrackPrev = -1;
 
 			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 			int thisAddr = AddrFromPoint(hwnd, pt, NULL);
 			if (thisAddr != addrTrackPrev) {
 				mps->addrTrack = thisAddr;
-				//this is done because once you click on it the control will not display the tooltip
-				//deactivating then reactivating fixes this
+				// this is done because once you click on it the control will not display the tooltip
+				// deactivating then reactivating fixes this
 				SendMessage(mps->hwndTip, TTM_ACTIVATE, FALSE, 0);
 				SendMessage(mps->hwndTip, TTM_ACTIVATE, TRUE, 0);
 
-				//Close the tooltip
+				// Close the tooltip
 				if (IsWindowVisible(mps->hwndTip)) {
 					SendMessage(mps->hwndTip, TTM_POP, 0, 0);
 				}
@@ -875,30 +868,55 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			addrTrackPrev = thisAddr;
 			return 0;
 		}
-		case WM_USER:
+		case WM_USER: {
 			switch (wParam) {
-				case DB_UPDATE:
-				{
-					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
-					if (mps->track != -1 && lParam == 0) {
-						mps->addr = ((unsigned short*) &mps->lpCalc->cpu)[mps->track/2];
-					}
-					
-					//setup the scroll bar 8 isn't used
-					if (lParam != WM_VSCROLL)
-						SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(8, 0), 0);
-					RECT rc;
-					GetClientRect(hwnd, &rc);
-					InvalidateRect(hwnd, &rc, FALSE);
-					UpdateWindow(hwnd);
+			case DB_UPDATE:
+			{
+				if (mps->track != -1 && lParam == 0) {
+					mps->addr = ((unsigned short*)&mps->lpCalc->cpu)[mps->track / 2];
+				}
+
+				// setup the scroll bar 8 isn't used
+				if (lParam != WM_VSCROLL) {
+					SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(8, 0), 0);
+				}
+
+				RECT rc;
+				GetClientRect(hwnd, &rc);
+				InvalidateRect(hwnd, &rc, FALSE);
+				UpdateWindow(hwnd);
+				break;
+			}
+			case DB_GOTO_RESULT: {
+				mps->hGotoDialog = NULL;
+				int goto_addr = (int)lParam;
+				if (goto_addr == -1) {
 					break;
 				}
+
+				switch (mps->type) {
+				case REGULAR:
+					goto_addr = goto_addr & 0xFFFF;
+					break;
+				case FLASH:
+					goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + ((goto_addr >> 16) * PAGE_SIZE);
+					if (goto_addr > GetMaxAddr(mps))
+						goto_addr = GetMaxAddr(mps) - 1;
+					break;
+				case RAM: {
+					goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + (((goto_addr >> 16) % 0x80) * PAGE_SIZE);
+					if (goto_addr > GetMaxAddr(mps))
+						goto_addr = GetMaxAddr(mps) - 1;
+					break;
+				}
+				}
+				MemGotoAddress(hwnd, goto_addr);
+			}
 			}
 			return 0;
+		}
 		case WM_DESTROY: {
-			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			mp_settings *mps = (mp_settings *) lpTabInfo->tabInfo;
+			calc_unregister_event(mps->lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwnd);
 			free(lpTabInfo);
 			if (mps->memNum != -1) {
 				TCHAR buffer[64];

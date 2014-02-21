@@ -670,12 +670,12 @@ int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, Z80_info
 						waddr = GetNextAddr(memc, type, waddr);
 						waddr = GetNextAddr(memc, type, waddr);
 
-						if ((result->a1 == 0x0050) && lpCalc->model >= TI_83P && lpCalc->bTIOSDebug) {
+						if ((result->a1 == 0x0050) && lpCalc->bTIOSDebug) {
 							result->index = DA_BJUMP;
 							result->a1 = wmem_read16(memc, waddr);
 							waddr = GetNextAddr(memc, type, waddr);
 							waddr = GetNextAddr(memc, type, waddr);
-							TCHAR* Name = FindBcall((int) result->a1);
+							TCHAR* Name = FindBcall((int) result->a1, lpCalc->model);
 							if (Name == NULL) {
 								result->index = DA_BJUMP_N;
 							} else {
@@ -711,12 +711,12 @@ int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, Z80_info
 				waddr = GetNextAddr(memc, type, waddr);
 			} else
 			if (z == 7) {
-				if ((y == 5) && (lpCalc->model >= TI_83P) && lpCalc->bTIOSDebug) {
+				if ((y == 5) && lpCalc->bTIOSDebug) {
 					result->index = DA_BCALL;
 					int tmp = wmem_read16(memc, waddr);
 						waddr = GetNextAddr(memc, type, waddr);
 						waddr = GetNextAddr(memc, type, waddr);
-					TCHAR* Name = FindBcall(tmp);
+					TCHAR* Name = FindBcall(tmp, lpCalc->model);
 					if (Name == NULL) {
 						result->index = DA_BCALL_N;
 						result->a1 = tmp;

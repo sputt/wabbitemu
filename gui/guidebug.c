@@ -11,21 +11,19 @@
 #include "dbbreakpoints.h"
 #include "dbprofile.h"
 #include "dbreg.h"
+#include "dbtoolbar.h"
 #include "expandpane.h"
 #include "registry.h"
 #include "fileutilities.h"
 
 extern HINSTANCE g_hInst;
+extern HWND hwndLastFocus;
 
 void WriteHumanReadableDump(LPCALC lpCalc, TCHAR *path);
 
 HWND GetDisasmPaneHWND(LPDEBUGWINDOWINFO lpDebugInfo, int index) {
-	if (index == lpDebugInfo->total_disasm_pane + 1) {
-		return lpDebugInfo->hPortMon;
-	}
-
-	if (index == lpDebugInfo->total_disasm_pane) {
-		return lpDebugInfo->hLCDMon;
+	if (index >= lpDebugInfo->total_disasm_pane) {
+		return lpDebugInfo->hdisasmextra[index - lpDebugInfo->total_disasm_pane];
 	}
 	
 	return lpDebugInfo->hdisasmlist[index];
@@ -94,13 +92,20 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 }
 
 BOOL CALLBACK EnumDebugUpdate(HWND hwndChild, LPARAM lParam) {
-	SendMessage(hwndChild, WM_USER, DB_UPDATE, lParam);
+	if (IsWindowVisible(hwndChild)) {
+		SendMessage(hwndChild, WM_USER, DB_UPDATE, lParam);
+	}
 	return TRUE;
 }
 
 BOOL CALLBACK EnumDebugResume(HWND hwndChild, LPARAM lParam) {
 	SendMessage(hwndChild, WM_USER, DB_UPDATE, lParam);
 	SendMessage(hwndChild, WM_USER, DB_RESUME, lParam);
+	return TRUE;
+}
+
+BOOL CALLBACK EnumDebugDestroy(HWND hwndChild, LPARAM lParam) {
+	DestroyWindow(hwndChild);
 	return TRUE;
 }
 
@@ -165,7 +170,8 @@ void AddDisasmTab(LPDEBUGWINDOWINFO lpDebugInfo, ViewType type) {
 	lpTabInfo->lpDebugInfo = lpDebugInfo;
 	lpTabInfo->tabInfo = &dps[index];
 
-	lpDebugInfo->hdisasmlist[total_disasm_pane] = CreateWindow(
+	lpDebugInfo->hdisasmlist[total_disasm_pane] = CreateWindowEx(
+		WS_EX_CONTROLPARENT,
 		g_szDisasmName,
 		_T("Disasm"),
 		WS_VISIBLE | WS_CHILD | WS_VSCROLL,
@@ -275,12 +281,29 @@ void AddWatchTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
 	TabCtrl_SetCurSel(debugInfo->hmem, 0);
 }
 
-void AddPortsTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
-	if (debugInfo->hPortMon) {
+void AddBreakpointsTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
+	if (debugInfo->hdisasmextra[0]) {
 		return;
 	}
 
-	debugInfo->hPortMon = CreateWindow(
+	debugInfo->hdisasmextra[0] = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_BREAKPOINT),
+		debugInfo->hdisasm, (DLGPROC)BreakpointsDialogProc, (LPARAM) debugInfo);
+
+	TCITEM tie;
+	tie.mask = TCIF_TEXT | TCIF_IMAGE;
+	tie.iImage = -1;
+	tie.pszText = _T("Breakpoints");
+	tie.lParam = (LPARAM)debugInfo->hdisasmextra[0];
+	TabCtrl_InsertItem(debugInfo->hdisasm, 0, &tie);
+	TabCtrl_SetCurSel(debugInfo->hdisasm, 0);
+}
+
+void AddPortsTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
+	if (debugInfo->hdisasmextra[1]) {
+		return;
+	}
+
+	debugInfo->hdisasmextra[1] = CreateWindow(
 		g_szPortMonitor,
 		_T(""),
 		WS_VISIBLE | WS_CHILD,
@@ -292,17 +315,17 @@ void AddPortsTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
 	tie.mask = TCIF_TEXT | TCIF_IMAGE;
 	tie.iImage = -1;
 	tie.pszText = _T("Port Monitor");
-	tie.lParam = (LPARAM)debugInfo->hPortMon;
+	tie.lParam = (LPARAM)debugInfo->hdisasmextra[1];
 	TabCtrl_InsertItem(debugInfo->hdisasm, 0, &tie);
 	TabCtrl_SetCurSel(debugInfo->hdisasm, 0);
 }
 
 void AddColorLCDTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
-	if (debugInfo->hLCDMon) {
+	if (debugInfo->hdisasmextra[2]) {
 		return;
 	}
 
-	debugInfo->hLCDMon = CreateWindow(
+	debugInfo->hdisasmextra[2] = CreateWindow(
 		g_szLCDMonitor,
 		_T(""),
 		WS_VISIBLE | WS_CHILD,
@@ -314,19 +337,36 @@ void AddColorLCDTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
 	tie.mask = TCIF_TEXT | TCIF_IMAGE;
 	tie.iImage = -1;
 	tie.pszText = _T("Color LCD Monitor");
-	tie.lParam = (LPARAM)debugInfo->hLCDMon;
+	tie.lParam = (LPARAM)debugInfo->hdisasmextra[2];
 	TabCtrl_InsertItem(debugInfo->hdisasm, 0, &tie);
 	TabCtrl_SetCurSel(debugInfo->hdisasm, 0);
 }
 
-extern HWND hwndPrev;
+void UpdateRunningMenu(LPCALC lpCalc, LPVOID lParam) {
+	HMENU hMenu = GetMenu((HWND) lParam);
+
+	if (lpCalc->running) {
+		MENUITEMINFO mii;
+		mii.cbSize = sizeof(MENUITEMINFO);
+		mii.fMask = MIIM_STRING;
+		mii.dwTypeData = _T("Stop\tF5");
+		SetMenuItemInfo(hMenu, IDM_RUN_RUN, FALSE, &mii);
+	} else {
+		 MENUITEMINFO mii;
+		 mii.cbSize = sizeof(MENUITEMINFO);
+		 mii.fMask = MIIM_STRING;
+		 mii.dwTypeData = _T("Run\tF5");
+		 SetMenuItemInfo(hMenu, IDM_RUN_RUN, FALSE, &mii);
+	 }
+}
 
 LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static LPDEBUGWINDOWINFO lpDebugInfo;
 	static const TCHAR* MemPaneString = _T("NumMemPane");
 	static const TCHAR* DisasmPaneString = _T("NumDisasmPane");
 	static const TCHAR* MemSelIndexString = _T("MemSelIndex");
 	static const TCHAR* DisasmSelIndexString = _T("DiasmSelIndex");
+
+	LPDEBUGWINDOWINFO lpDebugInfo = lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	switch (Message) {
 		case WM_CREATE:
@@ -390,7 +430,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					break;
 			}
 
-			lpDebugInfo->hdisasm = CreateWindow(
+			lpDebugInfo->hdisasm = CreateWindowEx(
+				WS_EX_CONTROLPARENT,
 				WC_TABCONTROL, _T(""),
 			    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
 			    0, 0, 1, 1,
@@ -399,10 +440,11 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			    g_hInst, NULL);
 			SetWindowFont(lpDebugInfo->hdisasm, lpDebugInfo->hfontSegoe, TRUE);
 
-			AddPortsTab(lpCalc, lpDebugInfo);
 			if (lpCalc->model >= TI_84PCSE) {
 				AddColorLCDTab(lpCalc, lpDebugInfo);
 			}
+			AddPortsTab(lpCalc, lpDebugInfo);
+			AddBreakpointsTab(lpCalc, lpDebugInfo);
 
 			/* Create disassembly window */
 			lpDebugInfo->total_disasm_pane = 0;
@@ -420,7 +462,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			hdr.hwndFrom = lpDebugInfo->hdisasm;
 			SendMessage(hwnd, WM_NOTIFY, MAKEWPARAM(0, 0), (LPARAM) &hdr);
 
-			lpDebugInfo->htoolbar = CreateWindow(
+			lpDebugInfo->htoolbar = CreateWindowEx(
+				WS_EX_CONTROLPARENT,
 				g_szToolbar,
 				_T("toolbar"),
 				WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN,
@@ -430,7 +473,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				g_hInst, lpDebugInfo);
 
 			lpDebugInfo->hmem =
-			CreateWindow(
+			CreateWindowEx(
+				WS_EX_CONTROLPARENT,
 				WC_TABCONTROL, _T(""),
 			    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
 			    0, 0, 1, 1,
@@ -500,17 +544,18 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				CheckMenuItem(GetSubMenu(GetMenu(hwnd), 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_CHECKED);
 			}
 
-			hwndPrev = lpDebugInfo->hdisasm;
-			SetFocus(lpDebugInfo->hdisasm);
-			SendMessage(hwnd, WM_SIZE, 0, 0);
-			Debug_UpdateWindow(hwnd);
+			calc_register_event(lpCalc, ROM_RUNNING_EVENT, &UpdateRunningMenu, hwnd);
+
+
+			int index = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
+			HWND hTab = GetDisasmPaneHWND(lpDebugInfo, index);
+			SetFocus(hTab);
 			lpDebugInfo->is_ready = TRUE;
 			return 0;
 		}
 		case WM_SIZING:
 		{
 			RECT *r = (RECT *) lParam;
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			int cyCaption = GetSystemMetrics(SM_CYCAPTION);
 			int cyBottomFrame = GetSystemMetrics(SM_CYSIZEFRAME);
 			int minHeight = CY_TOOLBAR + lpDebugInfo->cyGripper + cyCaption + cyBottomFrame*2;
@@ -524,7 +569,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		case WM_SIZE: {
 			RECT rc;
 			GetClientRect(hwnd, &rc);
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			if (!lpDebugInfo->bDrag) {
 				if (lpDebugInfo->top_locked) {
@@ -546,7 +590,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			return 0;
 		}
 		case WM_MOUSEMOVE: {
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			u_int y = GET_Y_LPARAM(lParam) + lpDebugInfo->offset_click;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
@@ -604,7 +647,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			return 0;
 		}
 		case WM_MOUSELEAVE: {
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			lpDebugInfo->bHot = FALSE;
 			RECT r;
 			GetClientRect(hwnd, &r);
@@ -615,7 +657,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			return 0;
 		}
 		case WM_LBUTTONDOWN: {
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			int y = GET_Y_LPARAM(lParam);
 			int dy = abs((int) (y - (lpDebugInfo->cyDisasm + (lpDebugInfo->cyGripper/2))));
 
@@ -635,7 +676,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			return 0;
 		}
 		case WM_LBUTTONUP:  {
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			ReleaseCapture();
 			lpDebugInfo->bDrag = FALSE;
 			RECT r;
@@ -647,7 +687,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			return 0;
 		}
 		case WM_LBUTTONDBLCLK: {
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			int y = GET_Y_LPARAM(lParam);
 			int dy = abs((int) (y - (lpDebugInfo->cyDisasm + (lpDebugInfo->cyGripper/2))));
 
@@ -658,7 +697,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			return 0;
 		}
 		case WM_COMMAND: {
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			switch (LOWORD(wParam)) {
 			case IDM_FILE_RESET: {
 				LPCALC lpCalc = lpDebugInfo->lpCalc;
@@ -834,6 +872,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				pnmhdr->code = TCN_SELCHANGE;
 				pnmhdr->hwndFrom = lpDebugInfo->hmem;
 				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
+				free(pnmhdr);
 				InvalidateRect(lpDebugInfo->hmem, NULL, FALSE);
 				Debug_UpdateWindow(hwnd);
 				break;
@@ -997,7 +1036,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				MemGotoAddress(lpDebugInfo->hmemlist[TabCtrl_GetCurSel(lpDebugInfo->hmem)], addr);
 				break;
 			}
-			extern HWND hwndLastFocus;
 			case DB_BREAKPOINT:
 			case DB_MEMPOINT_READ:
 			case DB_MEMPOINT_WRITE: {
@@ -1013,7 +1051,28 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				Debug_UpdateWindow(hwnd);
 				break;
 			}
-
+			case IDM_RUN_RUN: {
+				LPCALC lpCalc = lpDebugInfo->lpCalc;
+				if (lpCalc->running) {
+					SendMessage(hwnd, WM_COMMAND, DB_STOP, 0);
+				} else {
+					SendMessage(hwnd, WM_COMMAND, DB_RUN, 0);
+				}
+				break;
+			}
+			case DB_RUN: {
+				LPCALC lpCalc = lpDebugInfo->lpCalc;
+				CPU_step(&lpCalc->cpu);
+				calc_set_running(lpCalc, TRUE);
+				Debug_UpdateWindow(hwnd);
+				break;
+			}
+			case DB_STOP: {
+				LPCALC lpCalc = lpDebugInfo->lpCalc;
+				calc_set_running(lpCalc, FALSE);
+				Debug_UpdateWindow(hwnd);
+				break;
+			}
 			default: {
 				int index = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
 				HWND hTab = GetDisasmPaneHWND(lpDebugInfo, index);
@@ -1024,7 +1083,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			break;
 		}
 		case WM_NOTIFY: {
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			LPNMHDR header = (LPNMHDR) lParam;
 			switch (header->code) {
 				case TCN_SELCHANGE: {
@@ -1064,8 +1122,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			PAINTSTRUCT ps;
 			HDC hdc;
 			hdc = BeginPaint(hwnd, &ps);
-
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			RECT rectDot, rc;
 			GetClientRect(hwnd, &rc);
@@ -1147,27 +1203,25 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			return 0;
 		}
 		case WM_USER:
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			switch (wParam) {
-				case DB_UPDATE:
-					EnumChildWindows(hwnd, EnumDebugUpdate, 0);
-					if (IsWindow(lpDebugInfo->hPortMon)) {
-						SendMessage(lpDebugInfo->hPortMon, WM_USER, DB_UPDATE, 0); 
-					}
-					if (IsWindow(lpDebugInfo->hBreakpoints)) {
-						SendMessage(lpDebugInfo->hBreakpoints, WM_USER, DB_UPDATE, 0); 
-					}
-					break;
-				case DB_RESUME:
-					EnumChildWindows(hwnd, EnumDebugResume, 0);
-					break;
+			case DB_UPDATE: {
+				EnumChildWindows(hwnd, EnumDebugUpdate, 0);
+				break;
+			}
+			case DB_RESUME:
+				EnumChildWindows(hwnd, EnumDebugResume, 0);
+				break;
+			case DB_GOTO_RESULT:
+				SendMessage(hwndLastFocus, WM_USER, DB_GOTO_RESULT, lParam);
+				break;
 			}
 			return 0;
 		case WM_DESTROY: {
-			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			CPU_step(&lpDebugInfo->lpCalc->cpu);
-			lpDebugInfo->lpCalc->running = TRUE;
-			calc_unpause_linked();
+			LPCALC lpCalc = lpDebugInfo->lpCalc;
+			calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &UpdateRunningMenu, hwnd);
+			CPU_step(&lpCalc->cpu);
+			calc_set_running(lpCalc, TRUE);
+
 			GetWindowPlacement(hwnd, &lpDebugInfo->db_placement);
 			lpDebugInfo->db_maximized = IsMaximized(hwnd);
 
@@ -1184,6 +1238,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			DeleteObject(lpDebugInfo->hfontSegoe);
 			lpDebugInfo->hfontSegoe = NULL;
 			lpDebugInfo->hwatch = NULL;
+
+			EnumChildWindows(hwnd, EnumDebugDestroy, 0);
+			free(lpDebugInfo);
 			return 0;
 		}
 	}

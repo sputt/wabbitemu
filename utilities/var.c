@@ -242,7 +242,7 @@ TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
 				return NULL;
 			}
 		} while (record.Type != 0x02 || record.DataSize != 2);
-		CurrentPage = ((record.Data[0] << 8) | record.Data[1]) & 0x7F;
+		CurrentPage = ((record.Data[0] << 8) | record.Data[1]) & 0xFF;
 		if (tifile->flash->data[CurrentPage] == 0) {
 			tifile->flash->data[CurrentPage] = (unsigned char *) malloc(PAGE_SIZE);
 			if (tifile->flash->data[CurrentPage] == NULL) {
@@ -284,7 +284,7 @@ TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
 					tifile->flash->pagesize[CurrentPage] = (HighestAddress - PAGE_SIZE);
 				}
 				TotalPages++;
-				CurrentPage = ((record.Data[0] << 8) | record.Data[1]) & 0x7F;
+				CurrentPage = ((record.Data[0] << 8) | record.Data[1]) & 0xFF;
 				if (tifile->flash->data[CurrentPage] == 0) {
 					tifile->flash->data[CurrentPage] = (unsigned char *) malloc(PAGE_SIZE);
 					if (tifile->flash->data[CurrentPage] == NULL) {

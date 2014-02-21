@@ -15,6 +15,7 @@ static void port0(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		LCD_t *lcd = (LCD_t *)cpu->pio.lcd;
 		lcd->screen_addr = (0x100 * ((cpu->bus % 0x20) + 0xE0));
+		dev->aux = lcd;
 		port10(cpu, dev);
 		cpu->output = FALSE;
 		device_t devt;
@@ -103,7 +104,7 @@ static void port4(CPU_t *cpu, device_t *dev) {
 	}
 }
 
-static void port5(CPU_t *cpu, device_t *) {
+static void port5(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = 0x00;
 		cpu->input = FALSE;
@@ -112,7 +113,7 @@ static void port5(CPU_t *cpu, device_t *) {
 	}
 }
 
-static void port6(CPU_t *cpu, device_t *) {
+static void port6(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = 0x00;
 		cpu->input = FALSE;
@@ -121,7 +122,7 @@ static void port6(CPU_t *cpu, device_t *) {
 	}
 }
 
-static void port7(CPU_t *cpu, device_t *) {
+static void port7(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = 0x00;
 		cpu->input = FALSE;
@@ -251,8 +252,8 @@ int device_init_81(CPU_t *cpu) {
 	
 	//Append_interrupt_device(cpu, 0x00, 1);
 	Append_interrupt_device(cpu, 0x03, 1);
-	Append_interrupt_device(cpu, 0x10, 16000);
-	Append_interrupt_device(cpu, 0x11, 16000);
+	Append_interrupt_device(cpu, 0x10, 255);
+	Append_interrupt_device(cpu, 0x11, 255);
 	//Append_interrupt_device(cpu, 0x11, 128);
 	return 0;
 }

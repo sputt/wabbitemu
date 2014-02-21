@@ -13,16 +13,20 @@ INT_PTR CALLBACK ConditionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 int GetWaddrData(HWND hwnd, waddr_t *waddr) {
 	waddr->is_ram = Button_GetCheck(GetDlgItem(hwnd, IDC_CHK_RAM));
-	TCHAR buf[5];
+	TCHAR buf[32];
 	Edit_GetText(GetDlgItem(hwnd, IDC_EDT_ADDR), buf, ARRAYSIZE(buf));
-	int val = xtoi(buf);
-	if (val == INT_MAX)
+	int val = StringToValue(buf);
+	if (val == INT_MAX) {
 		return -1;
+	}
+
 	waddr->addr = (uint16_t) val;
 	Edit_GetText(GetDlgItem(hwnd, IDC_EDT_PAGE), buf, ARRAYSIZE(buf));
-	val = xtoi(buf);
-	if (val == INT_MAX)
+	val = StringToValue(buf);
+	if (val == INT_MAX) {
 		return -1;
+	}
+
 	waddr->page = (uint8_t) val;
 	return 0;
 }
@@ -32,6 +36,7 @@ void UpdateItemsListView(LPCALC lpCalc, HWND hwndListView) {
 	if (is_updating) {
 		return;
 	}
+
 	is_updating = TRUE;
 	ListView_DeleteAllItems(hwndListView);
 	int i;
@@ -40,6 +45,7 @@ void UpdateItemsListView(LPCALC lpCalc, HWND hwndListView) {
 		if (lpCalc->flash_cond_break[i] == NULL) {
 			continue;
 		}
+
 		LPBREAKPOINT lpBreak = lpCalc->flash_cond_break[i];
 		LVITEM lvI;
 		// Initialize LVITEM members that are common to all items.
@@ -53,14 +59,19 @@ void UpdateItemsListView(LPCALC lpCalc, HWND hwndListView) {
 	
 		BOOL active = lpBreak->active;
 		// Insert items into the list.
-		if (ListView_InsertItem(hwndListView, &lvI) == -1)
+		if (ListView_InsertItem(hwndListView, &lvI) == -1) {
 			return;
+		}
+
 		lpBreak->active = active;
 		ListView_SetCheckState(hwndListView, i, lpBreak->active);
 	}
+
 	for (int j = 0; j < lpCalc->cpu.mem_c->ram_size; j++) {
-		if (lpCalc->ram_cond_break[j] == NULL)
+		if (lpCalc->ram_cond_break[j] == NULL) {
 			continue;
+		}
+
 		LPBREAKPOINT lpBreak = lpCalc->ram_cond_break[j];
 		LVITEM lvI;
 		// Initialize LVITEM members that are common to all items.
@@ -74,26 +85,33 @@ void UpdateItemsListView(LPCALC lpCalc, HWND hwndListView) {
 	
 		BOOL active = lpBreak->active;
 		// Insert items into the list.
-		if (ListView_InsertItem(hwndListView, &lvI) == -1)
+		if (ListView_InsertItem(hwndListView, &lvI) == -1) {
 			return;
+		}
+
 		lpBreak->active = active;
 		ListView_SetCheckState(hwndListView, j, lpBreak->active);
 	}
+
 	is_updating = FALSE;
 }
 
-#define DB_CREATE 0
 LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
-	static HWND hwndListView;
-	static int port_map[0xFF];
 	static int start_row, last_port, cyHeader;
-	static LPCALC lpCalc;
+	HWND hwndListView = GetDlgItem(hwnd, IDC_LIST_BREAKS);
+	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPCALC lpCalc;
+	if (lpDebugInfo != NULL) {
+		lpCalc = lpDebugInfo->lpCalc;
+	}
+
 	switch(Message) {
 		case WM_INITDIALOG: {
-			lpCalc = (LPCALC) lParam;
-			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
-			hwndListView = GetDlgItem(hwnd, IDC_LIST_BREAKS);
+			lpDebugInfo = (LPDEBUGWINDOWINFO)lParam;
+			lpCalc = lpDebugInfo->lpCalc;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpDebugInfo);
+
 			LVCOLUMN listCol;
 			memset(&listCol, 0, sizeof(LVCOLUMN));
 			listCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
@@ -122,6 +140,26 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			Debug_CreateWindow(hwnd);
 			return TRUE;
 		}
+		case WM_PAINT:
+		{
+			PAINTSTRUCT ps;
+			HDC hdc;
+
+			hdc = BeginPaint(hwnd, &ps);
+
+			RECT rc;
+			GetClientRect(hwnd, &rc);
+
+			FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
+
+			EndPaint(hwnd, &ps);
+			return 0;
+		}
+		case WM_CTLCOLORSTATIC:
+		case WM_CTLCOLORBTN:
+		{
+			return (LRESULT)GetStockObject(WHITE_BRUSH);
+		}
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
 				case IDC_REM_BREAK: {
@@ -134,6 +172,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					if (item.iItem == -1) {
 						break;
 					}
+
 					LPBREAKPOINT lpBreak = (LPBREAKPOINT) item.lParam;
 					switch (lpBreak->type) {
 						case NORMAL_BREAK:
@@ -146,14 +185,21 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 							clear_mem_write_break(lpCalc->cpu.mem_c, lpBreak->waddr);
 							break;
 					}
-					//UpdateItemsListView(hwndListView);
-					Debug_UpdateWindow(GetParent(hwnd));
+
+					ListView_DeleteItem(hwndListView, selIndex);
+					if (!ListView_GetItemCount(hwndListView)) {
+						Button_Enable(GetDlgItem(hwnd, IDC_REM_BREAK), FALSE);
+						Button_Enable(GetDlgItem(hwnd, IDC_UPDATE_BREAK), FALSE);
+					}
+
+					InvalidateRect(hwnd, NULL, FALSE);
 					break;
 				}
 				case IDC_ADD_BREAK: {
 					waddr_t waddr;
-					if (GetWaddrData(hwnd, &waddr) == -1)
+					if (GetWaddrData(hwnd, &waddr) == -1) {
 						break;
+					}
 
 					if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_NORMAL))) {
 						set_break(lpCalc->cpu.mem_c, waddr);
@@ -162,16 +208,33 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_READ))) {
 						set_mem_read_break(lpCalc->cpu.mem_c, waddr);
 					}
+
+					LPBREAKPOINT lpBreak = lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)];
+					int index = ListView_GetItemCount(hwndListView) - 1;
+					if (index == -1) {
+						index = 0;
+					}
+
+					LVITEM item;
+					item.mask = LVIF_PARAM;
+					item.iItem = index;
+					item.iSubItem = 0;
+					item.lParam = (LPARAM) lpBreak;
+					ListView_InsertItem(hwndListView, &item);
+
+					Button_Enable(GetDlgItem(hwnd, IDC_REM_BREAK), TRUE);
+					Button_Enable(GetDlgItem(hwnd, IDC_UPDATE_BREAK), TRUE);
 					
-					//UpdateItemsListView(hwndListView);
-					Debug_UpdateWindow(GetParent(hwnd));
+					InvalidateRect(hwnd, NULL, FALSE);
 					break;
 				}
 				case IDC_UPDATE_BREAK: {
 					waddr_t waddr;
-					if (GetWaddrData(hwnd, &waddr) == -1)
+					if (GetWaddrData(hwnd, &waddr) == -1) {
 						break;
+					}
 
+					TCHAR old_desc[32];
 					int selIndex = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED);
 					LVITEM item;
 					item.mask = LVIF_PARAM;
@@ -181,8 +244,9 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					if (item.iItem == -1) {
 						break;
 					}
-					LPBREAKPOINT lpBreak = (LPBREAKPOINT) item.lParam;
 
+					LPBREAKPOINT lpBreak = (LPBREAKPOINT) item.lParam;
+					StringCbCopy(old_desc, sizeof(old_desc), lpBreak->label);
 					switch (lpBreak->type) {
 						case NORMAL_BREAK:
 							clear_break(lpCalc->cpu.mem_c, lpBreak->waddr);
@@ -195,25 +259,29 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 							break;
 					}
 
-					if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_NORMAL))) {
+					
+					if (IsDlgButtonChecked(hwnd, IDC_BREAK_NORMAL)) {
 						set_break(lpCalc->cpu.mem_c, waddr);
 						lpBreak->type = NORMAL_BREAK;
-					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_WRITE))) {
+					} else if (IsDlgButtonChecked(hwnd, IDC_BREAK_WRITE)) {
 						set_mem_write_break(lpCalc->cpu.mem_c, waddr);
 						lpBreak->type = MEM_WRITE_BREAK;
-					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_READ))) {
+					} else if (IsDlgButtonChecked(hwnd, IDC_BREAK_READ)) {
 						set_mem_read_break(lpCalc->cpu.mem_c, waddr);
 						lpBreak->type = MEM_READ_BREAK;
 					}
+
+					StringCbCopy(lpBreak->label, sizeof(lpBreak->label), old_desc);
 					lpBreak->waddr = waddr;
 
-					//UpdateItemsListView(hwndListView);
-					Debug_UpdateWindow(GetParent(hwnd));
+					InvalidateRect(hwnd, NULL, FALSE);
 					break;
 				}
 				case IDC_COND_BREAK: {
-					HWND hConditions = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_CONDITION), hwnd, (DLGPROC) ConditionsDialogProc);
-					ShowWindow(hConditions, SW_SHOW);
+					INT_PTR result  = DialogBox(g_hInst, MAKEINTRESOURCE(IDD_CONDITION), hwnd, (DLGPROC) ConditionsDialogProc);
+					if (result == IDOK) {
+
+					}
 					break;
 				}
 			}
@@ -221,15 +289,14 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 		}
 		
 		case WM_MOUSEWHEEL: {
-			int i, zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 			WPARAM sbtype;
-			if (zDelta > 0) 
-				sbtype = SB_LINEUP;
-			else
-				sbtype = SB_LINEDOWN;
+			int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+			sbtype = zDelta > 0 ?  SB_LINEUP : SB_LINEDOWN;
 
-			for (i = 0; i < abs(zDelta); i += WHEEL_DELTA)
+			for (int i = 0; i < abs(zDelta); i += WHEEL_DELTA) {
 				SendMessage(hwnd, WM_VSCROLL, sbtype, 0);
+			}
+
 			return FALSE;
 		}
 		case WM_NOTIFY: {
@@ -238,10 +305,13 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			{
 				case LVN_ENDLABELEDIT: {
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *) lParam; 
-					if (plvdi->item.pszText == NULL)
+					if (plvdi->item.pszText == NULL) {
 						return TRUE;
+					}
+
 					LPBREAKPOINT lpBreak = (LPBREAKPOINT) plvdi->item.lParam;
 					StringCbCopy(lpBreak->label, sizeof(lpBreak->label), plvdi->item.pszText);
+					InvalidateRect(hwnd, NULL, FALSE);
 					break;
 				}
 				case LVN_ITEMCHANGED: {
@@ -251,11 +321,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					
 					if (pnmv->uChanged & LVIF_STATE && !is_updating &&
 						(pnmv->uNewState & LVIS_STATEIMAGEMASK) != (pnmv->uOldState & LVIS_STATEIMAGEMASK)) {
-						if ((pnmv->uNewState & LVIS_STATEIMAGEMASK) >> 12 == 1) {
-							lpBreak->active = FALSE;
-						} else {
-							lpBreak->active = TRUE;
-						}
+						lpBreak->active = (pnmv->uNewState & LVIS_STATEIMAGEMASK) >> 12 != 1;
 						ListView_SetCheckState(hwndListView, pnmv->iItem, lpBreak->active);
 						ListView_Update(hwndListView, pnmv->iItem);
 					}
@@ -264,16 +330,19 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				case NM_CLICK: {
 					NMITEMACTIVATE *plvdi = (NMITEMACTIVATE *) lParam; 
 					if (plvdi->iItem == -1) {
+						Button_Enable(GetDlgItem(hwnd, IDC_REM_BREAK), FALSE);
 						Button_Enable(GetDlgItem(hwnd, IDC_UPDATE_BREAK), FALSE);
 
-						Edit_SetText(GetDlgItem(hwnd, IDC_EDT_ADDR), _T(""));
-						Edit_SetText(GetDlgItem(hwnd, IDC_EDT_PAGE), _T(""));
-						Button_SetCheck(GetDlgItem(hwnd, IDC_CHK_RAM), FALSE);
-						Button_SetCheck(GetDlgItem(hwnd, IDC_BREAK_NORMAL), BST_UNCHECKED);
-						Button_SetCheck(GetDlgItem(hwnd, IDC_BREAK_WRITE), BST_UNCHECKED);
-						Button_SetCheck(GetDlgItem(hwnd, IDC_BREAK_READ), BST_UNCHECKED);
+						SetDlgItemText(hwnd, IDC_EDT_ADDR, _T(""));
+						SetDlgItemText(hwnd, IDC_EDT_PAGE, _T(""));
+						CheckDlgButton(hwnd, IDC_CHK_RAM, FALSE);
+						CheckDlgButton(hwnd, IDC_BREAK_NORMAL, BST_UNCHECKED);
+						CheckDlgButton(hwnd, IDC_BREAK_WRITE, BST_UNCHECKED);
+						CheckDlgButton(hwnd, IDC_BREAK_READ, BST_UNCHECKED);
 						break;
 					}
+
+					Button_Enable(GetDlgItem(hwnd, IDC_REM_BREAK), TRUE);
 					Button_Enable(GetDlgItem(hwnd, IDC_UPDATE_BREAK), TRUE);
 
 					LVITEM item;
@@ -283,15 +352,16 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					ListView_GetItem(hwndListView, &item);
 					LPBREAKPOINT lpBreak = (LPBREAKPOINT) item.lParam;
 					TCHAR temp[32];
-					StringCbPrintf(temp, sizeof(temp), _T("%04X"), lpBreak->waddr.addr);
-					Edit_SetText(GetDlgItem(hwnd, IDC_EDT_ADDR), temp);
-					StringCbPrintf(temp, sizeof(temp), _T("%02X"), lpBreak->waddr.page);
-					Edit_SetText(GetDlgItem(hwnd, IDC_EDT_PAGE), temp);
+					
+					StringCbPrintf(temp, sizeof(temp), _T("$%04X"), lpBreak->waddr.addr);
+					SetDlgItemText(hwnd, IDC_EDT_ADDR, temp);
+					StringCbPrintf(temp, sizeof(temp), _T("$%02X"), lpBreak->waddr.page);
+					SetDlgItemText(hwnd, IDC_EDT_PAGE, temp);
 					Button_SetCheck(GetDlgItem(hwnd, IDC_CHK_RAM), lpBreak->waddr.is_ram);
 					
-					Button_SetCheck(GetDlgItem(hwnd, IDC_BREAK_NORMAL), lpBreak->type == NORMAL_BREAK ? BST_CHECKED : BST_UNCHECKED);
-					Button_SetCheck(GetDlgItem(hwnd, IDC_BREAK_WRITE), lpBreak->type == MEM_WRITE_BREAK ? BST_CHECKED : BST_UNCHECKED);
-					Button_SetCheck(GetDlgItem(hwnd, IDC_BREAK_READ), lpBreak->type == MEM_READ_BREAK ? BST_CHECKED : BST_UNCHECKED);
+					CheckDlgButton(hwnd, IDC_BREAK_NORMAL, lpBreak->type == NORMAL_BREAK ? BST_CHECKED : BST_UNCHECKED);
+					CheckDlgButton(hwnd, IDC_BREAK_WRITE, lpBreak->type == MEM_WRITE_BREAK ? BST_CHECKED : BST_UNCHECKED);
+					CheckDlgButton(hwnd, IDC_BREAK_READ, lpBreak->type == MEM_READ_BREAK ? BST_CHECKED : BST_UNCHECKED);
 					break;
 				}
 				case LVN_GETDISPINFO: {
@@ -350,7 +420,8 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					GetClientRect(hwnd, &rc);
 					InvalidateRect(hwnd, &rc, FALSE);
 
-					UpdateItemsListView(lpCalc, hwndListView);
+					LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					UpdateItemsListView(lpDebugInfo->lpCalc, hwndListView);
 					break;
 				}
 			}
@@ -360,22 +431,35 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			DestroyWindow(hwnd);
 			return FALSE;
 	}
-	return FALSE;
+	return DefWindowProc(hwnd, Message, wParam, lParam);
 }
 
 INT_PTR CALLBACK ConditionsDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch (Message) {
-		case WM_INITDIALOG:
-			return FALSE;
-		case WM_COMMAND:
-			switch (LOWORD(wParam)) {
-				case IDOK:
-					EndDialog(hwndDlg, IDOK);
-					return TRUE;
-				case IDCANCEL:
-					EndDialog(hwndDlg, IDCANCEL);
-					break;
-			}
+	case WM_INITDIALOG: {
+		HWND hConditionType = GetDlgItem(hwndDlg, IDC_COND_TYPE);
+		ComboBox_AddString(hConditionType, _T("Hit count"));
+		ComboBox_AddString(hConditionType, _T("Register"));
+		ComboBox_AddString(hConditionType, _T("Memory"));
+		ComboBox_SetCurSel(hConditionType, 0);
+
+		HWND hCompType = GetDlgItem(hwndDlg, IDC_COMP_TYPE);
+		ComboBox_AddString(hCompType, _T("="));
+		ComboBox_AddString(hCompType, _T(">="));
+		ComboBox_AddString(hCompType, _T("Multiple of"));
+		ComboBox_SetCurSel(hCompType, 0);
+		return TRUE;
+	}
+	case WM_COMMAND: {
+		switch (LOWORD(wParam)) {
+		case IDOK:
+			EndDialog(hwndDlg, IDOK);
+			return TRUE;
+		case IDCANCEL:
+			EndDialog(hwndDlg, IDCANCEL);
+			return TRUE;
+		}
+	}
 	}
 	return FALSE;
 }

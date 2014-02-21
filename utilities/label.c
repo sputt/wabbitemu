@@ -36,12 +36,30 @@ TCHAR* FindAddressLabel(LPCALC lpCalc, waddr_t waddr) {
 	}
 	return NULL;
 }
+
+bcall_t *get_bcalls(int model) {
+	switch (model) {
+	case TI_83P:
+	case TI_83PSE:
+	case TI_84P:
+	case TI_84PSE:
+		return bcalls_83p;
+	case TI_84PCSE:
+		return bcalls_84pcse;
+	}
+	return NULL;
+}
 	
 //-------------------------------------------
 // True means label is found and is the same
 //
-BOOL label_search_tios(TCHAR *label, int equate) {
+BOOL label_search_tios(TCHAR *label, int equate, int model) {
 	if (!label) {
+		return FALSE;
+	}
+
+	bcall_t *bcalls = get_bcalls(model);
+	if (bcalls == NULL) {
 		return FALSE;
 	}
 
@@ -111,7 +129,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 			i = _stscanf_s(buffer, _T("%s = $%X"), name, &equate);
 		if (i == 2) {
 			length = (int) _tcslen(name);
-			if (!label_search_tios(name, equate)) {
+			if (!label_search_tios(name, equate, lpCalc->model)) {
 				
 				label->name = (TCHAR *) malloc((length + 1) * sizeof(TCHAR));
 				StringCchCopy(label->name, length + 1, name);
@@ -177,7 +195,12 @@ void ImportBcalls(char* fn) {
 	fclose(infile);
 }
 */
-TCHAR* FindBcall(int address) {
+TCHAR* FindBcall(int address, int model) {
+	bcall_t *bcalls = get_bcalls(model);
+	if (bcalls == NULL) {
+		return NULL;
+	}
+
 	for(int i = 0; bcalls[i].address != -1; i++ ) {
 		if (bcalls[i].address == address) {
 			return bcalls[i].name;

@@ -53,7 +53,7 @@ static void port0(CPU_t *cpu, device_t *dev) {
 	}
 }
 
-static void port2(CPU_t *cpu, device_t *) {
+static void port2(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = (cpu->pio.model == TI_73 ? 0x39 : 0x3B) | (cpu->mem_c->flash_locked ? 0 : 4);
 		cpu->input = FALSE;
@@ -236,7 +236,7 @@ static void port5(CPU_t *cpu, device_t *dev) {
 	}
 }
 
-static void port6(CPU_t *cpu, device_t *) {
+static void port6(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = (unsigned char)((cpu->mem_c->banks[1].ram << 6) + cpu->mem_c->banks[1].page);
 		cpu->input = FALSE;
@@ -251,7 +251,7 @@ static void port6(CPU_t *cpu, device_t *) {
 	}
 }
 
-static void port7(CPU_t *cpu, device_t *) {
+static void port7(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->bus = (unsigned char)((cpu->mem_c->banks[2].ram << 6) + cpu->mem_c->banks[2].page);
 		cpu->input = FALSE;
@@ -267,7 +267,7 @@ static void port7(CPU_t *cpu, device_t *) {
 }
 
 
-static void port14(CPU_t *cpu, device_t *) {
+static void port14(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {

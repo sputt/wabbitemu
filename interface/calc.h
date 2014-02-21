@@ -32,6 +32,7 @@ typedef enum {
 	NO_EVENT = 0,
 	ROM_LOAD_EVENT = 1,
 	LCD_ENQUEUE_EVENT,
+	ROM_RUNNING_EVENT,
 } EVENT_TYPE;
 
 #define MIN_BLOCK_SIZE 16
@@ -58,11 +59,12 @@ struct key_string {
 
 struct tagCALC;
 
-typedef void(*event_callback)(struct tagCALC *);
+typedef void(*event_callback)(struct tagCALC *, LPVOID);
 
 typedef struct registered_event {
 	EVENT_TYPE type;
 	event_callback callback;
+	LPVOID lParam;
 } registered_event_t;
 
 
@@ -156,6 +158,7 @@ typedef struct tagCALC {
 #define MAX_SPEED 100*50
 
 void calc_turn_on(LPCALC);
+void calc_set_running(LPCALC lpCalc, BOOL running);
 LPCALC calc_slot_new(void);
 u_int calc_count(void);
 int calc_reset(LPCALC);
@@ -163,10 +166,12 @@ int CPU_reset(CPU_t *);
 int calc_run_frame(LPCALC);
 int calc_run_seconds(LPCALC, double);
 int calc_run_timed(LPCALC, time_t);
+int calc_run_tstates(LPCALC lpCalc, time_t tstates);
 int calc_run_all(void);
 BOOL calc_start_screenshot(const TCHAR *filename);
 void calc_stop_screenshot();
-void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback);
+void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback, LPVOID lParam);
+void calc_unregister_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback, LPVOID lParam);
 
 BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName);
 void calc_slot_free(LPCALC);

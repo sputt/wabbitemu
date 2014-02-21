@@ -62,7 +62,7 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabl
 }
 
 // TODO: better names and types
-LRESULT HandleSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc) {
+LRESULT HandleLCDSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc) {
 	LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 	LONG ClientAdjustWidth, ClientAdjustHeight;
 	LONG AdjustWidth, AdjustHeight;
@@ -160,5 +160,78 @@ LRESULT HandleSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc) 
 	RECT rect;
 	GetClientRect(hwnd, &rect);
 	InvalidateRect(hwnd, &rect, TRUE);
+	return 1;
+}
+
+LRESULT HandleSkinSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc) {
+	RECT rc;
+	GetWindowRect(hwnd, &rc);
+	memcpy(prc, &rc, sizeof(RECT));
+	return 1;
+	// TODO:
+	LONG ClientAdjustWidth, ClientAdjustHeight;
+	LONG AdjustWidth, AdjustHeight;
+	LONG OriginalWidth, OriginalHeight;
+	
+	// Adjust for border and menu
+	GetClientRect(hwnd, &rc);
+	AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW, FALSE);
+	if (GetMenu(hwnd) != NULL) {
+		rc.bottom += GetSystemMetrics(SM_CYMENU);
+	}
+
+	RECT src;
+	if (lpCalc->hwndStatusBar != NULL) {
+		GetWindowRect(lpCalc->hwndStatusBar, &src);
+		rc.bottom += src.bottom - src.top;
+	}
+	
+	ClientAdjustWidth = rc.right - rc.left;
+	ClientAdjustHeight = rc.bottom - rc.top;
+
+	OriginalHeight = lpCalc->rectSkin.bottom - lpCalc->rectSkin.top;
+	OriginalWidth = lpCalc->rectSkin.right - lpCalc->rectSkin.left;
+
+	AdjustWidth = (prc->right - prc->left - ClientAdjustWidth);
+	AdjustHeight = (prc->bottom - prc->top - ClientAdjustHeight);
+
+	int cy_mult = prc->bottom - prc->top - ClientAdjustHeight;
+	int cx_mult = prc->right - prc->left - ClientAdjustWidth;
+
+	double height_ratio = (double) ClientAdjustHeight / OriginalHeight;
+	double width_ratio = (double) ClientAdjustWidth / OriginalWidth;
+	if (cx_mult > cy_mult) {
+		LONG NewHeight = (LONG) (ClientAdjustHeight * width_ratio);
+		AdjustHeight = NewHeight - prc->bottom + prc->top;
+		prc->bottom += AdjustHeight;
+	} else if (cy_mult > cx_mult) {
+		LONG NewWidth = (LONG)(ClientAdjustWidth * height_ratio);
+		AdjustWidth = NewWidth - prc->right + prc->left;
+		prc->right += AdjustWidth;
+	}
+
+	//switch (wParam) {
+	//case WMSZ_BOTTOMLEFT:
+	//case WMSZ_LEFT:
+	//case WMSZ_TOPLEFT:
+	//	prc->left += AdjustWidth;
+	//	break;
+	//default:
+	//	prc->right -= AdjustWidth;
+	//	break;
+	//}
+
+	//switch (wParam) {
+	//case WMSZ_TOPLEFT:
+	//case WMSZ_TOP:
+	//case WMSZ_TOPRIGHT:
+	//	prc->top += AdjustHeight;
+	//	break;
+	//default:
+	//	prc->bottom -= AdjustHeight;
+	//	break;
+	//}
+
+	InvalidateRect(hwnd, NULL, TRUE);
 	return 1;
 }
