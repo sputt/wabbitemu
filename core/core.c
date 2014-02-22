@@ -714,7 +714,7 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 		mem_c->step = FLASH_FASTMODE;
 		break;
 	case FLASH_FASTMODE_PROG: {
-		flash_write_byte(cpu, addr, data);
+		flash_write_byte(cpu->mem_c, addr, data);
 		if (check_mem_write_break(cpu->mem_c, addr16_to_waddr(cpu->mem_c, addr))) {
 			if (cpu->mem_write_break_callback) {
 				cpu->mem_write_break_callback(cpu);
