@@ -62,7 +62,7 @@
 #define MIN_KEY_DELAY 400
 #define MENU_FILE 0
 #define BOOTFREE_VER_MAJOR 11
-#define BOOTFREE_VER_MINOR 258
+#define BOOTFREE_VER_MINOR 259
 
 CWabbitemuModule _Module;
 
@@ -208,8 +208,8 @@ int gui_frame(LPCALC lpCalc) {
 	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 	r.bottom += GetSystemMetrics(SM_CYMENU);
 
-	//this is to do some checks on some bad registry settings we may have saved
-	//its also good for multiple monitors, in case wabbit was on a monitor that
+	// this is to do some checks on some bad registry settings we may have saved
+	// its also good for multiple monitors, in case wabbit was on a monitor that
 	// no longer exists
 	POINT topLeftPt = { startX, startY };
 	desktop.right = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -280,7 +280,7 @@ void load_settings(LPCALC lpCalc, LPVOID) {
 		lcd->lcd_delay = (u_int)QueryWabbitKey(_T("lcd_delay"));
 	}
 
-	PostMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
+	SendMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
 }
 
 void check_bootfree_and_update(LPCALC lpCalc, LPVOID) {

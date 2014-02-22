@@ -19,8 +19,10 @@ LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destinati
 		case VAR_TYPE:
 		case FLASH_TYPE:
 			{
-				if (var->type == FLASH_TYPE)
+				if (var->type == FLASH_TYPE) {
 					lpCalc->running = FALSE;
+					lpCalc->fake_running = TRUE;
+				}
 				lpCalc->cpu.pio.link->vlink_size = var->length;
 				lpCalc->cpu.pio.link->vlink_send = 0;
 
@@ -42,6 +44,7 @@ LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destinati
 						//calc_turn_on(lpCalc);
 					}
 					lpCalc->running = TRUE;
+					lpCalc->fake_running = FALSE;
 				}
 				break;
 			}

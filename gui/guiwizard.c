@@ -313,7 +313,7 @@ INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
-void ExtractBootFree(int model, TCHAR *hexFile) {
+DWORD ExtractBootFree(int model, TCHAR *hexFile) {
 	HMODULE hModule = GetModuleHandle(NULL);
 	HRSRC resource = NULL;
 	switch(model) {
@@ -335,11 +335,13 @@ void ExtractBootFree(int model, TCHAR *hexFile) {
 		case TI_84PCSE:
 			resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84PCSE), _T("HEX"));
 			break;
+		default:
+			return 1;
 	}
 	GetStorageString(hexFile, MAX_PATH);
 	//extract and write the open source boot page
 	StringCbCat(hexFile, MAX_PATH, _T("boot.hex"));
-	ExtractResource(hexFile, resource);
+	return ExtractResource(hexFile, resource);
 }
 
 static HWND hOSStaticProgress, hOSProgressBar;
@@ -504,6 +506,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						BOOL succeeded = DownloadOS(&callback, ComboBox_GetCurSel(hComboOS) == 0);
 						if (!succeeded) {
 							MessageBox(hwnd, _T("Unable to download file"), _T("Download failed"), MB_OK);
+							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 						}
 					} else {
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
@@ -516,6 +519,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case PSN_WIZFINISH: {
 					OSDownloadCallback callback;
 					TCHAR buffer[MAX_PATH];
+					*buffer = '\0';
 					SaveFile(buffer, _T("ROMs  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST, 0);
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
@@ -525,31 +529,58 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						BOOL succeeded = DownloadOS(&callback, ComboBox_GetCurSel(hComboOS) == 0);
 						if (!succeeded) {
 							MessageBox(hwnd, _T("Unable to download file"), _T("Download failed"), MB_OK);
+							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+							break;
 						}
 					} else {
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
+
 					LPCALC lpCalc = create_calc_register_events();
 					TCHAR hexFile[MAX_PATH];
-					ExtractBootFree(model, hexFile);
-					calc_init_model(lpCalc, model, NULL);
+					DWORD error = ExtractBootFree(model, hexFile);
+					if (error) {
+						MessageBox(hwnd, _T("Unable to extract boot page"), _T("Error"), MB_OK);
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+						break;
+					}
+
+					error = (DWORD) calc_init_model(lpCalc, model, NULL);
+					if (error) {
+						MessageBox(hwnd, _T("Unable to create new calc"), _T("Error"), MB_OK);
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+						break;
+					}
+
 					LoadRegistrySettings(lpCalc);
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
 					lpCalc->active = TRUE;
 					lpCalc->model = model;
 					lpCalc->cpu.pio.model = model;
 					Static_SetText(hOSStaticProgress, _T("Writing Bootcode"));
+
 					FILE *file;
 					_tfopen_s(&file, hexFile, _T("rb"));
+					if (file == NULL) {
+						MessageBox(hwnd, _T("Unable to open the boot page"), _T("Error"), MB_OK);
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+						break;
+					}
+
 					writeboot(file, &lpCalc->mem_c, -1);
 					fclose(file);
 					_tremove(hexFile);
+
 					Static_SetText(hOSStaticProgress, _T("Loading OS"));
 					// if you don't want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
 						TIFILE_t *tifile = importvar(osPath, FALSE);
-						if (tifile == NULL || tifile->type != FLASH_TYPE) {
+						if (tifile == NULL || tifile->type != FLASH_TYPE || tifile->flash == NULL ||
+							tifile->flash->type != FLASH_TYPE_OS)
+						{
 							MessageBox(hwnd, _T("Error: OS file is corrupt or invalid"), _T("Error"), MB_OK);
+							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+							break;
 						} else {
 							forceload_os(&lpCalc->cpu, tifile);
 							if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
@@ -557,16 +588,23 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							}
 						}
 					}
+
 					calc_erase_certificate(lpCalc->mem_c.flash,lpCalc->mem_c.flash_size);
 					calc_reset(lpCalc);
 					if (auto_turn_on) {
 						calc_turn_on(lpCalc);
 					}
+
 					gui_frame(lpCalc);
 					// write the output from file
 					Static_SetText(hOSStaticProgress, _T("Saving File"));
 					MFILE *romfile = ExportRom(buffer, lpCalc);
-					mclose(romfile);
+					if (romfile != NULL) {
+						mclose(romfile);
+					} else if (*buffer != '\0') {
+						MessageBox(hwnd, _T("Error saving ROM"), _T("Error"), MB_OK);
+					}
+
 					Static_SetText(hOSStaticProgress, _T("Done"));
 					break;
 				}
@@ -807,14 +845,13 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-int write_boot_page(LPCALC lpCalc, TCHAR *file_path, int boot_page, int boot_page2) {
+DWORD write_boot_page(LPCALC lpCalc, TCHAR *file_path, int boot_page, int boot_page2) {
 	BYTE(*flash)[PAGE_SIZE] = (BYTE(*)[PAGE_SIZE]) lpCalc->mem_c.flash;
 
 	// goto the name to see which one we have (in TI var header)
 	TIFILE_t *boot_var = importvar(file_path, FALSE);
 	if (boot_var == NULL || boot_var->var == NULL) {
-		MessageBox(NULL, _T("Error opening boot page file"), _T("Error"), MB_OK);
-		return -1;
+		return 1;
 	}
 
 	int current_page;
@@ -902,7 +939,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 #endif
 					break;
 				}
-				//The program will create two application variables D83PBE1.8xv and D84PBE2.8xv. You need to send these back to the computer, and browse them with the buttons below
+				// The program will create two application variables D83PBE1.8xv and D84PBE2.8xv. You need to send these back to the computer, and browse them with the buttons below
 				case PSN_SETACTIVE:
 					if (inited) {
 						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_FINISH | PSWIZB_BACK);
@@ -953,10 +990,16 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					TCHAR browse[MAX_PATH];
 					Edit_GetText(hEditVar1, browse, MAX_PATH);
 					TCHAR buffer[MAX_PATH];
+					*buffer = '\0';
 					SaveFile(buffer, _T("ROMs (*.rom)\0*.rom\0Bins (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST, 0);
 					LPCALC lpCalc = create_calc_register_events();
-					calc_init_model(lpCalc, model, NULL);
+					DWORD error = (DWORD) calc_init_model(lpCalc, model, NULL);
+					if (error) {
+						MessageBox(hwnd, _T("Unable to init calc"), _T("Error"), MB_OK);
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+						break;
+					}
 
 					// slot stuff
 					lpCalc->active = TRUE;
@@ -967,8 +1010,12 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					// if you don't want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
 						TIFILE_t *tifile = importvar(osPath, FALSE);
-						if (tifile == NULL || tifile->type != FLASH_TYPE) {
+						if (tifile == NULL || tifile->type != FLASH_TYPE || tifile->flash == NULL ||
+							tifile->flash->type != FLASH_TYPE_OS) 
+						{
 							MessageBox(hwnd, _T("Error: OS file is corrupt or invalid"), _T("Error"), MB_OK);
+							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+							break;
 						} else {
 							forceload_os(&lpCalc->cpu, tifile);
 						}
@@ -991,12 +1038,22 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						break;
 					}
 
-					write_boot_page(lpCalc, browse, boot_page, boot_page2);
+					error = write_boot_page(lpCalc, browse, boot_page, boot_page2);
+					if (error) {
+						MessageBox(NULL, _T("Error opening first boot page file"), _T("Error"), MB_OK);
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+						break;
+					}
 
 					// second boot page
 					if (model >= TI_84P) {
 						Edit_GetText(hEditVar2, browse, MAX_PATH);
-						write_boot_page(lpCalc, browse, boot_page, boot_page2);
+						error = write_boot_page(lpCalc, browse, boot_page, boot_page2);
+						if (error) {
+							MessageBox(NULL, _T("Error opening second boot page file"), _T("Error"), MB_OK);
+							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+							break;
+						}
 					}
 
 					calc_erase_certificate(lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
@@ -1004,10 +1061,15 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					if (auto_turn_on) {
 						calc_turn_on(lpCalc);
 					}
+
 					gui_frame(lpCalc);
 					// write the output from file
-					MFILE *mfile = ExportRom(buffer, lpCalc);
-					mclose(mfile);
+					MFILE *romfile = ExportRom(buffer, lpCalc);
+					if (romfile != NULL) {
+						mclose(romfile);
+					} else if (*buffer != '\0') {
+						MessageBox(hwnd, _T("Error saving ROM"), _T("Error"), MB_OK);
+					}
 					break;
 				}
 				case PSN_QUERYCANCEL:

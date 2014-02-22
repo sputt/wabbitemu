@@ -614,9 +614,15 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 		}
 		break;
 	case FLASH_PROGRAM: {
-							flash_write_byte(mem_c, addr, data);
-							endflash(mem_c);
-							break;
+		flash_write_byte(mem_c, addr, data);
+		if (check_mem_write_break(cpu->mem_c, addr16_to_waddr(cpu->mem_c, addr))) {
+			if (cpu->mem_write_break_callback) {
+				cpu->mem_write_break_callback(cpu);
+			}
+		}
+
+		endflash(mem_c);
+		break;
 	}
 	case FLASH_ERASE:
 		if (((addr & 0x0FFF) == 0x0AAA) && (data == 0xAA)) {
@@ -639,6 +645,12 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			// DrDnar 7/8/11: boot sector is included
 			for (int i = 0; i < cpu->mem_c->flash_size; i++) {
 				cpu->mem_c->flash[i] = 0xFF;
+
+				if (check_mem_write_break(cpu->mem_c, addr32_to_waddr(i, FALSE))) {
+					if (cpu->mem_write_break_callback) {
+						cpu->mem_write_break_callback(cpu);
+					}
+				}
 			}
 		} else if (data == 0x30) {
 			// erase sectors
@@ -646,33 +658,39 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			int spage = (mem_c->banks[bank].page << 1) + ((addr >> 13) & 0x01);
 			int pages = mem_c->flash_pages;
 			int totalPages = pages * 2;
+			int startaddr, endaddr;
 
 			if (spage < totalPages - 8) {
-				int startaddr = (spage & 0x01FF) * 0x2000;
-				int endaddr = startaddr + PAGE_SIZE * 4;
-				for (i = startaddr; i < endaddr; i++) {
-					mem_c->flash[i] = 0xFF;
-				}
+				startaddr = (spage & 0x01FF) * 0x2000;
+				endaddr = startaddr + PAGE_SIZE * 4;
 			} else if (spage < totalPages - 4) {
-				for (i = (pages - 4) * PAGE_SIZE; i < (pages - 2) * PAGE_SIZE; i++) {
-					mem_c->flash[i] = 0xFF;
-				}
+				startaddr = (pages - 4) * PAGE_SIZE;
+				endaddr = (pages - 2) * PAGE_SIZE;
 			} else if (spage < totalPages - 3) {
-				for (i = (pages - 2) * PAGE_SIZE; i < (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2; i++) {
-					mem_c->flash[i] = 0xFF;
-
-				}
+				startaddr = (pages - 2) * PAGE_SIZE;
+				endaddr = i < (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2;
 			} else if (spage < totalPages - 2) {
-				for (i = (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2; i < (pages - 1) * PAGE_SIZE; i++) {
-					mem_c->flash[i] = 0xFF;
-				}
+				startaddr = (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2;
+				endaddr = i < (pages - 1) * PAGE_SIZE;
 			} else if (spage < totalPages) {
 				// I comment this off because this is the boot page
 				// it suppose to be write protected...
 				// BuckeyeDude 6/27/11: new info has been discovered boot code
 				// is writable under certain conditions
-				for (i = (pages - 1) * PAGE_SIZE; i < pages * PAGE_SIZE; i++) {
-					mem_c->flash[i] = 0xFF;
+				startaddr = (pages - 1) * PAGE_SIZE;
+				endaddr = i < pages * PAGE_SIZE;
+			} else {
+				endflash_break(cpu);
+				break;
+			}
+
+			for (i = startaddr; i < endaddr; i++) {
+				mem_c->flash[i] = 0xFF;
+
+				if (check_mem_write_break(cpu->mem_c, addr32_to_waddr(i, FALSE))) {
+					if (cpu->mem_write_break_callback) {
+						cpu->mem_write_break_callback(cpu);
+					}
 				}
 			}
 		} else {
@@ -696,7 +714,12 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 		mem_c->step = FLASH_FASTMODE;
 		break;
 	case FLASH_FASTMODE_PROG: {
-		flash_write_byte(mem_c, addr, data);
+		flash_write_byte(cpu, addr, data);
+		if (check_mem_write_break(cpu->mem_c, addr16_to_waddr(cpu->mem_c, addr))) {
+			if (cpu->mem_write_break_callback) {
+				cpu->mem_write_break_callback(cpu);
+			}
+		}
 		break;
 	}
 	default:
@@ -706,24 +729,22 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 }
 
 BOOL check_flash_write_valid(CPU_t *cpu, int page) {
-	// TODO: remove
 	return !cpu->mem_c->flash_locked && cpu->pio.model >= TI_73 &&
 		(((page != 0x3F && page != 0x2F) || (cpu->model_bits & 0x3)) &&
 		((page != 0x7F && page != 0x6F) || (cpu->model_bits & 0x2) || !(cpu->model_bits & 0x1)));
 }
 
 void CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
-	if (check_mem_write_break(cpu->mem_c, addr16_to_waddr(cpu->mem_c, addr))) {
-		if (cpu->mem_write_break_callback) {
-			cpu->mem_write_break_callback(cpu);
-		}
-	}
-
 	bank_state_t *bank = &cpu->mem_c->banks[mc_bank(addr)];
 
 	if (bank->ram) {
 		if (!bank->read_only) {
 			mem_write(cpu->mem_c, addr, data);
+			if (check_mem_write_break(cpu->mem_c, addr16_to_waddr(cpu->mem_c, addr))) {
+				if (cpu->mem_write_break_callback) {
+					cpu->mem_write_break_callback(cpu);
+				}
+			}
 		}
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
