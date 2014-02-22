@@ -305,6 +305,10 @@ MFILE * ExportOS(TCHAR *lpszFile, unsigned char *buffer, int size) {
 
 MFILE * ExportRom(TCHAR *lpszFile, LPCALC lpCalc) {
 	MFILE *file = mopen(lpszFile, _T("wb"));
+	if (file == NULL) {
+		return file;
+	}
+
 	char* rom = (char *) lpCalc->mem_c.flash;
 	u_int size = lpCalc->mem_c.flash_size;
 	if (size != 0 && rom != NULL && file !=NULL) {

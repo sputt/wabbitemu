@@ -457,9 +457,6 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	case TI_84PSE:
 		start_page = 0x60;
 		break;
-	case TI_84PCSE:
-		start_page = 0x80;
-		break;
 	default:
 		start_page = 0x00;
 		break;
@@ -511,17 +508,19 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	return LERR_SUCCESS;
 }
 
-u_char *find_field(u_char *dest, u_char id1, u_char id2) {
+u_char find_field(u_char *dest, u_char id1, u_char id2, u_char **output) {
 	int i;
-	//apparently non user apps have a slightly different header
-	//therefore we have to actually find the identifier
+	// apparently non user apps have a slightly different header
+	// therefore we have to actually find the identifier
 	for (i = 0; i < PAGE_SIZE; i++) {
-		if (dest[i] == id1 && dest[i + 1] == id2) {
-			return dest + i + 2;
+		if (dest[i] == id1 && (dest[i + 1] & 0xF0) == (id2 & 0xF0)) {
+			*output = dest + i + 2;
+			return dest[i + 1] & 0x0F;
 		}
 	}
 
-	return NULL;
+	*output = NULL;
+	return 0;
 }
 
 /*
@@ -531,7 +530,7 @@ u_char *find_field(u_char *dest, u_char id1, u_char id2) {
 int get_page_size(u_char *dest) {
 	//apparently non user apps have a slightly different header
 	//therefore we have to actually find the identifier
-	dest = find_field(dest, 0x80, 0x81);
+	u_char size = find_field(dest, 0x80, 0x80, &dest);
 	if (dest == NULL) {
 		return 0;
 	}
@@ -606,16 +605,13 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 
 		int page_size;
 		// different size app need to send the long way
-		u_char *loadedAppName = find_field(dest[page], 0x80, 0x48);
+		u_char *loadedAppName;
+		int name_len = find_field(dest[page], 0x80, 0x40, &loadedAppName);
 		if (loadedAppName == NULL) {
-			// not sure what 0x45 is, but i've seen multiple apps use it
-			loadedAppName = find_field(dest[page], 0x80, 0x45);
-			if (loadedAppName == NULL) {
-				return LERR_FILE;
-			}
+			return LERR_FILE;
 		}
 
-		if (!memcmp(loadedAppName, &tifile->flash->name, 8)) {
+		if (!memcmp(loadedAppName, &tifile->flash->name, name_len)) {
 			if (get_page_size(dest[page]) != tifile->flash->pages) {
 				LINK_ERR err = replace_app(cpu, tifile, upages, dest, page);
 				if (err == LERR_SUCCESS) {
@@ -647,9 +643,9 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 		return LERR_MEM;
 	}
 
-	//mark the app as non trial
+	// mark the app as non trial
 	fix_certificate(cpu, page);
-	//force reset the app list says BrandonW. seems to work, apps show up (sometimes)
+	// force reset the app list says BrandonW. seems to work, apps show up (sometimes)
 	if (cpu->pio.model >= TI_84PCSE) {
 		mem_write(cpu->mem_c, 0x9F68, 0x00);
 	}
@@ -658,7 +654,6 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	}
 
 
-	//u_char *space = &dest[page][PAGE_SIZE - 1];
 	u_int i;
 	// Make sure the subsequent pages are empty
 	if (!check_flashpage_empty(dest, page, tifile->flash->pages)) {
@@ -669,9 +664,9 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 	}
 
-	cpu->mem_c->flash_upper -= tifile->flash->pages;
+	cpu->mem_c->flash_upper = page - tifile->flash->pages;
 	for (i = page - 7; i <= page + tifile->flash->pages - 8; i++) {
-		//-8 is for the start of user mem
+		// -8 is for the start of user mem
 		cpu->mem_c->protected_page[i / 8] &= ~(1 << (i % 8));
 	}
 

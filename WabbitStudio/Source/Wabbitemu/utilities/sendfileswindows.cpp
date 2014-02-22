@@ -219,6 +219,8 @@ static LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG De
 				}
 				lpCalc->cpu.pio.link->vlink_size = var->length;
 				lpCalc->cpu.pio.link->vlink_send = 0;
+				BOOL running_backup = lpCalc->running;
+				lpCalc->fake_running = TRUE;
 
 				result = link_send_var(&lpCalc->cpu, var, (SEND_FLAG) Destination);
 				if (var->type == FLASH_TYPE)
@@ -239,6 +241,9 @@ static LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG De
 						}
 					}
 				}
+
+				lpCalc->fake_running = FALSE;
+				lpCalc->running = running_backup;
 				break;
 			}
 		case BACKUP_TYPE:
