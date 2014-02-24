@@ -167,8 +167,8 @@
             this.Name = "TrackingWindow";
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;
             this.TabPageContextMenu = this.contextMenu;
-            this.TabText = "Variable Tracking";
-            this.Text = "Variable Tracking";
+            this.TabText = WindowIdentifier;
+            this.Text = WindowIdentifier;
             ((System.ComponentModel.ISupportInitialize)(this.variablesDataView)).EndInit();
             this.ResumeLayout(false);
 

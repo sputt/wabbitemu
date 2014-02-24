@@ -9,6 +9,10 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 	{
         event EventHandler ProjectOpened;
         event EventHandler ProjectClosed;
+        event EventHandler ProjectFileAdded;
+        event EventHandler ProjectFolderAdded;
+        event EventHandler ProjectFileRemoved;
+        event EventHandler ProjectFolderRemoved;
 
 		IProject Project { get; }
 

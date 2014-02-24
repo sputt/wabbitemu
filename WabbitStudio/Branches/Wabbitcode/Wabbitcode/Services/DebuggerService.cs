@@ -28,7 +28,14 @@ namespace Revsoft.Wabbitcode.Services
             }
 
             string outputFile = GetOutputFileDetails(project);
-            CurrentDebugger = new WabbitcodeDebugger(outputFile);
+            try
+            {
+                CurrentDebugger = new WabbitcodeDebugger(outputFile);
+            }
+            catch (Exception)
+            {
+                throw new DebuggingException("Unable to create the debuger");
+            }
 
 
             if (OnDebuggingStarted != null)
@@ -42,8 +49,6 @@ namespace Revsoft.Wabbitcode.Services
             }
             catch (DebuggingException)
             {
-                CurrentDebugger.Dispose();
-                CurrentDebugger = null;
                 EndDebugging();
             }
         }

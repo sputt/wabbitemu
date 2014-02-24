@@ -106,5 +106,21 @@
 		{
 			return Description;
 		}
+
+	    public int CompareTo(object obj)
+	    {
+	        if (obj == null)
+	        {
+	            return -1;
+	        }
+
+	        IBuildStep step = obj as IBuildStep;
+	        if (step == null)
+	        {
+	            return -1;
+	        }
+
+	        return StepNumber.CompareTo(step.StepNumber);
+	    }
 	}
 }

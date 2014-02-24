@@ -361,16 +361,36 @@ namespace Revsoft.TextEditor
 		/// <returns>The Brush or null when no marker was found.</returns>
 		Brush GetMarkerBrushAt(int offset, int length, ref Color foreColor, out IList<TextMarker> markers)
 		{
+		    int currentPriority = -1;
+            TextMarker foundMarker = null;
             markers = Document.MarkerStrategy.GetMarkers(offset, length);
-            foreach (TextMarker marker in markers) {
-                if (marker.TextMarkerType == TextMarkerType.SolidBlock) {
-                    if (marker.OverrideForeColor) {
-                        foreColor = marker.ForeColor;
-                    }
-                    return BrushRegistry.GetBrush(marker.Color);
+            foreach (TextMarker marker in markers)
+            {
+                if (marker.Priority <= currentPriority)
+                {
+                    continue;
                 }
+
+                if (marker.TextMarkerType != TextMarkerType.SolidBlock)
+                {
+                    continue;
+                }
+
+                currentPriority = marker.Priority;
+                foundMarker = marker;
             }
-            return null;
+
+            if (foundMarker == null)
+            {
+                return null;
+            }
+
+            if (foundMarker.OverrideForeColor)
+            {
+                foreColor = foundMarker.ForeColor;
+            }
+
+		    return BrushRegistry.GetBrush(foundMarker.Color);
 		}
 		
 		int PaintLinePart(Graphics g, int lineNumber, int startColumn, int endColumn, Rectangle lineRectangle, int physicalXPos)

@@ -36,8 +36,15 @@ namespace Revsoft.Wabbitcode.Services
         /// <returns>The text of a file</returns>
         public string GetFileText(string fileName)
         {
-            StreamReader reader = new StreamReader(fileName);
-            return GetFileText(fileName, reader);
+            try
+            {
+                StreamReader reader = new StreamReader(fileName);
+                return GetFileText(fileName, reader);
+            }
+            catch (IOException)
+            {
+                return string.Empty;
+            }
         }
 
         public string GetFileText(string fileName, TextReader reader)

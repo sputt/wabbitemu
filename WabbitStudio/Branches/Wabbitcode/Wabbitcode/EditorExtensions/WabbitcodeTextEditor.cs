@@ -52,7 +52,8 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             _errorUnderliner = new ErrorUnderliner(this);
 
             Document.FormattingStrategy = new AsmFormattingStrategy();
-            editactions.Add(Keys.Control | Keys.Space, new ShowCodeCompletion());
+            // TODO: fix code completion
+            //editactions.Add(Keys.Control | Keys.Space, new ShowCodeCompletion());
             SetHighlighting("Z80 Assembly");
 
             TextChanged += WabbitcodeTextEditor_TextChanged;
@@ -255,7 +256,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             _statusBarService.SetCaretPosition(ActiveTextAreaControl.Caret.Line, ActiveTextAreaControl.Caret.Column);
             UpdateCodeCountInfo();
 
-            CalcLocation label = _symbolService.ListTable.GetCalcLocation(FileName, ActiveTextAreaControl.Caret.Line);
+            CalcLocation label = _symbolService.ListTable.GetCalcLocation(FileName, ActiveTextAreaControl.Caret.Line + 1);
             if (label == null)
             {
                 return;
@@ -463,11 +464,29 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             var lineGroup = match.Groups["line"];
             var segment = Document.GetLineSegment(lineNum);
             Document.MarkerStrategy.AddMarker(new DebugHighlightMarker(segment.Offset + lineGroup.Index, lineGroup.Length));
+            Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, lineNum));
+            if (InvokeRequired)
+            {
+                this.Invoke(Refresh);
+            }
+            else
+            {
+                Refresh();
+            }
         }
 
         public void RemoveDebugHighlight()
         {
             Document.MarkerStrategy.RemoveAll(m => m is DebugHighlightMarker);
+            Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
+            if (InvokeRequired)
+            {
+                this.Invoke(Refresh);
+            }
+            else
+            {
+                Refresh();
+            }
         }
     }
 

@@ -40,11 +40,16 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
 		    _projectService.ProjectOpened += (sender, args) => BuildProjTree();
 		    _projectService.ProjectClosed += (sender, args) => CloseProject();
+            _projectService.ProjectFileAdded += (sender, args) => BuildProjTree();
+            _projectService.ProjectFileRemoved += (sender, args) => BuildProjTree();
+            _projectService.ProjectFolderAdded += (sender, args) => BuildProjTree();
+            _projectService.ProjectFolderRemoved += (sender, args) => BuildProjTree();
 		}
 
 		private void AddFile(ProjectFile file, TreeNode parent)
 		{
-		    if (string.IsNullOrEmpty(file.FileFullPath))
+		    string filePath = file.FileFullPath;
+		    if (string.IsNullOrEmpty(filePath))
 		    {
                 // should never happen
 		        return;
@@ -53,7 +58,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			TreeNode nodeFile = new TreeNode
 			{
 				Tag = file,
-				Text = Path.GetFileName(file.FileFullPath),
+				Text = Path.GetFileName(filePath),
 				ImageIndex = 4,
 				SelectedImageIndex = 5,
 			};
@@ -90,14 +95,18 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			var folder = node.Tag as ProjectFolder;
 			if (folder != null)
 			{
-				folder.Parent.DeleteFolder(folder);
-				node.Remove();
+                _projectService.DeleteFolder(folder.Parent, folder);
 			}
 			else
 			{
-			    string fileName = CurrentFileName(node);
-				File.Delete(fileName);
-				node.Remove();
+			    var file = node.Tag as ProjectFile;
+			    if (file == null)
+			    {
+			        return;
+			    }
+
+			    File.Delete(file.FileFullPath);
+			    _projectService.DeleteFile(file.ParentFolder, file);
 			}
 		}
 
@@ -119,11 +128,19 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
 			foreach (TreeNode node in nodes)
 			{
-				DeleteNode(node);
+                if (node.Parent == null)
+                {
+                    string dir = _projectService.Project.ProjectFile;
+                    _projectService.CloseProject();
+                    File.Delete(dir);
+                }
+                else
+                {
+                    DeleteNode(node);
+                }
 			}
 
 			projViewer.SelectedNodes.Clear();
-			projViewer.Sort();
 		}
 
 		internal void AddExistingFile(string file)
@@ -243,10 +260,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
 				ProjectFile file = (ProjectFile)node.Tag;
 				_projectService.DeleteFile(file.Folder, file);
-				node.Remove();
 			}
-
-			// ProjectService.Project.saveProject();
 		}
 
 		private void existingFileMenuItem_Click(object sender, EventArgs e)
@@ -633,13 +647,13 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			// Compare the length of the strings, returning the difference.
 			if (tx.Tag is ProjectFolder && ty.Tag is ProjectFolder)
 			{
-				return string.Compare(tx.Text, ty.Text);
+				return String.CompareOrdinal(tx.Text, ty.Text);
 			}
 			if (tx.Tag is ProjectFolder)
 			{
 				return -1;
 			}
-			return ty.Tag is ProjectFolder ? 1 : string.Compare(tx.Text, ty.Text);
+			return ty.Tag is ProjectFolder ? 1 : String.CompareOrdinal(tx.Text, ty.Text);
 
 			// If they are the same length, call Compare.
 		}

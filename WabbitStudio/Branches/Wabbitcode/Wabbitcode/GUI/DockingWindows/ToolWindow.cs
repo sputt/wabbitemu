@@ -11,7 +11,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
     {
         #region Events
 
-	    public static event EventHandler OnVisibilityChanged;
+	    public static event EventHandler OnDockStateChanged;
 
         #endregion
 
@@ -104,11 +104,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			Hide();
 		}
 
-		private void ToolWindow_VisibleChanged(object sender, EventArgs e)
+		private void ToolWindow_DockStateChanged(object sender, EventArgs e)
 		{
-		    if (OnVisibilityChanged != null)
+		    if (OnDockStateChanged != null)
 		    {
-		        OnVisibilityChanged(sender, e);
+		        OnDockStateChanged(sender, e);
 		    }
 		}
 	}

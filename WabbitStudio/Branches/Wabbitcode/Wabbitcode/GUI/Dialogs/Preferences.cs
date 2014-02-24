@@ -204,6 +204,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		private void cancelButton_Click(object sender, EventArgs e)
 		{
 			_savesettings = false;
+		    Close();
 		}
 
 		private void caseSenseBox_CheckedChanged(object sender, EventArgs e)
@@ -297,16 +298,20 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		{
 			Button colorLabel = (Button)sender;
 			colorDialog.Color = colorLabel.BackColor;
-			if (colorDialog.ShowDialog() == DialogResult.OK)
-			{
-				colorLabel.BackColor = colorDialog.Color;
-				_tempSettings[colorLabel.Name] = colorDialog.Color;
-			}
+		    if (colorDialog.ShowDialog() != DialogResult.OK)
+		    {
+		        return;
+		    }
+
+		    colorLabel.BackColor = colorDialog.Color;
+		    _tempSettings[colorLabel.Name] = colorDialog.Color;
 		}
 
 		private void okButton_Click(object sender, EventArgs e)
 		{
 			_savesettings = true;
+            UpdateSettings();
+		    Close();
 		}
 
 		private void outFontBox_SelectedIndexChanged(object sender, EventArgs e)

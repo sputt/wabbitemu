@@ -533,7 +533,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
             _projectService.ProjectClosed += ProjectService_OnProjectClosed;
             _toolBarService.OnToolBarVisibilityChanged += ToolBarService_OnToolBarVisibilityChanged;
             _toolBarService.OnToolbarRegistered += ToolBarService_OnToolbarRegistered;
-            ToolWindow.OnVisibilityChanged += ToolWindow_OnVisibilityChanged;
+            ToolWindow.OnDockStateChanged += ToolWindow_OnDockStateChanged;
 
             NewFileMenuItem.Click += newFileMenuItem_Click;
             NewProjectMenuItem.Click += newProjectMenuItem_Click;
@@ -576,6 +576,13 @@ namespace Revsoft.Wabbitcode.GUI.Menus
             OutputWindowMenuItem.Click += panelMenuItem_Click;
             ErrorListMenuItem.Click += panelMenuItem_Click;
             FindResultsMenuItem.Click += panelMenuItem_Click;
+
+            DebugPanelMenuItem.Click += panelMenuItem_Click;
+            CallStackMenuItem.Click += panelMenuItem_Click;
+            StackViewerMenuItem.Click += panelMenuItem_Click;
+            VarTrackMenuItem.Click += panelMenuItem_Click;
+            BreakManagerMenuItem.Click += panelMenuItem_Click;
+
             StatusBarMenuItem.Click += statusBarMenuItem_Click;
 
             RenameMenuItem.Click += renameMenuItem_Click;
@@ -866,7 +873,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         #region View Menu
 
-        private void ToolWindow_OnVisibilityChanged(object sender, EventArgs e)
+        private void ToolWindow_OnDockStateChanged(object sender, EventArgs e)
         {
             ToolWindow window = sender as ToolWindow;
             if (window == null)
@@ -877,10 +884,14 @@ namespace Revsoft.Wabbitcode.GUI.Menus
             var menuItem = _viewMenuItem.DropDownItems.OfType<ToolStripMenuItem>().FirstOrDefault(i => i.Text == window.TabText);
             if (menuItem == null)
             {
-                return;
+                menuItem = DebugPanelsMenuItem.DropDownItems.OfType<ToolStripMenuItem>().FirstOrDefault(i => i.Text == window.TabText);
+                if (menuItem == null)
+                {
+                    return;
+                }
             }
 
-            menuItem.Checked = window.VisibleState != DockState.Hidden;
+            menuItem.Checked = window.VisibleState != DockState.Hidden && !window.IsHidden;
         }
 
         private void DockingService_OnActiveDocumentChanged(object sender, EventArgs eventArgs)

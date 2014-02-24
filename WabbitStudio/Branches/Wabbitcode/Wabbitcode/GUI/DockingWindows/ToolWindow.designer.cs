@@ -80,7 +80,7 @@
             this.TabPageContextMenu = this.contextMenu;
             this.TabText = "ToolWindow";
             this.Text = "ToolWindow";
-            this.VisibleChanged += new System.EventHandler(ToolWindow_VisibleChanged);
+            this.DockStateChanged += new System.EventHandler(ToolWindow_DockStateChanged);
             this.ResumeLayout(false);
         }
     }

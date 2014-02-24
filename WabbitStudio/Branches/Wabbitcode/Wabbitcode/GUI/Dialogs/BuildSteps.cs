@@ -31,10 +31,10 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		private void actionBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			InternalBuildStep step = (InternalBuildStep)buildSeqList.SelectedItem;
+            _currentConfig.Steps.Remove(step);
 			step.StepType = (BuildStepType)actionBox.SelectedIndex;
 			buildSeqList.Items[buildSeqList.SelectedIndex] = step;
-			// TODO: fix
-			//_currentConfig.Steps[buildSeqList.SelectedIndex] = step;
+			_currentConfig.Steps.Add(step);
 			UpdateStepOptions();
 			_needsSave = true;
 		}
@@ -271,6 +271,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		private void stepTypeBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			IBuildStep step = null;
+            _currentConfig.RemoveStep((IBuildStep)buildSeqList.SelectedItem);
+
 			int stepNum = ((IBuildStep)buildSeqList.SelectedItem).StepNumber;
 			if (buildSeqList.SelectedItem is InternalBuildStep && stepTypeBox.SelectedIndex != 0)
 			{
@@ -296,8 +298,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 				return;
 			}
 
-			//TODO: fix
-			//_currentConfig.Steps[buildSeqList.SelectedIndex] = step;
+			_currentConfig.AddStep(step);
 			buildSeqList.Items[buildSeqList.SelectedIndex] = step;
 			UpdateStepOptions();
 			_needsSave = true;
@@ -348,5 +349,10 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 					break;
 			}
 		}
+
+        private void configManagerButton_Click(object sender, EventArgs e)
+        {
+            // TODO:
+        }
 	}
 }

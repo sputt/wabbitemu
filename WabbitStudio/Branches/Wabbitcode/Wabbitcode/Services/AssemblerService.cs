@@ -60,13 +60,13 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				bool succeeded = project.BuildSystem.Build();
 
-				if (!string.IsNullOrEmpty(project.BuildSystem.ListOutput))
+				if (succeeded && !string.IsNullOrEmpty(project.BuildSystem.ListOutput))
 				{
 				    string fileText = _fileReaderService.GetFileText(project.BuildSystem.ListOutput);
                     _symbolService.ParseListFile(fileText);
 				}
 
-				if (!string.IsNullOrEmpty(project.BuildSystem.LabelOutput))
+                if (succeeded && !string.IsNullOrEmpty(project.BuildSystem.LabelOutput))
 				{
                     string fileText = _fileReaderService.GetFileText(project.BuildSystem.LabelOutput);
                     _symbolService.ParseSymbolFile(fileText);
