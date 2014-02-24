@@ -653,9 +653,6 @@
     <Compile Include="GUI\DocumentWindows\ImageViewer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\Menus\EditorContextMenu.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="GUI\ToolBars\DebugToolBar.cs">
       <SubType>Component</SubType>
     </Compile>

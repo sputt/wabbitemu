@@ -1083,7 +1083,6 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             this.MinimizeBox = false;
             this.Name = "Preferences";
             this.ShowIcon = false;
-            this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Preferences";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Preferences_FormClosing);

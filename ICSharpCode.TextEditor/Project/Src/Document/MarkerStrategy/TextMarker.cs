@@ -28,6 +28,7 @@ namespace Revsoft.TextEditor.Document
 		string         toolTip;
 		bool           overrideForeColor;
 		string         tag;
+	    int            priority;
 		
 		public TextMarkerType TextMarkerType {
 			get {
@@ -52,7 +53,13 @@ namespace Revsoft.TextEditor.Document
 				return overrideForeColor;
 			}
 		}
-		
+
+        public int Priority {
+            get {
+                return priority;
+            }
+        }
+
 		public string Tag {
 			get {
 				return tag;
@@ -108,5 +115,15 @@ namespace Revsoft.TextEditor.Document
 			this.foreColor       = foreColor;
 			overrideForeColor = true;
 		}
+
+        public TextMarker(int offset, int length, TextMarkerType textMarkerType, Color color, int priority)
+        {
+            if (length < 1) length = 1;
+            this.offset = offset;
+            this.length = length;
+            this.textMarkerType = textMarkerType;
+            this.color = color;
+            this.priority = priority;
+        }
 	}
 }

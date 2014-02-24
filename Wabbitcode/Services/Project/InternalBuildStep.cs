@@ -147,16 +147,23 @@ namespace Revsoft.Wabbitcode.Services.Project
                     AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
                         project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.SymbolTable | AssemblyFlags.List);
 			        outputString = assembler.Assemble();
-			        output = new AssemblerOutput(outputString, outputString.Contains("error"));
+			        output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
 					project.BuildSystem.ProjectOutput = _outputFile;
 					project.BuildSystem.ListOutput = Path.ChangeExtension(_outputFile, "lst");
 					project.BuildSystem.LabelOutput = Path.ChangeExtension(_outputFile, "lab");
+					break;
+                case BuildStepType.Assemble:
+                    AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
+                        project.IncludeDirs, AssemblyFlags.Normal);
+			        outputString = assembler.Assemble();
+			        output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
+					project.BuildSystem.ProjectOutput = _outputFile;
 					break;
 				case BuildStepType.Listing:
                     AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
                         project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.List);
 			        outputString = assembler.Assemble();
-			        output = new AssemblerOutput(outputString, outputString.Contains("error"));
+                    output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
 					project.BuildSystem.ProjectOutput = _outputFile;
 					project.BuildSystem.ListOutput = Path.ChangeExtension(_outputFile, "lst");
 					break;
@@ -164,7 +171,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 					AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
                         project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.SymbolTable);
 			        outputString = assembler.Assemble();
-			        output = new AssemblerOutput(outputString, outputString.Contains("error"));
+                    output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
 					project.BuildSystem.ProjectOutput = _outputFile;
 					project.BuildSystem.LabelOutput = Path.ChangeExtension(_outputFile, "lab");
 					break;
@@ -173,7 +180,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 
 			_outputText = output.OutputText;
-			return !_outputText.Contains("error");
+			return output.Succeeded;
 		}
 
 		public object Clone()
@@ -185,5 +192,21 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			return Description;
 		}
+
+        public int CompareTo(object obj)
+        {
+            if (obj == null)
+            {
+                return -1;
+            }
+
+            IBuildStep step = obj as IBuildStep;
+            if (step == null)
+            {
+                return -1;
+            }
+
+            return StepNumber.CompareTo(step.StepNumber);
+        }
 	}
 }

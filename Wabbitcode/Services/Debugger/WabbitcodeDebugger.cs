@@ -350,6 +350,11 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
 	    private void StepOutBreakpointEvent(object sender, BreakpointEventArgs breakpointEventArgs)
 	    {
+            if (_debugger == null)
+            {
+                return;
+            }
+
             _debugger.ClearBreakpoint(_stepOutBreakpoint);
 	        int page = GetRelativePageNum(_stepOutBreakpoint.Address.Address);
             DocumentLocation key = _symbolService.ListTable.GetFileLocation(page,
@@ -405,6 +410,11 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         private void StepOverBreakpointEvent(object sender, EventArgs e)
         {
+            if (_debugger == null)
+            {
+                return;
+            }
+
             _debugger.ClearBreakpoint(_stepOverBreakpoint);
             int page = _stepOverBreakpoint.Address.Page.IsFlash
                 ? _appPage - _stepOverBreakpoint.Address.Page.Index
@@ -460,7 +470,13 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             do
             {
                 key = _symbolService.ListTable.GetFileLocation(page, --stackData, stackData >= 0x8000);
-            } while (key == null);
+            } while (key == null && stackData >= 0x8000);
+
+            if (key == null)
+            {
+                return null;
+            }
+
             string line = _fileReaderService.GetLine(key.FileName, key.LineNumber);
             Regex callRegex = new Regex(@"\s*(?<command>\w*call)[\(?|\s]\s*((?<condition>z|nz|c|nc),\s*)?(?<call>\w*?)\)?\s*(;.*)?$",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -772,17 +788,17 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 		{
 			const ushort progToEdit = 0x84BF;
 			// this is code to do
-			// bcall(_CloseEditBuf)
-			// bcall(_ExecuteApp)
-			byte[] launchAppCode = { 0xEF, 0xD3, 0x48, 0xEF, 0x51, 0x4C};
-			byte[] createdNameBytes = System.Text.Encoding.ASCII.GetBytes(createdName);
-			// _ExecuteApp expects the name of the app to launch in progToEdit
-			_debugger.Running = false;
-			_debugger.Write(true, 1, progToEdit, createdNameBytes);
-			_debugger.Write(true, 1, RamCode, launchAppCode);
-			_debugger.CPU.Halt = false;
-			_debugger.CPU.PC = RamCode;
-			_debugger.Running = true;
+            // bcall(_CloseEditBuf)
+            // bcall(_ExecuteApp)
+	        byte[] launchAppCode = {0xEF, 0xD3, 0x48, 0xEF, 0x51, 0x4C};
+            byte[] createdNameBytes = System.Text.Encoding.ASCII.GetBytes(createdName);
+            // _ExecuteApp expects the name of the app to launch in progToEdit
+            _debugger.Running = false;
+            _debugger.Write(true, 1, progToEdit, createdNameBytes);
+            _debugger.Write(true, 1, RamCode, launchAppCode);
+            _debugger.CPU.Halt = false;
+            _debugger.CPU.PC = RamCode;
+            _debugger.Running = true;
 		}
 
 	    #endregion

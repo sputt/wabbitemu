@@ -1,6 +1,6 @@
 #macro relocate(new_location)
  #ifdef old_location
-   .echo "Zelda: ",__file,":",__line,": error: You cannot nest relocate blocks."
+   .echo "File: ",__file,":",__line,": error: You cannot nest relocate blocks."
  #else
    #define old_location eval($)
    .org new_location

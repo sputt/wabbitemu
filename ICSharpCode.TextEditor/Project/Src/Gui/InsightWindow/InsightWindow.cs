@@ -25,9 +25,11 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 			SetStyle(ControlStyles.UserPaint, true);
 			SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             Font = new Font(FontFamily.GenericSansSerif, 10);
+
+		    FormClosing += (sender, e) => FormClose();
 		}
 
-	    private new void Close()
+	    private void FormClose()
 	    {
             _toolTip.Hide(control);
 	        _toolTip.Active = false;
@@ -239,7 +241,13 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 		
 		void CloseCurrentDataProvider()
 		{
-			_insightDataProviderStack.Pop();
+            if (_insightDataProviderStack.Count == 0)
+            {
+                Close();
+                return;
+            }
+
+            _insightDataProviderStack.Pop();
 			if (_insightDataProviderStack.Count == 0) {
 				Close();
 			} else {

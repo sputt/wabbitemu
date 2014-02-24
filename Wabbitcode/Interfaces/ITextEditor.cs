@@ -7,7 +7,6 @@ namespace Revsoft.Wabbitcode.Interfaces
     {
         Control Parent { get; }
 
-        bool HasSelection { get; }
         int CaretLine { get; set;  }
         int CaretColumn { get; set; }
         int CaretOffset { get; set; }

@@ -18,6 +18,10 @@ namespace Revsoft.Wabbitcode.Services
 
         public event EventHandler ProjectOpened;
         public event EventHandler ProjectClosed;
+        public event EventHandler ProjectFileAdded;
+        public event EventHandler ProjectFolderAdded;
+        public event EventHandler ProjectFileRemoved;
+        public event EventHandler ProjectFolderRemoved;
 
 	    #endregion
 
@@ -59,6 +63,11 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			ProjectFile file = new ProjectFile(parent, fullPath, Project.ProjectDirectory);
 			parent.AddFile(file);
+		    if (ProjectFileAdded != null)
+		    {
+		        ProjectFileAdded(this, EventArgs.Empty);
+		    }
+
 			return file;
 		}
 
@@ -66,6 +75,11 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			ProjectFolder folder = new ProjectFolder(parentDir, dirName);
 			parentDir.AddFolder(folder);
+            if (ProjectFolderAdded != null)
+            {
+                ProjectFolderAdded(this, EventArgs.Empty);
+            }
+
 			return folder;
 		}
 
@@ -129,11 +143,20 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			RemoveParseData(file.FileFullPath);
 			parentDir.DeleteFile(file);
+
+            if (ProjectFileRemoved != null)
+            {
+                ProjectFileRemoved(this, EventArgs.Empty);
+            }
 		}
 
 		public void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir)
 		{
 			parentDir.DeleteFolder(dir);
+            if (ProjectFolderRemoved != null)
+            {
+                ProjectFolderRemoved(this, EventArgs.Empty);
+            }
 		}
 
 		public void RemoveParseData(string fullPath)

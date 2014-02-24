@@ -37,7 +37,11 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                 Match match = Regex.Match(error.Description, "'(?<error>.*?)'");
                 string line = string.Empty;
                 BuildError errorCopy = error;
-                _wabbitcodeTextEditor.Invoke(() => line = _wabbitcodeTextEditor.GetLineText(errorCopy.LineNumber - 1));
+                if (_wabbitcodeTextEditor.InvokeRequired)
+                {
+                    _wabbitcodeTextEditor.Invoke(() => line = _wabbitcodeTextEditor.GetLineText(errorCopy.LineNumber - 1));
+                }
+
                 if (match.Success)
                 {
                     offset = segment.Offset + line.IndexOf(match.Groups["error"].Value, StringComparison.Ordinal);

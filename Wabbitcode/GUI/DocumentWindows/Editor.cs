@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,7 +12,6 @@ using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Actions;
-using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.Interfaces;
@@ -26,6 +24,7 @@ using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 using GotoNextBookmark = Revsoft.TextEditor.Actions.GotoNextBookmark;
+using InvertCaseAction = Revsoft.TextEditor.Actions.InvertCaseAction;
 using ToggleBookmark = Revsoft.TextEditor.Actions.ToggleBookmark;
 
 namespace Revsoft.Wabbitcode.GUI.DocumentWindows
@@ -179,9 +178,10 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 		        return;
 		    }
 
-		    CodeCompletionFactory.RegisterCodeCompletionBinding(".asm", new Z80CodeCompletionBinding());
-		    CodeCompletionFactory.RegisterCodeCompletionBinding(".z80", new Z80CodeCompletionBinding());
-		    CodeCompletionFactory.RegisterCodeCompletionBinding(".inc", new Z80CodeCompletionBinding());
+            // TODO: fix
+            //CodeCompletionFactory.RegisterCodeCompletionBinding(".asm", new Z80CodeCompletionBinding());
+            //CodeCompletionFactory.RegisterCodeCompletionBinding(".z80", new Z80CodeCompletionBinding());
+            //CodeCompletionFactory.RegisterCodeCompletionBinding(".inc", new Z80CodeCompletionBinding());
 
 		    _bindingsRegistered = true;
 		}
@@ -196,6 +196,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             if (InvokeRequired)
             {
                 this.BeginInvoke(() => Project_FileModifiedExternally(sender, e));
+                return;
+            }
+
+            if (IsDisposed)
+            {
                 return;
             }
 
@@ -315,9 +320,27 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
             _debuggerService.CurrentDebugger.DebuggerRunningChanged += Debugger_OnDebuggerRunningChanged;
             _debuggerService.CurrentDebugger.DebuggerStep += Debugger_OnDebuggerStep;
+            UpdateDebugHighlight();
         }
 
-		protected override string GetPersistString()
+        private void UpdateDebugHighlight()
+        {
+            IWabbitcodeDebugger debugger = _debuggerService.CurrentDebugger;
+            if (debugger == null) 
+            {
+                return;
+            }
+
+            DocumentLocation debugLine = debugger.GetAddressLocation(_debuggerService.CurrentDebugger.CPU.PC);
+            if (debugLine == null || !FileOperations.CompareFilePath(debugLine.FileName, FileName))
+            {
+                return;
+            }
+
+            editorBox.HighlightDebugLine(debugLine.LineNumber - 1);
+        }
+
+        protected override string GetPersistString()
 		{
 			// Add extra information into the persist string for this document
 			// so that it is available when deserialized.
@@ -330,44 +353,56 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         private void Debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
         {
-            this.Invoke(() =>
+            if (InvokeRequired)
             {
-                editorBox.RemoveDebugHighlight();
+                this.Invoke(() => Debugger_OnDebuggerStep(sender, e));
+                return;
+            }
+
+            editorBox.RemoveDebugHighlight();
+            new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1).Execute();
+
+            if (!FileOperations.CompareFilePath(e.Location.FileName, FileName))
+            {
+                return;
+            }
+
+            editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
+        }
+
+        private void Debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
+        {
+            if (!IsHandleCreated)
+            {
+                return;
+            }
+
+            if (InvokeRequired)
+            {
+                this.Invoke(() => Debugger_OnDebuggerRunningChanged(sender, e));
+                return;
+            }
+
+            editorBox.RemoveDebugHighlight();
+            if (e.Running)
+            {
+                Form activeForm = _dockingService.ActiveDocument as Form;
+                if (activeForm != null)
+                {
+                    activeForm.Refresh();
+                }
+            }
+            else
+            {
                 if (!FileOperations.CompareFilePath(e.Location.FileName, FileName))
                 {
                     return;
                 }
 
-                new GotoLineAction(e.Location).Execute();
-                editorBox.HighlightDebugLine(e.Location.LineNumber);
-            });
-        }
-
-        private void Debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
-        {
-            this.Invoke(() =>
-            {
-                editorBox.RemoveDebugHighlight();
-                if (e.Running)
-                {
-                    Form activeForm = _dockingService.ActiveDocument as Form;
-                    if (activeForm != null)
-                    {
-                        activeForm.Refresh();
-                    }
-                }
-                else
-                {
-                    Activate();
-                    if (!FileOperations.CompareFilePath(e.Location.FileName, FileName))
-                    {
-                        return;
-                    }
-
-                    new GotoLineAction(e.Location).Execute();
-                    editorBox.HighlightDebugLine(e.Location.LineNumber);
-                }
-            });
+                Activate();
+                new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1).Execute();
+                editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
+            }
         }
 
         private void editor_FormClosing(object sender, CancelEventArgs e)
@@ -405,6 +440,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         private void AddFoldings()
         {
+            if (string.IsNullOrEmpty(FileName))
+            {
+                return;
+            }
+
             string foldingString = string.Format("{0}|{1}", FileName.ToLower(), editorBox.Document.FoldingManager.SerializeToString());
             FindDocumentFolding(folding => Settings.Default.DocumentFoldings.Remove(folding));
 
@@ -693,59 +733,35 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         public void SetSelection(int offset, int length)
         {
             var segment = editorBox.Document.GetLineSegmentForOffset(offset);
-            int line = segment.Offset;
+            int line = segment.LineNumber;
             int col = offset - segment.Offset;
-            editorBox.ActiveTextAreaControl.SelectionManager.SetSelection(new TextLocation(line, col), new TextLocation(line, col + length));
-            editorBox.ActiveTextAreaControl.ScrollToCaret();
+            editorBox.ActiveTextAreaControl.SelectionManager.SetSelection(new TextLocation(col, line),
+                new TextLocation(col + length, line));
+            editorBox.ActiveTextAreaControl.ScrollTo(line, col);
         }
 
         public void SelectedTextToLower()
 		{
-			editorBox.Document.UndoStack.StartUndoGroup();
-			string newText = editorBox.ActiveTextAreaControl.SelectionManager.SelectedText.ToLower();
-			editorBox.ActiveTextAreaControl.SelectionManager.RemoveSelectedText();
-			editorBox.ActiveTextAreaControl.TextArea.InsertString(newText);
-			editorBox.Document.UndoStack.EndUndoGroup();
+            var action = new ToLowerCase();
+            action.Execute(editorBox.ActiveTextAreaControl.TextArea);
 		}
 
         public void SelectedTextToUpper()
 		{
-			editorBox.Document.UndoStack.StartUndoGroup();
-			string newText = editorBox.ActiveTextAreaControl.SelectionManager.SelectedText.ToUpper();
-			editorBox.ActiveTextAreaControl.SelectionManager.RemoveSelectedText();
-			editorBox.ActiveTextAreaControl.TextArea.InsertString(newText);
-			editorBox.Document.UndoStack.EndUndoGroup();
+            var action = new ToUpperCase();
+            action.Execute(editorBox.ActiveTextAreaControl.TextArea);
 		}
 
         public void SelectedTextInvertCase()
 		{
-			editorBox.Document.UndoStack.StartUndoGroup();
-			string text = editorBox.ActiveTextAreaControl.SelectionManager.SelectedText;
-			char[] textarray = text.ToCharArray();
-			for (int i = 0; i < textarray.Length; i++)
-			{
-			    if (textarray[i] >= 'A' && textarray[i] <= 'Z')
-			    {
-			        textarray[i] = (char) (textarray[i] + 'A' - 'a');
-			    }
-                else if (textarray[i] >= 'a' && textarray[i] <= 'z')
-                {
-                    textarray[i] = (char) (textarray[i] - 'A' - 'a');
-                }
-			}
-			editorBox.ActiveTextAreaControl.SelectionManager.RemoveSelectedText();
-			editorBox.ActiveTextAreaControl.TextArea.InsertString(new string(textarray));
-			editorBox.Document.UndoStack.EndUndoGroup();
+            var action = new InvertCaseAction();
+            action.Execute(editorBox.ActiveTextAreaControl.TextArea);
 		}
 
         public void SelectedTextToSentenceCase()
 		{
-			editorBox.Document.UndoStack.StartUndoGroup();
-			string text = editorBox.ActiveTextAreaControl.SelectionManager.SelectedText;
-			string newText = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text);
-			editorBox.ActiveTextAreaControl.SelectionManager.RemoveSelectedText();
-			editorBox.ActiveTextAreaControl.TextArea.InsertString(newText);
-			editorBox.Document.UndoStack.EndUndoGroup();
+            var action = new CapitalizeAction();
+            action.Execute(editorBox.ActiveTextAreaControl.TextArea);
 		}
 
         public void FormatLines()
@@ -819,12 +835,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         public void ConvertSpacesToTabs()
 		{
-			StringBuilder spacesString = new StringBuilder();
-			for (int i = 0; i < Settings.Default.TabSize; i++)
-			{
-				spacesString.Append(' ');
-			}
-			editorBox.Document.TextContent = editorBox.Document.TextContent.Replace(spacesString.ToString(), "\t");
+            var action = new ConvertSpacesToTabs();
+            action.Execute(editorBox.ActiveTextAreaControl.TextArea);
 		}
 
         public string GetWordAtCaret()
@@ -844,6 +856,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             editorBox.LoadFile(fileName, true, true);
             UpdateTabText();
             LoadFoldings();
+            UpdateDebugHighlight();
         }
 
         public override void SaveFile()

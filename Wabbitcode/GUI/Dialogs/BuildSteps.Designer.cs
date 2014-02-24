@@ -60,7 +60,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.buildSeqList.FormattingEnabled = true;
             this.buildSeqList.HorizontalScrollbar = true;
-            this.buildSeqList.Location = new System.Drawing.Point(13, 39);
+            this.buildSeqList.Location = new System.Drawing.Point(12, 39);
             this.buildSeqList.Name = "buildSeqList";
             this.buildSeqList.Size = new System.Drawing.Size(337, 212);
             this.buildSeqList.TabIndex = 0;
@@ -117,7 +117,7 @@
             this.moveUp.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.moveUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.moveUp.Font = new System.Drawing.Font("Times New Roman", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.moveUp.Location = new System.Drawing.Point(360, 151);
+            this.moveUp.Location = new System.Drawing.Point(360, 122);
             this.moveUp.Name = "moveUp";
             this.moveUp.Size = new System.Drawing.Size(28, 23);
             this.moveUp.TabIndex = 1;
@@ -129,7 +129,7 @@
             this.moveDown.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.moveDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.moveDown.Font = new System.Drawing.Font("Times New Roman", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.moveDown.Location = new System.Drawing.Point(400, 151);
+            this.moveDown.Location = new System.Drawing.Point(400, 122);
             this.moveDown.Name = "moveDown";
             this.moveDown.Size = new System.Drawing.Size(28, 23);
             this.moveDown.TabIndex = 1;
@@ -140,7 +140,7 @@
             // 
             this.configBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.configBox.FormattingEnabled = true;
-            this.configBox.Location = new System.Drawing.Point(116, 10);
+            this.configBox.Location = new System.Drawing.Point(116, 9);
             this.configBox.Name = "configBox";
             this.configBox.Size = new System.Drawing.Size(207, 21);
             this.configBox.TabIndex = 2;
@@ -219,7 +219,7 @@
             "Assemble",
             "List",
             "Symbol Table"});
-            this.actionBox.Location = new System.Drawing.Point(289, 19);
+            this.actionBox.Location = new System.Drawing.Point(289, 18);
             this.actionBox.Name = "actionBox";
             this.actionBox.Size = new System.Drawing.Size(104, 21);
             this.actionBox.TabIndex = 5;
@@ -247,7 +247,7 @@
             // 
             // outputBox
             // 
-            this.outputBox.Location = new System.Drawing.Point(81, 72);
+            this.outputBox.Location = new System.Drawing.Point(81, 71);
             this.outputBox.Name = "outputBox";
             this.outputBox.Size = new System.Drawing.Size(248, 20);
             this.outputBox.TabIndex = 3;
@@ -255,7 +255,7 @@
             // 
             // inputBox
             // 
-            this.inputBox.Location = new System.Drawing.Point(81, 46);
+            this.inputBox.Location = new System.Drawing.Point(81, 45);
             this.inputBox.Name = "inputBox";
             this.inputBox.Size = new System.Drawing.Size(248, 20);
             this.inputBox.TabIndex = 2;
@@ -277,7 +277,7 @@
             this.stepTypeBox.Items.AddRange(new object[] {
             "Internal Build Step",
             "External Build Step"});
-            this.stepTypeBox.Location = new System.Drawing.Point(81, 19);
+            this.stepTypeBox.Location = new System.Drawing.Point(81, 18);
             this.stepTypeBox.Name = "stepTypeBox";
             this.stepTypeBox.Size = new System.Drawing.Size(121, 21);
             this.stepTypeBox.TabIndex = 0;
@@ -287,11 +287,12 @@
             // 
             this.configManagerButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.configManagerButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.configManagerButton.Location = new System.Drawing.Point(329, 10);
+            this.configManagerButton.Location = new System.Drawing.Point(329, 8);
             this.configManagerButton.Name = "configManagerButton";
             this.configManagerButton.Size = new System.Drawing.Size(102, 23);
             this.configManagerButton.TabIndex = 5;
             this.configManagerButton.Text = "Config Manager";
+            this.configManagerButton.Click += new System.EventHandler(this.configManagerButton_Click);
             // 
             // BuildSteps
             // 

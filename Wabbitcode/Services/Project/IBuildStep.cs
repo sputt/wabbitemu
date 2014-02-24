@@ -2,7 +2,7 @@
 {
 	using System;
 
-	public interface IBuildStep : ICloneable
+	public interface IBuildStep : ICloneable, IComparable
 	{
 		string Description
 		{

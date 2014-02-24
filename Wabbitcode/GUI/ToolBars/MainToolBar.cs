@@ -221,6 +221,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
                 return;
             }
 
+            e.Handled = true;
             string lookFor = _findBox.Text;
             if (!_findBox.Items.Contains(lookFor))
             {
@@ -235,13 +236,14 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
 
             string fileText = _fileReaderService.GetFileText(editor.FileName);
             TextEditorSearcher searcher = new TextEditorSearcher(fileText);
-            int beginOffset = editor.CaretOffset;
+            int beginOffset = editor.CaretOffset + lookFor.Length + 1;
             bool looped;
             searcher.LookFor = lookFor;
             TextRange range = searcher.FindNext(beginOffset, false, out looped);
             if (range != null)
             {
                 editor.SetSelection(range.Offset, range.Length);
+                editor.CaretOffset = range.Offset;
             }
             else
             {

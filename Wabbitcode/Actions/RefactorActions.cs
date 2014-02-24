@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.GUI.Dialogs;
+﻿using System.Windows.Forms;
+using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -8,11 +9,13 @@ namespace Revsoft.Wabbitcode.Actions
     public class RefactorRenameAction : AbstractUiAction
     {
         private readonly IDockingService _dockingService;
+        private readonly IParserService _parserService;
         private readonly IProjectService _projectService;
 
         public RefactorRenameAction()
         {
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
         }
 
@@ -24,8 +27,16 @@ namespace Revsoft.Wabbitcode.Actions
                 return;
             }
 
-            RefactorRenameForm renameForm = new RefactorRenameForm(editor, _projectService);
-            renameForm.ShowDialog();
+            RefactorRenameForm renameForm = new RefactorRenameForm(editor, _parserService, _projectService);
+            bool validRename = renameForm.Initialize();
+            if (validRename)
+            {
+                renameForm.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show(editor as IWin32Window, "Unable to rename symbol at the cursor", "Error", MessageBoxButtons.OK);
+            }
         }
     }
 

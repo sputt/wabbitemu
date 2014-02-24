@@ -8,6 +8,7 @@ using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Interfaces;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
@@ -16,27 +17,49 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 {
 	public sealed partial class RefactorRenameForm : Form
 	{
-		 private const int PreviewHeight = 400;
-        private readonly string _selectedText;
+		private const int PreviewHeight = 400;
+	    private readonly ITextEditor _editor;
         private readonly IProjectService _projectService;
+        private readonly IParserService _parserService;
         private readonly Dictionary<string, TextEditorControl> _editors = new Dictionary<string, TextEditorControl>();
-        private readonly List<List<Reference>> _references;
+
+        private string _selectedText;
+        private List<List<Reference>> _references;
 	    private bool _hasBeenInited;
 	    private int _lastLength;
 
-	    public RefactorRenameForm(ITextEditor editor, IProjectService projectService)
-        {
+	    public RefactorRenameForm(ITextEditor editor, IParserService parserService, IProjectService projectService)
+	    {
+	        _parserService = parserService;
             _projectService = projectService;
-            _selectedText = editor.GetWordAtCaret();
+	        _editor = editor;
+        }
+
+        /// <summary>
+        /// Sets up rename form based on inputs
+        /// </summary>
+        /// <returns>True if word at caret is valid for rename, false otherwise</returns>
+	    public bool Initialize()
+	    {
+            _selectedText = _editor.GetWordAtCaret();
+
+	        var parserData = _parserService.GetParserData(_selectedText, Settings.Default.CaseSensitive);
+	        if (!parserData.Any())
+	        {
+	            return false;
+	        }
+
             _references = _projectService.FindAllReferences(_selectedText).ToList();
 
             InitializeComponent();
             Text = string.Format("Rename '{0}'", _selectedText);
             nameBox.Text = _selectedText;
-	        _lastLength = _selectedText.Length;
+            _lastLength = _selectedText.Length;
             SetupPreview();
             UpdateEditorReferences();
-        }
+
+	        return true;
+	    }
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
@@ -82,6 +105,11 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             foreach (var file in _references)
             {
                 string fileName = file.First().File;
+                if (_editors.ContainsKey(fileName))
+                {
+                    continue;
+                }
+
                 var tab = new TabPage(Path.GetFileName(fileName)) {Tag = fileName};
                 tabControl.TabPages.Add(tab);
                 var editor = new WabbitcodeTextEditor
@@ -90,7 +118,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                     IsIconBarVisible = false
                 };
                 editor.LoadFile(fileName);
-
+                
                 tab.Controls.Add(editor);
                 _editors.Add(fileName, editor);
 
