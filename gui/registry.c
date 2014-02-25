@@ -35,6 +35,7 @@ static struct {
 	{_T("lcd_mode"),				REG_DWORD,	0},		// perfect gray
 	{_T("lcd_freq"),				REG_DWORD,	FPS},	// steady freq
 	{_T("screen_scale"),			REG_DWORD,  2},
+	{_T("skin_scale"),				REG_SZ,		(LONG_PTR) _T("1.0")},
 	{_T("faceplate_color"),			REG_DWORD, 	0x838587},
 	{_T("exit_save_state"),			REG_DWORD,  FALSE},
 	{_T("load_files_first"),		REG_DWORD,  FALSE},
@@ -136,11 +137,7 @@ LONG_PTR GetKeyData(HKEY hkeyWabbit, LPCTSTR lpszName, BOOL skip_defaults = FALS
 			if (type == REG_DWORD) {
 				result.dwResult = (DWORD) regDefaults[i].Value;
 			} else {
-#ifdef _UNICODE
-				StringCbCopy(result.szResult, sizeof(result.szResult), (LPWSTR) regDefaults[i].Value);
-#else
-				WideCharToMultiByte(CP_ACP, 0, (LPWSTR) regDefaults[i].Value, -1, result.szResult, sizeof(result.szResult), NULL, NULL);
-#endif
+				StringCbCopy(result.szResult, sizeof(result.szResult), (LPTSTR) regDefaults[i].Value);
 			}
 		}
 	} else {
@@ -350,6 +347,8 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	if (dwDisposition == REG_CREATED_NEW_KEY) {
 		LoadRegistryDefaults(hkeyWabbit);
 	}
+
+	TCHAR skinScale[32];
 	
 	StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), (TCHAR *) QueryWabbitKey(_T("rom_path")));
 	StringCbCopy(lpCalc->skin_path, sizeof(lpCalc->skin_path), (TCHAR *) QueryWabbitKey(_T("skin_path")));
@@ -358,6 +357,8 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	lpCalc->bCutout = (BOOL) QueryWabbitKey(_T("cutout"));
 	lpCalc->bAlphaBlendLCD = (BOOL) QueryWabbitKey(_T("alphablend_lcd"));
 	lpCalc->scale = (int) QueryWabbitKey(_T("screen_scale"));
+	StringCbCopy(skinScale, sizeof(skinScale), (TCHAR *) QueryWabbitKey(_T("skin_scale")));
+	lpCalc->skin_scale = atof(skinScale);
 	lpCalc->FaceplateColor = (COLORREF) QueryWabbitKey(_T("faceplate_color"));
 	exit_save_state = (BOOL) QueryWabbitKey(_T("exit_save_state"));
 	new_calc_on_load_files = (BOOL) QueryWabbitKey(_T("load_files_first"));
@@ -492,6 +493,9 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 			SaveWabbitKey(_T("lcd_delay"), REG_DWORD, &lcd->lcd_delay);
 		}
 		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->scale);
+		TCHAR scaleString[32];
+		StringCbPrintf(scaleString, sizeof(scaleString), _T("%lf"), lpCalc->skin_scale / lpCalc->default_skin_scale);
+		SaveWabbitKey(_T("skin_scale"), REG_SZ, &scaleString);
 
 		TCHAR versionBuffer[32];
 		GetFileCurrentVersionString(versionBuffer, sizeof(versionBuffer));

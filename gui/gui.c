@@ -199,6 +199,10 @@ int gui_frame(LPCALC lpCalc) {
 		lpCalc->scale = 2;
 	}
 
+	if (lpCalc->skin_scale == 0) {
+		lpCalc->skin_scale = 1.0;
+	}
+
 	if (lpCalc->bSkinEnabled) {
 		SetRect(&r, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	} else {
@@ -883,31 +887,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		PAINTSTRUCT ps;
 		RECT rc;
+		GetClientRect(hwnd, &rc);
 		HDC hdc = BeginPaint(hwnd, &ps);
 
 		if (lpCalc->bSkinEnabled) {
-			//GetWindowRect(hwnd, &rc);
-			//int screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-			//int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-			//int windowWidth = rc.right - rc.left;
-			//int windowHeight = rc.bottom - rc.top;
+			int windowWidth = rc.right - rc.left;
+			int windowHeight = rc.bottom - rc.top;
 
-			//// were too big to fit on the screen
-			//if (windowHeight > screenHeight || windowWidth > screenWidth) {
-			//	// need to find a ratio to reduce the window size
-			//	float scale = min((float) screenHeight / windowHeight, (float) screenWidth / windowWidth);
-			//	windowHeight *= scale;
-			//	windowWidth *= scale;
-			//}
-
-			//SetStretchBltMode(hdc, HALFTONE);
-			//StretchBlt(hdc, 0, 0, windowWidth, windowHeight,
-			//	lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, SRCCOPY);
-			//BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
-			BitBlt(hdc, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcButtons, 0, 0, SRCCOPY);
+			SetStretchBltMode(hdc, HALFTONE);
+			StretchBlt(hdc, 0, 0, windowWidth, windowHeight,
+				lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, SRCCOPY);
 			BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
 		} else {
-			GetClientRect(lpCalc->hwndFrame, &rc);
 			FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
 		}
 		ReleaseDC(hwnd, hdc);
@@ -1390,7 +1381,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	case WM_LBUTTONUP:
 		{
 			int group, bit;
-			static POINT pt;
+			POINT pt;
 			BOOL repostMessage = FALSE;
 			keypad_t *kp = lpCalc->cpu.pio.keypad;
 
@@ -1423,7 +1414,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	case WM_LBUTTONDOWN:
 		{
 			int group, bit;
-			static POINT pt;
+			POINT pt;
 			keypad_t *kp = lpCalc->cpu.pio.keypad;
 			if (kp == NULL) {
 				break;
@@ -1445,7 +1436,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			kp->on_pressed &= ~KEY_MOUSEPRESS;
 
-			COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
+			COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x / lpCalc->skin_scale, pt.y / lpCalc->skin_scale);
 			if (GetRValue(c) == 0xFF) {
 				FinalizeButtons(lpCalc);
 				return 0;
@@ -1472,7 +1463,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			PostMessage(hwnd, WM_LBUTTONUP, 0, 0);
 		}
 		return DefWindowProc(hwnd, Message, wParam, lParam);
-				   }
+	}
 	case WM_MBUTTONDOWN: {
 		int group,bit;
 		POINT pt;
@@ -1485,7 +1476,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
 		}
 
-		COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
+		COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x / lpCalc->skin_scale, pt.y / lpCalc->skin_scale);
 		if (GetRValue(c) == 0xFF) return 0;
 		group	= GetGValue(c) >> 4;
 		bit		= GetBValue(c) >> 4;
@@ -1516,17 +1507,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	case WM_SIZE:
 		return HandleSizeMessage(hwnd, lpCalc->hwndLCD, lpCalc, lpCalc->bSkinEnabled);
 	case WM_MOVE: {
-		if (lpCalc->bCutout && lpCalc->bSkinEnabled) {
-			HDWP hdwp = BeginDeferWindowPos(3);
-			RECT rc;
-			GetWindowRect(hwnd, &rc);
-			OffsetRect(&rc, lpCalc->rectLCD.left, lpCalc->rectLCD.top);
-			DeferWindowPos(hdwp, lpCalc->hwndLCD, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE);
-			EndDeferWindowPos(hdwp);
-			PositionLittleButtons(hwnd);
-		}
-		return 0;
-				  }
+		return HandleMoveMessage(hwnd, lpCalc);
+	}
 	case WM_CONTEXTMENU: {
 		ctxtPt.x = GET_X_LPARAM(lParam);
 		ctxtPt.y = GET_Y_LPARAM(lParam);
@@ -1544,23 +1526,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		return 0;
 						 }
 	case WM_GETMINMAXINFO: {
-		if (lpCalc == NULL) {
-			return 0;
-		}
-
-		if (!lpCalc->bSkinEnabled) {
-			break;
-		}
-
-		MINMAXINFO *info = (MINMAXINFO *) lParam;
-		RECT rc = { 0, 0, SKIN_WIDTH, SKIN_HEIGHT };
-		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW, FALSE);
-		info->ptMinTrackSize.x = rc.right - rc.left;
-		info->ptMinTrackSize.y = rc.bottom - rc.top;
-		info->ptMaxTrackSize.x = rc.right - rc.left;
-		info->ptMaxTrackSize.y = rc.bottom - rc.top;
-		return 0;
-						   }
+		MINMAXINFO *info = (MINMAXINFO *)lParam;
+		return GetMinMaxInfo(hwnd, lpCalc, info);
+	}
 	case WM_KILLFOCUS: {
 		if (lpCalc == NULL) {
 			break;
@@ -1673,7 +1641,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				pt.x += GetSystemMetrics(SM_CXFIXEDFRAME);
 			}
 			ScreenToClient(hwnd, &pt);
-			if (GetRValue(GetPixel(lpCalc->hdcKeymap, pt.x, pt.y)) != 0xFF)
+			if (GetRValue(GetPixel(lpCalc->hdcKeymap, pt.x / lpCalc->skin_scale, pt.y / lpCalc->skin_scale)) != 0xFF)
 				return htRet;
 			return HTCAPTION;
 		}

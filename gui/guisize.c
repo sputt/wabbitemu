@@ -1,10 +1,13 @@
 #include "stdafx.h"
 
 #include "guisize.h"
+#include "gui.h"
 #include "guiskin.h"
 #include "guicutout.h"
 
 extern BOOL silent_mode;
+
+#define SKIN_SCALE_SNAP .025
 
 unsigned int GetDefaultKeymapScale(int model) {
 	switch (model) {
@@ -15,18 +18,44 @@ unsigned int GetDefaultKeymapScale(int model) {
 	}
 }
 
+LRESULT HandleMoveMessage(HWND hwnd, LPCALC lpCalc) {
+	if (lpCalc->bCutout && lpCalc->bSkinEnabled) {
+		UINT left = (LONG)(lpCalc->rectLCD.left * lpCalc->skin_scale);
+		UINT top = (LONG)(lpCalc->rectLCD.top * lpCalc->skin_scale);
+
+		HDWP hdwp = BeginDeferWindowPos(3);
+		RECT rc;
+		GetWindowRect(hwnd, &rc);
+		OffsetRect(&rc, left, top);
+		DeferWindowPos(hdwp, lpCalc->hwndLCD, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE);
+		EndDeferWindowPos(hdwp);
+		PositionLittleButtons(hwnd);
+	}
+
+	return 0;
+}
+
 LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabled) {
 	u_int width;
 	HMENU hMenu = GetMenu(hwnd);
 	RECT rc, clientRect;
 	CopyRect(&rc, &lpCalc->rectLCD);
 
-	unsigned int default_scale = GetDefaultKeymapScale(lpCalc->model);
-	unsigned int scale = skinEnabled ? default_scale : lpCalc->scale;
+	UINT default_scale = GetDefaultKeymapScale(lpCalc->model);
+	UINT scale = skinEnabled ? default_scale : lpCalc->scale;
 	int silentMode = silent_mode ? SWP_HIDEWINDOW : 0;
-	unsigned int lcdWidth = skinEnabled ? (rc.right - rc.left) / default_scale : lpCalc->cpu.pio.lcd->display_width;
+	UINT lcdWidth, lcdHeight;
+	if (skinEnabled) {
+		lcdWidth = (rc.right - rc.left) / default_scale;
+		lcdHeight = (rc.bottom - rc.top) / default_scale;
+		lcdWidth = (unsigned int)(lcdWidth * lpCalc->skin_scale);
+		lcdHeight = (unsigned int)(lcdHeight *lpCalc->skin_scale);
+	} else {
+		lcdWidth = lpCalc->cpu.pio.lcd->display_width;
+		lcdHeight = lpCalc->cpu.pio.lcd->height;
+	}
+
 	lcdWidth *= scale;
-	int lcdHeight = skinEnabled ? (rc.bottom - rc.top) / default_scale : lpCalc->cpu.pio.lcd->height;
 	lcdHeight *= scale;
 
 	GetClientRect(hwnd, &clientRect);
@@ -40,11 +69,17 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabl
 			rc.left += (width - lcdWidth) / 2;
 		}
 	} else if (lpCalc->bCutout) {
+		UINT left = (LONG)(lpCalc->rectLCD.left * lpCalc->skin_scale);
+		UINT top = (LONG)(lpCalc->rectLCD.top * lpCalc->skin_scale);
+
 		GetWindowRect(hwnd, &rc);
-		OffsetRect(&rc, lpCalc->rectLCD.left, lpCalc->rectLCD.top);
+		OffsetRect(&rc, left, top);
+	} else {
+		rc.left = (LONG)(rc.left * lpCalc->skin_scale);
+		rc.top = (LONG)(rc.top * lpCalc->skin_scale);
 	}
 
-	SetWindowPos(hwndLcd, NULL, rc.left, rc.top, lcdWidth, lcdHeight, SWP_NOZORDER | silentMode);
+	MoveWindow(hwndLcd, rc.left, rc.top, lcdWidth, lcdHeight, TRUE);
 
 	// force little buttons to be correct
 	if (lpCalc->bCutout && skinEnabled) {
@@ -54,8 +89,6 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabl
 	if (lpCalc->hwndStatusBar != NULL) {
 		SendMessage(lpCalc->hwndStatusBar, WM_SIZE, SIZE_RESTORED, 0);
 	}
-
-	//SetWindowPos(hwnd, NULL, 0, 0, clientWidth, clientHeight, SWP_NOMOVE | SWP_NOZORDER);
 
 	UpdateWindow(hwndLcd);
 	return 0;
@@ -163,75 +196,126 @@ LRESULT HandleLCDSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *pr
 	return 1;
 }
 
-LRESULT HandleSkinSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc) {
+BOOL UnadjustWindowRect(LPRECT prc, DWORD dwStyle, BOOL fMenu) {
 	RECT rc;
-	GetWindowRect(hwnd, &rc);
-	memcpy(prc, &rc, sizeof(RECT));
-	return 1;
-	// TODO:
-	LONG ClientAdjustWidth, ClientAdjustHeight;
-	LONG AdjustWidth, AdjustHeight;
-	LONG OriginalWidth, OriginalHeight;
+	SetRectEmpty(&rc);
+	BOOL fRc = AdjustWindowRect(&rc, dwStyle, fMenu);
+	if (fRc) {
+		prc->left -= rc.left;
+		prc->top -= rc.top;
+		prc->right -= rc.right;
+		prc->bottom -= rc.bottom;
+	}
+	return fRc;
+}
+
+LRESULT HandleSkinSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc) {
+	LONG ClientOldWidth, ClientOldHeight;
+	LONG ClientNewWidth, ClientNewHeight;
+	LONG SkinWidth, SkinHeight;
+
+	RECT ClientNewRect;
+	CopyRect(&ClientNewRect, prc);
+	UnadjustWindowRect(&ClientNewRect, WS_CAPTION | WS_TILEDWINDOW, GetMenu(hwnd) != NULL);
 	
-	// Adjust for border and menu
-	GetClientRect(hwnd, &rc);
-	AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW, FALSE);
-	if (GetMenu(hwnd) != NULL) {
-		rc.bottom += GetSystemMetrics(SM_CYMENU);
-	}
+	RECT ClientOldRect;
+	GetClientRect(hwnd, &ClientOldRect);
 
-	RECT src;
-	if (lpCalc->hwndStatusBar != NULL) {
-		GetWindowRect(lpCalc->hwndStatusBar, &src);
-		rc.bottom += src.bottom - src.top;
+	// don't allow resizing from the sides
+	if (wParam == WMSZ_LEFT || wParam == WMSZ_RIGHT
+		|| wParam == WMSZ_TOP || wParam == WMSZ_BOTTOM) 
+	{
+		RECT rc;
+		GetWindowRect(hwnd, &rc);
+		memcpy(prc, &rc, sizeof(RECT));
+		return 1;
 	}
 	
-	ClientAdjustWidth = rc.right - rc.left;
-	ClientAdjustHeight = rc.bottom - rc.top;
+	ClientOldWidth = ClientOldRect.right - ClientOldRect.left;
+	ClientOldHeight = ClientOldRect.bottom - ClientOldRect.top;
 
-	OriginalHeight = lpCalc->rectSkin.bottom - lpCalc->rectSkin.top;
-	OriginalWidth = lpCalc->rectSkin.right - lpCalc->rectSkin.left;
+	SkinWidth = SKIN_WIDTH;
+	SkinHeight = SKIN_HEIGHT;
 
-	AdjustWidth = (prc->right - prc->left - ClientAdjustWidth);
-	AdjustHeight = (prc->bottom - prc->top - ClientAdjustHeight);
+	ClientNewWidth = ClientNewRect.right - ClientNewRect.left;
+	ClientNewHeight = ClientNewRect.bottom - ClientNewRect.top;
 
-	int cy_mult = prc->bottom - prc->top - ClientAdjustHeight;
-	int cx_mult = prc->right - prc->left - ClientAdjustWidth;
+	LONG AdjustWidth = ClientNewWidth - ClientOldWidth;
+	LONG AdjustHeight = ClientNewHeight - ClientOldHeight;
 
-	double height_ratio = (double) ClientAdjustHeight / OriginalHeight;
-	double width_ratio = (double) ClientAdjustWidth / OriginalWidth;
-	if (cx_mult > cy_mult) {
-		LONG NewHeight = (LONG) (ClientAdjustHeight * width_ratio);
-		AdjustHeight = NewHeight - prc->bottom + prc->top;
-		prc->bottom += AdjustHeight;
-	} else if (cy_mult > cx_mult) {
-		LONG NewWidth = (LONG)(ClientAdjustWidth * height_ratio);
-		AdjustWidth = NewWidth - prc->right + prc->left;
-		prc->right += AdjustWidth;
+	double SkinRatio = (double)SkinWidth / SkinHeight;
+	LONG DiffWidth = 0;
+	LONG DiffHeight = 0;
+	if (AdjustWidth > AdjustHeight) {
+		DiffHeight = (SkinHeight * ClientNewWidth / SkinWidth) - ClientNewHeight;	
+	} else if (AdjustHeight > AdjustWidth) {
+		DiffWidth = (SkinWidth * ClientNewHeight / SkinHeight) - ClientNewWidth;
 	}
 
-	//switch (wParam) {
-	//case WMSZ_BOTTOMLEFT:
-	//case WMSZ_LEFT:
-	//case WMSZ_TOPLEFT:
-	//	prc->left += AdjustWidth;
-	//	break;
-	//default:
-	//	prc->right -= AdjustWidth;
-	//	break;
-	//}
+	double width_scale = (double)(ClientNewWidth + DiffWidth) / SkinWidth;
+	double height_scale = (double)(ClientNewHeight + DiffHeight) / SkinHeight;
+	lpCalc->skin_scale = min(width_scale, height_scale) * lpCalc->default_skin_scale;
 
-	//switch (wParam) {
-	//case WMSZ_TOPLEFT:
-	//case WMSZ_TOP:
-	//case WMSZ_TOPRIGHT:
-	//	prc->top += AdjustHeight;
-	//	break;
-	//default:
-	//	prc->bottom -= AdjustHeight;
-	//	break;
-	//}
+	if (lpCalc->skin_scale >= lpCalc->default_skin_scale - SKIN_SCALE_SNAP &&
+		lpCalc->skin_scale <= lpCalc->default_skin_scale + SKIN_SCALE_SNAP)
+	{
+		lpCalc->skin_scale = lpCalc->default_skin_scale;
+		DiffWidth = SkinWidth - ClientNewWidth;
+		DiffHeight = SkinHeight - ClientNewHeight;
+	}
+
+	switch (wParam) {
+	case WMSZ_TOPLEFT:
+	case WMSZ_TOP:
+	case WMSZ_TOPRIGHT:
+		prc->top -= DiffHeight;
+		break;
+	default:
+		prc->bottom += DiffHeight;
+		break;
+	}
+
+	switch (wParam) {
+	case WMSZ_BOTTOMLEFT:
+	case WMSZ_LEFT:
+	case WMSZ_TOPLEFT:
+		prc->left -= DiffWidth;
+		break;
+	default:
+		prc->right += DiffWidth;
+		break;
+	}
 
 	InvalidateRect(hwnd, NULL, TRUE);
 	return 1;
+}
+
+LRESULT GetMinMaxInfo(HWND hwnd, LPCALC lpCalc, MINMAXINFO *info) {
+	if (lpCalc == NULL) {
+		return 0;
+	}
+
+	if (!lpCalc->bSkinEnabled) {
+		return 0;
+	}
+
+	RECT minRc = { 0, 0, MIN_SKIN_WIDTH, MIN_SKIN_HEIGHT };
+	RECT maxRc = { 0, 0, MAX_SKIN_WIDTH, MAX_SKIN_HEIGHT };
+
+	int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	int maxWidth = maxRc.right - maxRc.left;
+	int maxHeight = maxRc.bottom - maxRc.top;
+	if (screenHeight < maxHeight) {
+		maxRc.bottom = screenHeight;
+		maxRc.right = SKIN_WIDTH * screenHeight / SKIN_HEIGHT;
+	}
+
+	AdjustWindowRect(&minRc, WS_CAPTION | WS_TILEDWINDOW, GetMenu(hwnd) != NULL);
+	AdjustWindowRect(&maxRc, WS_CAPTION | WS_TILEDWINDOW, GetMenu(hwnd) != NULL);
+
+	info->ptMinTrackSize.x = minRc.right - minRc.left;
+	info->ptMinTrackSize.y = minRc.bottom - minRc.top;
+	info->ptMaxTrackSize.x = maxRc.right - maxRc.left;
+	info->ptMaxTrackSize.y = maxRc.bottom - maxRc.top;
+	return 0;
 }

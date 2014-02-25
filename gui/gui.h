@@ -4,10 +4,16 @@
 #include "calc.h"
 #include "guicommandline.h"
 
+#define MIN_SKIN_WIDTH	290
+#define MIN_SKIN_HEIGHT	600
+
+#define MAX_SKIN_WIDTH	483
+#define MAX_SKIN_HEIGHT	1000
+
 #define SKIN_WIDTH	350
 #define SKIN_HEIGHT	725
 
-#define WABBITVER		_T("1.5")
+#define WABBITVER		_T("1.8")
 
 #define g_szWebPage		_T("http://wabbit.codeplex.com")
 #ifdef _WIN64

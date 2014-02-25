@@ -654,7 +654,6 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			}
 		} else if (data == 0x30) {
 			// erase sectors
-			int i;
 			int spage = (mem_c->banks[bank].page << 1) + ((addr >> 13) & 0x01);
 			int pages = mem_c->flash_pages;
 			int totalPages = pages * 2;
@@ -668,23 +667,23 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				endaddr = (pages - 2) * PAGE_SIZE;
 			} else if (spage < totalPages - 3) {
 				startaddr = (pages - 2) * PAGE_SIZE;
-				endaddr = i < (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2;
+				endaddr = (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2;
 			} else if (spage < totalPages - 2) {
 				startaddr = (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2;
-				endaddr = i < (pages - 1) * PAGE_SIZE;
+				endaddr = (pages - 1) * PAGE_SIZE;
 			} else if (spage < totalPages) {
 				// I comment this off because this is the boot page
 				// it suppose to be write protected...
 				// BuckeyeDude 6/27/11: new info has been discovered boot code
 				// is writable under certain conditions
 				startaddr = (pages - 1) * PAGE_SIZE;
-				endaddr = i < pages * PAGE_SIZE;
+				endaddr = pages * PAGE_SIZE;
 			} else {
 				endflash_break(cpu);
 				break;
 			}
 
-			for (i = startaddr; i < endaddr; i++) {
+			for (int i = startaddr; i < endaddr; i++) {
 				mem_c->flash[i] = 0xFF;
 
 				if (check_mem_write_break(cpu->mem_c, addr32_to_waddr(i, FALSE))) {

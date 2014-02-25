@@ -136,8 +136,8 @@ void PositionLittleButtons(HWND hwnd)
 	HDWP hdwp = BeginDeferWindowPos(3);
 	RECT wr;
 	GetWindowRect(hwnd, &wr);
-	DeferWindowPos(hdwp, lpCalc->hwndSmallMinimize, NULL, wr.left + 285, wr.top + 34, 13, 13, 0);
-	DeferWindowPos(hdwp, lpCalc->hwndSmallClose, NULL, wr.left + 300, wr.top + 34, 13, 13, 0);
+	DeferWindowPos(hdwp, lpCalc->hwndSmallMinimize, NULL, wr.right - 81, wr.top + 34, 13, 13, 0);
+	DeferWindowPos(hdwp, lpCalc->hwndSmallClose, NULL, wr.right - 66, wr.top + 34, 13, 13, 0);
 	EndDeferWindowPos(hdwp);
 }
 
@@ -212,19 +212,26 @@ int EnableCutout(LPCALC lpCalc) {
 
 	POINT ptSrc = {0 , 0};
 	SIZE size;
-	size.cx = width;
-	size.cy = height;
+	size.cx = (LONG)(width * lpCalc->skin_scale);
+	size.cy = (LONG)(height * lpCalc->skin_scale);
 
 	SetWindowLongPtr(lpCalc->hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
 	SetWindowLongPtr(lpCalc->hwndFrame, GWL_STYLE, WS_VISIBLE);
 
 	HDC hScreen = GetDC(NULL);
-	BOOL done = UpdateLayeredWindow(lpCalc->hwndFrame, hScreen, NULL, &size, lpCalc->hdcButtons, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
+	// resize the skin to be correct size
+	HDC hdc = CreateCompatibleDC(hScreen);
+	HBITMAP hBmp = CreateCompatibleBitmap(hScreen, size.cx, size.cy);
+	HBITMAP hBmpOld = (HBITMAP)SelectObject(hdc, hBmp);
+	SetStretchBltMode(hdc, HALFTONE);
+	AlphaBlend(hdc, 0, 0, size.cx, size.cy, lpCalc->hdcButtons, 0, 0, width, height, bf);
+	BOOL done = UpdateLayeredWindow(lpCalc->hwndFrame, hScreen, NULL, &size, hdc, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
 	DWORD error;
 	if (!done) {
 		error = GetLastError();
 	}
 
+	DeleteDC(hdc);
 	ReleaseDC(NULL, hScreen);
 	UpdateWindow(lpCalc->hwndLCD);
 

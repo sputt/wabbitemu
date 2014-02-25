@@ -3,9 +3,9 @@
 
 #include "calc.h"
 
-int DrawFaceplateRegion(HDC, COLORREF);
-HRGN GetFaceplateRegion();
-int gui_frame_update(LPCALC lpCalc);
+int DrawFaceplateRegion(LPCALC, HDC, COLORREF);
+HRGN GetFaceplateRegion(LPCALC);
+int gui_frame_update(LPCALC);
 
 #define DEFAULT_84PCSE_SKIN_SCALE 1
 #define DEFAULT_SKIN_SCALE 2

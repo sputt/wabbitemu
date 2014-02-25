@@ -17,7 +17,7 @@
 
 HRESULT CWabbitemu::FinalConstruct()
 {
-	m_lpCalc = calc_slot_new();
+	m_lpCalc = create_calc_register_events();
 	LoadRegistrySettings(m_lpCalc);
 	m_iSlot = m_lpCalc->slot;
 
@@ -83,6 +83,10 @@ void CWabbitemu::Fire_OnClose()
 		if (sp != NULL)
 		{
 			CComDispatchDriver drv(sp);
+			if (drv == NULL)
+			{
+				return;
+			}
 
 			HRESULT hr = drv.Invoke1(DISPID_CLOSE, &vWabbit);
 			if (FAILED(hr))

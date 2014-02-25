@@ -350,13 +350,14 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		free(lcd_data);
 
 	} else {
+		BOOL lcd_scaled = (rc.right - rc.left) % lcd->display_width;
 		screen = lcd->image(lcd);
-		if ((rc.right - rc.left) % lcd->display_width) {
+		if (lcd_scaled) {
 			Bitmap lcdBitmap(info, screen);
 			Graphics g(hdc);
 			g.SetInterpolationMode(InterpolationModeLowQuality);
 			Rect rect(rc.left, rc.top, rc.right - rc.left + 1,  rc.bottom - rc.top + 1);
-			g.DrawImage(&lcdBitmap, rect, 0, 0, lcd->width, lcd->height, UnitPixel);
+			g.DrawImage(&lcdBitmap, rect, 0, 0, lcd->display_width, lcd->height, UnitPixel);
 			rect.Width--;
 			rect.Height--;
 			g.SetClip(rect);
@@ -399,7 +400,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		ClientToScreen(hwnd, &pt);
 		ScreenToClient(GetParent(hwnd), &pt);
 
-		if (alphablendfail < 100 && lpCalc->bAlphaBlendLCD && lpCalc->model < TI_84PCSE) {
+		if (alphablendfail < 100 && lpCalc->bAlphaBlendLCD && !lcd_scaled && lpCalc->model < TI_84PCSE) {
 			if (AlphaBlend(	hdc, rc.left, rc.top, rc.right,  rc.bottom,
 				lpCalc->hdcSkin, lpCalc->rectLCD.left, lpCalc->rectLCD.top,
 				lpCalc->rectLCD.right - lpCalc->rectLCD.left,
