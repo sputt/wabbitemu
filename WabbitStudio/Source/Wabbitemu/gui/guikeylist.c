@@ -49,9 +49,10 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 						HGDIOBJ hbmOld = SelectObject(hdcButtons, hbm);
 
 						FillRect(hdcButtons, &r, br);
-						
-						DrawButtonStateNoSkin(hdcButtons, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_COPY);
-						DrawButtonShadow(hdcButtons, lpCalc->hdcKeymap, &pt);
+
+						UINT keymap_scale = (UINT)(1.0 / lpCalc->default_skin_scale);
+						DrawButtonStateNoSkin(hdcButtons, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_COPY, keymap_scale);
+						DrawButtonShadow(hdcButtons, lpCalc->hdcKeymap, &pt, keymap_scale);
 
 						SelectObject(hdcButtons, hbmOld);
 						DeleteDC(hdcButtons);

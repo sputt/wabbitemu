@@ -96,6 +96,8 @@ typedef struct tagCALC {
 	};
 
 	DWORD scale;
+	double default_skin_scale;
+	double skin_scale;
 	BOOL bCutout;
 	BOOL bSkinEnabled;
 	BOOL bTIOSDebug;

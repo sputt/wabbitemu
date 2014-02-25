@@ -40,13 +40,13 @@ extern HINSTANCE g_hInst;
 
 //Buttons are assumed to be mostly convex
 //creates a rect around the button
-static RECT FindButtonRect(HDC hdcKeymap, POINT *pt) {
+static RECT FindButtonRect(HDC hdcKeymap, POINT *pt, UINT keymap_scale) {
 	RECT brect = {0, 0, 0, 0};
 	int x, y;
 	int bit, group;
 	COLORREF colormatch, colortest;
 
-	colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
+	colormatch = GetPixel(hdcKeymap, pt->x * keymap_scale, pt->y * keymap_scale);
 	
 	if (GetRValue(colormatch) != 0) {
 		return brect;
@@ -55,10 +55,10 @@ static RECT FindButtonRect(HDC hdcKeymap, POINT *pt) {
 	bit		= GetBValue(colormatch) >> 4;
 	group	= GetGValue(colormatch) >> 4;
 	
-	brect.right		= (*ButtonCenter)[bit + (group << 3)].x;
-	brect.left		= (*ButtonCenter)[bit + (group << 3)].x;
-	brect.top		= (*ButtonCenter)[bit + (group << 3)].y;
-	brect.bottom	= (*ButtonCenter)[bit + (group << 3)].y;
+	brect.right = (*ButtonCenter)[bit + (group << 3)].x * keymap_scale;
+	brect.left = (*ButtonCenter)[bit + (group << 3)].x * keymap_scale;
+	brect.top = (*ButtonCenter)[bit + (group << 3)].y * keymap_scale;
+	brect.bottom = (*ButtonCenter)[bit + (group << 3)].y * keymap_scale;
 	
 	//Find the vertical center
 	y = (brect.top + brect.bottom) / 2;
@@ -72,7 +72,7 @@ static RECT FindButtonRect(HDC hdcKeymap, POINT *pt) {
 	
 	//Search for right edge
 	colortest = colormatch;
-	for (x = brect.right; (colortest == colormatch) && (x < SKIN_WIDTH) ; x++) {
+	for (x = brect.right; (colortest == colormatch) && (x < SKIN_WIDTH * keymap_scale) ; x++) {
 		colortest = GetPixel(hdcKeymap, x, y);
 	}
 	brect.right = x + 5;
@@ -90,7 +90,7 @@ static RECT FindButtonRect(HDC hdcKeymap, POINT *pt) {
 	
 	//Search for bottom edge
 	colortest = colormatch;
-	for (y = brect.bottom; (colortest == colormatch) && (y < SKIN_HEIGHT) ; y++) {
+	for (y = brect.bottom; (colortest == colormatch) && (y < SKIN_HEIGHT * keymap_scale); y++) {
 		colortest = GetPixel(hdcKeymap, x, y);
 	}
 	brect.bottom = y + 5;
@@ -144,9 +144,9 @@ void LogKeypress(LPCALC lpCalc, int group, int bit) {
 	}
 }	
 
-void DrawButtonShadow(HDC hdc, HDC hdcKeymap, POINT *pt)
+void DrawButtonShadow(HDC hdc, HDC hdcKeymap, POINT *pt, UINT keymap_scale)
 {
-	RECT brect = FindButtonRect(hdcKeymap, pt);
+	RECT brect = FindButtonRect(hdcKeymap, pt, keymap_scale);
 	int width = brect.right - brect.left;
 	int height = brect.bottom - brect.top;
 	COLORREF colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
@@ -190,12 +190,12 @@ void DrawButtonShadow(HDC hdc, HDC hdcKeymap, POINT *pt)
 	}
 }
 
-void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state)
+void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state, UINT keymap_scale)
 {
-	RECT brect = FindButtonRect(hdcKeymap, pt);
+	RECT brect = FindButtonRect(hdcKeymap, pt, keymap_scale);
 	int width = brect.right - brect.left;
 	int height = brect.bottom - brect.top;
-	COLORREF colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
+	COLORREF colormatch = GetPixel(hdcKeymap, pt->x * keymap_scale, pt->y * keymap_scale);
 	if (GetRValue(colormatch) != 0) {
 		return;
 	}
@@ -239,11 +239,11 @@ void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT 
 }
 
 
-void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state) {
+void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state, UINT keymap_scale) {
 	RECT brect;
 	int width, height;
 	
-	brect = FindButtonRect(hdcKeymap, pt);
+	brect = FindButtonRect(hdcKeymap, pt, keymap_scale);
 	if (IsRectEmpty(&brect)) return;
 
 	width = brect.right - brect.left;
@@ -253,7 +253,7 @@ void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state) {
 	HBITMAP hbmButton = CreateCompatibleBitmap(hdcSkin,width,height);
 	SelectObject(hdc, hbmButton);
 
-	DrawButtonStateNoSkin(hdc, hdcSkin, hdcKeymap, pt, state);
+	DrawButtonStateNoSkin(hdc, hdcSkin, hdcKeymap, pt, state, keymap_scale);
 	
 	BitBlt(hdcSkin, brect.left, brect.top, width, height,
 				hdc, 0, 0, SRCCOPY);
@@ -266,16 +266,17 @@ void DrawButtonStatesAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 	keypad_t *keypad = lpCalc->cpu.pio.keypad;
 	int group, bit;
 	POINT pt;
+	UINT keymap_scale = (UINT) (1.0 / lpCalc->default_skin_scale);
 	for(group = 0; group < 7; group++) {
 		for(bit = 0; bit < 8; bit++) {
 			if ((*ButtonCenter)[bit + (group << 3)].x != 0xFFF) {
-				pt.x	= (*ButtonCenter)[bit + (group << 3)].x;
-				pt.y	= (*ButtonCenter)[bit + (group << 3)].y;
+				pt.x = (*ButtonCenter)[bit + (group << 3)].x;
+				pt.y = (*ButtonCenter)[bit + (group << 3)].y;
 				int val = keypad->keys[group][bit];
 				if (val & KEY_LOCKPRESS) {
-					DrawButtonState(hdcSkin, hdcKeymap, &pt, DBS_LOCK | DBS_DOWN);
+					DrawButtonState(hdcSkin, hdcKeymap, &pt, DBS_LOCK | DBS_DOWN, keymap_scale);
 				} else if ((val & KEY_MOUSEPRESS) || (val & KEY_KEYBOARDPRESS)) {
-					DrawButtonState(hdcSkin, hdcKeymap, &pt, DBS_PRESS | DBS_DOWN);
+					DrawButtonState(hdcSkin, hdcKeymap, &pt, DBS_PRESS | DBS_DOWN, keymap_scale);
 				}
 			}
 		}
@@ -287,9 +288,9 @@ void DrawButtonStatesAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 	pt.y	= (*ButtonCenter)[bit + (group << 3)].y;
 	int val = lpCalc->cpu.pio.keypad->on_pressed;
 	if (val & KEY_LOCKPRESS) {
-		DrawButtonState(hdcSkin, hdcKeymap, &pt, DBS_LOCK | DBS_DOWN);
+		DrawButtonState(hdcSkin, hdcKeymap, &pt, DBS_LOCK | DBS_DOWN, keymap_scale);
 	} else if ((val & KEY_MOUSEPRESS) || (val & KEY_KEYBOARDPRESS)) {
-		DrawButtonState(hdcSkin, hdcKeymap, &pt, DBS_PRESS | DBS_DOWN);
+		DrawButtonState(hdcSkin, hdcKeymap, &pt, DBS_PRESS | DBS_DOWN, keymap_scale);
 	}
 }
 

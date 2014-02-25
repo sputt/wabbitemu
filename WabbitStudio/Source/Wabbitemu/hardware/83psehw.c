@@ -125,7 +125,6 @@ void port3_83pse(CPU_t *cpu, device_t *dev) {
 		}
 	}
 	else if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
-		//		stdint->lastchk1 = ceil((tc_elapsed(cpu->timer_c) - stdint->lastchk1)/stdint->timermax1)*stdint->timermax1;
 		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
 			stdint->lastchk1 += stdint->timermax1;
 		}
@@ -141,7 +140,6 @@ void port3_83pse(CPU_t *cpu, device_t *dev) {
 			cpu->interrupt = TRUE;
 		}
 	} else if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
-//		stdint->lastchk2 = ceil((tc_elapsed(cpu->timer_c) - stdint->lastchk2)/stdint->timermax2)*stdint->timermax2;
 		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
 			stdint->lastchk2 += stdint->timermax2;
 		}
