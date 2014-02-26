@@ -352,15 +352,32 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 	} else {
 		BOOL lcd_scaled = (rc.right - rc.left) % lcd->display_width;
 		screen = lcd->image(lcd);
+
 		if (lcd_scaled) {
+			LONG clientWidth = rc.right - rc.left;
+			LONG clientHeight = rc.bottom - rc.top;
+			LONG clientScaleWidth = max(1, clientWidth / lcd->display_width) * lcd->display_width;
+			LONG clientScaleHeight = max(1, clientHeight / lcd->height) * lcd->height;
+
+			Graphics graphics(hdc);
 			Bitmap lcdBitmap(info, screen);
-			Graphics g(hdc);
-			g.SetInterpolationMode(InterpolationModeLowQuality);
-			Rect rect(rc.left, rc.top, rc.right - rc.left + 1,  rc.bottom - rc.top + 1);
-			g.DrawImage(&lcdBitmap, rect, 0, 0, lcd->display_width, lcd->height, UnitPixel);
+			Bitmap scaledBitmap((INT)clientScaleWidth, (INT)clientScaleHeight, &graphics);
+			Bitmap *bitmap = &lcdBitmap;
+			if (clientScaleWidth != lcd->display_width && clientScaleHeight != lcd->height) {
+				Graphics scaledGraphics(&scaledBitmap);
+				scaledGraphics.SetInterpolationMode(InterpolationModeNearestNeighbor);
+				// +1 because otherwise there is a black line at max width and max height
+				Rect scaleRect(rc.left, rc.top, clientScaleWidth + 1, clientScaleHeight + 1);
+				scaledGraphics.DrawImage(&lcdBitmap, scaleRect, 0, 0, lcd->display_width, lcd->height, UnitPixel);
+				bitmap = &scaledBitmap;
+			}
+
+			graphics.SetInterpolationMode(InterpolationModeLowQuality);
+			Rect rect(rc.left, rc.top, clientWidth + 1, clientHeight + 1);
+			graphics.DrawImage(bitmap, rect, 0, 0, clientScaleWidth, clientScaleHeight, UnitPixel);
 			rect.Width--;
 			rect.Height--;
-			g.SetClip(rect);
+			graphics.SetClip(rect);
 		} else {
 			SetStretchBltMode(hdc, BLACKONWHITE);
 			if (StretchDIBits(hdc,
@@ -369,9 +386,10 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 							screen,
 							info,
 							DIB_RGB_COLORS,
-							SRCCOPY) == 0) {
-							_tprintf_s(_T("error in SetDIBitsToDevice\n"));
-						}
+							SRCCOPY) == 0)
+			{
+				_tprintf_s(_T("error in SetDIBitsToDevice\n"));
+			}
 		}
 
 		BLENDFUNCTION bf;

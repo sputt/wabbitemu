@@ -21,6 +21,7 @@ public:
 	
 	// Download progress
 	int iCurrentFile;
+	BOOL isRom;
 	ULONG ulBytesSent;
 	ULONG ulFileSize;
 	
@@ -107,8 +108,15 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 
 	lpsi->Error = LERR_SUCCESS;
 	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)	{
-		SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);
-		lpsi->Error = SendFile(lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), lpsi->DestinationList->at(lpsi->iCurrentFile));
+		const TCHAR *filename = lpsi->FileList->at(lpsi->iCurrentFile).c_str();
+		TIFILE_t *var = importvar(filename, TRUE);
+		if (var != NULL && var->type != ROM_TYPE) {
+			SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);
+		} else {
+			lpsi->isRom = true;
+		}
+
+		lpsi->Error = SendFile(lpCalc, filename, lpsi->DestinationList->at(lpsi->iCurrentFile));
 		if (lpsi->Error != LERR_SUCCESS) {
 			if (MessageBox(lpsi->hwndDlg, g_szLinkErrorDescriptions[lpsi->Error], _T("Wabbitemu"), MB_OKCANCEL | MB_ICONERROR) == IDCANCEL) {
 				break;
@@ -217,6 +225,7 @@ static LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG De
 					//81 for now
 					break;
 				}
+
 				lpCalc->cpu.pio.link->vlink_size = var->length;
 				lpCalc->cpu.pio.link->vlink_send = 0;
 				BOOL running_backup = lpCalc->running;
@@ -471,9 +480,10 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	case WM_USER:
 		{
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPSENDINFO lpsi = g_SendInfo[lpCalc];
 			HWND hwndProgress = GetDlgItem(hwnd, 1);
 			// Update the progress bar
-			if (lpCalc->cpu.pio.link == NULL)
+			if (lpsi->isRom || lpCalc->cpu.pio.link == NULL)
 			{
 				SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, 1));
 				SendMessage(hwndProgress, PBM_SETPOS, 1, 0);

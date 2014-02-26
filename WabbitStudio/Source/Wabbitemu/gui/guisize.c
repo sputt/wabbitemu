@@ -42,7 +42,7 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabl
 	CopyRect(&rc, &lpCalc->rectLCD);
 
 	UINT default_scale = GetDefaultKeymapScale(lpCalc->model);
-	UINT scale = skinEnabled ? default_scale : lpCalc->scale;
+	UINT scale = skinEnabled ? default_scale : max(lpCalc->scale, default_scale);
 	int silentMode = silent_mode ? SWP_HIDEWINDOW : 0;
 	UINT lcdWidth, lcdHeight;
 	if (skinEnabled) {
@@ -95,7 +95,7 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabl
 }
 
 // TODO: better names and types
-LRESULT HandleLCDSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc) {
+LRESULT HandleLCDSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc, LONG lcdWidth) {
 	LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 	LONG ClientAdjustWidth, ClientAdjustHeight;
 	LONG AdjustWidth, AdjustHeight;
@@ -128,10 +128,10 @@ LRESULT HandleLCDSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *pr
 	case WMSZ_BOTTOMLEFT:
 	case WMSZ_LEFT:
 	case WMSZ_TOPLEFT:
-		prc->left -= lcd->width / 4;
+		prc->left -= lcdWidth / 4;
 		break;
 	default:
-		prc->right += lcd->width / 4;
+		prc->right += lcdWidth / 4;
 		break;
 	}
 
@@ -148,20 +148,20 @@ LRESULT HandleLCDSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *pr
 
 
 	// Make sure the width is a nice clean proportional sizing
-	AdjustWidth = (prc->right - prc->left - ClientAdjustWidth) % lcd->width;
+	AdjustWidth = (prc->right - prc->left - ClientAdjustWidth) % lcdWidth;
 	AdjustHeight = (prc->bottom - prc->top - ClientAdjustHeight) % lcd->height;
 
-	int cx_mult = (prc->right - prc->left - ClientAdjustWidth) / lcd->width;
+	int cx_mult = (prc->right - prc->left - ClientAdjustWidth) / lcdWidth;
 	int cy_mult = (prc->bottom - prc->top - ClientAdjustHeight) / lcd->height;
 
 	int min_scale = GetDefaultKeymapScale(lpCalc->model);
 	while (cx_mult < min_scale || cy_mult < min_scale) {
-		if (cx_mult < min_scale) { cx_mult++; AdjustWidth -= lcd->width; }
+		if (cx_mult < min_scale) { cx_mult++; AdjustWidth -= lcdWidth; }
 		if (cy_mult < min_scale) { cy_mult++; AdjustHeight -= lcd->height; }
 	}
 
 	if (cx_mult > cy_mult) {
-		AdjustWidth += (cx_mult - cy_mult) * lcd->width;
+		AdjustWidth += (cx_mult - cy_mult) * lcdWidth;
 	} else if (cy_mult > cx_mult) {
 		AdjustHeight += (cy_mult - cx_mult) * lcd->height;
 	}
