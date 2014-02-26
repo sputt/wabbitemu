@@ -35,6 +35,7 @@ SENDINFO::~SENDINFO() {
 		delete this->FileList;
 		this->FileList = NULL;
 	}
+
 	if (this->DestinationList) {
 		delete this->DestinationList;
 		this->DestinationList = NULL;
@@ -103,15 +104,16 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 		fSoundBackup = lpCalc->audio->enabled;
 
 	lpCalc->running = FALSE;
-	if (fSoundBackup)
+	if (fSoundBackup) {
 		pausesound(lpCalc->audio);
+	}
 
 	lpsi->Error = LERR_SUCCESS;
 	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)	{
 		const TCHAR *filename = lpsi->FileList->at(lpsi->iCurrentFile).c_str();
 		TIFILE_t *var = importvar(filename, TRUE);
 		if (var != NULL && var->type != ROM_TYPE) {
-			SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);
+			PostMessage(lpsi->hwndDlg, WM_USER, 0, NULL);
 		} else {
 			lpsi->isRom = true;
 		}
@@ -135,14 +137,39 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 		lpsi->hwndDlg = NULL;
 		PostMessage(hwndDlg, WM_CLOSE, 0, NULL);
 	}
+
 	lpCalc->running = fRunningBackup;
-	if (fSoundBackup == TRUE)
+	if (fSoundBackup == TRUE) {
 		playsound(lpCalc->audio);
+	}
+
 	current_file_sending = NULL;
-	lpsi->FileList->clear();
 	lpsi->DestinationList->clear();
 	lpsi->iCurrentFile = 0;
 	return 0;
+}
+
+void CancelFileThreadSend(const LPCALC lpCalc) {
+	if (lpCalc == NULL) {
+		return;
+	}
+
+	LPSENDINFO lpsi = g_SendInfo[lpCalc];
+	if (lpsi == NULL) {
+		// not sending
+		return;
+	}
+
+	if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0) {
+		lpsi->FileList->clear();
+		ReleaseMutex(lpsi->hFileListMutex);
+	}
+
+	// this should be a reliable way to tell if the sending cannot exit
+	// fake_running will indicate the we're actually relying on sending
+	// a calc file, and since it is happening on a background thread, 
+	// we should be safe to wait here
+	while (lpCalc->fake_running) { }
 }
 
 BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND_FLAG destination) {
@@ -161,7 +188,8 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND
 		}
 
 		LPSENDINFO lpsi;
-		if (g_SendInfo.find(lpCalc) == g_SendInfo.end()) {
+		if (g_SendInfo.find(lpCalc) == g_SendInfo.end())
+		{
 			lpsi = new SENDINFO;
 			ZeroMemory(lpsi, sizeof(SENDINFO));
 			lpsi->FileList = new std::vector<std::tstring>;

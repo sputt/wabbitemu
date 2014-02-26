@@ -1117,7 +1117,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			HANDLE hData = SetClipboardData(CF_TEXT, ans);
 			if (hData == NULL) {
-				int error = GetLastError();
 				MessageBox(hwnd, "Unable to set clipboard data", "Error", MB_OK);
 				break;
 			}
@@ -1457,7 +1456,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			kp->on_pressed &= ~KEY_MOUSEPRESS;
 
-			COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x / lpCalc->skin_scale, pt.y / lpCalc->skin_scale);
+			LONG x = (LONG)(pt.x / lpCalc->skin_scale);
+			LONG y = (LONG)(pt.y / lpCalc->skin_scale);
+			COLORREF c = GetPixel(lpCalc->hdcKeymap, x, y);
 			if (GetRValue(c) == 0xFF) {
 				FinalizeButtons(lpCalc);
 				return 0;
@@ -1497,7 +1498,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
 		}
 
-		COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x / lpCalc->skin_scale, pt.y / lpCalc->skin_scale);
+		// convert to the scale it is displayed at
+		LONG x = (LONG) (pt.x / lpCalc->skin_scale);
+		LONG y = (LONG)(pt.y / lpCalc->skin_scale);
+		COLORREF c = GetPixel(lpCalc->hdcKeymap, x, y);
 		if (GetRValue(c) == 0xFF) return 0;
 		group	= GetGValue(c) >> 4;
 		bit		= GetBValue(c) >> 4;
@@ -1614,6 +1618,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 
 				DestroyWindow(hwnd);
+				CancelFileThreadSend(lpCalc);
 				calc_slot_free(lpCalc);
 				if (calc_count() == 0) {
 					PostQuitMessage(0);
@@ -1662,7 +1667,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				pt.x += GetSystemMetrics(SM_CXFIXEDFRAME);
 			}
 			ScreenToClient(hwnd, &pt);
-			if (GetRValue(GetPixel(lpCalc->hdcKeymap, pt.x / lpCalc->skin_scale, pt.y / lpCalc->skin_scale)) != 0xFF)
+			LONG x = (LONG)(pt.x / lpCalc->skin_scale);
+			LONG y = (LONG)(pt.y / lpCalc->skin_scale);
+			if (GetRValue(GetPixel(lpCalc->hdcKeymap, x, y)) != 0xFF)
 				return htRet;
 			return HTCAPTION;
 		}
