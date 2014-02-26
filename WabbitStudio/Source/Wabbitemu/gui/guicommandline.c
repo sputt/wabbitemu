@@ -21,7 +21,6 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 		size_t numConv;
 		wcstombs_s(&numConv, tmpstring, argv[1], 512);
 #endif
-		TCHAR* FileNames = NULL;
 		for(int i = 1; i < argc; i++) {
 			ZeroMemory(tmpstring, 512);
 #ifdef _UNICODE
@@ -30,7 +29,7 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 			size_t numConv;
 			wcstombs_s(&numConv, tmpstring, argv[i], 512);
 #endif
-			char secondChar = toupper(tmpstring[1]);
+			char secondChar = (char) toupper(tmpstring[1]);
 			if (*tmpstring != '-' && *tmpstring != '/') {
 				TCHAR *temp = (TCHAR *) malloc(_tcslen(tmpstring) + 1);
 				StringCbCopy(temp, _tcslen(tmpstring) + 1, tmpstring);
