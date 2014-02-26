@@ -261,7 +261,7 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 	}
 }
 
-TCHAR *GetRealAns(CPU_t *cpu) {
+TCHAR *GetRealAns(CPU_t *cpu, TCHAR *buffer) {
 	symlist_t *symlist = (symlist_t *) malloc(sizeof(symlist_t));
 	memset(symlist, 0, sizeof(symlist_t));
 	symlist = state_build_symlist_83P(cpu, symlist);
@@ -274,8 +274,6 @@ TCHAR *GetRealAns(CPU_t *cpu) {
 	if (sym == NULL) {
 		return NULL;
 	}
-
-	TCHAR *buffer = (TCHAR *) malloc(2048);
 	
 	symbol_to_string(cpu, sym, buffer);
 	free(symlist);
@@ -300,10 +298,16 @@ TCHAR *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, TCHAR *buffer) {
 		u_char FP[14];
 		int i, sigdigs = 1;
 		for (i = 0; i < 14; i+=2, ptr++) {
-			FP[i] 	= mem_read(cpu->mem_c, ptr) >> 4;
-			FP[i+1]	= mem_read(cpu->mem_c, ptr) & 0x0F;
-			if (FP[i]) sigdigs = i + 1;
-			if (FP[i+1]) sigdigs = i + 2;
+			u_char next_byte = mem_read(cpu->mem_c, ptr);
+			FP[i] = next_byte >> 4;
+			FP[i + 1] = next_byte & 0x0F;
+			if (FP[i]) {
+				sigdigs = i + 1;
+			}
+
+			if (FP[i + 1]) {
+				sigdigs = i + 2;
+			}
 		}
 		
 		if (type & 0x80) *p++ = '-';
@@ -318,9 +322,11 @@ TCHAR *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, TCHAR *buffer) {
 			StringCbPrintf(p, _tcslen(p), _T("*10^%d"), exp);
 			p += _tcslen(p);
 		} else {
-			for (i = min(exp, 0); i < sigdigs || i < exp; i++) {
+			for (i = min(exp + 1, 0); i < sigdigs || i < (exp + 1); i++) {
 				*p++ = (i >= 0 ? FP[i] : 0) + '0';
-				if ((i + 1) < sigdigs && i == exp) *p++ = '.';
+				if ((i + 1) < sigdigs && i == exp) {
+					*p++ = '.';
+				}
 			}
 		}
 		

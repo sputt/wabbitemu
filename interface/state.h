@@ -52,7 +52,7 @@ void state_build_applist(CPU_t *, applist_t *);
 void state_userpages(CPU_t *, upages_t *);
 symlist_t *state_build_symlist_86(CPU_t *, symlist_t *);
 symlist_t *state_build_symlist_83P(CPU_t *, symlist_t *);
-TCHAR *GetRealAns(CPU_t*);
+TCHAR *GetRealAns(CPU_t *, TCHAR *);
 TCHAR *Symbol_Name_to_String(int model, symbol83P_t *, TCHAR *);
 TCHAR *App_Name_to_String(apphdr_t *, TCHAR *);
 

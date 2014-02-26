@@ -1101,11 +1101,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 		case IDM_CALC_COPY: {
 			HLOCAL ans;
-			ans = (HLOCAL) GetRealAns(&lpCalc->cpu);
-			OpenClipboard(hwnd);
-			EmptyClipboard();
-			SetClipboardData(CF_TEXT, ans);
-			CloseClipboard();
+			TCHAR *buffer = (TCHAR *)LocalAlloc(LMEM_FIXED, 2048);
+			ans = (HLOCAL) GetRealAns(&lpCalc->cpu, buffer);
+			BOOL success = OpenClipboard(hwnd);
+			if (!success) {
+				MessageBox(hwnd, "Unable to open clipboard", "Error", MB_OK);
+				break;
+			}
+
+			success = EmptyClipboard();
+			if (!success) {
+				MessageBox(hwnd, "Unable to empty clipboard", "Error", MB_OK);
+				break;
+			}
+
+			HANDLE hData = SetClipboardData(CF_TEXT, ans);
+			if (hData == NULL) {
+				int error = GetLastError();
+				MessageBox(hwnd, "Unable to set clipboard data", "Error", MB_OK);
+				break;
+			}
+
+			success = CloseClipboard();
+			if (!success) {
+				MessageBox(hwnd, "Unable to open clipboard", "Error", MB_OK);
+				break;
+			}
 			break;
 							}
 		case IDM_CALC_PASTE: {
