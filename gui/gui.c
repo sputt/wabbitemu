@@ -1524,7 +1524,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		if (lpCalc->bSkinEnabled) {
 			return HandleSkinSizingMessage(hwnd, lpCalc, wParam, (RECT *)lParam);
 		}
-		return HandleLCDSizingMessage(hwnd, lpCalc, wParam, (RECT *) lParam);
+		return HandleLCDSizingMessage(hwnd, lpCalc, wParam, (RECT *) lParam, lpCalc->cpu.pio.lcd->width);
 	case WM_SIZE:
 		return HandleSizeMessage(hwnd, lpCalc->hwndLCD, lpCalc, lpCalc->bSkinEnabled);
 	case WM_MOVE: {
