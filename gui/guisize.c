@@ -94,8 +94,7 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabl
 	return 0;
 }
 
-// TODO: better names and types
-LRESULT HandleLCDSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc, LONG lcdWidth) {
+LRESULT HandleLCDSizingMessage(HWND hwnd, HWND hwndStatusBar, LPCALC lpCalc, WPARAM wParam, RECT *prc, LONG lcdWidth) {
 	LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 	LONG ClientAdjustWidth, ClientAdjustHeight;
 	LONG AdjustWidth, AdjustHeight;
@@ -108,8 +107,8 @@ LRESULT HandleLCDSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *pr
 	}
 
 	RECT src;
-	if (lpCalc->hwndStatusBar != NULL) {
-		GetWindowRect(lpCalc->hwndStatusBar, &src);
+	if (hwndStatusBar != NULL) {
+		GetWindowRect(hwndStatusBar, &src);
 		rc.bottom += src.bottom - src.top;
 	}
 	//don't allow resizing from the sides

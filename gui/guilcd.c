@@ -636,6 +636,9 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
+					if (lcd == NULL) {
+						break;
+					}
 					
 					export_png(lpCalc, fn);
 

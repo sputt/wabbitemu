@@ -287,7 +287,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			//fixes drawing scrollbar arrows on stack
 			SendMessage(hwnd, WM_NCPAINT, 0, 0);
 
-			position_goto_dialog(mps->hGotoDialog, mps->cyHeader);
+			position_goto_dialog(mps->hGotoDialog);
 			return 0;
 		}
 		case WM_PAINT:
@@ -741,7 +741,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					} else {
 						mps->hGotoDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd,
 							(DLGPROC)GotoDialogProc, (LPARAM)lpTabInfo->lpDebugInfo);
-						position_goto_dialog(mps->hGotoDialog, mps->cyHeader);
+						position_goto_dialog(mps->hGotoDialog);
 					}
 					break;
 				}

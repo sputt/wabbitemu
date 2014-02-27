@@ -826,7 +826,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_WORD, MF_BYCOMMAND | MF_UNCHECKED);
 				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_CHAR, MF_BYCOMMAND | MF_UNCHECKED);
 				int index = TabCtrl_GetCurSel(lpDebugInfo->hmem) + 1;
-				lpDebugInfo->mps[index].mode = 1;
+				lpDebugInfo->mps[index].mode = MEM_BYTE;
 				lpDebugInfo->mps[index].bText = FALSE;
 				Debug_UpdateWindow(hwnd);
 				break;
@@ -836,7 +836,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_WORD, MF_BYCOMMAND | MF_CHECKED);
 				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_CHAR, MF_BYCOMMAND | MF_UNCHECKED);
 				int index = TabCtrl_GetCurSel(lpDebugInfo->hmem) + 1;
-				lpDebugInfo->mps[index].mode = 2;
+				lpDebugInfo->mps[index].mode = MEM_WORD;
 				lpDebugInfo->mps[index].bText = FALSE;
 				Debug_UpdateWindow(hwnd);
 				break;
@@ -846,7 +846,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_WORD, MF_BYCOMMAND | MF_UNCHECKED);
 				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_CHAR, MF_BYCOMMAND | MF_CHECKED);
 				int index = TabCtrl_GetCurSel(lpDebugInfo->hmem) + 1;
-				lpDebugInfo->mps[index].mode = 1;
+				lpDebugInfo->mps[index].mode = MEM_BYTE;
 				lpDebugInfo->mps[index].bText = TRUE;
 				Debug_UpdateWindow(hwnd);
 				break;

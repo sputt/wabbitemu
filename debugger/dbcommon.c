@@ -37,7 +37,7 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 		wParam, lParam);
 }
 
-void position_goto_dialog(HWND hGotoDialog, int cyHeader) {
+void position_goto_dialog(HWND hGotoDialog) {
 	if (hGotoDialog == NULL) {
 		return;
 	}
@@ -98,7 +98,7 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 			return TRUE;
 		}
 		case IDCANCEL:
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_EDTGOTOADDR), GWL_WNDPROC,
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_EDTGOTOADDR), GWLP_WNDPROC,
 				(LONG)wpOrigEditProc);
 
 			SendMessage(GetParent(hwndDlg), WM_USER, DB_GOTO_RESULT, -1);
@@ -253,8 +253,8 @@ int ValueSubmit(HWND hwndDlg, void *loc, int size, int max_value) {
 		}
 		case CHAR1:
 			_stscanf_s(result, _T("%c"), (char *) value);
-			if (*((char *) value) > max_value) {
-				*((char *) value) = max_value;
+			if (*((char *)value) > (char)max_value) {
+				*((char *) value) = (char)max_value;
 			}
 			break;
 		}
