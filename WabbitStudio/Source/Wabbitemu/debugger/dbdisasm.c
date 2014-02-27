@@ -809,7 +809,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			si.nMin = 0x0000;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
-			position_goto_dialog(dps->hGotoDialog, dps->cyHeader);
+			position_goto_dialog(dps->hGotoDialog);
 			return 0;
 		}
 		case WM_CONTEXTMENU: {
@@ -1255,7 +1255,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					} else {
 						dps->hGotoDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd,
 							(DLGPROC)GotoDialogProc, (LPARAM)lpTabInfo->lpDebugInfo);
-						position_goto_dialog(dps->hGotoDialog, dps->cyHeader);
+						position_goto_dialog(dps->hGotoDialog);
 					}
 					return 0;
 				}

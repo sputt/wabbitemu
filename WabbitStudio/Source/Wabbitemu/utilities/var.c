@@ -331,12 +331,7 @@ TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 	if (tifile->rom->data == NULL)
 		return FreeTiFile(tifile);
 
-	for(i = 0; i < size && !feof(infile); i++) {
-		tmp = fgetc(infile);
-		if (tmp == EOF)
-			return FreeTiFile(tifile);
-		tifile->rom->data[i] = tmp;
-	}
+	fread(tifile->rom->data, sizeof(unsigned char), size, infile);
 	tifile->rom->size		= (int)size;
 	calc = FindRomVersion(tifile->rom->version, tifile->rom->data, (int)size);
 	if (calc == -1) {

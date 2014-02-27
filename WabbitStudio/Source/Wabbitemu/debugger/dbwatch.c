@@ -611,5 +611,4 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
-	return FALSE;
 }

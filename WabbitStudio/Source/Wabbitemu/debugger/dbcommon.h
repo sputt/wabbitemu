@@ -6,7 +6,7 @@
 
 #include "dbreg.h"
 
-void position_goto_dialog(HWND hGotoDialog, int cyHeader);
+void position_goto_dialog(HWND hGotoDialog);
 int get_value(HWND hwndParent);
 INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK FindDialogProc(HWND, UINT, WPARAM, LPARAM);

@@ -885,6 +885,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			ValidateRect(hwnd, &screen);
 		}
 
+		if (lpCalc->bSkinEnabled && lpCalc->bCutout) {
+			ValidateRect(hwnd, NULL);
+			return 0;
+		}
+
 		PAINTSTRUCT ps;
 		RECT rc;
 		GetClientRect(hwnd, &rc);
@@ -1528,7 +1533,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		if (lpCalc->bSkinEnabled) {
 			return HandleSkinSizingMessage(hwnd, lpCalc, wParam, (RECT *)lParam);
 		}
-		return HandleLCDSizingMessage(hwnd, lpCalc, wParam, (RECT *) lParam, lpCalc->cpu.pio.lcd->width);
+		return HandleLCDSizingMessage(hwnd, lpCalc->hwndStatusBar, lpCalc, wParam, (RECT *)lParam, lpCalc->cpu.pio.lcd->width);
 	case WM_SIZE:
 		return HandleSizeMessage(hwnd, lpCalc->hwndLCD, lpCalc, lpCalc->bSkinEnabled);
 	case WM_MOVE: {
@@ -1657,7 +1662,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	case WM_NCHITTEST:
 		{
 			int htRet = (int) DefWindowProc(hwnd, Message, wParam, lParam);
-			if (htRet != HTCLIENT) return htRet;
+			switch (htRet) {
+			case HTLEFT:
+			case HTRIGHT:
+			case HTTOP:
+			case HTBOTTOM:
+				return HTCLIENT;
+			default:
+				if (htRet == HTCLIENT) {
+					break;
+				}
+				return htRet;
+			}
 
 			POINT pt;
 			pt.x = GET_X_LPARAM(lParam);
@@ -1666,11 +1682,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				pt.y += GetSystemMetrics(SM_CYCAPTION);
 				pt.x += GetSystemMetrics(SM_CXFIXEDFRAME);
 			}
+
 			ScreenToClient(hwnd, &pt);
 			LONG x = (LONG)(pt.x / lpCalc->skin_scale);
 			LONG y = (LONG)(pt.y / lpCalc->skin_scale);
-			if (GetRValue(GetPixel(lpCalc->hdcKeymap, x, y)) != 0xFF)
+			if (GetRValue(GetPixel(lpCalc->hdcKeymap, x, y)) != 0xFF) {
 				return htRet;
+			}
+
 			return HTCAPTION;
 		}
 	default:

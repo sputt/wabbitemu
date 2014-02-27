@@ -7,8 +7,8 @@
 #define MIN_SKIN_WIDTH	290
 #define MIN_SKIN_HEIGHT	600
 
-#define MAX_SKIN_WIDTH	483
-#define MAX_SKIN_HEIGHT	1000
+#define MAX_SKIN_WIDTH	520
+#define MAX_SKIN_HEIGHT	1077
 
 #define SKIN_WIDTH	350
 #define SKIN_HEIGHT	725
@@ -63,10 +63,6 @@
 
 #define REG_UPDATE		1
 
-
-#define MEM_BYTE		1
-#define MEM_WORD		2
-#define MEM_DWORD		4
 
 void gui_debug(LPCALC lpCalc);
 int gui_frame(LPCALC lpCalc);

@@ -48,7 +48,7 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_SIZING: {
 		LPCALC lpCalc = (LPCALC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
-		return HandleLCDSizingMessage(hwnd, lpCalc, wParam, (RECT *)lParam, lcd->display_width);
+		return HandleLCDSizingMessage(hwnd, NULL, lpCalc, wParam, (RECT *)lParam, lcd->display_width);
 	}
 	case WM_SIZE: {
 		LPCALC lpCalc = (LPCALC)GetWindowLongPtr(hwnd, GWLP_USERDATA);

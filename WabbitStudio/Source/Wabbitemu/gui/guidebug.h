@@ -10,6 +10,12 @@ LRESULT CALLBACK DebugProc(HWND, UINT, WPARAM, LPARAM);
 int BrowseTxtFile(TCHAR *);
 #define REG_PANE_WIDTH 200
 
+typedef enum {
+	MEM_BYTE = 1,
+	MEM_WORD = 2,
+	MEM_DWORD = 4,
+};
+
 #define ID_DISASM 		0
 #define ID_REG 			1
 #define ID_MEMTAB		2
