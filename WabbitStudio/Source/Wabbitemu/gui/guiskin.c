@@ -73,6 +73,10 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 			double width_scale = (double)newWidth / SKIN_WIDTH;
 			double height_scale = (double)screenHeight / SKIN_HEIGHT;
 			lpCalc->skin_scale = min(width_scale, height_scale) * lpCalc->default_skin_scale;
+			if (lpCalc->skin_scale >= lpCalc->default_skin_scale - SKIN_SCALE_SNAP &&
+				lpCalc->skin_scale <= lpCalc->default_skin_scale + SKIN_SCALE_SNAP) {
+				lpCalc->skin_scale = lpCalc->default_skin_scale;
+			}
 		}
 
 		rc.left = (LONG)(rc.left * lpCalc->skin_scale);

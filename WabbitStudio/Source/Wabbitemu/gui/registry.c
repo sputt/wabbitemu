@@ -39,7 +39,7 @@ reg_default_t regDefaults[] = {
 	{_T("lcd_mode"),				REG_DWORD,	0},		// perfect gray
 	{_T("lcd_freq"),				REG_DWORD,	FPS},	// steady freq
 	{_T("screen_scale"),			REG_DWORD,  2},
-	{_T("skin_scale"),				REG_SZ,		(LONG_PTR) _T("0.5")},
+	{_T("skin_scale"),				REG_SZ,		(LONG_PTR) _T("0.0")},
 	{_T("faceplate_color"),			REG_DWORD, 	0x838587},
 	{_T("exit_save_state"),			REG_DWORD,  TRUE},
 	{_T("load_files_first"),		REG_DWORD,  FALSE},
