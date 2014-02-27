@@ -10,4 +10,6 @@ LRESULT HandleLCDSizingMessage(HWND hwnd, HWND hwndStatusBar, LPCALC lpCalc, WPA
 LRESULT HandleSkinSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc);
 LRESULT GetMinMaxInfo(HWND hwnd, LPCALC lpCalc, MINMAXINFO *info);
 
+#define SKIN_SCALE_SNAP .025
+
 #endif

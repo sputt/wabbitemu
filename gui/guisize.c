@@ -7,8 +7,6 @@
 
 extern BOOL silent_mode;
 
-#define SKIN_SCALE_SNAP .025
-
 unsigned int GetDefaultKeymapScale(int model) {
 	switch (model) {
 	case TI_84PCSE:

@@ -199,7 +199,7 @@ int gui_frame(LPCALC lpCalc) {
 		lpCalc->scale = 2;
 	}
 
-	if (lpCalc->skin_scale == 0) {
+	if (lpCalc->skin_scale == 0.0) {
 		lpCalc->skin_scale = 1.0;
 	}
 
