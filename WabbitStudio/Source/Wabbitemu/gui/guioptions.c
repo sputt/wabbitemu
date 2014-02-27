@@ -545,6 +545,8 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			tiosDebug_check = GetDlgItem(hwnd, IDC_CHK_TIOS_DEBUG);
 			checkUpdates_check = GetDlgItem(hwnd, IDC_CHK_UPDATES);
 			showWhatsNew_check = GetDlgItem(hwnd, IDC_CHK_SHOWWHATSNEW);
+			// disable option for now
+			EnableWindow(doBackups_check, FALSE);
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
 		case WM_COMMAND: {
@@ -575,6 +577,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 		case WM_NOTIFY:
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
+					show_whats_new = Button_GetCheck(showWhatsNew_check);
 					exit_save_state = Button_GetCheck(saveState_check);
 					new_calc_on_load_files = Button_GetCheck(loadFiles_check);
 					break_on_exe_violation = Button_GetCheck(exeViolation_check);
@@ -607,6 +610,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			}
 			break;
 		case WM_USER: {
+			Button_SetCheck(showWhatsNew_check, show_whats_new);
 			Button_SetCheck(saveState_check, exit_save_state);
 			Button_SetCheck(loadFiles_check, new_calc_on_load_files);
 			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);

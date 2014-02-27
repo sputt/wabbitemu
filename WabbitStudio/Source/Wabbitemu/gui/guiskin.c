@@ -105,7 +105,12 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 		CheckMenuItem(hMenu, IDM_VIEW_SKIN, MF_BYCOMMAND | bChecked);
 	}
 
-	SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+	UINT flags = SWP_NOMOVE;
+	if (!lpCalc->bAlwaysOnTop) {
+		flags |= SWP_NOZORDER;
+	}
+
+	SetWindowPos(lpCalc->hwndFrame, HWND_TOPMOST, 0, 0, rc.right - rc.left, rc.bottom - rc.top, flags);
 }
 
 enum DRAWSKINERROR {
@@ -307,11 +312,12 @@ int gui_frame_update(LPCALC lpCalc) {
 	}
 
 	BOOL foundScreen = FALSE;
-	if ((skinWidth % SKIN_WIDTH) || (skinHeight % SKIN_HEIGHT) ||
-		(skinWidth != keymapWidth) || (skinHeight != keymapHeight) ||
-		skinHeight <= 0 || skinWidth <= 0) {
+	if ((skinWidth % SKIN_WIDTH) || (skinHeight % SKIN_HEIGHT) || skinHeight <= 0 || skinWidth <= 0) {
 		lpCalc->bSkinEnabled = false;
-		MessageBox(lpCalc->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"),  MB_OK);
+		MessageBox(lpCalc->hwndFrame, _T("Invalid skin size."), _T("Error"), MB_OK | MB_ICONERROR);
+	} else if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight)) {
+		lpCalc->bSkinEnabled = false;
+		MessageBox(lpCalc->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"), MB_OK | MB_ICONERROR);
 	} else {
 		if (lpCalc->default_skin_scale) {
 			lpCalc->skin_scale = lpCalc->skin_scale / lpCalc->default_skin_scale;
