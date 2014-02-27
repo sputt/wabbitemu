@@ -133,7 +133,7 @@ BOOL IsJustUpgraded() {
 	if (versionData != NULL) {
 		if (thisFileInfo != NULL) {
 			TCHAR *oldVersion = (TCHAR *) QueryWabbitKey(_T("version"));
-			VS_FIXEDFILEINFO oldFileInfo ;
+			VS_FIXEDFILEINFO oldFileInfo;
 			_stscanf_s(oldVersion, _T("%u.%u.%u.%u"), &oldFileInfo.dwFileVersionMS, &oldFileInfo.dwFileVersionLS,
 					&oldFileInfo.dwProductVersionMS, &oldFileInfo.dwProductVersionLS);
 			oldFileInfo.dwFileVersionMS = MAKELONG(oldFileInfo.dwFileVersionLS, oldFileInfo.dwFileVersionMS);
