@@ -12,14 +12,15 @@ extern BOOL silent_mode;
 extern HINSTANCE g_hInst;
 #define LCD_MARKER_COLOR 0xFFFF0000
 
-BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, u_int skinWidth, u_int skinHeight, RECT *rectLCD) {
+BOOL FindLCDRect(BitmapData *bitmapData, RECT *rectLCD) {
 	int foundX = -1, foundY = -1;
-	Color pixel;
-	//find the top left corner
-	for (u_int y = 0; y < skinHeight && foundX == -1; y++) {
-		for (u_int x = 0; x < skinWidth && foundY == -1; x++) {
-			m_pBitmapKeymap->GetPixel(x, y, &pixel);
-			if (pixel.GetValue() == LCD_MARKER_COLOR)	{
+	// find the top left corner of the screen (marked as a red rectangle)
+	UINT *pixels = (UINT *)bitmapData->Scan0; 
+	UINT pixel = 0;
+	for (UINT y = 0; y < bitmapData->Height && foundX == -1; y++) {
+		for (UINT x = 0; x < bitmapData->Width && foundY == -1; x++) {
+			pixel = pixels[y * bitmapData->Width + x];
+			if (pixel == LCD_MARKER_COLOR)	{
 				//81 92
 				foundX = x;
 				foundY = y;
@@ -34,14 +35,14 @@ BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, u_int skinWidth, u_int skinHeight, REC
 	//find right edge
 	do {
 		foundX++;
-		m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
-	} while (pixel.GetValue() == LCD_MARKER_COLOR);
+		pixel = pixels[foundY * bitmapData->Width + foundX];
+	} while (pixel == LCD_MARKER_COLOR);
 	rectLCD->right = foundX--;
 	//find left edge
 	do { 
 		foundY++;
-		m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
-	} while (pixel.GetValue() == LCD_MARKER_COLOR);
+		pixel = pixels[foundY * bitmapData->Width + foundX];
+	} while (pixel == LCD_MARKER_COLOR);
 	rectLCD->bottom = foundY;
 	return TRUE;
 }
@@ -74,7 +75,8 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 			double height_scale = (double)screenHeight / SKIN_HEIGHT;
 			lpCalc->skin_scale = min(width_scale, height_scale) * lpCalc->default_skin_scale;
 			if (lpCalc->skin_scale >= lpCalc->default_skin_scale - SKIN_SCALE_SNAP &&
-				lpCalc->skin_scale <= lpCalc->default_skin_scale + SKIN_SCALE_SNAP) {
+				lpCalc->skin_scale <= lpCalc->default_skin_scale + SKIN_SCALE_SNAP)
+			{
 				lpCalc->skin_scale = lpCalc->default_skin_scale;
 			}
 		}
@@ -186,7 +188,7 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 		// which is pointed to by lpBitmap.
 
 		DWORD dwBmpSize = ((skinWidth * bi.bmiHeader.biBitCount + 31) / 32) * 4 * skinHeight;
-		LPBYTE bitmap = (LPBYTE) malloc(dwBmpSize);		
+		LPUINT bitmap = (LPUINT) malloc(dwBmpSize);		
 
 		GetDIBits(lpCalc->hdcSkin, (HBITMAP)GetCurrentObject(lpCalc->hdcButtons, OBJ_BITMAP),
 			0, skinHeight,
@@ -197,15 +199,15 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 		// the alpha channel in a bitmap unless you use GetDIBits to get it
 		// in an array, change the highest byte, then reset with SetDIBits
 		// This colors the faceplate that way
-		BYTE* pPixel = bitmap;
+		LPUINT pPixel = bitmap;
 		HRGN rgn = GetFaceplateRegion(lpCalc);
 		unsigned int x, y;
 		for (y = 0; y < skinHeight; y++) {
 			for (x = 0; x < skinWidth; x++) {
 				if (PtInRegion(rgn, x, skinHeight - y)) {
-					pPixel[3] = 0xFF;
+					*pPixel |= 0xFF000000;
 				}
-				pPixel += 4;
+				pPixel++;
 			}
 		}
 
@@ -315,28 +317,44 @@ int gui_frame_update(LPCALC lpCalc) {
 		keymapHeight = m_pBitmapKeymap->GetHeight();
 	}
 
-	BOOL foundScreen = FALSE;
 	if ((skinWidth % SKIN_WIDTH) || (skinHeight % SKIN_HEIGHT) || skinHeight <= 0 || skinWidth <= 0) {
 		lpCalc->bSkinEnabled = false;
 		MessageBox(lpCalc->hwndFrame, _T("Invalid skin size."), _T("Error"), MB_OK | MB_ICONERROR);
+		return 0;
 	} else if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight)) {
 		lpCalc->bSkinEnabled = false;
 		MessageBox(lpCalc->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"), MB_OK | MB_ICONERROR);
+		return 0;
 	} else {
-		if (lpCalc->default_skin_scale) {
+		if (lpCalc->skin_scale == 0.0) {
+			lpCalc->skin_scale = 1.0;
+		} else if (lpCalc->default_skin_scale) {
 			lpCalc->skin_scale = lpCalc->skin_scale / lpCalc->default_skin_scale;
 		}
 
 		lpCalc->default_skin_scale = (double)SKIN_WIDTH / skinWidth;
 		lpCalc->skin_scale = lpCalc->skin_scale * lpCalc->default_skin_scale;
+		
 		lpCalc->rectSkin.right = skinWidth;
 		lpCalc->rectSkin.bottom = skinHeight;
-		foundScreen = FindLCDRect(m_pBitmapKeymap, skinWidth, skinHeight, &lpCalc->rectLCD);
+		BitmapData *data = new BitmapData;
+		Rect keymapRect(0, 0, keymapWidth, keymapHeight);
+		m_pBitmapKeymap->LockBits(&keymapRect, ImageLockModeRead, PixelFormat32bppARGB, data);
+		BOOL foundScreen = FindLCDRect(data, &lpCalc->rectLCD);
+
+		if (!foundScreen) {
+			free(data);
+			MessageBox(lpCalc->hwndFrame, _T("Unable to find the screen box"), _T("Error"), MB_OK);
+			lpCalc->bSkinEnabled = false;
+			return 0;
+		}
+
+		FindButtonsRect(data);
+
+		free(data);
+
 	}
-	if (!foundScreen) {
-		MessageBox(lpCalc->hwndFrame, _T("Unable to find the screen box"), _T("Error"), MB_OK);
-		lpCalc->bSkinEnabled = false;
-	}
+
 	if (lpCalc->hwndFrame == NULL) {
 		return 0;
 	}
@@ -380,7 +398,7 @@ int gui_frame_update(LPCALC lpCalc) {
 
 	SendMessage(lpCalc->hwndFrame, WM_SIZE, SIZE_RESTORED, 0);
 
-	return 0;
+	return 1;
 }
 
 static POINT ptRgnEdge[] = {{75,675},

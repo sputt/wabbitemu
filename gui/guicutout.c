@@ -223,7 +223,6 @@ int EnableCutout(LPCALC lpCalc) {
 	HDC hdc = CreateCompatibleDC(hScreen);
 	HBITMAP hBmp = CreateCompatibleBitmap(hScreen, size.cx, size.cy);
 	HBITMAP hBmpOld = (HBITMAP)SelectObject(hdc, hBmp);
-	SetStretchBltMode(hdc, HALFTONE);
 	AlphaBlend(hdc, 0, 0, size.cx, size.cy, lpCalc->hdcButtons, 0, 0, width, height, bf);
 	BOOL done = UpdateLayeredWindow(lpCalc->hwndFrame, hScreen, NULL, &size, hdc, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
 	DWORD error;

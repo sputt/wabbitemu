@@ -82,7 +82,6 @@ POINT drop_pt;
 BOOL gif_anim_advance;
 BOOL silent_mode = FALSE;
 BOOL is_exiting = FALSE;
-HIMAGELIST hImageList = NULL;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
@@ -906,6 +905,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		} else {
 			FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
 		}
+
 		ReleaseDC(hwnd, hdc);
 		EndPaint(hwnd, &ps);
 
