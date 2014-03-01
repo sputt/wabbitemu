@@ -576,21 +576,8 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	}
 
 	if (tifile->model == TI_83P) {
-		tmp = fgetc(infile);
-		if (tmp == EOF) {
-			fclose(infile);
-			FreeTiFile(tifile);
-			return NULL;
-		}
-		if (tmp > 5) {
-			_putts(_T("Warning version is greater than 5, setting to 0"));
-			tmp = 0;
-		}
-		ptr[i++] = tmp;
-		tmp = fgetc(infile);
-		if (tmp == EOF)
-			return FreeTiFile(tifile);
-		ptr[i++] = tmp;
+		ptr[i++] = tmpread(infile);
+		ptr[i++] = tmpread(infile);
 	} else {
 		ptr[i++] = 0;
 		ptr[i++] = 0;

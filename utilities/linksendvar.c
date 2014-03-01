@@ -130,7 +130,7 @@ void link_RTS(CPU_t *cpu, TIVAR_t *var, int dest) {
 	TI_VARHDR var_hdr;
 
 	if (cpu->pio.model == TI_85 || cpu->pio.model == TI_86) {
-		memset(&var_hdr, ' ', sizeof(TI_VARHDR));
+		memset(&var_hdr, 0, sizeof(TI_VARHDR));
 		memset(var_hdr.name86, 0, sizeof(var_hdr.name86));
 		memcpy_s(var_hdr.name86, 8, (char *)var->name, 8);
 		var_hdr.name_length = var->name_length;
@@ -219,46 +219,46 @@ LINK_ERR link_send_var(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		int err;
 		switch (err = setjmp(exc_pkt)) {
 		case 0: {
-					TI_PKTHDR rpkt;
-					u_char data[64];
+			TI_PKTHDR rpkt;
+			u_char data[64];
 
-					// Request to send
-					link_RTS(cpu, var, dest);
+			// Request to send
+			link_RTS(cpu, var, dest);
 
-					// Receive the ACK
-					link_recv_pkt(cpu, &rpkt, data);
-					if (rpkt.command_ID != CID_ACK)
-						return LERR_LINK;
+			// Receive the ACK
+			link_recv_pkt(cpu, &rpkt, data);
+			if (rpkt.command_ID != CID_ACK)
+				return LERR_LINK;
 
-					// Receive Clear To Send
-					link_recv_pkt(cpu, &rpkt, data);
-					if (rpkt.command_ID != CID_CTS) {
-						if (rpkt.command_ID == CID_EXIT) {
-							if (cpu->pio.model < TI_84PCSE) {
-								link_send_pkt(cpu, CID_ACK, NULL);
-							}
-							return LERR_MEM;
-						}
-						else
-							return LERR_LINK;
+			// Receive Clear To Send
+			link_recv_pkt(cpu, &rpkt, data);
+			if (rpkt.command_ID != CID_CTS) {
+				if (rpkt.command_ID == CID_EXIT) {
+					if (cpu->pio.model < TI_84PCSE) {
+						link_send_pkt(cpu, CID_ACK, NULL);
 					}
+					return LERR_MEM;
+				}
+				else
+					return LERR_LINK;
+			}
 
-					// Send the ACK
-					link_send_pkt(cpu, CID_ACK, NULL);
+			// Send the ACK
+			link_send_pkt(cpu, CID_ACK, NULL);
 
-					// Send the single data packet containing the whole file
-					TI_DATA s_data = { var->length, var->data };
-					link_send_pkt(cpu, CID_DATA, &s_data);
+			// Send the single data packet containing the whole file
+			TI_DATA s_data = { var->length, var->data };
+			link_send_pkt(cpu, CID_DATA, &s_data);
 
-					// Receive the ACK
-					link_recv_pkt(cpu, &rpkt, data);
-					if (rpkt.command_ID != CID_ACK)
-						return LERR_LINK;
+			// Receive the ACK
+			link_recv_pkt(cpu, &rpkt, data);
+			if (rpkt.command_ID != CID_ACK)
+				return LERR_LINK;
 
-					// Send the End of Transmission
-					if (cpu->pio.model != TI_82 && cpu->pio.model != TI_85)
-						link_send_pkt(cpu, CID_EOT, NULL);
-					break;
+			// Send the End of Transmission
+			if (cpu->pio.model != TI_82 && cpu->pio.model != TI_85)
+				link_send_pkt(cpu, CID_EOT, NULL);
+			break;
 		}
 		default:
 			return LERR_SYSTEM;
