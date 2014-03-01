@@ -5,7 +5,7 @@
 #include "guibuttons.h"
 #include "gui.h"
 
-extern HIMAGELIST hImageList;
+HIMAGELIST hImageList = NULL;
 extern HINSTANCE g_hInst;
 
 LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -35,15 +35,13 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 			RECT r = {0, 0, 60, 60};
 			HBRUSH br = CreateSolidBrush(RGB(0, 255, 0));
+			RECT brect;
 
 			for (int group = 0; group < 7; group++) {
 				for (int bit = 0; bit < 8; bit++) {
-					extern POINT *ButtonCenter[64];
-					if ((*ButtonCenter)[bit + (group << 3)].x != 0xFFF) {
-						pt.x	= (*ButtonCenter)[bit + (group << 3)].x;
-						pt.y	= (*ButtonCenter)[bit + (group << 3)].y;
-
-
+					extern RECT ButtonRect[64];
+					brect = ButtonRect[bit + (group << 3)];
+					if (brect.left != 0) {
 						HDC hdcButtons = CreateCompatibleDC(lpCalc->hdcButtons);
 						HBITMAP hbm = CreateCompatibleBitmap(lpCalc->hdcButtons, 64, 64);
 						HGDIOBJ hbmOld = SelectObject(hdcButtons, hbm);
@@ -51,8 +49,8 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 						FillRect(hdcButtons, &r, br);
 
 						UINT keymap_scale = (UINT)(1.0 / lpCalc->default_skin_scale);
-						DrawButtonStateNoSkin(hdcButtons, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_COPY, keymap_scale);
-						DrawButtonShadow(hdcButtons, lpCalc->hdcKeymap, &pt, keymap_scale);
+						DrawButtonStateNoSkin(hdcButtons, lpCalc->hdcSkin, lpCalc->hdcKeymap, brect, DBS_COPY, keymap_scale);
+						DrawButtonShadow(hdcButtons, lpCalc->hdcKeymap, brect, keymap_scale);
 
 						SelectObject(hdcButtons, hbmOld);
 						DeleteDC(hdcButtons);
