@@ -5,7 +5,7 @@
 
 HRESULT LoadRegistrySettings(const LPCALC lpCalc);
 HRESULT LoadRegistryDefaults();
-HRESULT SaveRegistrySettings(const LPCALC lpCalc);
+HRESULT SaveRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCalc);
 INT_PTR QueryWabbitKey(LPCTSTR lpszName);
 void SaveWabbitKey(TCHAR *name, int type, void *value);
 //void SaveWabbitKeyA(char *name, int type, void *value);

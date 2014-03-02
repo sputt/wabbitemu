@@ -1,6 +1,7 @@
 #ifndef GUIBUTTONS_H
 #define GUIBUTTONS_H
 
+#include "gui.h"
 #include "calc.h"
 
 typedef enum {
@@ -12,9 +13,9 @@ typedef enum {
 } DisplayButtonState;
 
 void FindButtonsRect(BitmapData *data);
-void FinalizeButtons(LPCALC lpCalc);
-void HandleKeyDown(LPCALC lpCalc, unsigned int);
-void HandleKeyUp(LPCALC lpCalc, unsigned int);
+void FinalizeButtons(LPMAINWINDOW lpMainWindow, LPCALC lpCalc);
+void HandleKeyDown(LPMAINWINDOW lpMainWindow, LPCALC lpCalc, WPARAM);
+void HandleKeyUp(LPMAINWINDOW lpMainWindow, LPCALC lpCalc, WPARAM);
 void DrawButtonState(HDC, HDC, RECT *, UINT state, UINT keymap_scale);
 void DrawButtonStateNoSkin(HDC hdcDest, HDC hdcSkin, HDC hdcKeymap, RECT brect, UINT state, UINT keymap_scale);
 void DrawButtonStatesAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap);

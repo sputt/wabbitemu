@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "gui.h"
 #include "calc.h"
 #include "DropTarget.h"
 #include "SendFilesWindows.h"
@@ -26,8 +27,9 @@ CDropTarget::~CDropTarget() {
 	free(m_pRequired);
 	free(m_pAccepted);
 	list<string>::iterator it;
-	for (it = tempFiles.begin(); it != tempFiles.end(); it++)
+	for (it = tempFiles.begin(); it != tempFiles.end(); it++) {
 		_tremove((*it).c_str());
+	}
 }
 
 void RegisterDropWindow(HWND hwnd, IDropTarget **ppDropTarget) {
@@ -155,7 +157,16 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 	
 	DROPDESCRIPTION *pdd = (DROPDESCRIPTION *) GlobalLock(stgmed[0].hGlobal);
 
-	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	if (lpMainWindow == NULL) {
+		return E_POINTER;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+	if (lpCalc == NULL) {
+		return E_POINTER;
+	}
+
 	if (m_fAllowDrop == TRUE) {
 		pdd->type = DROPIMAGE_COPY;
 		wcscpy_s(pdd->szMessage, L"Transfer to %1");
@@ -197,7 +208,16 @@ HRESULT __stdcall CDropTarget::DragLeave() {
 		m_pDropTargetHelper->DragLeave();
 	}
 
-	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	if (lpMainWindow == NULL) {
+		return E_POINTER;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+	if (lpCalc == NULL) {
+		return E_POINTER;
+	}
+
 	if (lpCalc != NULL) {
 		lpCalc->bDoDrag = false;
 	}
@@ -209,15 +229,24 @@ static BOOL WriteStreamToFile(IStream *pStream, LPCTSTR lpszFileName) {
 	//pStream->g
 }
 
-extern BOOL is_archive_only;
-extern BOOL is_calc_file;
 BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 	STGMEDIUM stgmed;
 	TCHAR path[MAX_PATH];
 	ZeroMemory(path, sizeof(path));
 	BOOL valid = TRUE;
-	is_archive_only = TRUE;
-	is_calc_file = TRUE;
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	if (lpMainWindow == NULL) {
+		return E_POINTER;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+	if (lpCalc == NULL) {
+		return E_POINTER;
+	}
+
+	lpMainWindow->is_archive_only = TRUE;
+	lpMainWindow->is_calc_file = TRUE;
+
 	for (UINT i = 0; i < m_nAccepted; i++) {
 		if (SUCCEEDED(pDataObject->GetData(&m_pAccepted[i], &stgmed))) {
 			switch (m_pAccepted[i].cfFormat) {
@@ -229,14 +258,22 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 						TIFILE_t *tifile = importvar(path, TRUE);
 						valid = tifile != NULL;
 						//check if we can go in either ram or archive
-						if (tifile && tifile->flash == NULL)
-							is_archive_only = FALSE;
+						if (tifile && tifile->flash == NULL) {
+							lpMainWindow->is_archive_only = FALSE;
+						}
 						//check if were a file that doesn't go in ram or archive
-						if (tifile && (tifile->type == ROM_TYPE || tifile->type == SAV_TYPE || tifile->type == LABEL_TYPE || tifile->type == BREAKPOINT_TYPE))
-							is_calc_file = FALSE;
-						LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
-						if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
+						if (tifile && (tifile->type == ROM_TYPE || tifile->type == SAV_TYPE ||
+							tifile->type == LABEL_TYPE || tifile->type == BREAKPOINT_TYPE))
+						{
+							lpMainWindow->is_calc_file = FALSE;
+						}
+
+						if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 &&
+							lpCalc->model != TI_73 && lpCalc->model != TI_85))
+						{
 							valid = FALSE;
+						}
+
 						FreeTiFile(tifile);
 					}
 					GlobalUnlock(stgmed.hGlobal);
@@ -244,7 +281,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 				}
 				default: {
 					if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW)) {
-						LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
+						LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW)GlobalLock(stgmed.hGlobal);
 						LPTSTR lpszFileGroup = NULL;
 
 						for (u_int i = 0; i < lpfgd->cItems; i++) {
@@ -254,10 +291,10 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 							GetStorageString(path, sizeof(path));
 							StringCbCat(path, sizeof(path), szTemp);
 
-							FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
-							STGMEDIUM stgmedData = {0};
+							FORMATETC fmtstm = { RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM };
+							STGMEDIUM stgmedData = { 0 };
 							if (SUCCEEDED(pDataObject->GetData(&fmtstm, &stgmedData))) {
-								LPBYTE lpBuffer = (LPBYTE) malloc(lpfgd->fgd[i].nFileSizeLow);
+								LPBYTE lpBuffer = (LPBYTE)malloc(lpfgd->fgd[i].nFileSizeLow);
 
 								ULONG cbRead = 0;
 								if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead))) {
@@ -269,13 +306,20 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 
 										TIFILE_t *tifile = importvar(path, TRUE);
 										valid = tifile != NULL;
-										if (valid &&  tifile->flash == NULL)
-											is_archive_only = FALSE;
-										if (valid && (tifile->rom || tifile->save))
-											is_calc_file = FALSE;
-										LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
-										if (valid && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
+										if (valid &&  tifile->flash == NULL) {
+											lpMainWindow->is_archive_only = FALSE;
+										}
+
+										if (valid && (tifile->rom || tifile->save)) {
+											lpMainWindow->is_calc_file = FALSE;
+										}
+
+										if (valid && tifile->backup != NULL && (lpCalc->model != TI_82 &&
+											lpCalc->model != TI_73 && lpCalc->model != TI_85))
+										{
 											valid = FALSE;
+										}
+
 										FreeTiFile(tifile);
 									}
 									_tremove(path);
@@ -296,7 +340,15 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 }
 
 HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
-	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	if (lpMainWindow == NULL) {
+		return E_POINTER;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+	if (lpCalc == NULL) {
+		return E_POINTER;
+	}
 
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};
@@ -349,7 +401,7 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 											if (file != NULL) {
 												fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
 												fclose(file);
-												SendFileToCalc(lpCalc, szFileName, TRUE, DropMemoryTarget(m_hwndTarget));
+												SendFileToCalc(lpMainWindow->hwndFrame, lpCalc, szFileName, TRUE, DropMemoryTarget(m_hwndTarget));
 												tempFiles.push_back(szFileName);
 											}
 										}

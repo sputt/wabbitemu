@@ -93,8 +93,13 @@ void LoadAlreadyExistingWabbit(LPARAM lParam, LPTSTR filePath, SEND_FLAG sendLoc
 
 void LoadToLPCALC(LPARAM lParam, LPTSTR filePath, SEND_FLAG sendLoc)
 {
-	LPCALC lpCalc = (LPCALC) lParam;
-	SendFileToCalc(lpCalc, filePath, TRUE, sendLoc);
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW) lParam;
+	if (lpMainWindow == NULL) {
+		return;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+	SendFileToCalc(lpMainWindow->hwndFrame, lpCalc, filePath, TRUE, sendLoc);
 }
 
 void LoadCommandlineFiles(ParsedCmdArgs *parsedArgs, LPARAM lParam,

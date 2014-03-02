@@ -33,23 +33,23 @@ static int alphablendfail = 0;
 
 BITMAPINFO *bi = NULL; 
 BITMAPINFO *colorbi = NULL;
-BOOL is_archive_only = FALSE;
-BOOL is_calc_file = FALSE;
 
-HDC DrawDragPanes(HWND hwnd, HDC hdcDest) {
-	if (!is_calc_file)
+HDC DrawDragPanes(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
+	if (!lpMainWindow->is_calc_file) {
 		return NULL;
+	}
+
 	RECT rl, rr, clientRect;
 	GetClientRect(hwnd, &clientRect);
 	SIZE TxtSize;
 	POINT TxtPt;
 
-	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-
 	CopyRect(&rl, &clientRect);
 	CopyRect(&rr, &clientRect);
 
-	if (lpCalc->model >= TI_83P && !is_archive_only) {
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+
+	if (lpCalc->model >= TI_83P && !lpMainWindow->is_archive_only) {
 		rl.right = rr.left = rr.right / 2;
 	}
 
@@ -77,7 +77,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest) {
 	GRADIENT_RECT gRect[2];
 
 	if (lpCalc->model >= TI_83P) {
-		if (is_archive_only)
+		if (lpMainWindow->is_archive_only)
 			rr = rl;
 
 		FillRect(hdc, &rr, hbrArchive);
@@ -127,7 +127,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest) {
 		TextOut(hdc, TxtPt.x+rr.left, TxtPt.y, txtArch, (int) _tcslen(txtArch));
 	}
 
-	if (!is_archive_only) {
+	if (!lpMainWindow->is_archive_only) {
 		FillRect(hdc, &rl, hbrRAM);
 
 		if (PtInRect(&rl, pt)) {
@@ -286,9 +286,9 @@ HANDLE DDBToDIB(HBITMAP bitmap, DWORD dwCompression)
 	return hDIB;
 }
 
-void PaintLCD(HWND hwnd, HDC hdcDest) {
+void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 	unsigned char * screen;
-	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPCALC lpCalc = lpMainWindow->lpCalc;
 	LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 	if (lcd == NULL) {
 		_tprintf_s(_T("Invalid LCD pointer"));
@@ -322,14 +322,14 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			lcd_data,
 			info,
 			DIB_RGB_COLORS,
-			SRCCOPY) == 0) {
-
+			SRCCOPY) == 0) 
+		{
 			_tprintf_s(_T("error in SetDIBitsToDevice\n"));
 		}
 
 		if (lpCalc->bDoDrag == TRUE) {
 
-			hdcOverlay = DrawDragPanes(hwnd, hdcDest);
+			hdcOverlay = DrawDragPanes(hwnd, hdcDest, lpMainWindow);
 			BLENDFUNCTION bf;
 			bf.BlendOp = AC_SRC_OVER;
 			bf.BlendFlags = 0;
@@ -343,9 +343,11 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 		}
 
-
-		if (BitBlt(	hdcDest, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
-			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("BitBlt failed\n"));
+		if (BitBlt(hdcDest, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+			hdc, 0, 0, SRCCOPY) == FALSE) 
+		{
+			_tprintf_s(_T("BitBlt failed\n"));
+		}
 
 		free(lcd_data);
 
@@ -399,7 +401,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		bf.AlphaFormat = 0;
 
 		if (lpCalc->bDoDrag == TRUE) {
-			hdcOverlay = DrawDragPanes(hwnd, hdcDest);
+			hdcOverlay = DrawDragPanes(hwnd, hdcDest, lpMainWindow);
 
 			if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
 						hdcOverlay, 0, 0, rc.right, rc.bottom,
@@ -473,13 +475,18 @@ static TCHAR sz_status[32];
 LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 
 	static POINT ptOffset;
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPCALC lpCalc = NULL;
+	if (lpMainWindow != NULL) {
+		lpCalc = lpMainWindow->lpCalc;
+	}
 
 	switch (Message) {
 		case WM_CREATE:
 		{
 			HDC hdc = GetDC(hwnd);
-			LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+			lpMainWindow = (LPMAINWINDOW) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)lpMainWindow);
 
 			SetBkMode(hdc, TRANSPARENT);
 
@@ -488,10 +495,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				{RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL}
 			};
 
+			LPCALC lpCalc = lpMainWindow->lpCalc;
 			if (lpCalc->hwndLCD == NULL) {
-				RegisterDropWindow(hwnd, (IDropTarget **) &lpCalc->pDropTarget);
-				lpCalc->pDropTarget->AddAcceptedFormat(&fmtetc[0]);
-				lpCalc->pDropTarget->AddAcceptedFormat(&fmtetc[1]);
+				RegisterDropWindow(hwnd, (IDropTarget **) &lpMainWindow->pDropTarget);
+				lpMainWindow->pDropTarget->AddAcceptedFormat(&fmtetc[0]);
+				lpMainWindow->pDropTarget->AddAcceptedFormat(&fmtetc[1]);
 			}
 
 			if (bi == NULL) {
@@ -539,11 +547,18 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_PAINT:
 		{
 			HDC hdcDest;
-			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			if (lpCalc == NULL) {
+				break;
+			}
+
 			LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
+			if (lcd == NULL) {
+				break;
+			}
+
 			PAINTSTRUCT ps;
 			hdcDest = BeginPaint(hwnd, &ps);
-			PaintLCD(hwnd, hdcDest);
+			PaintLCD(hwnd, hdcDest, lpMainWindow);
 			EndPaint(hwnd, &ps);	
 			
 			if (lpCalc->hwndStatusBar) {
@@ -566,8 +581,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_CONTEXTMENU:
 			{
-				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				HMENU hmenuMain = GetMenu(lpCalc->hwndFrame);
+				HMENU hmenuMain = GetMenu(lpMainWindow->hwndFrame);
 				if (hmenuMain == NULL) {
 					return 0;
 				}
@@ -598,8 +612,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 		case WM_CLOSE:
 		case WM_COMMAND: {
-			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			SendMessage(lpCalc->hwndFrame, Message, wParam, lParam);
+			SendMessage(lpMainWindow->hwndFrame, Message, wParam, lParam);
 			return 0;
 		}
 		case WM_LBUTTONDOWN:
@@ -757,7 +770,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 
 		case WM_COPYDATA: {
-			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			PCOPYDATASTRUCT copyDataStruct = (PCOPYDATASTRUCT) lParam;
 			int size = (int) copyDataStruct->cbData;
 			TCHAR filePath[MAX_PATH];
@@ -769,41 +781,38 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				TCHAR *FileNames = (TCHAR *) malloc(size);
 				ZeroMemory(FileNames, size + 1);
 				StringCbCopy(FileNames, size + 1, filePath);
-				SendFileToCalc(lpCalc, FileNames, ram);
+				SendFileToCalc(lpMainWindow->hwndFrame, lpCalc, FileNames, ram);
 			}
 			break;
 		}
 
 		case WM_DROPFILES: {
-			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			TCHAR fn[256];
 			int count = DragQueryFile((HDROP) wParam, ~0, fn, 256);
 
 			while (count--) {
 				DragQueryFile((HDROP) wParam, count, fn, 256);
-				SendFileToCalc(lpCalc, fn, TRUE, DropMemoryTarget(hwnd));
+				SendFileToCalc(lpMainWindow->hwndFrame, lpCalc, fn, TRUE, DropMemoryTarget(hwnd));
 			}
 			return 0;
 		}
 
 		case WM_KEYDOWN:
 		case WM_KEYUP: {
-				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				return SendMessage(lpCalc->hwndFrame, Message, wParam, lParam);
+			return SendMessage(lpMainWindow->hwndFrame, Message, wParam, lParam);
 			}
 		case WM_DESTROY: {
-				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				if (calc_count() == 1 && is_exiting) {
-					free(bi);
-					free(colorbi);
-				}
-
-				if (hwnd == lpCalc->hwndLCD) {
-					UnregisterDropWindow(hwnd, (IDropTarget *) lpCalc->pDropTarget);
-					lpCalc->hwndLCD = NULL;
-				}
-				return 0;
+			if (calc_count() == 1 && is_exiting) {
+				free(bi);
+				free(colorbi);
 			}
+
+			if (hwnd == lpCalc->hwndLCD) {
+				UnregisterDropWindow(hwnd, (IDropTarget *) lpMainWindow->pDropTarget);
+				lpCalc->hwndLCD = NULL;
+			}
+			return 0;
+		}
 		default:
 			if (Message == RegisterWindowMessage(_T("ShellGetDragImage"))) {
 				LPSHDRAGIMAGE pDragImage = (LPSHDRAGIMAGE) lParam;

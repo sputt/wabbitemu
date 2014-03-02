@@ -1,6 +1,7 @@
 #ifndef GUIOPTIONS_H
 #define GUIOPTIONS_H
 
+#include "gui.h"
 #include "calc.h"
 
 INT_PTR CALLBACK PropertySheetProc(HWND, UINT, WPARAM, LPARAM);
@@ -14,7 +15,7 @@ void ChangeMenuCommands(HWND);
 TCHAR* GetFriendlyMenuText(HMENU, int, UINT);
 void RecurseAddItems(HMENU, TCHAR *);
 BOOL IsValidCmdRange(WORD);
-void DoPropertySheet(HWND);
+void DoPropertySheet(HWND, LPMAINWINDOW);
 
 void AddNormalKeys(TCHAR *, key_string keystrings[KEY_STRING_SIZE]);
 

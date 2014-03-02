@@ -194,6 +194,6 @@ void GetOpenSendFileName(HWND hwnd) {
 		len = _tcslen(filestroffset);
 		filestroffset[len] = 0;
 		filename += len + 1;
-		SendFileToCalc(lpCalc, filestr, TRUE, send_mode);
+		SendFileToCalc(hwnd, lpCalc, filestr, TRUE, send_mode);
 	}
 }

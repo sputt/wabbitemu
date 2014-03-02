@@ -7,6 +7,8 @@
 
 extern BOOL silent_mode;
 
+#define SKIN_SCALE_SNAP .025
+
 unsigned int GetDefaultKeymapScale(int model) {
 	switch (model) {
 	case TI_84PCSE:
@@ -34,6 +36,10 @@ LRESULT HandleMoveMessage(HWND hwnd, LPCALC lpCalc) {
 }
 
 LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabled) {
+	if (lpCalc == NULL) {
+		return 0;
+	}
+
 	u_int width;
 	HMENU hMenu = GetMenu(hwnd);
 	RECT rc, clientRect;
@@ -42,15 +48,20 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabl
 	UINT default_scale = GetDefaultKeymapScale(lpCalc->model);
 	UINT scale = skinEnabled ? default_scale : max(lpCalc->scale, default_scale);
 	int silentMode = silent_mode ? SWP_HIDEWINDOW : 0;
-	UINT lcdWidth, lcdHeight;
+	LONG lcdWidth, lcdHeight;
 	if (skinEnabled) {
 		lcdWidth = (rc.right - rc.left) / default_scale;
 		lcdHeight = (rc.bottom - rc.top) / default_scale;
-		lcdWidth = (unsigned int)(lcdWidth * lpCalc->skin_scale);
-		lcdHeight = (unsigned int)(lcdHeight *lpCalc->skin_scale);
+		lcdWidth = (LONG)(lcdWidth * lpCalc->skin_scale);
+		lcdHeight = (LONG)(lcdHeight *lpCalc->skin_scale);
 	} else {
-		lcdWidth = lpCalc->cpu.pio.lcd->display_width;
-		lcdHeight = lpCalc->cpu.pio.lcd->height;
+		LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
+		if (lcd == NULL) {
+			return 1;
+		}
+
+		lcdWidth = lcd->display_width;
+		lcdHeight = lcd->height;
 	}
 
 	lcdWidth *= scale;
@@ -206,10 +217,27 @@ BOOL UnadjustWindowRect(LPRECT prc, DWORD dwStyle, BOOL fMenu) {
 	return fRc;
 }
 
+double GetSkinScale(LONG ClientNewWidth, LONG ClientNewHeight, 
+	LONG *DiffWidth, LONG *DiffHeight, double default_skin_scale)
+{
+	
+	double width_scale = (double)(ClientNewWidth + *DiffWidth) / SKIN_WIDTH;
+	double height_scale = (double)(ClientNewHeight + *DiffHeight) / SKIN_HEIGHT;
+	double skin_scale = min(width_scale, height_scale) * default_skin_scale;
+
+	if (skin_scale >= default_skin_scale - SKIN_SCALE_SNAP &&
+		skin_scale <= default_skin_scale + SKIN_SCALE_SNAP) {
+		skin_scale = default_skin_scale;
+		*DiffWidth = SKIN_WIDTH - ClientNewWidth;
+		*DiffHeight = SKIN_HEIGHT - ClientNewHeight;
+	}
+
+	return skin_scale;
+}
+
 LRESULT HandleSkinSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc) {
 	LONG ClientOldWidth, ClientOldHeight;
 	LONG ClientNewWidth, ClientNewHeight;
-	LONG SkinWidth, SkinHeight;
 
 	RECT ClientNewRect;
 	CopyRect(&ClientNewRect, prc);
@@ -231,35 +259,23 @@ LRESULT HandleSkinSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *p
 	ClientOldWidth = ClientOldRect.right - ClientOldRect.left;
 	ClientOldHeight = ClientOldRect.bottom - ClientOldRect.top;
 
-	SkinWidth = SKIN_WIDTH;
-	SkinHeight = SKIN_HEIGHT;
-
 	ClientNewWidth = ClientNewRect.right - ClientNewRect.left;
 	ClientNewHeight = ClientNewRect.bottom - ClientNewRect.top;
 
 	LONG AdjustWidth = ClientNewWidth - ClientOldWidth;
 	LONG AdjustHeight = ClientNewHeight - ClientOldHeight;
 
-	double SkinRatio = (double)SkinWidth / SkinHeight;
+	double SkinRatio = (double)SKIN_WIDTH / (double)SKIN_HEIGHT;
 	LONG DiffWidth = 0;
 	LONG DiffHeight = 0;
 	if (AdjustWidth > AdjustHeight) {
-		DiffHeight = (SkinHeight * ClientNewWidth / SkinWidth) - ClientNewHeight;	
+		DiffHeight = (SKIN_HEIGHT * ClientNewWidth / SKIN_WIDTH) - ClientNewHeight;
 	} else if (AdjustHeight > AdjustWidth) {
-		DiffWidth = (SkinWidth * ClientNewHeight / SkinHeight) - ClientNewWidth;
+		DiffWidth = (SKIN_WIDTH * ClientNewHeight / SKIN_HEIGHT) - ClientNewWidth;
 	}
 
-	double width_scale = (double)(ClientNewWidth + DiffWidth) / SkinWidth;
-	double height_scale = (double)(ClientNewHeight + DiffHeight) / SkinHeight;
-	lpCalc->skin_scale = min(width_scale, height_scale) * lpCalc->default_skin_scale;
-
-	if (lpCalc->skin_scale >= lpCalc->default_skin_scale - SKIN_SCALE_SNAP &&
-		lpCalc->skin_scale <= lpCalc->default_skin_scale + SKIN_SCALE_SNAP)
-	{
-		lpCalc->skin_scale = lpCalc->default_skin_scale;
-		DiffWidth = SkinWidth - ClientNewWidth;
-		DiffHeight = SkinHeight - ClientNewHeight;
-	}
+	lpCalc->skin_scale = GetSkinScale(ClientNewWidth, ClientNewHeight,
+		&DiffWidth, &DiffHeight, lpCalc->default_skin_scale);
 
 	switch (wParam) {
 	case WMSZ_TOPLEFT:

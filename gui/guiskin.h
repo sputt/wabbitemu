@@ -1,11 +1,12 @@
 #ifndef GUISKIN_H
 #define GUISKIN_H
 
+#include "gui.h"
 #include "calc.h"
 
 int DrawFaceplateRegion(LPCALC, HDC, COLORREF);
 HRGN GetFaceplateRegion(LPCALC);
-int gui_frame_update(LPCALC);
+int gui_frame_update(LPCALC, LPMAINWINDOW);
 
 #define DEFAULT_84PCSE_SKIN_SCALE 1
 #define DEFAULT_SKIN_SCALE 2

@@ -260,13 +260,17 @@ void DrawButtonStatesAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 }
 
 static int last_shift;
-void HandleKeyDown(LPCALC lpCalc, unsigned int key) {
+void HandleKeyDown(LPMAINWINDOW lpMainWindow, LPCALC lpCalc, WPARAM key) {
+	if (lpCalc == NULL) {
+		return;
+	}
+
 	/* make this an accel*/
 	if (key == VK_F8) {
 		if (lpCalc->speed == 100) {
-			SendMessage(lpCalc->hwndFrame, WM_COMMAND, IDM_SPEED_QUADRUPLE, 0);
+			SendMessage(lpMainWindow->hwndFrame, WM_COMMAND, IDM_SPEED_QUADRUPLE, 0);
 		} else {
-			SendMessage(lpCalc->hwndFrame, WM_COMMAND, IDM_SPEED_NORMAL, 0);
+			SendMessage(lpMainWindow->hwndFrame, WM_COMMAND, IDM_SPEED_NORMAL, 0);
 		}
 	}
 
@@ -285,19 +289,24 @@ void HandleKeyDown(LPCALC lpCalc, unsigned int key) {
 	}
 	LogKeypress(lpCalc, kp->group, kp->bit);
 	if (changed) {
-		FinalizeButtons(lpCalc);
+		FinalizeButtons(lpMainWindow, lpCalc);
 	}
 }
 
-void HandleKeyUp(LPCALC lpCalc, unsigned int key) {
+void HandleKeyUp(LPMAINWINDOW lpMainWindow, LPCALC lpCalc, WPARAM key) {
+	if (lpCalc == NULL) {
+		return;
+	}
+
 	if (key == VK_SHIFT) {
 		key = last_shift;
 	}
-	keyprog_t *kp = keypad_key_release(&lpCalc->cpu, key);
-	FinalizeButtons(lpCalc);
+
+	keypad_key_release(&lpCalc->cpu, key);
+	FinalizeButtons(lpMainWindow, lpCalc);
 }
 
-void FinalizeButtons(LPCALC lpCalc) {
+void FinalizeButtons(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 	int group, bit;
 	keypad_t *kp = lpCalc->cpu.pio.keypad;
 
@@ -314,6 +323,6 @@ void FinalizeButtons(LPCALC lpCalc) {
 
 	if (lpCalc->bSkinEnabled && !lpCalc->bCutout) {
 		DrawButtonStatesAll(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap);
-		InvalidateRect(lpCalc->hwndFrame, NULL, FALSE);
+		InvalidateRect(lpMainWindow->hwndFrame, NULL, FALSE);
 	}
 }

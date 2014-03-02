@@ -7,8 +7,6 @@
 #include "guicutout.h"
 #include "colorlcd.h"
 
-#include "CGdiPlusBitmap.h"
-
 #define IDC_SMALLCLOSE		45
 #define IDC_SMALLMINIMIZE	46
 
@@ -23,8 +21,8 @@ LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	switch (uMsg)
 	{
 		case WM_CREATE: {
-			LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)((LPCREATESTRUCT)lParam)->lpCreateParams;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)lpMainWindow);
 			return 0;
 		}
 
@@ -90,38 +88,58 @@ LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 				return 0;
 		}
 		case WM_LBUTTONUP: {
-				POINT pt;
-				RECT rc;
-				//make sure were still over the button
-				GetCursorPos(&pt);
-				ScreenToClient(hwnd, &pt);
-				GetClientRect(hwnd, &rc);
-				if (PtInRect(&rc, pt)) {
-					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					TCHAR szWindowName[256];
-					GetWindowText(hwnd, szWindowName, ARRAYSIZE(szWindowName));
+			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			if (lpMainWindow == NULL) {
+				break;
+			}
 
-					if (_tcsicmp(szWindowName, g_szSmallMinimize) == 0) {
-						ShowWindow(lpCalc->hwndFrame, SW_MINIMIZE);
-					} else if (_tcsicmp(szWindowName, g_szSmallClose) == 0) {
-						SendMessage(lpCalc->hwndFrame, WM_CLOSE, 0, 0);
-					}
+			POINT pt;
+			RECT rc;
+			//make sure were still over the button
+			GetCursorPos(&pt);
+			ScreenToClient(hwnd, &pt);
+			GetClientRect(hwnd, &rc);
+			if (PtInRect(&rc, pt)) {
+				TCHAR szWindowName[256];
+				GetWindowText(hwnd, szWindowName, ARRAYSIZE(szWindowName));
+
+				if (_tcsicmp(szWindowName, g_szSmallMinimize) == 0) {
+					ShowWindow(lpMainWindow->hwndFrame, SW_MINIMIZE);
+				} else if (_tcsicmp(szWindowName, g_szSmallClose) == 0) {
+					SendMessage(lpMainWindow->hwndFrame, WM_CLOSE, 0, 0);
 				}
-				ReleaseCapture();
-				fDown = FALSE;
-				InvalidateRect(hwnd, NULL, FALSE);
-				UpdateWindow(hwnd);
-				return 0;
+			}
+			ReleaseCapture();
+			fDown = FALSE;
+			InvalidateRect(hwnd, NULL, FALSE);
+			UpdateWindow(hwnd);
+			return 0;
 		}
-		case WM_KEYDOWN:
-			HandleKeyDown((LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA), (unsigned int) wParam);
+		case WM_KEYDOWN: {
+			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			if (lpMainWindow == NULL) {
+				break;
+			}
+
+			HandleKeyDown(lpMainWindow, lpMainWindow->lpCalc, wParam);
 			return 0;
-		case WM_KEYUP:
-			HandleKeyUp((LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA), (unsigned int) wParam);
+		}
+		case WM_KEYUP: {
+			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			if (lpMainWindow == NULL) {
+				break;
+			}
+
+			HandleKeyUp(lpMainWindow, lpMainWindow->lpCalc , wParam);
 			return 0;
+		}
 		case WM_CLOSE: {
-			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			SendMessage(lpCalc->hwndFrame, uMsg, wParam, lParam);
+			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			if (lpMainWindow == NULL) {
+				break;
+			}
+
+			SendMessage(lpMainWindow->hwndFrame, uMsg, wParam, lParam);
 		}
 		case WM_NCCALCSIZE:
 			return 0;
@@ -159,7 +177,7 @@ static LRESULT CALLBACK TestButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 /* Using a layered window, make the frame window transparent.
  * Also create buttons to allow minimize and close while in skin mode
  */
-int EnableCutout(LPCALC lpCalc) {
+int EnableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 	if (!lpCalc || !lpCalc->bSkinEnabled) {
 		return 1;
 	}
@@ -180,7 +198,7 @@ int EnableCutout(LPCALC lpCalc) {
 
 	if (!lpCalc->hwndLCD || GetParent(lpCalc->hwndLCD)) {
 		RECT rc;
-		GetClientRect(lpCalc->hwndFrame, &rc);
+		GetClientRect(lpMainWindow->hwndFrame, &rc);
 		DestroyWindow(lpCalc->hwndLCD);
 		// don't initially show the window so we can disable DWM transitions
 		lpCalc->hwndLCD = CreateWindowEx(
@@ -189,7 +207,7 @@ int EnableCutout(LPCALC lpCalc) {
 			_T("Wabbitemu"),
 			0,
 			0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
-			lpCalc->hwndFrame, NULL, g_hInst,  (LPVOID) lpCalc);
+			lpMainWindow->hwndFrame, NULL, g_hInst, (LPVOID)lpMainWindow);
 	}
 
 	// still support XP so have to load this manually
@@ -205,7 +223,7 @@ int EnableCutout(LPCALC lpCalc) {
 	SetWindowTheme(lpCalc->hwndLCD, L" ", L" ");
 
 	RECT rc;
-	GetClientRect(lpCalc->hwndFrame, &rc);
+	GetClientRect(lpMainWindow->hwndFrame, &rc);
 	POINT rectTopLeft;
 	rectTopLeft.x = rc.left;
 	rectTopLeft.y = rc.top;
@@ -215,8 +233,8 @@ int EnableCutout(LPCALC lpCalc) {
 	size.cx = (LONG)(width * lpCalc->skin_scale);
 	size.cy = (LONG)(height * lpCalc->skin_scale);
 
-	SetWindowLongPtr(lpCalc->hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
-	SetWindowLongPtr(lpCalc->hwndFrame, GWL_STYLE, WS_VISIBLE);
+	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
+	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, WS_VISIBLE);
 
 	HDC hScreen = GetDC(NULL);
 	// resize the skin to be correct size
@@ -224,7 +242,7 @@ int EnableCutout(LPCALC lpCalc) {
 	HBITMAP hBmp = CreateCompatibleBitmap(hScreen, size.cx, size.cy);
 	HBITMAP hBmpOld = (HBITMAP)SelectObject(hdc, hBmp);
 	AlphaBlend(hdc, 0, 0, size.cx, size.cy, lpCalc->hdcButtons, 0, 0, width, height, bf);
-	BOOL done = UpdateLayeredWindow(lpCalc->hwndFrame, hScreen, NULL, &size, hdc, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
+	BOOL done = UpdateLayeredWindow(lpMainWindow->hwndFrame, hScreen, NULL, &size, hdc, &ptSrc, RGB(255, 255, 255), &bf, ULW_ALPHA);
 	DWORD error;
 	if (!done) {
 		error = GetLastError();
@@ -244,10 +262,10 @@ int EnableCutout(LPCALC lpCalc) {
 			WS_POPUP,
 			270, 19,
 			13, 13,
-			lpCalc->hwndFrame,
+			lpMainWindow->hwndFrame,
 			(HMENU) NULL,
 			g_hInst,
-			(LPVOID) lpCalc);
+			(LPVOID)lpMainWindow);
 		if (lpCalc->hwndSmallClose == NULL) {
 			return 1;
 		}
@@ -266,10 +284,10 @@ int EnableCutout(LPCALC lpCalc) {
 			WS_POPUP,
 			254, 19,
 			13, 13,
-			lpCalc->hwndFrame,
+			lpMainWindow->hwndFrame,
 			(HMENU) NULL,
 			g_hInst,
-			(LPVOID) lpCalc);
+			(LPVOID)lpMainWindow);
 		if (lpCalc->hwndSmallMinimize == NULL) {
 			return 1;
 		}
@@ -287,8 +305,8 @@ int EnableCutout(LPCALC lpCalc) {
 		FreeLibrary(hDwmModule);
 	}
 
-	InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);
-	UpdateWindow(lpCalc->hwndFrame);
+	InvalidateRect(lpMainWindow->hwndFrame, NULL, TRUE);
+	UpdateWindow(lpMainWindow->hwndFrame);
 	
 	return 0;
 }
@@ -296,7 +314,7 @@ int EnableCutout(LPCALC lpCalc) {
 /* Remove the cutout region from the window and delete
  * the small minimize and close buttons
  */
-int DisableCutout(LPCALC lpCalc) {
+int DisableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 	// still support XP so have to load this manually
 	HMODULE hDwmModule = LoadLibrary(DWMAPI_DLL);
 	if (hDwmModule) {
@@ -319,12 +337,12 @@ int DisableCutout(LPCALC lpCalc) {
 			_T("LCD"),
 			WS_VISIBLE | WS_CHILD,
 			0, 0, lcd_width * scale, lcd_height *scale,
-			lpCalc->hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID) lpCalc);
+			lpMainWindow->hwndFrame, (HMENU)IDC_LCD, g_hInst, (LPVOID)lpMainWindow);
 	}
 
 
-	SetWindowLongPtr(lpCalc->hwndFrame, GWL_EXSTYLE, 0);
-	SetWindowLongPtr(lpCalc->hwndFrame, GWL_STYLE, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));
+	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_EXSTYLE, 0);
+	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, (WS_TILEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));
 
 	if (lpCalc->hwndSmallClose) {
 		DestroyWindow(lpCalc->hwndSmallClose);
@@ -336,6 +354,6 @@ int DisableCutout(LPCALC lpCalc) {
 		lpCalc->hwndSmallMinimize = NULL;
 	}
 
-	InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);
+	InvalidateRect(lpMainWindow->hwndFrame, NULL, TRUE);
 	return 0;
 }

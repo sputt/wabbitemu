@@ -1,5 +1,6 @@
 #pragma once
 
+#include "calc.h"
 #include "CZ80.h"
 #include "CLCD.h"
 #include "CKeypad.h"
@@ -7,7 +8,7 @@
 
 #include "savestate.h"
 
-struct tagCALC;
+struct MainWindow;
 typedef Calc_Model CALC_MODEL;
 
 #include "CBreakpointCollection.h"
@@ -109,7 +110,8 @@ private:
 
 	int m_iSlot;
 	VARIANT_BOOL m_fVisible;
-	struct tagCALC *m_lpCalc;
+	struct MainWindow *m_lpMainWindow;
+	LPCALC m_lpCalc;
 	CComPtr<IZ80> m_pZ80;
 	CComPtr<IMemoryContext> m_pMem;
 	CComPtr<ILCD> m_pLCD;

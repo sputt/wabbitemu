@@ -312,8 +312,6 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	new_calc_on_load_files = (BOOL) QueryWabbitKey(_T("load_files_first"));
 	do_backups = (BOOL) QueryWabbitKey(_T("do_backups"));
 	sync_cores = (BOOL) QueryWabbitKey(_T("sync_cores"));
-	startX = (int) QueryWabbitKey(_T("startX"));
-	startY = (int) QueryWabbitKey(_T("startY"));
 	lpCalc->bAlwaysOnTop = (BOOL) QueryWabbitKey(_T("always_on_top"));
 	lpCalc->bCustomSkin = (BOOL) QueryWabbitKey(_T("custom_skin"));
 	lpCalc->mem_c.ram_version = (int) QueryWabbitKey(_T("ram_version"));
@@ -387,7 +385,7 @@ void SaveKeyMappings(HKEY hkeyWabbit) {
 	}
 }
 
-HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
+HRESULT SaveRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCalc) {
 	if (hkeyTarget && !portable_mode) {
 		RegCloseKey(hkeyTarget);
 		hkeyTarget = NULL;
@@ -427,7 +425,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("skin_path"), REG_SZ, &lpCalc->skin_path);
 		SaveWabbitKey(_T("keymap_path"), REG_SZ, &lpCalc->keymap_path);
 		WINDOWPLACEMENT wp;
-		GetWindowPlacement(lpCalc->hwndFrame, &wp);
+		GetWindowPlacement(lpMainWindow->hwndFrame, &wp);
 		SaveWabbitKey(_T("startX"), REG_DWORD, &wp.rcNormalPosition.left);
 		SaveWabbitKey(_T("startY"), REG_DWORD, &wp.rcNormalPosition.top);
 		SaveWabbitKey(_T("always_on_top"), REG_DWORD, &lpCalc->bAlwaysOnTop);

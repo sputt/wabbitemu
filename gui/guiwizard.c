@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "guiwizard.h"
+#include "guiskin.h"
 #include "guiresource.h"
 #include "guioptions.h"
 #include "gui.h"
@@ -28,8 +29,10 @@ TCHAR osPath[MAX_PATH];
 TCHAR dumperPath[MAX_PATH];
 static TCHAR TIConnectPath[MAX_PATH];
 static BOOL error = FALSE;
+static LPMAINWINDOW lpMainWindow;
 
-BOOL DoWizardSheet(HWND hwndOwner) {
+LPMAINWINDOW DoWizardSheet(HWND hwndOwner) {
+	lpMainWindow = NULL;
 
 	HPROPSHEETPAGE hPropSheet[5];
 	PROPSHEETPAGE psp;
@@ -109,7 +112,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psh.pfnCallback = NULL;
 	psh.pszIcon = NULL;
 	PropertySheet(&psh);
-	return error;
+	return lpMainWindow;
 }
 
 INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -189,11 +192,15 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					{
 						TCHAR szROMPath[MAX_PATH];
 						Edit_GetText(hEditRom, szROMPath, ARRAYSIZE(szROMPath));
-						LPCALC lpCalc = create_calc_register_events();
-						if (rom_load(lpCalc, szROMPath) == TRUE) {
-							gui_frame(lpCalc);
-						} else {
-							MessageBox(hwnd, _T("Invalid ROM file"), _T("Error"), MB_OK);
+						lpMainWindow = create_calc_frame_register_events();
+						if (lpMainWindow == NULL || lpMainWindow->lpCalc == NULL) {
+							MessageBox(hwnd, _T("Unable to create main window"), _T("Error"), MB_OK | MB_ICONERROR);
+							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+							return TRUE;
+						}
+
+						if (rom_load(lpMainWindow->lpCalc, szROMPath) == FALSE) {
+							MessageBox(hwnd, _T("Invalid ROM file"), _T("Error"), MB_OK | MB_ICONERROR);
 							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 							return TRUE;
 						}
@@ -536,7 +543,14 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
 
-					LPCALC lpCalc = create_calc_register_events();
+					lpMainWindow = create_calc_frame_register_events();
+					if (lpMainWindow == NULL || lpMainWindow->lpCalc == NULL) {
+						MessageBox(hwnd, _T("Unable to create main window"), _T("Error"), MB_OK | MB_ICONERROR);
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+						return TRUE;
+					}
+
+					LPCALC lpCalc = lpMainWindow->lpCalc;
 					TCHAR hexFile[MAX_PATH];
 					DWORD error = ExtractBootFree(model, hexFile);
 					if (error) {
@@ -595,7 +609,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						calc_turn_on(lpCalc);
 					}
 
-					gui_frame(lpCalc);
+					gui_frame_update(lpCalc, lpMainWindow);
 					// write the output from file
 					Static_SetText(hOSStaticProgress, _T("Saving File"));
 					MFILE *romfile = ExportRom(buffer, lpCalc);
@@ -674,13 +688,15 @@ DWORD WINAPI StartTIConnect(LPVOID lpParam) {
 	return TRUE;
 }
 
-//true if can be found. False otherwise
+// true if can be found. False otherwise
 BOOL CanFindTIConnectProg() {
 	TCHAR *env;
 	size_t envLen;
 	FILE *connectProg;
 	SYSTEM_INFO sysInfo;
 	GetSystemInfo(&sysInfo);
+
+	ZeroMemory(TIConnectPath, sizeof(TIConnectPath));
 	if (sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64) {
 		_tdupenv_s(&env, &envLen, _T("programfiles(x86)"));
 	} else {
@@ -688,9 +704,9 @@ BOOL CanFindTIConnectProg() {
 	}
 	StringCbCat(TIConnectPath, sizeof(TIConnectPath), env);
 	free(env);
-	//yes i know hard coding is bad :/
+	// yes i know hard coding is bad :/
 	StringCbCat(TIConnectPath, sizeof(TIConnectPath), _T("\\TI Education\\TI Connect\\TISendTo.exe"));
-	BOOL found =  _tfopen_s(&connectProg, TIConnectPath, _T("r")) != 0;
+	BOOL found = _tfopen_s(&connectProg, TIConnectPath, _T("r")) == ERROR_SUCCESS;
 	if (connectProg) {
 		fclose(connectProg);
 	}
@@ -703,6 +719,8 @@ BOOL CanFindTIGraphLinkProg() {
 	FILE *connectProg;
 	SYSTEM_INFO sysInfo;
 	GetSystemInfo(&sysInfo);
+	// TODO: fix path
+	ZeroMemory(TIConnectPath, sizeof(TIConnectPath));
 	if (sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
 		_tdupenv_s(&env, &envLen, _T("programfiles(x86)"));
 	else
@@ -711,7 +729,7 @@ BOOL CanFindTIGraphLinkProg() {
 	free(env);
 	//yes i know hard coding is bad :/
 	StringCbCat(TIConnectPath, sizeof(TIConnectPath), _T("\\TI Education\\TI Connect\\TISendTo.exe"));
-	BOOL found =  _tfopen_s(&connectProg, TIConnectPath, _T("r")) != 0;
+	BOOL found =  _tfopen_s(&connectProg, TIConnectPath, _T("r")) == ERROR_SUCCESS;
 	if (connectProg) {
 		fclose(connectProg);
 	}
@@ -736,15 +754,16 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 				case TI_83PSE:
 				case TI_84P:
 				case TI_84PSE: {
-					if (CanFindTIConnectProg()) {
+					if (CanFindTIConnectProg() == FALSE) {
 						Static_SetText(hStaticError, _T("Unable to find TI Connect, please manually send the dumper program."));
 						Button_Enable(hButtonAuto, FALSE);
 						ShowWindow(hStaticError, SW_SHOW);
 					}
+					break;
 				}
 				case TI_82:
 				case TI_85:
-					if (CanFindTIGraphLinkProg()) {
+					if (CanFindTIGraphLinkProg() == FALSE) {
 						Static_SetText(hStaticError, _T("Unable to find TI Graph Link, please manually send the dumper program."));
 						Button_Enable(hButtonAuto, FALSE);
 						ShowWindow(hStaticError, SW_SHOW);
@@ -993,7 +1012,15 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					*buffer = '\0';
 					SaveFile(buffer, _T("ROMs (*.rom)\0*.rom\0Bins (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST, 0);
-					LPCALC lpCalc = create_calc_register_events();
+
+					lpMainWindow = create_calc_frame_register_events();
+					if (lpMainWindow == NULL || lpMainWindow->lpCalc == NULL) {
+						MessageBox(hwnd, _T("Unable to create main window"), _T("Error"), MB_OK | MB_ICONERROR);
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+						return TRUE;
+					}
+
+					LPCALC lpCalc = lpMainWindow->lpCalc;
 					DWORD error = (DWORD) calc_init_model(lpCalc, model, NULL);
 					if (error) {
 						MessageBox(hwnd, _T("Unable to init calc"), _T("Error"), MB_OK);
@@ -1062,7 +1089,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						calc_turn_on(lpCalc);
 					}
 
-					gui_frame(lpCalc);
+					gui_frame_update(lpCalc, lpMainWindow);
 					// write the output from file
 					MFILE *romfile = ExportRom(buffer, lpCalc);
 					if (romfile != NULL) {

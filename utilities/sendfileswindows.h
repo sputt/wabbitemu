@@ -3,7 +3,7 @@
 
 #include "calc.h"
 
-BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND_FLAG destination = SEND_CUR);
+BOOL SendFileToCalc(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND_FLAG destination = SEND_CUR);
 void CancelFileThreadSend(const LPCALC lpCalc);
 
 #endif

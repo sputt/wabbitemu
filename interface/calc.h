@@ -12,13 +12,6 @@
 #include "breakpoint.h"
 #include "state.h"
 
-#ifdef _WINDOWS
-#include "DropTarget.h"
-
-class CWabbitemu;
-#endif
-
-
 #include "label.h"
 
 typedef enum {
@@ -33,6 +26,7 @@ typedef enum {
 	ROM_LOAD_EVENT = 1,
 	LCD_ENQUEUE_EVENT,
 	ROM_RUNNING_EVENT,
+	BREAKPOINT_EVENT,
 } EVENT_TYPE;
 
 #define MIN_BLOCK_SIZE 16
@@ -121,8 +115,6 @@ typedef struct tagCALC {
 	registered_event_t registered_events[MAX_REGISTERED_EVENTS];
 
 #ifdef _WINDOWS
-	CDropTarget *pDropTarget;
-	HWND hwndFrame;
 	HWND hwndLCD;
 	HWND hwndDetachedFrame;
 	HWND hwndDetachedLCD;
@@ -147,7 +139,6 @@ typedef struct tagCALC {
 	COLORREF FaceplateColor;
 	TCHAR skin_path[256];
 	TCHAR keymap_path[256];
-	CWabbitemu *pWabbitemu;
 #endif
 
 } calc_t, CALC, *LPCALC;
@@ -207,8 +198,6 @@ GLOBAL BOOL is_recording;
 #endif
 
 GLOBAL u_int frame_counter;
-GLOBAL int startX;
-GLOBAL int startY;
 GLOBAL BOOL exit_save_state;
 GLOBAL BOOL check_updates;
 GLOBAL BOOL show_whats_new;
