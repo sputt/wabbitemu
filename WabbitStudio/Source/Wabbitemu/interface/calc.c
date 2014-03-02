@@ -449,17 +449,9 @@ int calc_reset(LPCALC lpCalc) {
 	return 0;
 }
 
-/*
- *	This is only attached if the program does not attach its own callback
- */
 static void calc_debug_callback(LPCALC lpCalc)
 {
-#ifdef _WINDOWS
-	if (lpCalc->pWabbitemu != NULL) {
-		waddr_t addr = addr16_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc);
-		lpCalc->pWabbitemu->Fire_OnBreakpoint(&addr);
-	}
-#endif
+	notify_event(lpCalc, BREAKPOINT_EVENT);
 }
 
 int calc_run_frame(LPCALC lpCalc) {

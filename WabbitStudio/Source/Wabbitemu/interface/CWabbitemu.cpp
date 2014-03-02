@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "gui.h"
+#include "guiskin.h"
 #include "CLCD.h"
 #include "SendFileswindows.h"
 #include "CWabbitemu.h"
@@ -17,13 +18,18 @@
 
 HRESULT CWabbitemu::FinalConstruct()
 {
-	m_lpCalc = create_calc_register_events();
+	LPMAINWINDOW lpMainWindow = create_calc_frame_register_events();
+	if (lpMainWindow == NULL || lpMainWindow->lpCalc) {
+		MessageBox(NULL, _T("Unable to create main window"), _T("Error"), MB_OK | MB_ICONERROR);
+		return E_UNEXPECTED;
+	}
+	
+	lpMainWindow->pWabbitemu = this;
+	m_lpCalc = lpMainWindow->lpCalc;
 	LoadRegistrySettings(m_lpCalc);
 	m_iSlot = m_lpCalc->slot;
 
 	m_fVisible = VARIANT_FALSE;
-
-	m_lpCalc->pWabbitemu = this;
 
 	CComObject<CBreakpointCollection>::CreateInstance(&m_pBreakpointCollObj);
 	m_pBreakpointCollObj->AddRef();
@@ -47,8 +53,9 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 	}
 	if (fVisible == VARIANT_TRUE)
 	{
-		gui_frame(m_lpCalc);
-		SetProp(m_lpCalc->hwndFrame, _T("COMObjectFrame"), (HANDLE) TRUE);
+		gui_frame_update(m_lpCalc, m_lpMainWindow);
+		SetProp(m_lpMainWindow->hwndFrame, _T("COMObjectFrame"), (HANDLE) TRUE);
+		
 		//HMENU hMenu = GetSystemMenu(m_lpCalc->hwndFrame, FALSE);
 		//EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
 		//SetMenu(m_lpCalc->hwndFrame, NULL);
@@ -60,7 +67,7 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 	}
 	else
 	{
-		DestroyWindow(m_lpCalc->hwndFrame);
+		DestroyWindow(m_lpMainWindow->hwndFrame);
 	}
 	m_fVisible = fVisible;
 	return S_OK;
@@ -196,7 +203,7 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 {
 	TIFILE *file = importvar(_bstr_t(bstrFileName), TRUE);
 	
-	SendFileToCalc(m_lpCalc, _bstr_t(bstrFileName), FALSE);
+	SendFileToCalc(m_lpMainWindow->hwndFrame, m_lpCalc, _bstr_t(bstrFileName), FALSE);
 	if (file->type == ROM_TYPE || file->type == SAV_TYPE)
 	{
 		CComObject<CLCD> *pLCD = NULL;

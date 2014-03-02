@@ -9,7 +9,13 @@ HIMAGELIST hImageList = NULL;
 extern HINSTANCE g_hInst;
 
 LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	static LPCALC lpCalc;
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPCALC lpCalc = NULL;
+	if (lpMainWindow != NULL) {
+		lpCalc = lpMainWindow->lpCalc;
+	}
+
+
 	switch (uMsg) {
 		case WM_INITDIALOG: {
 			HICON hIcon = LoadIcon(g_hInst, _T("w"));
@@ -17,7 +23,9 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			DeleteObject(hIcon);
 
 			HWND hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
-			lpCalc = (LPCALC) GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+			lpMainWindow = (LPMAINWINDOW)lParam;
+			lpCalc = lpMainWindow->lpCalc;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)lpMainWindow);
 
 			if (hImageList) {
 				ImageList_Destroy(hImageList);

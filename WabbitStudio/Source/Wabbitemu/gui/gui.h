@@ -3,6 +3,9 @@
 
 #include "calc.h"
 #include "guicommandline.h"
+#include "DropTarget.h"
+
+class CWabbitemu;
 
 #define MIN_SKIN_WIDTH	290
 #define MIN_SKIN_HEIGHT	600
@@ -63,12 +66,23 @@
 
 #define REG_UPDATE		1
 
+typedef struct MainWindow {
+	LPCALC lpCalc;
+
+	HWND hwndFrame;
+
+	POINT ctxtPt;
+
+	CWabbitemu *pWabbitemu;
+	CDropTarget *pDropTarget;
+	BOOL is_archive_only;
+	BOOL is_calc_file;
+} MainWindow_t, *LPMAINWINDOW;
 
 void gui_debug(LPCALC lpCalc);
-int gui_frame(LPCALC lpCalc);
-void gui_draw(LPCALC lpCalc);
+LPMAINWINDOW gui_frame(LPCALC lpCalc);
 void GetFileCurrentVersionString(TCHAR *buf, size_t len);
-LPCALC create_calc_register_events();
+LPMAINWINDOW create_calc_frame_register_events();
 extern HACCEL haccelmain;
 
 void RegisterWindowClasses(void);
@@ -83,7 +97,12 @@ class CWabbitemuModule : public CAtlExeModuleT< CWabbitemuModule >
 public :
 	DECLARE_LIBID(LIBID_WabbitemuLib)
 
+	LPMAINWINDOW CreateNewFrame(LPCALC lpCalc);
+	void DestroyFrame(LPMAINWINDOW lpMainWindow);
+	HWND CheckValidFrameHandle(HWND hwndToCheck);
+
 	bool ParseCommandLine(LPCTSTR lpCmdLine, HRESULT* pnRetCode);
+
 	HRESULT PreMessageLoop(int nShowCmd);
 	void RunMessageLoop();
 	HRESULT PostMessageLoop();
@@ -93,7 +112,7 @@ public :
 	}
 
 private:
-	LPCALC m_lpCalc;
+	vector<LPMAINWINDOW> m_lpMainWindows;
 	ULONG_PTR m_gdiplusToken;
 	ParsedCmdArgs m_parsedArgs;
 };

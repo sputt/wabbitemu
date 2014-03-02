@@ -26,15 +26,22 @@ int PropPageLast = -1;
 // We have to save a slot for the ROM info
 // and skin, it differs per calc
 static LPCALC lpCalc;
+static LPMAINWINDOW lpMainWindow;
 
-void DoPropertySheet(HWND hwndOwner) {
+void DoPropertySheet(HWND hwndOwner, LPMAINWINDOW mainWindow) {
 
 	if (hwndProp != NULL) {
 		SwitchToThisWindow(hwndProp, TRUE);
 		return;
 	}
 
-	lpCalc = (LPCALC) GetWindowLongPtr(hwndOwner, GWLP_USERDATA);
+	lpMainWindow = mainWindow;
+	if (lpMainWindow == NULL) {
+		return;
+	}
+
+	lpCalc = lpMainWindow->lpCalc;
+
 	PROPSHEETPAGE psp[6];
 	PROPSHEETHEADER psh;
 
@@ -482,7 +489,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 							ScreenToClient(hColorSelect, &ptCursor);
 							COLORREF selectedColor = GetPixel(hColorPicker, ptCursor.x, ptCursor.y);
 							lpCalc->FaceplateColor = selectedColor;
-							gui_frame_update(lpCalc);
+							gui_frame_update(lpCalc, lpMainWindow);
 							SetFocus(hwndDlg);
 							break;
 						}
@@ -498,7 +505,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_RESET: {
 					lpCalc->FaceplateColor = backupFaceplate;
-					gui_frame_update(lpCalc);
+					gui_frame_update(lpCalc, lpMainWindow);
 					return TRUE;
 				}
 				case PSN_APPLY: {
@@ -514,7 +521,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 					StringCbCopy(lpCalc->skin_path, sizeof(lpCalc->skin_path), lpStrFile);
 					Edit_GetText(hKeyText, lpStrFile, sizeof(lpStrFile));
 					StringCbCopy(lpCalc->keymap_path, sizeof(lpCalc->skin_path), lpStrFile);
-					gui_frame_update(lpCalc);
+					gui_frame_update(lpCalc, lpMainWindow);
 					return TRUE;
 				}
 				case PSN_KILLACTIVE:
@@ -593,11 +600,11 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					lpCalc->bAlwaysOnTop = Button_GetCheck(alwaysTop_check);
 					lpCalc->bTIOSDebug = !Button_GetCheck(tiosDebug_check);
 					check_updates = Button_GetCheck(checkUpdates_check);
-					gui_frame_update(lpCalc);
+					gui_frame_update(lpCalc, lpMainWindow);
 
 					//we need to persist this immediately
 					if (portable_mode) {
-						SaveRegistrySettings(lpCalc);
+						SaveRegistrySettings(lpMainWindow, lpCalc);
 					} else {
 						SaveWabbitKey(_T("load_files_first"), REG_DWORD, &new_calc_on_load_files);
 					}
@@ -1201,7 +1208,8 @@ void AssignAccel(HWND hwnd) {
 			hNewAccels[nAccelUsed].cmd = newCmd;
 			nAccelUsed++;
 		}
-		HMENU hMenu = GetMenu(lpCalc->hwndFrame);
+
+		HMENU hMenu = GetMenu(lpMainWindow->hwndFrame);
 		int menuItem = ComboBox_GetCurSel(hComboBox);
 		HMENU hSubMenu = GetSubMenu(hMenu, menuItem);
 		TCHAR text[256];
@@ -1242,7 +1250,8 @@ void RemoveAccel() {
 			}
 		}
 	}
-	HMENU hMenu = GetMenu(lpCalc->hwndFrame);
+
+	HMENU hMenu = GetMenu(lpMainWindow->hwndFrame);
 	int menuItem = ComboBox_GetCurSel(hComboBox);
 	HMENU hSubMenu = GetSubMenu(hMenu, menuItem);
 	TCHAR text[256];

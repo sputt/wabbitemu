@@ -16,6 +16,7 @@ public:
 	HANDLE hFileListMutex;
 	HANDLE hThread;
 	HWND hwndDlg;
+	HWND hwndParent;
 	std::vector<std::tstring> *FileList;
 	std::vector<SEND_FLAG> *DestinationList;
 	
@@ -90,7 +91,7 @@ static HWND CreateSendFileProgress(HWND hwndParent, const LPCALC lpCalc)
 		hwndParent, NULL, GetModuleHandle(NULL),
 		(LPVOID) lpCalc);
 
-	SendMessage(lpCalc->hwndFrame, WM_MOVE, 0, NULL);
+	SendMessage(hwndParent, WM_MOVE, 0, NULL);
 
 	return hwnd;
 }
@@ -172,7 +173,7 @@ void CancelFileThreadSend(const LPCALC lpCalc) {
 	while (lpCalc->fake_running) { }
 }
 
-BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND_FLAG destination) {
+BOOL SendFileToCalc(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND_FLAG destination) {
 	if ((lpCalc == NULL) || (lpszFileName == NULL)) {
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
@@ -192,6 +193,7 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND
 		{
 			lpsi = new SENDINFO;
 			ZeroMemory(lpsi, sizeof(SENDINFO));
+			lpsi->hwndParent = hwndParent;
 			lpsi->FileList = new std::vector<std::tstring>;
 			lpsi->DestinationList = new std::vector<SEND_FLAG>;
 			g_SendInfo[lpCalc] = lpsi;
@@ -205,7 +207,7 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND
 		}
 
 		if (lpsi->hwndDlg == NULL) {
-			lpsi->hwndDlg = CreateSendFileProgress(lpCalc->hwndLCD, lpCalc);
+			lpsi->hwndDlg = CreateSendFileProgress(hwndParent, lpCalc);
 		}
 
 		// Add the file to the transfer queue
@@ -305,15 +307,15 @@ static LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG De
 				TCHAR filename[MAX_PATH];
 				StringCbCopy(filename, sizeof(filename), path);
 				StringCbCat(filename, sizeof(filename), FindFileData.cFileName);
-				SendFileToCalc(lpCalc, filename, FALSE, Destination);
-				SendFileToCalc(lpCalc, filename, FALSE, Destination);
+				SendFileToCalc(NULL, lpCalc, filename, FALSE, Destination);
+				SendFileToCalc(NULL, lpCalc, filename, FALSE, Destination);
 			}
 			while (FindNextFile(hFind, &FindFileData)) {
 				if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
 					TCHAR filename[MAX_PATH];
 					StringCbCopy(filename, sizeof(filename), path);
 					StringCbCat(filename, sizeof(filename), FindFileData.cFileName);
-					SendFileToCalc(lpCalc, filename, FALSE, Destination);
+					SendFileToCalc(NULL, lpCalc, filename, FALSE, Destination);
 					DeleteFile(filename);
 				}
 			}
@@ -365,18 +367,22 @@ static LRESULT CALLBACK FrameSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	{
 	case WM_MOVE:
 		{
-			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwndTransfer, GWLP_USERDATA);
 			RECT wr;
 			GetWindowRect(hwnd, &wr);
 
 			DWORD dwSendWidth = (wr.right - wr.left) * 9 / 10;
 			DWORD dwSendHeight = 90; //10 * HIWORD(GetDialogBaseUnits());
 
-			RECT rcLcd;
-			GetWindowRect(lpCalc->hwndLCD, &rcLcd);
+			LPSENDINFO lpsi = g_SendInfo[lpCalc];
+			RECT rcLcd = { 0 };
+			if (lpsi != NULL) {
+				GetWindowRect(lpsi->hwndParent, &rcLcd);
+			}
 
 			SetWindowPos(hwndTransfer, NULL, 
-				wr.left + ((wr.right - wr.left) - dwSendWidth) / 2, rcLcd.top + 20,
+				wr.left + ((wr.right - wr.left) - dwSendWidth) / 2,
+				rcLcd.top + (rcLcd.bottom - rcLcd.top) / 2,
 				dwSendWidth, dwSendHeight,
 				SWP_NOSIZE | SWP_NOZORDER);
 			break;
@@ -420,20 +426,29 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					hwnd, (HMENU) 1, GetModuleHandle(NULL), NULL
 			);
 
-			SetWindowSubclass(lpCalc->hwndFrame, FrameSubclass, 0, (DWORD_PTR) hwnd);
+			LPSENDINFO lpsi = g_SendInfo[lpCalc];
+			if (lpsi != NULL) {
+				SetWindowSubclass(lpsi->hwndParent, FrameSubclass, 0, (DWORD_PTR)hwnd);
+			}
+
 			SetTimer(hwnd, 1, 50, NULL);
 			return 0;
 		}
 	case WM_GETMINMAXINFO:
 		{
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			if (!lpCalc) {
+			if (lpCalc == NULL) {
 				return 0;
 			}
 
 			MINMAXINFO *info = (MINMAXINFO *) lParam;
 			RECT rc;
-			GetWindowRect(lpCalc->hwndFrame, &rc);
+			LPSENDINFO lpsi = g_SendInfo[lpCalc];
+			if (lpsi == NULL) {
+				return 0;
+			}
+
+			GetWindowRect(lpsi->hwndParent, &rc);
 
 			DWORD SendWidth = (rc.right - rc.left) * 9 / 10;
 			DWORD SendHeight = 110;
@@ -531,7 +546,11 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	case WM_CLOSE:
 		{
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			RemoveWindowSubclass(lpCalc->hwndFrame, FrameSubclass, 0);
+			LPSENDINFO lpsi = g_SendInfo[lpCalc];
+			if (lpsi != NULL) {
+				RemoveWindowSubclass(lpsi->hwndParent, FrameSubclass, 0);
+			}
+
 			DestroyWindow(hwnd);
 			return 0;
 		}

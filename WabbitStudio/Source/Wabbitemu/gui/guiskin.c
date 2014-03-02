@@ -47,9 +47,9 @@ BOOL FindLCDRect(BitmapData *bitmapData, RECT *rectLCD) {
 	return TRUE;
 }
 
-void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
+void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 	RECT rc;
-	HMENU hMenu = GetMenu(lpCalc->hwndFrame);
+	HMENU hMenu = GetMenu(lpMainWindow->hwndFrame);
 	BOOL bChecked;
 	if (lpCalc->hwndStatusBar != NULL) {
 		DestroyWindow(lpCalc->hwndStatusBar);
@@ -59,26 +59,20 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 	if (lpCalc->bSkinEnabled) {
 		bChecked = MF_CHECKED;
 		CopyRect(&rc, &lpCalc->rectSkin);
-		int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+		LONG screenHeight = (LONG) GetSystemMetrics(SM_CYVIRTUALSCREEN);
+		LONG clientHeight = rc.bottom - rc.top;
 		// not checking if you screenWidth < rectWidth
 		// please save yourself if you have a screen < 300px
-		if (screenHeight < (rc.bottom - rc.top) * lpCalc->default_skin_scale) {
+		if (screenHeight < clientHeight * lpCalc->default_skin_scale) {
 			// you have a tiny computer screen, scale the skin down to fit
-			int clientWidth = rc.right - rc.left;
-			int clientHeight = rc.bottom - rc.top;
+			LONG clientWidth = rc.right - rc.left;
+			LONG newWidth = SKIN_WIDTH * clientHeight / SKIN_HEIGHT;
 
-			int heightDiff = clientHeight - screenHeight;
-			int newWidth = SKIN_WIDTH * clientHeight / SKIN_HEIGHT;
-			int widthDiff = clientWidth - newWidth;
+			LONG heightDiff = clientHeight - screenHeight;
+			LONG widthDiff = clientWidth - newWidth;
 
-			double width_scale = (double)newWidth / SKIN_WIDTH;
-			double height_scale = (double)screenHeight / SKIN_HEIGHT;
-			lpCalc->skin_scale = min(width_scale, height_scale) * lpCalc->default_skin_scale;
-			if (lpCalc->skin_scale >= lpCalc->default_skin_scale - SKIN_SCALE_SNAP &&
-				lpCalc->skin_scale <= lpCalc->default_skin_scale + SKIN_SCALE_SNAP)
-			{
-				lpCalc->skin_scale = lpCalc->default_skin_scale;
-			}
+			lpCalc->skin_scale = GetSkinScale(clientWidth, clientHeight,
+				&widthDiff, &heightDiff, lpCalc->default_skin_scale);
 		}
 
 		rc.left = (LONG)(rc.left * lpCalc->skin_scale);
@@ -95,7 +89,7 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 		SetRect(&rc, 0, 0, lpCalc->cpu.pio.lcd->width * lpCalc->scale, lpCalc->cpu.pio.lcd->height * lpCalc->scale);
 		int iStatusWidths[] = { 100, -1 };
 		lpCalc->hwndStatusBar = CreateWindow(STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE,
-			0, 0, 0, 0, lpCalc->hwndFrame, NULL, g_hInst, NULL);
+			0, 0, 0, 0, lpMainWindow->hwndFrame, NULL, g_hInst, NULL);
 		// set the text. Text on the left will be the FPS (set in LCD code)
 		// text on the right will be the model currently being emulated
 		SendMessage(lpCalc->hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
@@ -116,7 +110,13 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 		flags |= SWP_NOZORDER;
 	}
 
-	SetWindowPos(lpCalc->hwndFrame, HWND_TOPMOST, 0, 0, rc.right - rc.left, rc.bottom - rc.top, flags);
+	if (silent_mode == TRUE) {
+		flags |= SWP_HIDEWINDOW;
+	} else {
+		flags |= SWP_SHOWWINDOW;
+	}
+
+	SetWindowPos(lpMainWindow->hwndFrame, HWND_TOPMOST, 0, 0, rc.right - rc.left, rc.bottom - rc.top, flags);
 }
 
 enum DRAWSKINERROR {
@@ -125,7 +125,7 @@ enum DRAWSKINERROR {
 	ERROR_KEYMAP,
 };
 
-DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_pBitmapKeymap) {
+DRAWSKINERROR DrawSkin(HDC hdc, LPMAINWINDOW lpMainWindow, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_pBitmapKeymap) {
 	if (!m_pBitmapSkin) {
 		return ERROR_SKIN;
 	}
@@ -167,7 +167,7 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 	AlphaBlend(lpCalc->hdcSkin, 0, 0, skinWidth, skinHeight, hdcOverlay,
 		lpCalc->rectSkin.left, lpCalc->rectSkin.top, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, bf);
 	BitBlt(lpCalc->hdcButtons, 0, 0, skinWidth, skinHeight, lpCalc->hdcSkin, 0, 0, SRCCOPY);
-	FinalizeButtons(lpCalc);
+	FinalizeButtons(lpMainWindow, lpCalc);
 
 	if (drawFaceplate) {
 		BITMAPINFOHEADER bih;
@@ -227,9 +227,9 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 	return (DRAWSKINERROR) ERROR_SUCCESS;
 }
 
-int gui_frame_update(LPCALC lpCalc) {
+int gui_frame_update(LPCALC lpCalc, LPMAINWINDOW lpMainWindow) {
 	int skinWidth = 0, skinHeight = 0, keymapWidth = -1, keymapHeight = -1;
-	HDC hdc = GetDC(lpCalc->hwndFrame);
+	HDC hdc = GetDC(lpMainWindow->hwndFrame);
 	if (lpCalc->hdcKeymap) {
 		DeleteDC(lpCalc->hdcKeymap);
 	}
@@ -264,7 +264,7 @@ int gui_frame_update(LPCALC lpCalc) {
 
 	if (!m_pBitmapSkin || m_pBitmapSkin->GetWidth() == 0 || m_pBitmapKeymap->GetWidth() == 0) {
 		if (lpCalc->bCustomSkin) {
-			MessageBox(lpCalc->hwndFrame, _T("Custom skin failed to load."), _T("Error"),  MB_OK);
+			MessageBox(lpMainWindow->hwndFrame, _T("Custom skin failed to load."), _T("Error"), MB_OK);
 			delete m_pBitmapKeymap;
 			delete m_pBitmapSkin;
 			m_pBitmapKeymap = NULL;
@@ -319,11 +319,11 @@ int gui_frame_update(LPCALC lpCalc) {
 
 	if ((skinWidth % SKIN_WIDTH) || (skinHeight % SKIN_HEIGHT) || skinHeight <= 0 || skinWidth <= 0) {
 		lpCalc->bSkinEnabled = false;
-		MessageBox(lpCalc->hwndFrame, _T("Invalid skin size."), _T("Error"), MB_OK | MB_ICONERROR);
+		MessageBox(lpMainWindow->hwndFrame, _T("Invalid skin size."), _T("Error"), MB_OK | MB_ICONERROR);
 		return 0;
 	} else if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight)) {
 		lpCalc->bSkinEnabled = false;
-		MessageBox(lpCalc->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"), MB_OK | MB_ICONERROR);
+		MessageBox(lpMainWindow->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"), MB_OK | MB_ICONERROR);
 		return 0;
 	} else {
 		if (lpCalc->skin_scale == 0.0) {
@@ -344,7 +344,7 @@ int gui_frame_update(LPCALC lpCalc) {
 
 		if (!foundScreen) {
 			free(data);
-			MessageBox(lpCalc->hwndFrame, _T("Unable to find the screen box"), _T("Error"), MB_OK);
+			MessageBox(lpMainWindow->hwndFrame, _T("Unable to find the screen box"), _T("Error"), MB_OK);
 			lpCalc->bSkinEnabled = false;
 			return 0;
 		}
@@ -355,7 +355,7 @@ int gui_frame_update(LPCALC lpCalc) {
 
 	}
 
-	if (lpCalc->hwndFrame == NULL) {
+	if (lpMainWindow->hwndFrame == NULL) {
 		return 0;
 	}
 
@@ -363,27 +363,27 @@ int gui_frame_update(LPCALC lpCalc) {
 	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	SelectObject(lpCalc->hdcButtons, hbmTemp);
 	
-	switch (DrawSkin(hdc, lpCalc, m_pBitmapSkin, m_pBitmapKeymap)) {
+	switch (DrawSkin(hdc, lpMainWindow, lpCalc, m_pBitmapSkin, m_pBitmapKeymap)) {
 		case ERROR_FACEPLATE:
-			MessageBox(lpCalc->hwndFrame, _T("Unable to draw faceplate"), _T("Error"), MB_OK);
+			MessageBox(lpMainWindow->hwndFrame, _T("Unable to draw faceplate"), _T("Error"), MB_OK);
 			break;
 		case ERROR_SKIN:
-			MessageBox(lpCalc->hwndFrame, _T("Unable to load skin resource"), _T("Error"), MB_OK);
+			MessageBox(lpMainWindow->hwndFrame, _T("Unable to load skin resource"), _T("Error"), MB_OK);
 			break;
 		case ERROR_KEYMAP:
-			MessageBox(lpCalc->hwndFrame, _T("Unable to load keymap resource"), _T("Error"), MB_OK);
+			MessageBox(lpMainWindow->hwndFrame, _T("Unable to load keymap resource"), _T("Error"), MB_OK);
 			break;
 	}
 
 	if (lpCalc->bCutout && lpCalc->bSkinEnabled)	{
-		if (EnableCutout(lpCalc) != 0) {
-			MessageBox(lpCalc->hwndFrame, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
+		if (EnableCutout(lpMainWindow, lpCalc) != 0) {
+			MessageBox(lpMainWindow->hwndFrame, _T("Couldn't cutout window"), _T("Error"), MB_OK);
 		}
 	} else {
-		DisableCutout(lpCalc);
+		DisableCutout(lpMainWindow, lpCalc);
 	}
 
-	UpdateWabbitemuMainWindow(lpCalc);
+	UpdateWabbitemuMainWindow(lpMainWindow, lpCalc);
 
 	if (lpCalc->bCustomSkin) {
 		if (m_pBitmapKeymap) {
@@ -394,9 +394,9 @@ int gui_frame_update(LPCALC lpCalc) {
 		}
 	}
 	DeleteObject(hbmTemp);
-	ReleaseDC(lpCalc->hwndFrame, hdc);
+	ReleaseDC(lpMainWindow->hwndFrame, hdc);
 
-	SendMessage(lpCalc->hwndFrame, WM_SIZE, SIZE_RESTORED, 0);
+	SendMessage(lpMainWindow->hwndFrame, WM_SIZE, SIZE_RESTORED, 0);
 
 	return 1;
 }
