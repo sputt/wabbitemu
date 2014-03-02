@@ -3,7 +3,7 @@
 
 #include "calc.h"
 
-HRESULT LoadRegistrySettings(const LPCALC lpCalc);
+HRESULT LoadRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCalc);
 HRESULT LoadRegistryDefaults();
 HRESULT SaveRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCalc);
 INT_PTR QueryWabbitKey(LPCTSTR lpszName);

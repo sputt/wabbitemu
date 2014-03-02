@@ -61,7 +61,7 @@ void sprint_data(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 
 	waddr_t waddr = zinf->waddr;
 	for (j = 0; j < zinf->size; j++) {
-		waddr.addr = zinf->waddr.addr + j;
+		waddr.addr = (uint16_t)(zinf->waddr.addr + j);
 		if (waddr.addr % PAGE_SIZE < zinf->waddr.addr % PAGE_SIZE) {
 			waddr.page++;
 			// we don't handle ram changes here because things should never cross pages
@@ -87,7 +87,7 @@ void sprint_size(LPCALC, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 }
 
-void sprint_clocks(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
+void sprint_clocks(LPCALC, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (da_opcode[zinf->index].clocks != -1) {
@@ -136,8 +136,8 @@ static void GetNextWaddr(dp_settings *dps, int *bank_num, waddr_t *waddr) {
 		if (dps->type == REGULAR) {
 			(*bank_num)++;
 			if (*bank_num < 4) {
-				waddr->page = dps->lpCalc->mem_c.banks[*bank_num].page;
-				waddr->is_ram = dps->lpCalc->mem_c.banks[*bank_num].ram;
+				waddr->page = (uint8_t)dps->lpCalc->mem_c.banks[*bank_num].page;
+				waddr->is_ram = (uint16_t)dps->lpCalc->mem_c.banks[*bank_num].ram;
 			} else {
 				return;
 			}
@@ -156,7 +156,7 @@ waddr_t * DisasmFindValue(dp_settings *dps, int valueToFind, BOOL search_backwar
 	waddr_t waddr;
 	if (search_backwards) {
 		if (dps->type == REGULAR) {
-			waddr = addr16_to_waddr(&dps->lpCalc->mem_c, dps->nSel - 1);
+			waddr = addr16_to_waddr(&dps->lpCalc->mem_c, (uint16_t)(dps->nSel - 1));
 		} else {
 			waddr = addr32_to_waddr(dps->nSel - 1, dps->type == RAM);
 		}
@@ -184,8 +184,8 @@ waddr_t * DisasmFindValue(dp_settings *dps, int valueToFind, BOOL search_backwar
 				if (dps->type == REGULAR) {
 					bank_num--;
 					if (bank_num >= 0) {
-						waddr.addr = (bank_num + 1) * PAGE_SIZE - 1;
-						waddr.page = dps->lpCalc->mem_c.banks[bank_num].page;
+						waddr.addr = (uint16_t)((bank_num + 1) * PAGE_SIZE - 1);
+						waddr.page = (uint8_t)dps->lpCalc->mem_c.banks[bank_num].page;
 						waddr.is_ram = dps->lpCalc->mem_c.banks[bank_num].ram;
 					} else {
 						break;
@@ -292,97 +292,12 @@ void DrawSelectionRect(HDC hdc, RECT *r) {
 	DeleteDC(hdcSel);
 }
 
-void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int opacity) {
-
-	HDC hdcSel = CreateCompatibleDC(hdc);
-	HBITMAP hbmSel = CreateCompatibleBitmap(hdc, r->right - r->left, r->bottom - r->top);
-	TRIVERTEX vert[2];
-	GRADIENT_RECT gRect;
-	COLORREF rgbSel;
-	BLENDFUNCTION bf;
-	COLORREF tl, tr, br, bl;
-
-	SelectObject(hdcSel, hbmSel);
-
-	SelectObject(hdc, GetStockObject(WHITE_BRUSH));
-	SelectObject(hdcSel, GetStockObject(DC_PEN));
-	SetDCPenColor(hdcSel, RGB(255, 255, 255));
-	Rectangle(hdcSel, 0, 0, r->right - r->left, r->bottom - r->top);
-
-	gRect.UpperLeft  = 0;
-	gRect.LowerRight = 1;
-
-
-	if (active == TRUE) {
-		rgbSel = RGB(153, 222, 253);
-		//rgbSel = RGB(24, 153, 255);
-	} else {
-		rgbSel = RGB(190, 190, 190);
-	}
-
-	if (breakpoint)
-		rgbSel = breakpoint;
-
-	vert[0].x = 2;
-	vert[0].y = 1;
-	vert[0].Red    = 0xff00;
-	vert[0].Green  = 0xff00;
-	vert[0].Blue   = 0xff00;
-
-	vert[1].x = r->right - r->left - 2;
-	vert[1].y = (r->bottom - r->top - 2) * 2;
-	vert[1].Red 	= GetRValue(rgbSel) << 8;
-	vert[1].Green 	= GetGValue(rgbSel) << 8;
-	vert[1].Blue 	= GetBValue(rgbSel) << 8;
-
-	GradientFill(hdcSel,vert,2,&gRect,1,GRADIENT_FILL_RECT_V);
-
-
-	bf.BlendOp = AC_SRC_OVER;
-	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = opacity;
-	bf.AlphaFormat = 0;
-
-	SelectObject(hdcSel, GetStockObject(NULL_BRUSH));
-	SetDCPenColor(hdcSel, rgbSel);
-
-	RoundRect(hdcSel, 0, 0, r->right - r->left, r->bottom - r->top, 5, 5);
-
-	SetDCPenColor(hdcSel, GetPixel(hdcSel, 3, (r->bottom - r->top)/3));
-	RoundRect(hdcSel, 1, 1, r->right - r->left-1, r->bottom - r->top-1, 5, 5);
-
-
-	tl = GetPixel(hdc, r->left, r->top);
-	tr = GetPixel(hdc, r->right - 1, r->top);
-	br = GetPixel(hdc, r->right - 1, r->bottom - 1);
-	bl = GetPixel(hdc, r->left, r->bottom - 1);
-
-	AlphaBlend(	hdc, r->left, r->top, r->right - r->left, r->bottom - r->top,
-				hdcSel, 0, 0, r->right - r->left, r->bottom - r->top,
-				bf);
-
-	SetPixel(hdc, r->left, r->top, tl);
-	SetPixel(hdc, r->left, r->top + 1, tl);
-	SetPixel(hdc, r->right - 1, r->top, tr);
-	SetPixel(hdc, r->right - 1, r->top + 1, tr);
-	SetPixel(hdc, r->right - 1, r->bottom - 1, br);
-	SetPixel(hdc, r->right - 1, r->bottom - 2, br);
-	SetPixel(hdc, r->left, r->bottom - 1, bl);
-	SetPixel(hdc, r->left, r->bottom - 2, bl);
-
-
-	DeleteObject(hbmSel);
-	DeleteDC(hdcSel);
-
-
-}
-
 static BOOL had_exe_violation = FALSE;
 void stepoverout_exe_callback(CPU_t *) {
 	had_exe_violation = TRUE;
 }
 
-void CPU_stepout(LPCALC lpCalc) {
+void CPU_stepout(LPCALC lpCalc, BOOL bTIOSDebug) {
 	CPU_t *cpu = &lpCalc->cpu;
 	uint64_t time = tc_tstates(cpu->timer_c);
 	uint16_t old_sp = cpu->sp;
@@ -400,7 +315,7 @@ void CPU_stepout(LPCALC lpCalc) {
 
 		if (cpu->sp > old_sp) {
 			Z80_info_t zinflocal;
-			disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, old_pc.addr), 1, &zinflocal);
+			disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, old_pc.addr), 1, bTIOSDebug, &zinflocal);
 
 			if (zinflocal.index == DA_RET 		||
 				zinflocal.index == DA_RET_CC 	||
@@ -419,7 +334,7 @@ void CPU_stepout(LPCALC lpCalc) {
 /*
  * Repeatedly step until you get to the next command
  */
-void CPU_stepover(LPCALC lpCalc) {
+void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 	const int usable_commands[] = { DA_BJUMP, DA_BJUMP_N, DA_BCALL_N, DA_BCALL,
 									DA_BLI, DA_CALL_X, DA_CALL_CC_X, DA_HALT, DA_RST_X};
 	int i;
@@ -433,7 +348,7 @@ void CPU_stepover(LPCALC lpCalc) {
 	void (*backupFunction)(CPU_t *) = cpu->exe_violation_callback;
 	cpu->exe_violation_callback = stepoverout_exe_callback;
 
-	disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, cpu->pc), 1, &zinflocal);
+	disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, cpu->pc), 1, bTIOSDebug, &zinflocal);
 
 	if (cpu->halt) {
 		if (cpu->iff1) {
@@ -455,7 +370,7 @@ void CPU_stepover(LPCALC lpCalc) {
 
 				if ((cpu->sp >= old_sp || (old_sp - cpu->sp) >= 0xFF00) && (cpu->pc >= return_pc && (cpu->pc <= return_pc + 2))) {
 					Z80_info_t zinflocal;
-					disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, old_pc), 1, &zinflocal);
+					disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, old_pc), 1, bTIOSDebug, &zinflocal);
 
 					if (zinflocal.index == DA_RET 		||
 						zinflocal.index == DA_RET_CC 	||
@@ -634,7 +549,7 @@ static void on_running_changed(LPCALC lpCalc, LPVOID lParam) {
 
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	dp_settings *dps;
+	dp_settings *dps = NULL;
 	if (lpTabInfo != NULL) {
 		dps = (dp_settings *)lpTabInfo->tabInfo;
 	}
@@ -642,12 +557,16 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 	switch (Message) {
 		case WM_SETFOCUS: {
 			hwndLastFocus = hwnd;
-			InvalidateSel(hwnd, dps->iSel);
+			if (dps != NULL) {
+				InvalidateSel(hwnd, dps->iSel);
+			}
 			UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_KILLFOCUS: {
-			InvalidateSel(hwnd, dps->iSel);
+			if (dps != NULL) {
+				InvalidateSel(hwnd, dps->iSel);
+			}
 			UpdateWindow(hwnd);
 			return 0;
 		}
@@ -773,18 +692,17 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			// calculate the correct ending page
 			int last_top_page_addr;
 			Z80_info_t zup[128];
-			int nPane_old = dps->nPane;
 			last_top_page_addr = GetMaxAddr(dps) - (5 * dps->nRows);
 			waddr_t waddr;
 			if (dps->type == REGULAR) {
 				do {
 					waddr = addr16_to_waddr(dps->lpCalc->cpu.mem_c, ++last_top_page_addr);
-					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, zup);
+					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, lpTabInfo->lpDebugInfo->bTIOSDebug, zup);
 				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= 0xFFFF);
 			} else {
 				do {
 					waddr = addr32_to_waddr(++last_top_page_addr, dps->type == RAM);
-					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, zup);
+					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, lpTabInfo->lpDebugInfo->bTIOSDebug, zup);
 				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= 4);
 					
 				}
@@ -1214,7 +1132,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					} else {
 						waddr = addr32_to_waddr(addr, dps->type == RAM);
 					}
-					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, dps->zinf);
+					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, lpTabInfo->lpDebugInfo->bTIOSDebug, dps->zinf);
 					break;
 				}
 				case IDM_RUN_STEP:
@@ -1225,12 +1143,12 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case IDM_RUN_STEPOVER:
 				case DB_STEPOVER: {
-					CPU_stepover(dps->lpCalc);
+					CPU_stepover(dps->lpCalc, lpTabInfo->lpDebugInfo->bTIOSDebug);
 					db_step_finish(hwnd, dps);
 					break;
 				}
 				case IDM_RUN_STEPOUT: {
-					CPU_stepout(dps->lpCalc);
+					CPU_stepout(dps->lpCalc, lpTabInfo->lpDebugInfo->bTIOSDebug);
 					db_step_finish(hwnd, dps);
 					break;
 				}
@@ -1643,7 +1561,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						} else {
 							waddr = addr32_to_waddr(dps->nPane, dps->type == RAM);
 						}
-						disassemble(dps->lpCalc, dps->type, waddr, LINEUP_DEPTH, zup);
+						disassemble(dps->lpCalc, dps->type, waddr, LINEUP_DEPTH, lpTabInfo->lpDebugInfo->bTIOSDebug, zup);
 					} while (zup[LINEUP_DEPTH - 2].waddr.addr > dps->zinf[0].waddr.addr && dps->nPane);
 
 

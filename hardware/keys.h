@@ -9,7 +9,7 @@ typedef struct keypad {
 } keypad_t;
 
 typedef struct KEYPROG {
-	int vk;
+	UINT vk;
 	int group;
 	int bit;
 } keyprog_t;

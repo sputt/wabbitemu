@@ -85,7 +85,7 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		TCHAR buf[10];
 		Edit_GetText(hwndEditControl, buf, ARRAYSIZE(buf));
 		int value = GetWindowLongPtr(hwndEditControl, GWLP_USERDATA);
-		int row_num = LOWORD(value);
+		uint16_t row_num = LOWORD(value);
 		//handles getting the user input and converting it to an int
 		//can convert bin, hex, and dec
 		ColorLCD_t *lcd = (ColorLCD_t *) lpCalc->cpu.pio.lcd;
@@ -94,7 +94,7 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 			value = 0;
 		}
 
-		ColorLCD_set_register(&lpCalc->cpu, lcd, row_num, value & 0xFFFF);
+		ColorLCD_set_register(&lpCalc->cpu, lcd, row_num, (uint16_t)value);
 
 		DestroyWindow(hwndEditControl);
 	}
@@ -144,7 +144,7 @@ static void on_running_changed(LPCALC lpCalc, LPVOID lParam) {
 
 LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndListView;
-	LPCALC lpCalc;
+	LPCALC lpCalc = NULL;
 	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (lpDebugInfo != NULL) {
 		lpCalc = lpDebugInfo->lpCalc;
@@ -336,11 +336,13 @@ LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPA
 			}
 			return TRUE;
 		}
-		case WM_DESTROY:
-			calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwndListView);
+		case WM_DESTROY: {
+			if (lpCalc != NULL) {
+				calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwndListView);
+			}
 			return FALSE;
+		}
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
-	return FALSE;
 }

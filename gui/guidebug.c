@@ -104,15 +104,15 @@ BOOL CALLBACK EnumDebugResume(HWND hwndChild, LPARAM lParam) {
 	return TRUE;
 }
 
-BOOL CALLBACK EnumDebugDestroy(HWND hwndChild, LPARAM lParam) {
+BOOL CALLBACK EnumDebugDestroy(HWND hwndChild, LPARAM) {
 	DestroyWindow(hwndChild);
 	return TRUE;
 }
 
 int CALLBACK EnumFontFamExProc(
   ENUMLOGFONTEX *lpelfe,    // logical-font data
-  NEWTEXTMETRICEX *lpntme,  // physical-font data
-  DWORD FontType,           // type of font
+  NEWTEXTMETRICEX *,        // physical-font data
+  DWORD,                    // type of font
   LPARAM lParam             // application-defined data
 ) {
 	HDC hdc = GetDC(NULL);
@@ -259,7 +259,7 @@ void AddMemTab(LPCALC lpCalc, mempane_settings *mps, ViewType type, LPDEBUGWINDO
 	lpDebugInfo->total_mem_pane++;
 }
 
-void AddWatchTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {	
+void AddWatchTab(LPDEBUGWINDOWINFO debugInfo) {	
 	if (debugInfo->hwatch) {
 		return;
 	}
@@ -281,7 +281,7 @@ void AddWatchTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
 	TabCtrl_SetCurSel(debugInfo->hmem, 0);
 }
 
-void AddBreakpointsTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
+void AddBreakpointsTab(LPDEBUGWINDOWINFO debugInfo) {
 	if (debugInfo->hdisasmextra[0]) {
 		return;
 	}
@@ -298,7 +298,7 @@ void AddBreakpointsTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
 	TabCtrl_SetCurSel(debugInfo->hdisasm, 0);
 }
 
-void AddPortsTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
+void AddPortsTab(LPDEBUGWINDOWINFO debugInfo) {
 	if (debugInfo->hdisasmextra[1]) {
 		return;
 	}
@@ -320,7 +320,7 @@ void AddPortsTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
 	TabCtrl_SetCurSel(debugInfo->hdisasm, 0);
 }
 
-void AddColorLCDTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
+void AddColorLCDTab(LPDEBUGWINDOWINFO debugInfo) {
 	if (debugInfo->hdisasmextra[2]) {
 		return;
 	}
@@ -373,8 +373,10 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		{
 			lpDebugInfo = (LPDEBUGWINDOWINFO) malloc(sizeof(DEBUGWINDOWINFO));
 			ZeroMemory(lpDebugInfo, sizeof(DEBUGWINDOWINFO));
-			LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)((LPCREATESTRUCT)lParam)->lpCreateParams;
+			LPCALC lpCalc = lpMainWindow->lpCalc;
 			lpDebugInfo->lpCalc = lpCalc;
+			lpDebugInfo->bTIOSDebug = lpMainWindow->bTIOSDebug;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LPARAM) lpDebugInfo);
 
 			lpDebugInfo->cyGripper = 10;
@@ -441,10 +443,10 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			SetWindowFont(lpDebugInfo->hdisasm, lpDebugInfo->hfontSegoe, TRUE);
 
 			if (lpCalc->model >= TI_84PCSE) {
-				AddColorLCDTab(lpCalc, lpDebugInfo);
+				AddColorLCDTab(lpDebugInfo);
 			}
-			AddPortsTab(lpCalc, lpDebugInfo);
-			AddBreakpointsTab(lpCalc, lpDebugInfo);
+			AddPortsTab(lpDebugInfo);
+			AddBreakpointsTab(lpDebugInfo);
 
 			/* Create disassembly window */
 			lpDebugInfo->total_disasm_pane = 0;
@@ -483,7 +485,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			    g_hInst, NULL);
 			SetWindowFont(lpDebugInfo->hmem, lpDebugInfo->hfontSegoe, TRUE);
 
-			AddWatchTab(lpCalc, lpDebugInfo);
+			AddWatchTab(lpDebugInfo);
 
 			lpDebugInfo->total_mem_pane = 0;
 			panes_to_add = max(1, (int) (QueryDebugKey((TCHAR *) MemPaneString)));

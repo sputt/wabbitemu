@@ -56,9 +56,9 @@ void FindButtonsRect(BitmapData *bitmapData) {
 
 extern key_string ti83pkeystrings[KEY_STRING_SIZE];
 extern key_string ti86keystrings[KEY_STRING_SIZE];
-void LogKeypress(LPCALC lpCalc, int group, int bit) {
+void LogKeypress(LPMAINWINDOW lpMainWindow, int model, int group, int bit) {
 	int i;
-	key_string *keystrings = lpCalc->model == TI_85 || lpCalc->model == TI_86 ? ti86keystrings : ti83pkeystrings;
+	key_string *keystrings = model == TI_85 || model == TI_86 ? ti86keystrings : ti83pkeystrings;
 	for (i = 0; i < KEY_STRING_SIZE; i++) {
 		if (keystrings[i].group == group && keystrings[i].bit == bit) {
 			break;
@@ -70,14 +70,14 @@ void LogKeypress(LPCALC lpCalc, int group, int bit) {
 	key_string *current = (key_string *) malloc(sizeof(key_string));
 	current->bit = bit;
 	current->group = group;
-	current->next = lpCalc->last_keypress_head;
+	current->next = lpMainWindow->last_keypress_head;
 	current->text = (TCHAR *) malloc(_tcslen(keystrings[i].text) + 1);
 	StringCbCopy(current->text, _tcslen(keystrings[i].text) + 1, keystrings[i].text);
-	lpCalc->last_keypress_head = current;
-	lpCalc->num_keypresses++;
+	lpMainWindow->last_keypress_head = current;
+	lpMainWindow->num_keypresses++;
 
-	if (lpCalc->num_keypresses > MAX_KEYPRESS_HISTORY) {
-		key_string *current = lpCalc->last_keypress_head;
+	if (lpMainWindow->num_keypresses > MAX_KEYPRESS_HISTORY) {
+		key_string *current = lpMainWindow->last_keypress_head;
 		key_string *last = current;
 		while (current) {
 			if (current->next != NULL) {
@@ -90,14 +90,15 @@ void LogKeypress(LPCALC lpCalc, int group, int bit) {
 		free(current->text);
 		free(current);
 		last->next = NULL;
-		if (last == lpCalc->last_keypress_head) {
-			lpCalc->last_keypress_head = NULL;
+		if (last == lpMainWindow->last_keypress_head) {
+			lpMainWindow->last_keypress_head = NULL;
 		}
-		lpCalc->num_keypresses--;
+
+		lpMainWindow->num_keypresses--;
 	}
 
-	if (lpCalc->hwndKeyListDialog) {
-		SendMessage(lpCalc->hwndKeyListDialog, WM_USER, REFRESH_LISTVIEW, 0);
+	if (lpMainWindow->hwndKeyListDialog) {
+		SendMessage(lpMainWindow->hwndKeyListDialog, WM_USER, REFRESH_LISTVIEW, 0);
 	}
 }	
 
@@ -228,12 +229,25 @@ void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, RECT brect, UINT state, UINT ke
 	DeleteObject(hdc);
 }
 
-void DrawButtonStatesAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
+void DrawButtonStatesAll(LPMAINWINDOW lpMainWindow, HDC hdcSkin, HDC hdcKeymap) {
+	if (lpMainWindow == NULL) {
+		return;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+	if (lpCalc == NULL) {
+		return;
+	}
+
 	keypad_t *keypad = lpCalc->cpu.pio.keypad;
+	if (keypad == NULL) {
+		return;
+	}
+
 	int group, bit;
 	POINT pt;
 	RECT brect;
-	UINT keymap_scale = (UINT) (1.0 / lpCalc->default_skin_scale);
+	UINT keymap_scale = (UINT)(1.0 / lpMainWindow->default_skin_scale);
 	for(group = 0; group < 7; group++) {
 		for(bit = 0; bit < 8; bit++) {
 			brect = ButtonRect[bit + (group << 3)];
@@ -260,7 +274,12 @@ void DrawButtonStatesAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 }
 
 static int last_shift;
-void HandleKeyDown(LPMAINWINDOW lpMainWindow, LPCALC lpCalc, WPARAM key) {
+void HandleKeyDown(LPMAINWINDOW lpMainWindow, WPARAM key) {
+	if (lpMainWindow == NULL) {
+		return;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
 	if (lpCalc == NULL) {
 		return;
 	}
@@ -287,13 +306,19 @@ void HandleKeyDown(LPMAINWINDOW lpMainWindow, LPCALC lpCalc, WPARAM key) {
 	if (!kp) {
 		return;
 	}
-	LogKeypress(lpCalc, kp->group, kp->bit);
+
+	LogKeypress(lpMainWindow, lpCalc->model, kp->group, kp->bit);
 	if (changed) {
-		FinalizeButtons(lpMainWindow, lpCalc);
+		FinalizeButtons(lpMainWindow);
 	}
 }
 
-void HandleKeyUp(LPMAINWINDOW lpMainWindow, LPCALC lpCalc, WPARAM key) {
+void HandleKeyUp(LPMAINWINDOW lpMainWindow, WPARAM key) {
+	if (lpMainWindow == NULL) {
+		return;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
 	if (lpCalc == NULL) {
 		return;
 	}
@@ -303,10 +328,19 @@ void HandleKeyUp(LPMAINWINDOW lpMainWindow, LPCALC lpCalc, WPARAM key) {
 	}
 
 	keypad_key_release(&lpCalc->cpu, key);
-	FinalizeButtons(lpMainWindow, lpCalc);
+	FinalizeButtons(lpMainWindow);
 }
 
-void FinalizeButtons(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
+void FinalizeButtons(LPMAINWINDOW lpMainWindow) {
+	if (lpMainWindow == NULL) {
+		return;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+	if (lpCalc == NULL) {
+		return;
+	}
+
 	int group, bit;
 	keypad_t *kp = lpCalc->cpu.pio.keypad;
 
@@ -321,8 +355,8 @@ void FinalizeButtons(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 		}
 	}
 
-	if (lpCalc->bSkinEnabled && !lpCalc->bCutout) {
-		DrawButtonStatesAll(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap);
+	if (lpMainWindow->bSkinEnabled && !lpMainWindow->bCutout) {
+		DrawButtonStatesAll(lpMainWindow, lpMainWindow->hdcButtons, lpMainWindow->hdcKeymap);
 		InvalidateRect(lpMainWindow->hwndFrame, NULL, FALSE);
 	}
 }

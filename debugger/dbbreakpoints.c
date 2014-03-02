@@ -434,7 +434,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 	return DefWindowProc(hwnd, Message, wParam, lParam);
 }
 
-INT_PTR CALLBACK ConditionsDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK ConditionsDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM) {
 	switch (Message) {
 	case WM_INITDIALOG: {
 		HWND hConditionType = GetDlgItem(hwndDlg, IDC_COND_TYPE);

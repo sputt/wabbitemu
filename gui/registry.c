@@ -126,16 +126,18 @@ reg_default_t *GetDefaultData(LPCTSTR lpszName) {
 	return &regDefaults[i];
 }
 
+typedef union {
+	DWORD dwResult;
+	TCHAR szResult[256];
+} key_value_t;
+
 LONG_PTR GetKeyData(HKEY hkeyWabbit, LPCTSTR lpszName) {
 	DWORD type;
 	DWORD len;
 	reg_default_t *defValue = GetDefaultData(lpszName);
 	type = defValue->dwType;
 	
-	static union {
-		DWORD dwResult;
-		TCHAR szResult[256];
-	} result;
+	key_value_t result;
 	len = (type == REG_SZ) ? 256 * sizeof(TCHAR) : sizeof(DWORD);
 	
 	LONG rqvx_res;
@@ -162,12 +164,12 @@ LONG_PTR GetSettingsData(LPCTSTR lpszName, BOOL isDebugKey) {
 	reg_default_t *defValue = GetDefaultData(lpszName);
 	const TCHAR *name = isDebugKey ? debugName : appName;
 
+	key_value_t result;
 	if (defValue->dwType == REG_DWORD) {
 		return GetPrivateProfileInt(name, lpszName, (DWORD)defValue->Value, portSettingsPath);
 	} else {
-		TCHAR buf[256];
-		GetPrivateProfileString(name, lpszName, (LPTSTR)defValue->Value, buf, ARRAYSIZE(buf), portSettingsPath);
-		return (LONG_PTR) buf;
+		GetPrivateProfileString(name, lpszName, (LPTSTR)defValue->Value, result.szResult, ARRAYSIZE(result.szResult), portSettingsPath);
+		return (defValue->dwType == REG_SZ) ? (LONG_PTR)result.szResult : result.dwResult;
 	}
 }
 
@@ -278,7 +280,7 @@ BOOL CheckSetIsPortableMode() {
 	return FALSE;
 }
 
-HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
+HRESULT LoadRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCalc) {
 	HKEY hkeySoftware = NULL;
 	if (!portable_mode) {
 		RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
@@ -299,23 +301,23 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	TCHAR skinScale[32];
 	
 	StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), (TCHAR *) QueryWabbitKey(_T("rom_path")));
-	StringCbCopy(lpCalc->skin_path, sizeof(lpCalc->skin_path), (TCHAR *) QueryWabbitKey(_T("skin_path")));
-	StringCbCopy(lpCalc->keymap_path, sizeof(lpCalc->keymap_path), (TCHAR *) QueryWabbitKey(_T("keymap_path")));
-	lpCalc->bSkinEnabled = (BOOL) QueryWabbitKey(_T("skin"));
-	lpCalc->bCutout = (BOOL) QueryWabbitKey(_T("cutout"));
-	lpCalc->bAlphaBlendLCD = (BOOL) QueryWabbitKey(_T("alphablend_lcd"));
-	lpCalc->scale = (int) QueryWabbitKey(_T("screen_scale"));
+	StringCbCopy(lpMainWindow->skin_path, sizeof(lpMainWindow->skin_path), (TCHAR *)QueryWabbitKey(_T("skin_path")));
+	StringCbCopy(lpMainWindow->keymap_path, sizeof(lpMainWindow->keymap_path), (TCHAR *)QueryWabbitKey(_T("keymap_path")));
+	lpMainWindow->bSkinEnabled = (BOOL)QueryWabbitKey(_T("skin"));
+	lpMainWindow->bCutout = (BOOL)QueryWabbitKey(_T("cutout"));
+	lpMainWindow->bAlphaBlendLCD = (BOOL)QueryWabbitKey(_T("alphablend_lcd"));
+	lpMainWindow->scale = (int)QueryWabbitKey(_T("screen_scale"));
 	StringCbCopy(skinScale, sizeof(skinScale), (TCHAR *) QueryWabbitKey(_T("skin_scale")));
-	lpCalc->skin_scale = atof(skinScale);
-	lpCalc->FaceplateColor = (COLORREF) QueryWabbitKey(_T("faceplate_color"));
+	lpMainWindow->skin_scale = atof(skinScale);
+	lpMainWindow->FaceplateColor = (COLORREF)QueryWabbitKey(_T("faceplate_color"));
 	exit_save_state = (BOOL) QueryWabbitKey(_T("exit_save_state"));
 	new_calc_on_load_files = (BOOL) QueryWabbitKey(_T("load_files_first"));
 	do_backups = (BOOL) QueryWabbitKey(_T("do_backups"));
 	sync_cores = (BOOL) QueryWabbitKey(_T("sync_cores"));
-	lpCalc->bAlwaysOnTop = (BOOL) QueryWabbitKey(_T("always_on_top"));
-	lpCalc->bCustomSkin = (BOOL) QueryWabbitKey(_T("custom_skin"));
+	lpMainWindow->bAlwaysOnTop = (BOOL)QueryWabbitKey(_T("always_on_top"));
+	lpMainWindow->bCustomSkin = (BOOL)QueryWabbitKey(_T("custom_skin"));
 	lpCalc->mem_c.ram_version = (int) QueryWabbitKey(_T("ram_version"));
-	lpCalc->bTIOSDebug = (BOOL) QueryWabbitKey(_T("tios_debug"));
+	lpMainWindow->bTIOSDebug = (BOOL) QueryWabbitKey(_T("tios_debug"));
 	QueryKeyMappings();
 
 	StringCbCopy(screenshot_file_name, sizeof(screenshot_file_name), (TCHAR *) QueryWabbitKey(_T("gif_path")));
@@ -400,9 +402,9 @@ HRESULT SaveRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCal
 	if (portable_mode || SUCCEEDED(res)) {
 		hkeyTarget = hkeyWabbit;
 		
-		SaveWabbitKey(_T("cutout"), REG_DWORD, &lpCalc->bCutout);
-		SaveWabbitKey(_T("alphablend_lcd"), REG_DWORD, &lpCalc->bAlphaBlendLCD);
-		SaveWabbitKey(_T("skin"), REG_DWORD, &lpCalc->bSkinEnabled);
+		SaveWabbitKey(_T("cutout"), REG_DWORD, &lpMainWindow->bCutout);
+		SaveWabbitKey(_T("alphablend_lcd"), REG_DWORD, &lpMainWindow->bAlphaBlendLCD);
+		SaveWabbitKey(_T("skin"), REG_DWORD, &lpMainWindow->bSkinEnabled);
 		SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
 		SaveWabbitKey(_T("gif_path"), REG_SZ, &screenshot_file_name);
 		SaveWabbitKey(_T("gif_autosave"), REG_DWORD, &screenshot_autosave);
@@ -420,18 +422,18 @@ HRESULT SaveRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCal
 		SaveWabbitKey(_T("check_updates"), REG_DWORD, &check_updates);
 		SaveWabbitKey(_T("show_whats_new"), REG_DWORD, &show_whats_new);
 
-		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpCalc->FaceplateColor);
-		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);		
-		SaveWabbitKey(_T("skin_path"), REG_SZ, &lpCalc->skin_path);
-		SaveWabbitKey(_T("keymap_path"), REG_SZ, &lpCalc->keymap_path);
+		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpMainWindow->FaceplateColor);
+		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpMainWindow->bCustomSkin);
+		SaveWabbitKey(_T("skin_path"), REG_SZ, &lpMainWindow->skin_path);
+		SaveWabbitKey(_T("keymap_path"), REG_SZ, &lpMainWindow->keymap_path);
 		WINDOWPLACEMENT wp;
 		GetWindowPlacement(lpMainWindow->hwndFrame, &wp);
 		SaveWabbitKey(_T("startX"), REG_DWORD, &wp.rcNormalPosition.left);
 		SaveWabbitKey(_T("startY"), REG_DWORD, &wp.rcNormalPosition.top);
-		SaveWabbitKey(_T("always_on_top"), REG_DWORD, &lpCalc->bAlwaysOnTop);
+		SaveWabbitKey(_T("always_on_top"), REG_DWORD, &lpMainWindow->bAlwaysOnTop);
 
 		SaveWabbitKey(_T("ram_version"), REG_DWORD, &lpCalc->mem_c.ram_version);
-		SaveWabbitKey(_T("tios_debug"), REG_DWORD, &lpCalc->bTIOSDebug);
+		SaveWabbitKey(_T("tios_debug"), REG_DWORD, &lpMainWindow->bTIOSDebug);
 		SaveKeyMappings(hkeyTarget);
 		
 		if (lpCalc->model != TI_84PCSE) {
@@ -442,9 +444,9 @@ HRESULT SaveRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCal
 			SaveWabbitKey(_T("lcd_freq"), REG_DWORD, &steady);
 			SaveWabbitKey(_T("lcd_delay"), REG_DWORD, &lcd->lcd_delay);
 		}
-		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->scale);
+		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpMainWindow->scale);
 		TCHAR scaleString[32];
-		StringCbPrintf(scaleString, sizeof(scaleString), _T("%lf"), lpCalc->skin_scale / lpCalc->default_skin_scale);
+		StringCbPrintf(scaleString, sizeof(scaleString), _T("%lf"), lpMainWindow->skin_scale / lpMainWindow->default_skin_scale);
 		SaveWabbitKey(_T("skin_scale"), REG_SZ, &scaleString);
 
 		TCHAR versionBuffer[32];

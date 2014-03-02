@@ -82,22 +82,29 @@ BOOL gif_anim_advance;
 BOOL silent_mode = FALSE;
 BOOL is_exiting = FALSE;
 
+extern keyprog_t keygrps[256];
+extern keyprog_t keysti83[256];
+extern keyprog_t keysti86[256];
+
+void gui_debug(LPCALC lpCalc, LPVOID lParam);
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 
 void gui_draw(LPCALC lpCalc, LPVOID lParam) {
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
-	if (lpCalc->hwndLCD != NULL) {
-		InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
-		UpdateWindow(lpCalc->hwndLCD);
+	if (lpMainWindow->hwndLCD != NULL) {
+		InvalidateRect(lpMainWindow->hwndLCD, NULL, FALSE);
+		UpdateWindow(lpMainWindow->hwndLCD);
 	}
 
-	if (lpCalc->hwndDetachedLCD != NULL) {
-		InvalidateRect(lpCalc->hwndDetachedLCD, NULL, FALSE);
+	if (lpMainWindow->hwndDetachedLCD != NULL) {
+		InvalidateRect(lpMainWindow->hwndDetachedLCD, NULL, FALSE);
+		UpdateWindow(lpMainWindow->hwndDetachedLCD);
 	}
 
-	if (lpCalc->gif_disp_state != GDS_IDLE) {
+	if (lpMainWindow->gif_disp_state != GDS_IDLE) {
 		static int skip = 0;
 		if (skip == 0) {
 			gif_anim_advance = TRUE;
@@ -136,7 +143,21 @@ VOID CALLBACK TimerProc(HWND, UINT, UINT_PTR, DWORD dwTimer) {
 	}
 }
 
-void gui_debug(LPCALC lpCalc) {
+HWND gui_debug_hwnd(LPMAINWINDOW lpMainWindow) {
+	if (lpMainWindow == NULL) {
+		return NULL;
+	}
+
+	gui_debug(lpMainWindow->lpCalc, lpMainWindow);
+	return lpMainWindow->hwndDebug;
+}
+
+void gui_debug(LPCALC lpCalc, LPVOID lParam) {
+	if (lParam == NULL) {
+		return;
+	}
+
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
 	TCHAR buf[256];
 	if (link_connected_hub(lpCalc->slot)) {
 		StringCbPrintf(buf, sizeof(buf), _T("Debugger (%d)"), lpCalc->slot + 1);
@@ -150,7 +171,7 @@ void gui_debug(LPCALC lpCalc) {
 	int flags = 0;
 	RECT pos = {0, 0, 800, 600};
 	WINDOWPLACEMENT db_placement = {0};
-	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(lpMainWindow->hwndDebug, GWLP_USERDATA);
 	if (!lpDebugInfo) {
 		db_placement.flags = SW_SHOWNORMAL;
 		db_placement.length = sizeof(WINDOWPLACEMENT);
@@ -163,18 +184,19 @@ void gui_debug(LPCALC lpCalc) {
 
 	calc_set_running(lpCalc, FALSE);
 	calc_pause_linked();
-	if (lpCalc->hwndDebug && IsWindow(lpCalc->hwndDebug)) {
-		SwitchToThisWindow(lpCalc->hwndDebug, TRUE);
+	if (lpMainWindow->hwndDebug && IsWindow(lpMainWindow->hwndDebug)) {
+		SwitchToThisWindow(lpMainWindow->hwndDebug, TRUE);
 		waddr_t waddr = addr16_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc);
 		while (!lpDebugInfo->is_ready) {
 			Sleep(100);
 		}
-		SendMessage(lpCalc->hwndDebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);
-		SendMessage(lpCalc->hwndDebug, WM_USER, DB_RESUME, 0);
+
+		SendMessage(lpMainWindow->hwndDebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0), (LPARAM)&waddr);
+		SendMessage(lpMainWindow->hwndDebug, WM_USER, DB_RESUME, 0);
 		return;
 	}
 
-	lpCalc->hwndDebug = CreateWindowEx(
+	lpMainWindow->hwndDebug = CreateWindowEx(
 		WS_EX_CONTROLPARENT,
 		g_szDebugName,
 		buf,
@@ -182,13 +204,13 @@ void gui_debug(LPCALC lpCalc) {
 		db_placement.rcNormalPosition.left, db_placement.rcNormalPosition.top,
 		db_placement.rcNormalPosition.right - db_placement.rcNormalPosition.left,
 		db_placement.rcNormalPosition.bottom - db_placement.rcNormalPosition.top,
-		0, 0, g_hInst, (LPVOID) lpCalc);
+		0, 0, g_hInst, (LPVOID) lpMainWindow);
 	if (set_place) {
-		SetWindowPlacement(lpCalc->hwndDebug, &db_placement);
+		SetWindowPlacement(lpMainWindow->hwndDebug, &db_placement);
 	}
 
-	SendMessage(lpCalc->hwndDebug, WM_SIZE, 0, 0);
-	Debug_UpdateWindow(lpCalc->hwndDebug);
+	SendMessage(lpMainWindow->hwndDebug, WM_SIZE, 0, 0);
+	Debug_UpdateWindow(lpMainWindow->hwndDebug);
 }
 
 POINT GetStartPoint() {
@@ -211,20 +233,6 @@ POINT GetStartPoint() {
 LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 	RECT r;
 
-	if (!lpCalc->scale) {
-		lpCalc->scale = 2;
-	}
-
-	if (lpCalc->skin_scale == 0.0) {
-		lpCalc->skin_scale = 1.0;
-	}
-
-	if (lpCalc->bSkinEnabled) {
-		SetRect(&r, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
-	} else {
-		SetRect(&r, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
-	}
-
 	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 	r.bottom += GetSystemMetrics(SM_CYMENU);
 
@@ -239,9 +247,23 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 		return NULL;
 	}
 
+	if (!lpMainWindow->scale) {
+		lpMainWindow->scale = 2;
+	}
+
+	if (lpMainWindow->skin_scale == 0.0) {
+		lpMainWindow->skin_scale = 1.0;
+	}
+
+	if (lpMainWindow->bSkinEnabled) {
+		SetRect(&r, 0, 0, SKIN_WIDTH, SKIN_HEIGHT);
+	} else {
+		SetRect(&r, 0, 0, 128 * lpMainWindow->scale, 64 * lpMainWindow->scale);
+	}
+
 	lpMainWindow->lpCalc = lpCalc;
 	lpMainWindow->hwndFrame = CreateWindowEx(
-		WS_EX_APPWINDOW | (lpCalc->bCutout ? WS_EX_LAYERED : 0),
+		WS_EX_APPWINDOW | (lpMainWindow->bCutout ? WS_EX_LAYERED : 0),
 		g_szAppName,
 		_T("Wabbitemu"),
 		(WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */),
@@ -253,11 +275,7 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 	}
 
 	HDC hdc = GetDC(lpMainWindow->hwndFrame);
-	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
-
-	if (!_Module.GetParsedCmdArgs()->no_create_calc) {
-		lpCalc->breakpoint_callback = gui_debug;
-	}
+	lpMainWindow->hdcSkin = CreateCompatibleDC(hdc);
 
 	GetClientRect(lpMainWindow->hwndFrame, &r);
 	lpCalc->running = TRUE;
@@ -281,15 +299,8 @@ HWND find_existing_lcd(HWND hwndParent)
 }
 
 void load_key_settings(LPCALC lpCalc, LPVOID) {
-	extern keyprog_t keygrps[256];
-	extern keyprog_t keysti83[256];
-	extern keyprog_t keysti86[256];
-	if (lpCalc->model == TI_86 || lpCalc->model == TI_85) {
-		memcpy(keygrps, keysti86, sizeof(keyprog_t)* 256);
-	}
-	else {
-		memcpy(keygrps, keysti83, sizeof(keyprog_t)* 256);
-	}
+	keyprog_t *keys = lpCalc->model == TI_86 || lpCalc->model == TI_85 ? keysti86 : keysti83;
+	memcpy(keygrps, keys, sizeof(keyprog_t)* 256);
 }
 
 void load_settings(LPCALC lpCalc, LPVOID lParam) {
@@ -385,7 +396,11 @@ LPMAINWINDOW create_calc_frame_register_events() {
 	calc_register_event(lpCalc, ROM_LOAD_EVENT, &check_bootfree_and_update, NULL);
 	calc_register_event(lpCalc, ROM_RUNNING_EVENT, &update_calc_running, lpMainWindow);
 	calc_register_event(lpCalc, BREAKPOINT_EVENT, &fire_com_breakpoint, lpMainWindow);
-	LoadRegistrySettings(lpCalc);
+	if (!_Module.GetParsedCmdArgs()->no_create_calc) {
+		calc_register_event(lpCalc, BREAKPOINT_EVENT, &gui_debug, lpMainWindow);
+	}
+	
+	LoadRegistrySettings(lpMainWindow, lpCalc);
 	return lpMainWindow;
 }
 
@@ -766,7 +781,7 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 					return E_ABORT;
 				}
 
-				LoadRegistrySettings(lpCalc);
+				LoadRegistrySettings(lpMainWindow, lpCalc);
 			}
 		}
 	}
@@ -779,8 +794,6 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 		ShowWhatsNew(FALSE);
 	}
 
-	StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), _T("labels.lab"));
-	state_build_applist(&lpCalc->cpu, &lpCalc->applist);
 	VoidLabels(lpCalc);
 
 	LoadCommandlineFiles(&m_parsedArgs, (LPARAM) lpMainWindow, LoadToLPCALC);
@@ -804,36 +817,48 @@ HWND CWabbitemuModule::CheckValidFrameHandle(HWND hwndToCheck) {
 	for (auto it = m_lpMainWindows.begin(); it != m_lpMainWindows.end(); it++) {
 		LPMAINWINDOW lpMainWindow = *it;
 		if (lpMainWindow->hwndFrame == hwndToCheck) {
-			return lpMainWindow->lpCalc->hwndLCD;
+			return lpMainWindow->hwndLCD;
 		}
 	}
 
 	return NULL;
 }
 
-HWND check_valid_other_handle(HWND hwndToCheck) {
-	for (int i = 0; i < MAX_CALCS; i++) {
+HWND CWabbitemuModule::CheckValidOtherHandle(HWND hwndToCheck) {
+	for (auto it = m_lpMainWindows.begin(); it != m_lpMainWindows.end(); it++) {
+		LPMAINWINDOW lpMainWindow = *it;
 		// we only need to worry about this case if the cutout skin is enabled
-		if (calcs[i].bCutout && calcs[i].bSkinEnabled) {
+		if (lpMainWindow->bCutout && lpMainWindow->bSkinEnabled) {
 			continue;
 		}
 
-		BOOL valid = calcs[i].hwndSmallClose == hwndToCheck || calcs[i].hwndSmallMinimize;
+		BOOL valid = lpMainWindow->hwndSmallClose == hwndToCheck || lpMainWindow->hwndSmallMinimize;
 		if (valid) {
-			return calcs[i].hwndLCD;
+			return lpMainWindow->hwndLCD;
 		}
 	}
+
 	return NULL;
 }
 
-HWND check_valid_debug_handle(HWND hwndToCheck) {
-	for (int i = 0; i < MAX_CALCS; i++) {
-		BOOL valid = calcs[i].hwndDebug == hwndToCheck;
-		if (valid) {
-			return calcs[i].hwndLCD;
+HWND CWabbitemuModule::CheckValidDebugHandle(HWND hwndToCheck) {
+	for (auto it = m_lpMainWindows.begin(); it != m_lpMainWindows.end(); it++) {
+		LPMAINWINDOW lpMainWindow = *it;
+		if (lpMainWindow->hwndDebug == hwndToCheck) {
+			return lpMainWindow->hwndLCD;
 		}
 	}
+	
 	return NULL;
+}
+
+void CWabbitemuModule::SetGIFState(gif_disp_state state) {
+	for (auto it = m_lpMainWindows.begin(); it != m_lpMainWindows.end(); it++) {
+		LPMAINWINDOW lpMainWindow = *it;
+		if (lpMainWindow != NULL && lpMainWindow->lpCalc->active) {
+			lpMainWindow->gif_disp_state = state;
+		}
+	}
 }
 
 void CWabbitemuModule::RunMessageLoop()
@@ -847,12 +872,12 @@ void CWabbitemuModule::RunMessageLoop()
 		HACCEL haccel = haccelmain;
 		HWND hwndtop = GetForegroundWindow();
 		if (hwndtop) {
-			if (check_valid_debug_handle(hwndtop)) {
+			if (CheckValidDebugHandle(hwndtop)) {
 				haccel = hacceldebug;
 			} else if (hwndtop = CheckValidFrameHandle(hwndtop)) {
 				haccel = haccelmain;
 				SetForegroundWindow(hwndtop);
-			} else if (hwndtop = check_valid_other_handle(hwndtop)) {
+			} else if (hwndtop = CheckValidOtherHandle(hwndtop)) {
 				haccel = haccelmain;
 			} else {
 				haccel = NULL;
@@ -911,13 +936,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int nCmdShow)
 	return _Module.WinMain(nCmdShow);
 }
 
-void press_key(LPCALC lpCalc, UINT key) {
-	// TODO: handle remapped keys
+void press_key(LPCALC lpCalc, int group, int bit) {
 	lpCalc->fake_running = TRUE;
-	keypad_key_press(&lpCalc->cpu, key, NULL);
-	calc_run_tstates(lpCalc, lpCalc->cpu.timer_c->freq / 4);
-	keypad_key_release(&lpCalc->cpu, key);
-	calc_run_tstates(lpCalc, lpCalc->cpu.timer_c->freq / 4);
+	keypad_press(&lpCalc->cpu, group, bit);
+	calc_run_tstates(lpCalc, lpCalc->cpu.timer_c->freq / 8);
+	keypad_release(&lpCalc->cpu, group, bit);
+	calc_run_tstates(lpCalc, lpCalc->cpu.timer_c->freq / 8);
 	lpCalc->fake_running = FALSE;
 }
 
@@ -935,36 +959,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		return 0;
 					}
 	case WM_FRAME_UPDATE: {
-		gui_frame_update(lpCalc, lpMainWindow);
+		gui_frame_update(lpMainWindow);
 		break;
 	}
 	case WM_PAINT: {
-		static int GIFGRADWIDTH = 1;
-		static int GIFADD = 1;
-
 		if (gif_anim_advance) {
-			switch (lpCalc->gif_disp_state) {
+			switch (lpMainWindow->gif_disp_state) {
 			case GDS_STARTING:
-				if (GIFGRADWIDTH > 15) {
-					lpCalc->gif_disp_state = GDS_RECORDING;
-					GIFADD = -1;
+				if (lpMainWindow->GIFGradientWidth > 15) {
+					lpMainWindow->gif_disp_state = GDS_RECORDING;
+					lpMainWindow->GIFAdd = -1;
 				} else {
-					GIFGRADWIDTH ++;
+					lpMainWindow->GIFGradientWidth++;
 				}
 				break;
 			case GDS_RECORDING:
-				GIFGRADWIDTH += GIFADD;
-				if (GIFGRADWIDTH > GIFGRAD_PEAK) {
-					GIFADD = -1;
-				} else if (GIFGRADWIDTH < GIFGRAD_TROUGH) {
-					GIFADD = 1;
+				lpMainWindow->GIFGradientWidth += lpMainWindow->GIFAdd;
+				if (lpMainWindow->GIFGradientWidth > GIFGRAD_PEAK) {
+					lpMainWindow->GIFAdd = -1;
+				} else if (lpMainWindow->GIFGradientWidth < GIFGRAD_TROUGH) {
+					lpMainWindow->GIFAdd = 1;
 				}
 				break;
 			case GDS_ENDING:
-				if (GIFGRADWIDTH) GIFGRADWIDTH--;
-				else {
-					lpCalc->gif_disp_state = GDS_IDLE;							
-					gui_frame_update(lpCalc, lpMainWindow);
+				if (lpMainWindow->GIFGradientWidth) {
+					lpMainWindow->GIFGradientWidth--;
+				} else {
+					lpMainWindow->gif_disp_state = GDS_IDLE;							
+					gui_frame_update(lpMainWindow);
 				}						
 				break;
 			case GDS_IDLE:
@@ -973,21 +995,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			gif_anim_advance = FALSE;
 		}
 
-		if (lpCalc->gif_disp_state != GDS_IDLE) {
+		if (lpMainWindow->gif_disp_state != GDS_IDLE) {
 			RECT screen;
-			GetWindowRect(lpCalc->hwndLCD, &screen);
+			GetWindowRect(lpMainWindow->hwndLCD, &screen);
 			MapWindowRect(NULL, lpMainWindow->hwndFrame, &screen);
 
-			int grayred = (int) (((double) GIFGRADWIDTH / GIFGRAD_PEAK) * 50);
+			int grayred = (int)(((double)lpMainWindow->GIFGradientWidth / GIFGRAD_PEAK) * 50);
 			HDC hWindow = GetDC(hwnd);
-			DrawGlow(lpCalc->hdcSkin, hWindow, &screen, RGB(127 - grayred, 127 - grayred, 127 + grayred),
-				GIFGRADWIDTH, lpCalc->bSkinEnabled);				
+			DrawGlow(lpMainWindow->hdcSkin, hWindow, &screen, RGB(127 - grayred, 127 - grayred, 127 + grayred),
+				lpMainWindow->GIFGradientWidth, lpMainWindow->bSkinEnabled, 1.0 / lpMainWindow->skin_scale);
 			ReleaseDC(hwnd, hWindow);
-			InflateRect(&screen, GIFGRADWIDTH, GIFGRADWIDTH);
+			InflateRect(&screen, lpMainWindow->GIFGradientWidth, lpMainWindow->GIFGradientWidth);
 			ValidateRect(hwnd, &screen);
 		}
 
-		if (lpCalc->bSkinEnabled && lpCalc->bCutout) {
+		if (lpMainWindow->bSkinEnabled && lpMainWindow->bCutout) {
 			ValidateRect(hwnd, NULL);
 			return 0;
 		}
@@ -997,14 +1019,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		GetClientRect(hwnd, &rc);
 		HDC hdc = BeginPaint(hwnd, &ps);
 
-		if (lpCalc->bSkinEnabled) {
-			int windowWidth = rc.right - rc.left;
-			int windowHeight = rc.bottom - rc.top;
+		if (lpMainWindow->bSkinEnabled) {
+			LONG windowWidth = rc.right - rc.left;
+			LONG windowHeight = rc.bottom - rc.top;
+			LONG skinWidth = lpMainWindow->rectSkin.right - lpMainWindow->rectSkin.left;
+			LONG skinHeight = lpMainWindow->rectSkin.bottom - lpMainWindow->rectSkin.top;
 
 			SetStretchBltMode(hdc, HALFTONE);
 			StretchBlt(hdc, 0, 0, windowWidth, windowHeight,
-				lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, SRCCOPY);
-			BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
+				lpMainWindow->hdcButtons, 0, 0, skinWidth, skinHeight, SRCCOPY);
+			BitBlt(lpMainWindow->hdcButtons, 0, 0, skinWidth, skinHeight, lpMainWindow->hdcSkin, 0, 0, SRCCOPY);
 		} else {
 			FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
 		}
@@ -1027,11 +1051,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			if (rom_load(lpCalcNew, lpCalc->rom_path) || 
 				rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey(_T("rom_path"))))
 			{
-				lpCalcNew->bSkinEnabled = lpCalc->bSkinEnabled;
-				lpCalcNew->bCutout = lpCalc->bCutout;
-				lpCalcNew->scale = lpCalc->scale;
-				lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
-				lpCalcNew->bAlphaBlendLCD = lpCalc->bAlphaBlendLCD;
+				lpNewWindow->bSkinEnabled = lpMainWindow->bSkinEnabled;
+				lpNewWindow->bCutout = lpMainWindow->bCutout;
+				lpNewWindow->scale = lpMainWindow->scale;
+				lpNewWindow->FaceplateColor = lpMainWindow->FaceplateColor;
+				lpNewWindow->bAlphaBlendLCD = lpMainWindow->bAlphaBlendLCD;
 				if (lpCalcNew->model < TI_84PCSE) {
 					LCD_t *lcd = (LCD_t *) lpCalcNew->cpu.pio.lcd;
 					lcd->shades = ((LCD_t *)lpCalc->cpu.pio.lcd)->shades;
@@ -1046,7 +1070,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				RECT newrc;
 				GetWindowRect(lpMainWindow->hwndFrame, &newrc);
 				SetWindowPos(lpNewWindow->hwndFrame, NULL, newrc.left + rc.right - rc.left, newrc.top, 0, 0,
-					SWP_NOSIZE | SWP_NOZORDER | (silent_mode ? SWP_HIDEWINDOW : 0));
+					SWP_NOSIZE | SWP_NOZORDER);
+				gui_frame_update(lpNewWindow);
 			} else {
 				calc_slot_free(lpCalcNew);
 				SendMessage(hwnd, WM_COMMAND, IDM_HELP_WIZARD, 0);
@@ -1054,7 +1079,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 						   }
 		case IDM_FILE_OPEN: {
-			GetOpenSendFileName(hwnd);
+			GetOpenSendFileName(hwnd, lpCalc);
 			SetWindowText(hwnd, _T("Wabbitemu"));
 			break;
 							}
@@ -1123,29 +1148,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}
 					break;
 				}
+
+				_Module.SetGIFState(GDS_STARTING);
 				gif_write_state = GIF_START;
-				for (int i = 0; i < MAX_CALCS; i++) {
-					if (calcs[i].active) {
-						calcs[i].gif_disp_state = GDS_STARTING;
-					}
-				}
 				CheckMenuItem(hmenu, IDM_FILE_GIF, MF_BYCOMMAND | MF_CHECKED);
 				lpCalc->running = TRUE;
 			} else {
 				gif_write_state = GIF_END;
-				for (int i = 0; i < MAX_CALCS; i++) {
-					if (calcs[i].active) {
-						calcs[i].gif_disp_state = GDS_ENDING;
-					}
-				}
+				_Module.SetGIFState(GDS_ENDING);
 				CheckMenuItem(hmenu, IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
-
-				int i;
-				for (i = 0; i < MAX_CALCS; i++) {
-					if (calcs[i].active == TRUE) {
-						calcs[i].running = calcBackupRunning[i];
-					}
-				}
 			}
 			break;
 						   }
@@ -1242,9 +1253,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			for (u_int i = 0; i < _tcslen(charData); i++) {
 				char num = charData[i];
-				if (!IsCharAlphaNumeric(num)) {
-					continue;
-				}
 
 #define CALC_FLAGS 0x89F0
 #define SHIFT_FLAGS CALC_FLAGS + 18
@@ -1256,36 +1264,107 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 #define SHIFT_ALPHA (1 << 4)
 #define SHIFT_LWR_ALPHA (1 << 5)
 #define SHIFT_KEEP_ALPHA (1 << 7)
+
 				// we use tolower here so we just get the key not the modifier
-				SHORT vkey = VkKeyScan((TCHAR) tolower(num));
+				BOOL press_shift = FALSE;
+				BOOL press_alpha = !isdigit(num);
+				int group = 0, bit = 0;
+				keyprog_t *keys = lpCalc->model == TI_86 || lpCalc->model == TI_85 ? keysti86 : keysti83;
+				for (int i = 0; i < 256; i++) {
+					if (keys[i].vk == toupper(num)) {
+						group = keys[i].group;
+						bit = keys[i].bit;
+						break;
+					}
+				}
+
+				if (num == '.') {
+					press_alpha = FALSE;
+					group = 3;
+					bit = 0;
+				}
+
+				if (group == 0 && bit == 0) {
+					switch (num) {
+					case ']':
+						press_shift = TRUE;
+						group = 1;
+						bit = 2;
+						break;
+					case '[':
+						press_shift = TRUE;
+						group = 1;
+						bit = 3;
+						break;
+					case '{':
+						press_shift = TRUE;
+						group = 3;
+						bit = 4;
+						break;
+					case '(':
+						press_alpha = FALSE;
+						group = 3;
+						bit = 4;
+						break;
+					case '}':
+						press_shift = TRUE;
+						group = 2;
+						bit = 4;
+						break;
+					case ')':
+						press_alpha = FALSE;
+						group = 2;
+						bit = 4;
+						break;
+					case ',':
+						press_alpha = FALSE;
+						group = 4;
+						bit = 4;
+						break;
+					case ':':
+						group = 3;
+						bit = 0;
+						break;
+					case '?':
+						group = 2;
+						bit = 0;
+						break;
+					}
+				}
+
+				if (group == 0 && bit == 0) {
+					continue;
+				}
+
 				BYTE shiftFlags = mem_read(&lpCalc->mem_c, SHIFT_FLAGS);
 				if (shiftFlags & SHIFT_2ND) {
-					press_key(lpCalc, VK_LSHIFT);
+					press_key(lpCalc, 6, 5);
 				}
 
 				BOOL isLowercaseEnabled = mem_read(&lpCalc->mem_c, LOWERCASE_FLAGS) & LWR_CASE_ACTIVE;
-				if (IsCharAlpha(num)) {
+				if (press_shift) {
+					press_key(lpCalc, 6, 5);
+				} else if (press_alpha) {
 					if (!(shiftFlags & SHIFT_ALPHA)) {
-						press_key(lpCalc, VK_CONTROL);
+						press_key(lpCalc, 5, 7);
 					}
 
 					if (IsCharLower(num) && isLowercaseEnabled) {
-						press_key(lpCalc, VK_CONTROL);
+						press_key(lpCalc, 5, 7);
 					}
 				} else if (shiftFlags & SHIFT_ALPHA) {
-					press_key(lpCalc, VK_CONTROL);
+					press_key(lpCalc, 5, 7);
 					// if lowercase is enabled we have to press alpha again
 					if (isLowercaseEnabled) {
-						press_key(lpCalc, VK_CONTROL);
+						press_key(lpCalc, 5, 7);
 					}
 				}
 
-				press_key(lpCalc, vkey);
+				press_key(lpCalc, group, bit);
 				// rather than put this in a thread and create who know what for
 				// race conditions, just force and lcd update. This should be plenty of
 				// user feedback, although it will be slower
-				SendMessage(lpCalc->hwndLCD, WM_PAINT, 0, 0);
-				InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
+				gui_draw(lpCalc, lpMainWindow);
 			}
 			GlobalUnlock(hClipboardData);
 			CloseClipboard();
@@ -1293,23 +1372,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 							 }
 		case IDM_VIEW_SKIN: {
-			lpCalc->bSkinEnabled = !lpCalc->bSkinEnabled;
-			gui_frame_update(lpCalc, lpMainWindow);
+			lpMainWindow->bSkinEnabled = !lpMainWindow->bSkinEnabled;
+			gui_frame_update(lpMainWindow);
 			break;
 							}
 		case IDM_VIEW_LCD: {
-			if (lpCalc->hwndDetachedLCD != NULL || lpCalc->hwndDetachedFrame != NULL) {
+			if (lpMainWindow->hwndDetachedLCD != NULL || lpMainWindow->hwndDetachedFrame != NULL) {
 				break;
 			}
 
 			RECT r;
 			int lcdWidth = lpCalc->cpu.pio.lcd->display_width;
 			int lcdHeight = lpCalc->cpu.pio.lcd->height;
-			SetRect(&r, 0, 0, lcdWidth * lpCalc->scale, lcdHeight * lpCalc->scale);
+			SetRect(&r, 0, 0, lcdWidth * lpMainWindow->scale, lcdHeight * lpMainWindow->scale);
 			AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 
 			POINT startPoint = GetStartPoint();
-			lpCalc->hwndDetachedFrame  = CreateWindowEx(
+			lpMainWindow->hwndDetachedFrame  = CreateWindowEx(
 				0,
 				g_szDetachedName,
 				_T("Z80"),
@@ -1317,9 +1396,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				startPoint.x, startPoint.y, r.right - r.left, r.bottom - r.top,
 				NULL, 0, g_hInst, (LPVOID) lpMainWindow);
 
-			SetWindowText(lpCalc->hwndDetachedFrame, _T("LCD"));
+			SetWindowText(lpMainWindow->hwndDetachedFrame, _T("LCD"));
 
-			if (lpCalc->hwndDetachedFrame == NULL) {
+			if (lpMainWindow->hwndDetachedFrame == NULL) {
 				return -1;
 			}
 
@@ -1343,7 +1422,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			TCHAR buf[64];
 			StringCbCopy(buf, sizeof(buf), CalcModelTxt[lpCalc->model]);
 			StringCbCat(buf, sizeof(buf), _T(" Connected"));
-			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) buf);
+			SendMessage(lpMainWindow->hwndStatusBar, SB_SETTEXT, 1, (LPARAM)buf);
 			StringCbPrintf(buf, sizeof(buf), _T("Wabbitemu (%d)"), lpCalc->slot + 1);
 			SetWindowText(hwnd, buf);			
 			break;
@@ -1360,12 +1439,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			CreateVarTreeList(hwnd, lpCalc);
 			break;
 		case IDM_VIEW_KEYSPRESSED:
-			if (IsWindow(lpCalc->hwndKeyListDialog)) {
-				SwitchToThisWindow(lpCalc->hwndKeyListDialog, TRUE);
+			if (IsWindow(lpMainWindow->hwndKeyListDialog)) {
+				SwitchToThisWindow(lpMainWindow->hwndKeyListDialog, TRUE);
 			} else {
-				lpCalc->hwndKeyListDialog = (HWND) CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_KEYS_LIST), 
+				lpMainWindow->hwndKeyListDialog = (HWND)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_KEYS_LIST),
 					hwnd, (DLGPROC) KeysListProc, (LPARAM) lpMainWindow);
-				ShowWindow(lpCalc->hwndKeyListDialog, SW_SHOW);
+				ShowWindow(lpMainWindow->hwndKeyListDialog, SW_SHOW);
 			}
 			break;
 		case IDM_CALC_OPTIONS:
@@ -1376,7 +1455,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 							  }
 		case IDM_DEBUG_OPEN:
-			gui_debug(lpCalc);
+			gui_debug_hwnd(lpMainWindow);
 			break;
 		case IDM_HELP_ABOUT:
 			lpCalc->running = FALSE;
@@ -1419,7 +1498,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 			lpCalc->cpu.pio.keypad->on_pressed &= (~KEY_LOCKPRESS);
 
-			FinalizeButtons(lpMainWindow, lpCalc);
+			FinalizeButtons(lpMainWindow);
 			break;
 								}
 		case IDM_SPEED_QUARTER: {
@@ -1537,7 +1616,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			SetTimer(hwnd, KEY_TIMER, 50, NULL);
 		}
 
-		FinalizeButtons(lpMainWindow, lpCalc);
+		FinalizeButtons(lpMainWindow);
 		return 0;
 	}
 	case WM_LBUTTONDOWN: {
@@ -1555,7 +1634,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		SetCapture(hwnd);
 		pt.x	= GET_X_LPARAM(lParam);
 		pt.y	= GET_Y_LPARAM(lParam);
-		if (lpCalc->bCutout) {
+		if (lpMainWindow->bCutout) {
 			pt.y += GetSystemMetrics(SM_CYCAPTION);	
 			pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
 		}
@@ -1568,17 +1647,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		kp->on_pressed &= ~KEY_MOUSEPRESS;
 
-		LONG x = (LONG)(pt.x / lpCalc->skin_scale);
-		LONG y = (LONG)(pt.y / lpCalc->skin_scale);
-		COLORREF c = GetPixel(lpCalc->hdcKeymap, x, y);
+		LONG x = (LONG)(pt.x / lpMainWindow->skin_scale);
+		LONG y = (LONG)(pt.y / lpMainWindow->skin_scale);
+		COLORREF c = GetPixel(lpMainWindow->hdcKeymap, x, y);
 		if (GetRValue(c) == 0xFF) {
-			FinalizeButtons(lpMainWindow, lpCalc);
+			FinalizeButtons(lpMainWindow);
 			return 0;
 		}
 
 		group = GetGValue(c) >> 4;
 		bit	= GetBValue(c) >> 4;
-		LogKeypress(lpCalc, group, bit);
+		LogKeypress(lpMainWindow, lpCalc->model, group, bit);
 		if (group == KEYGROUP_ON && bit == KEYBIT_ON){
 			kp->on_pressed |= KEY_MOUSEPRESS;
 			kp->on_last_pressed = lpCalc->cpu.timer_c->tstates;
@@ -1589,7 +1668,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				kp->last_pressed[group][bit] = lpCalc->cpu.timer_c->tstates;
 			}
 		}
-		FinalizeButtons(lpMainWindow, lpCalc);
+		FinalizeButtons(lpMainWindow);
 		return 0;
 	}
 	case WM_TIMER: {
@@ -1609,15 +1688,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		pt.x	= GET_X_LPARAM(lParam);
 		pt.y	= GET_Y_LPARAM(lParam);
-		if (lpCalc->bCutout) {
+		if (lpMainWindow->bCutout) {
 			pt.y += GetSystemMetrics(SM_CYCAPTION);	
 			pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
 		}
 
 		// convert to the scale it is displayed at
-		LONG x = (LONG) (pt.x / lpCalc->skin_scale);
-		LONG y = (LONG)(pt.y / lpCalc->skin_scale);
-		COLORREF c = GetPixel(lpCalc->hdcKeymap, x, y);
+		LONG x = (LONG)(pt.x / lpMainWindow->skin_scale);
+		LONG y = (LONG)(pt.y / lpMainWindow->skin_scale);
+		COLORREF c = GetPixel(lpMainWindow->hdcKeymap, x, y);
 		if (GetRValue(c) == 0xFF) return 0;
 		group	= GetGValue(c) >> 4;
 		bit		= GetBValue(c) >> 4;
@@ -1627,16 +1706,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		} else {
 			kp->keys[group][bit] ^= KEY_LOCKPRESS;
 		}
-		FinalizeButtons(lpMainWindow, lpCalc);
+		FinalizeButtons(lpMainWindow);
 		return 0;
 	}
 	case WM_KEYDOWN: {
-		HandleKeyDown(lpMainWindow, lpCalc, wParam);
+		HandleKeyDown(lpMainWindow, wParam);
 		return 0;
 	}
 	case WM_KEYUP: {
 		if (wParam) {
-			HandleKeyUp(lpMainWindow, lpCalc, wParam);
+			HandleKeyUp(lpMainWindow, wParam);
 		}
 		return 0;
 	}
@@ -1645,19 +1724,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 		}
 
-		if (lpCalc->bSkinEnabled) {
-			return HandleSkinSizingMessage(hwnd, lpCalc, wParam, (RECT *)lParam);
+		if (lpMainWindow->bSkinEnabled) {
+			return HandleSkinSizingMessage(hwnd, lpMainWindow, wParam, (RECT *)lParam);
 		}
-		return HandleLCDSizingMessage(hwnd, lpCalc->hwndStatusBar, lpCalc, wParam, (RECT *)lParam, lpCalc->cpu.pio.lcd->width);
+		return HandleLCDSizingMessage(hwnd, lpMainWindow->hwndStatusBar, lpMainWindow, wParam, (RECT *)lParam, lpCalc->cpu.pio.lcd->width);
 	}
 	case WM_SIZE:
-		return HandleSizeMessage(hwnd, lpCalc->hwndLCD, lpCalc, lpCalc->bSkinEnabled);
+		return HandleSizeMessage(hwnd, lpMainWindow->hwndLCD, lpMainWindow, lpCalc, lpMainWindow->bSkinEnabled);
 	case WM_MOVE: {
 		if (lpCalc == NULL) {
 			break;
 		}
 
-		return HandleMoveMessage(hwnd, lpCalc);
+		return HandleMoveMessage(hwnd, lpMainWindow);
 	}
 	case WM_CONTEXTMENU: {
 		lpMainWindow->ctxtPt.x = GET_X_LPARAM(lParam);
@@ -1677,7 +1756,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						 }
 	case WM_GETMINMAXINFO: {
 		MINMAXINFO *info = (MINMAXINFO *)lParam;
-		return GetMinMaxInfo(hwnd, lpCalc, info);
+		return GetMinMaxInfo(hwnd, lpMainWindow, info);
 	}
 	case WM_KILLFOCUS: {
 		if (lpCalc == NULL) {
@@ -1692,7 +1771,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			for (int bit = 0; bit < 8; bit++) {
 				if (keypad->keys[group][bit]) {
 					keyprog_t *key = keypad_keyprog_from_groupbit(&lpCalc->cpu, group, bit);
-					HandleKeyUp(lpMainWindow, lpCalc, key->vk);
+					HandleKeyUp(lpMainWindow, key->vk);
 				}
 			}
 		}
@@ -1752,29 +1831,35 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 	case WM_DESTROY: {
-		DeleteDC(lpCalc->hdcKeymap);
-		DeleteDC(lpCalc->hdcSkin);
-		lpCalc->hdcKeymap = NULL;
-		lpCalc->hdcSkin = NULL;
+		DeleteDC(lpMainWindow->hdcKeymap);
+		DeleteDC(lpMainWindow->hdcSkin);
+		lpMainWindow->hdcKeymap = NULL;
+		lpMainWindow->hdcSkin = NULL;
 
-		if (lpCalc->hwndLCD)
-			DestroyWindow(lpCalc->hwndLCD);
+		if (lpMainWindow->hwndLCD != NULL) {
+			DestroyWindow(lpMainWindow->hwndLCD);
+			lpMainWindow->hwndLCD = NULL;
+		}
 
-		if (lpCalc->hwndDebug)
-			DestroyWindow(lpCalc->hwndDebug);
-		lpCalc->hwndDebug = NULL;
+		if (lpMainWindow->hwndDebug != NULL) {
+			DestroyWindow(lpMainWindow->hwndDebug);
+			lpMainWindow->hwndDebug = NULL;
+		}
 
-		if (lpCalc->hwndStatusBar)
-			DestroyWindow(lpCalc->hwndStatusBar);
-		lpCalc->hwndStatusBar = NULL;
+		if (lpMainWindow->hwndStatusBar != NULL) {
+			DestroyWindow(lpMainWindow->hwndStatusBar);
+			lpMainWindow->hwndStatusBar = NULL;
+		}
 
-		if (lpCalc->hwndSmallClose)
-			DestroyWindow(lpCalc->hwndSmallClose);
-		lpCalc->hwndSmallClose = NULL;
+		if (lpMainWindow->hwndSmallClose != NULL) {
+			DestroyWindow(lpMainWindow->hwndSmallClose);
+			lpMainWindow->hwndSmallClose = NULL;
+		}
 
-		if (lpCalc->hwndSmallMinimize)
-			DestroyWindow(lpCalc->hwndSmallMinimize);
-		lpCalc->hwndSmallMinimize = NULL;
+		if (lpMainWindow->hwndSmallMinimize != NULL) {
+			DestroyWindow(lpMainWindow->hwndSmallMinimize);
+			lpMainWindow->hwndSmallMinimize = NULL;
+		}
 
 		//if (link_connected(lpCalc->slot))
 		//	link_disconnect(&lpCalc->cpu);
@@ -1802,15 +1887,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			POINT pt;
 			pt.x = GET_X_LPARAM(lParam);
 			pt.y = GET_Y_LPARAM(lParam);
-			if (lpCalc->bCutout && lpCalc->bSkinEnabled) {
+			if (lpMainWindow->bCutout && lpMainWindow->bSkinEnabled) {
 				pt.y += GetSystemMetrics(SM_CYCAPTION);
 				pt.x += GetSystemMetrics(SM_CXFIXEDFRAME);
 			}
 
 			ScreenToClient(hwnd, &pt);
-			LONG x = (LONG)(pt.x / lpCalc->skin_scale);
-			LONG y = (LONG)(pt.y / lpCalc->skin_scale);
-			if (GetRValue(GetPixel(lpCalc->hdcKeymap, x, y)) != 0xFF) {
+			LONG x = (LONG)(pt.x / lpMainWindow->skin_scale);
+			LONG y = (LONG)(pt.y / lpMainWindow->skin_scale);
+			if (GetRValue(GetPixel(lpMainWindow->hdcKeymap, x, y)) != 0xFF) {
 				return htRet;
 			}
 

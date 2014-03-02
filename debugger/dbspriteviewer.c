@@ -52,7 +52,6 @@ INT_PTR CALLBACK SpriteViewerDialogProc(HWND hwnd, UINT Message, WPARAM wParam, 
 			return FALSE;
 		}
 		case WM_SIZE: {
-			LPDRAWITEMSTRUCT lpItem = (LPDRAWITEMSTRUCT) lParam;
 			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			HWND spriteBox = GetDlgItem(hwnd, IDC_STATIC_SPRITE);
 			watchpoint_t *watchpoint = (watchpoint_t *) lpTabInfo->tabInfo;
@@ -66,7 +65,7 @@ INT_PTR CALLBACK SpriteViewerDialogProc(HWND hwnd, UINT Message, WPARAM wParam, 
 			else {
 				width = watchpoint->width;
 				height = watchpoint->height;
-				scale = lpCalc->scale;
+				scale = 2;
 			}
 			SetWindowPos(spriteBox, NULL, 0, 0, width * scale, height * scale, SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 			return FALSE;
@@ -75,7 +74,6 @@ INT_PTR CALLBACK SpriteViewerDialogProc(HWND hwnd, UINT Message, WPARAM wParam, 
 			if (wParam == IDC_STATIC_SPRITE) {
 				LPDRAWITEMSTRUCT lpItem = (LPDRAWITEMSTRUCT) lParam;
 				LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				HWND spriteBox = GetDlgItem(hwnd, IDC_STATIC_SPRITE);
 				watchpoint_t *watchpoint = (watchpoint_t *) lpTabInfo->tabInfo;
 				LPCALC lpCalc = lpTabInfo->lpDebugInfo->lpCalc;
 
@@ -87,7 +85,7 @@ INT_PTR CALLBACK SpriteViewerDialogProc(HWND hwnd, UINT Message, WPARAM wParam, 
 				} else {
 					width = watchpoint->width;
 					height = watchpoint->height;
-					scale = lpCalc->scale;
+					scale = 2;
 				}
 
 				HDC hdc = CreateCompatibleDC(lpItem->hDC);

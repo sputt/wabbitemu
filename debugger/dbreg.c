@@ -180,7 +180,7 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		if (!_tcscmp(vfs->szName, _T("pc"))) {
 			SendMessage(lpDebugInfo->hDebug, WM_COMMAND, DB_CYCLEPCS, 0);
 		}
-		Debug_UpdateWindow(lpCalc->hwndDebug);
+		Debug_UpdateWindow(lpDebugInfo->hDebug);
 		return 0;
 	}
 	case WM_PAINT:
@@ -291,7 +291,7 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 			break;
 		}
 		Debug_UpdateWindow(hwnd);
-		Debug_UpdateWindow(lpCalc->hwndDebug);
+		Debug_UpdateWindow(lpDebugInfo->hDebug);
 		return 0;
 	}
 	case WM_PAINT:
@@ -449,7 +449,7 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 						lpCalc->cpu.halt = !lpCalc->cpu.halt;
 						break;
 				}
-				Debug_UpdateWindow(lpCalc->hwndDebug);
+				Debug_UpdateWindow(lpDebugInfo->hDebug);
 				break;
 			case EN_CHANGE: {
 				lpCalc->cpu.timer_c->freq = (uint32_t)(freq * 1000000.0);
@@ -561,7 +561,7 @@ LRESULT CALLBACK DBKeyboardProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						lpCalc->cpu.pio.keypad->on_pressed = !lpCalc->cpu.pio.keypad->on_pressed;
 						break;
 				}
-				Debug_UpdateWindow(lpCalc->hwndDebug);
+				Debug_UpdateWindow(lpDebugInfo->hDebug);
 				break;
 			case EN_CHANGE: {
 				keypad_t *kp = lpCalc->cpu.pio.keypad;
@@ -692,7 +692,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 						lpCalc->cpu.iff2 = !lpCalc->cpu.iff2;
 						break;
 				}
-				Debug_UpdateWindow(lpCalc->hwndDebug);
+				Debug_UpdateWindow(lpDebugInfo->hDebug);
 		}
 		return 0;
 	}
@@ -940,7 +940,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					}
 				}
 
-				Debug_UpdateWindow(lpCalc->hwndDebug);
+				Debug_UpdateWindow(lpDebugInfo->hDebug);
 		}
 		return 0;
 	}
@@ -1002,8 +1002,6 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					break;
 				}
 			}
-
-			InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
 			break;
 		}
 		case VF_DESELECT_CHILDREN:
@@ -1124,7 +1122,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 							lpCalc->cpu.f ^= N_MASK;
 							break;
 					}
-					Debug_UpdateWindow(lpCalc->hwndDebug);
+					Debug_UpdateWindow(lpDebugInfo->hDebug);
 			}
 
 			return 0;

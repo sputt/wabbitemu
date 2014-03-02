@@ -580,7 +580,6 @@ keyprog_t * keypad_keyprog_from_groupbit(CPU_t *cpu, int group, int bit) {
 	{
 		if (keygrps[i].group == group && keygrps[i].bit == bit)
 		{
-			keypad_release(cpu, keygrps[i].group, keygrps[i].bit);
 			return &keygrps[i];
 		}
 	}
