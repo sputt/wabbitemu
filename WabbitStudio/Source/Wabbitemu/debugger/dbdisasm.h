@@ -53,8 +53,8 @@ void sprint_command(LPCALC, HDC, Z80_info_t *, RECT *);
 void sprint_data(LPCALC, HDC, Z80_info_t *, RECT *);
 void sprint_size(LPCALC, HDC, Z80_info_t *, RECT *);
 void sprint_clocks(LPCALC, HDC, Z80_info_t *, RECT *);
-void CPU_stepout(LPCALC);
-void CPU_stepover(LPCALC);
+void CPU_stepout(LPCALC, BOOL tiosDebug);
+void CPU_stepover(LPCALC, BOOL tiosDebug);
 void cycle_pcs(dp_settings *);
 
 #define dpsAddr		0

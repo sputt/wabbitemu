@@ -355,3 +355,87 @@ int StringToValue(TCHAR *str) {
 
 	return value;
 }
+
+void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, BYTE opacity) {
+
+	HDC hdcSel = CreateCompatibleDC(hdc);
+	HBITMAP hbmSel = CreateCompatibleBitmap(hdc, r->right - r->left, r->bottom - r->top);
+	TRIVERTEX vert[2];
+	GRADIENT_RECT gRect;
+	COLORREF rgbSel;
+	BLENDFUNCTION bf;
+	COLORREF tl, tr, br, bl;
+
+	SelectObject(hdcSel, hbmSel);
+
+	SelectObject(hdc, GetStockObject(WHITE_BRUSH));
+	SelectObject(hdcSel, GetStockObject(DC_PEN));
+	SetDCPenColor(hdcSel, RGB(255, 255, 255));
+	Rectangle(hdcSel, 0, 0, r->right - r->left, r->bottom - r->top);
+
+	gRect.UpperLeft = 0;
+	gRect.LowerRight = 1;
+
+
+	if (active == TRUE) {
+		rgbSel = RGB(153, 222, 253);
+		//rgbSel = RGB(24, 153, 255);
+	}
+	else {
+		rgbSel = RGB(190, 190, 190);
+	}
+
+	if (breakpoint)
+		rgbSel = breakpoint;
+
+	vert[0].x = 2;
+	vert[0].y = 1;
+	vert[0].Red = 0xff00;
+	vert[0].Green = 0xff00;
+	vert[0].Blue = 0xff00;
+
+	vert[1].x = r->right - r->left - 2;
+	vert[1].y = (r->bottom - r->top - 2) * 2;
+	vert[1].Red = GetRValue(rgbSel) << 8;
+	vert[1].Green = GetGValue(rgbSel) << 8;
+	vert[1].Blue = GetBValue(rgbSel) << 8;
+
+	GradientFill(hdcSel, vert, 2, &gRect, 1, GRADIENT_FILL_RECT_V);
+
+
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = opacity;
+	bf.AlphaFormat = 0;
+
+	SelectObject(hdcSel, GetStockObject(NULL_BRUSH));
+	SetDCPenColor(hdcSel, rgbSel);
+
+	RoundRect(hdcSel, 0, 0, r->right - r->left, r->bottom - r->top, 5, 5);
+
+	SetDCPenColor(hdcSel, GetPixel(hdcSel, 3, (r->bottom - r->top) / 3));
+	RoundRect(hdcSel, 1, 1, r->right - r->left - 1, r->bottom - r->top - 1, 5, 5);
+
+
+	tl = GetPixel(hdc, r->left, r->top);
+	tr = GetPixel(hdc, r->right - 1, r->top);
+	br = GetPixel(hdc, r->right - 1, r->bottom - 1);
+	bl = GetPixel(hdc, r->left, r->bottom - 1);
+
+	AlphaBlend(hdc, r->left, r->top, r->right - r->left, r->bottom - r->top,
+		hdcSel, 0, 0, r->right - r->left, r->bottom - r->top,
+		bf);
+
+	SetPixel(hdc, r->left, r->top, tl);
+	SetPixel(hdc, r->left, r->top + 1, tl);
+	SetPixel(hdc, r->right - 1, r->top, tr);
+	SetPixel(hdc, r->right - 1, r->top + 1, tr);
+	SetPixel(hdc, r->right - 1, r->bottom - 1, br);
+	SetPixel(hdc, r->right - 1, r->bottom - 2, br);
+	SetPixel(hdc, r->left, r->bottom - 1, bl);
+	SetPixel(hdc, r->left, r->bottom - 2, bl);
+
+
+	DeleteObject(hbmSel);
+	DeleteDC(hdcSel);
+}

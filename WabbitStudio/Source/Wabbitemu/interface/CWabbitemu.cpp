@@ -26,7 +26,7 @@ HRESULT CWabbitemu::FinalConstruct()
 	
 	lpMainWindow->pWabbitemu = this;
 	m_lpCalc = lpMainWindow->lpCalc;
-	LoadRegistrySettings(m_lpCalc);
+	LoadRegistrySettings(m_lpMainWindow, m_lpCalc);
 	m_iSlot = m_lpCalc->slot;
 
 	m_fVisible = VARIANT_FALSE;
@@ -53,7 +53,7 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 	}
 	if (fVisible == VARIANT_TRUE)
 	{
-		gui_frame_update(m_lpCalc, m_lpMainWindow);
+		gui_frame_update(m_lpMainWindow);
 		SetProp(m_lpMainWindow->hwndFrame, _T("COMObjectFrame"), (HANDLE) TRUE);
 		
 		//HMENU hMenu = GetSystemMenu(m_lpCalc->hwndFrame, FALSE);
@@ -190,7 +190,8 @@ STDMETHODIMP CWabbitemu::Step()
 
 STDMETHODIMP CWabbitemu::StepOver()
 {
-	CPU_stepover(m_lpCalc);
+	// TODO: figure out what to do here for TIOS debug
+	CPU_stepover(m_lpCalc, TRUE);
 	return S_OK;
 }
 

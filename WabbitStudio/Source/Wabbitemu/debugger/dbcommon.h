@@ -12,7 +12,7 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 INT_PTR CALLBACK FindDialogProc(HWND, UINT, WPARAM, LPARAM);
 int ValueSubmit(HWND hwndDlg, void *loc, int size, int max_value = INT_MAX);
 LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int opacity);
+void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, BYTE opacity);
 const TCHAR * byte_to_binary(int x, BOOL isWord = FALSE);
 int xtoi(const TCHAR *xs);
 int StringToValue(TCHAR *str);

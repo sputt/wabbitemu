@@ -27,75 +27,79 @@ LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		}
 
 		case WM_PAINT: {
-				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-
-				TCHAR szWindowName[256];
-				GetWindowText(hwnd, szWindowName, ARRAYSIZE(szWindowName));
-
-				PAINTSTRUCT ps = {0};
-				HDC hdc = BeginPaint(hwnd, &ps);
-
-				RECT rc;
-				GetClientRect(hwnd, &rc);
-				FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
-
-				if (!lpCalc->bCutout)
-					return 0;
-			
-				HBITMAP hbmButtons = LoadBitmap(g_hInst, _T("close"));
-				HDC hdcButtons = CreateCompatibleDC(hdc);
-				SelectObject(hdcButtons, hbmButtons);
-
-				UINT col, row;
-				col = 0;
-				if (_tcsicmp(szWindowName, g_szSmallMinimize) == 0) {
-					col = 13;
-				}
-				row = 0;
-				if (fDown == TRUE) {
-					row = 13;
-				}
-
-				RECT r;
-				GetWindowRect(hwnd, &r);
-				POINT p;
-				p.x = r.left;
-				p.y = r.top;
-
-				ScreenToClient(hwnd, &p);
-				BitBlt(hdc, 0, 0, 13, 13, lpCalc->hdcButtons, p.x, p.y, SRCCOPY);
-
-				BLENDFUNCTION bf;
-				bf.BlendOp = AC_SRC_OVER;
-				bf.BlendFlags = 0;
-				bf.SourceConstantAlpha = 160;
-				bf.AlphaFormat = 0;
-				AlphaBlend(hdc, 0, 0, 13, 13, hdcButtons, col, row, 13, 13, bf );
-
-				DeleteDC(hdcButtons);
-				DeleteObject(hbmButtons);
-
-				EndPaint(hwnd, &ps);
-
+			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			if (lpMainWindow == NULL) {
 				return 0;
+			}
+
+			TCHAR szWindowName[256];
+			GetWindowText(hwnd, szWindowName, ARRAYSIZE(szWindowName));
+
+			PAINTSTRUCT ps = {0};
+			HDC hdc = BeginPaint(hwnd, &ps);
+
+			RECT rc;
+			GetClientRect(hwnd, &rc);
+			FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
+
+			if (!lpMainWindow->bCutout) {
+				return 0;
+			}
+			
+			HBITMAP hbmButtons = LoadBitmap(g_hInst, _T("close"));
+			HDC hdcButtons = CreateCompatibleDC(hdc);
+			SelectObject(hdcButtons, hbmButtons);
+
+			UINT col, row;
+			col = 0;
+			if (_tcsicmp(szWindowName, g_szSmallMinimize) == 0) {
+				col = 13;
+			}
+			row = 0;
+			if (fDown == TRUE) {
+				row = 13;
+			}
+
+			RECT r;
+			GetWindowRect(hwnd, &r);
+			POINT p;
+			p.x = r.left;
+			p.y = r.top;
+
+			ScreenToClient(hwnd, &p);
+			BitBlt(hdc, 0, 0, 13, 13, lpMainWindow->hdcButtons, p.x, p.y, SRCCOPY);
+
+			BLENDFUNCTION bf;
+			bf.BlendOp = AC_SRC_OVER;
+			bf.BlendFlags = 0;
+			bf.SourceConstantAlpha = 160;
+			bf.AlphaFormat = 0;
+			AlphaBlend(hdc, 0, 0, 13, 13, hdcButtons, col, row, 13, 13, bf );
+
+			DeleteDC(hdcButtons);
+			DeleteObject(hbmButtons);
+
+			EndPaint(hwnd, &ps);
+
+			return 0;
 		}
 
 		case WM_LBUTTONDOWN: {
-				SetCapture(hwnd);
-				fDown = TRUE;
-				InvalidateRect(hwnd, NULL, FALSE);
-				UpdateWindow(hwnd);
-				return 0;
+			SetCapture(hwnd);
+			fDown = TRUE;
+			InvalidateRect(hwnd, NULL, FALSE);
+			UpdateWindow(hwnd);
+			return 0;
 		}
 		case WM_LBUTTONUP: {
 			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (lpMainWindow == NULL) {
-				break;
+				return 0;
 			}
 
 			POINT pt;
 			RECT rc;
-			//make sure were still over the button
+			// make sure were still over the button
 			GetCursorPos(&pt);
 			ScreenToClient(hwnd, &pt);
 			GetClientRect(hwnd, &rc);
@@ -118,25 +122,25 @@ LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		case WM_KEYDOWN: {
 			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (lpMainWindow == NULL) {
-				break;
+				return 0;
 			}
 
-			HandleKeyDown(lpMainWindow, lpMainWindow->lpCalc, wParam);
+			HandleKeyDown(lpMainWindow, wParam);
 			return 0;
 		}
 		case WM_KEYUP: {
 			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (lpMainWindow == NULL) {
-				break;
+				return 0;
 			}
 
-			HandleKeyUp(lpMainWindow, lpMainWindow->lpCalc , wParam);
+			HandleKeyUp(lpMainWindow, wParam);
 			return 0;
 		}
 		case WM_CLOSE: {
 			LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (lpMainWindow == NULL) {
-				break;
+				return 0;
 			}
 
 			SendMessage(lpMainWindow->hwndFrame, uMsg, wParam, lParam);
@@ -148,14 +152,13 @@ LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 }
 
-void PositionLittleButtons(HWND hwnd)
+void PositionLittleButtons(HWND hwnd, LPMAINWINDOW lpMainWindow)
 {
-	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	HDWP hdwp = BeginDeferWindowPos(3);
 	RECT wr;
 	GetWindowRect(hwnd, &wr);
-	DeferWindowPos(hdwp, lpCalc->hwndSmallMinimize, NULL, wr.right - 81, wr.top + 34, 13, 13, 0);
-	DeferWindowPos(hdwp, lpCalc->hwndSmallClose, NULL, wr.right - 66, wr.top + 34, 13, 13, 0);
+	DeferWindowPos(hdwp, lpMainWindow->hwndSmallMinimize, NULL, wr.right - 81, wr.top + 34, 13, 13, 0);
+	DeferWindowPos(hdwp, lpMainWindow->hwndSmallClose, NULL, wr.right - 66, wr.top + 34, 13, 13, 0);
 	EndDeferWindowPos(hdwp);
 }
 
@@ -177,11 +180,12 @@ static LRESULT CALLBACK TestButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 /* Using a layered window, make the frame window transparent.
  * Also create buttons to allow minimize and close while in skin mode
  */
-int EnableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
-	if (!lpCalc || !lpCalc->bSkinEnabled) {
+int EnableCutout(LPMAINWINDOW lpMainWindow) {
+	if (lpMainWindow == NULL || !lpMainWindow->bSkinEnabled || lpMainWindow->lpCalc == NULL) {
 		return 1;
 	}
 
+	LPCALC lpCalc = lpMainWindow->lpCalc;
 	DwmSetAttrib SetAttrib = NULL;
 	BOOL disableTransition = TRUE;
 
@@ -191,17 +195,18 @@ int EnableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 	bf.SourceConstantAlpha = 255;
 	bf.AlphaFormat = AC_SRC_ALPHA;
 
-	u_int width = lpCalc->rectSkin.right;
-	u_int height = lpCalc->rectSkin.bottom;
+	u_int width = lpMainWindow->rectSkin.right;
+	u_int height = lpMainWindow->rectSkin.bottom;
 
 	int scale = DEFAULT_SKIN_SCALE;
 
-	if (!lpCalc->hwndLCD || GetParent(lpCalc->hwndLCD)) {
+	if (lpMainWindow->hwndLCD == NULL || GetParent(lpMainWindow->hwndLCD) != NULL) {
 		RECT rc;
 		GetClientRect(lpMainWindow->hwndFrame, &rc);
-		DestroyWindow(lpCalc->hwndLCD);
+		DestroyWindow(lpMainWindow->hwndLCD);
+		lpMainWindow->hwndLCD = NULL;
 		// don't initially show the window so we can disable DWM transitions
-		lpCalc->hwndLCD = CreateWindowEx(
+		lpMainWindow->hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
 			_T("Wabbitemu"),
@@ -215,12 +220,12 @@ int EnableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 	if (hDwmModule) {
 		SetAttrib = (DwmSetAttrib) GetProcAddress(hDwmModule, DWM_SET_WINDOW_ATTRIB);
 		if (SetAttrib != NULL) {
-			SetAttrib(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+			SetAttrib(lpMainWindow->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 		}
 	}
 	// show window with no transitions
-	ShowWindow(lpCalc->hwndLCD, TRUE);
-	SetWindowTheme(lpCalc->hwndLCD, L" ", L" ");
+	ShowWindow(lpMainWindow->hwndLCD, TRUE);
+	SetWindowTheme(lpMainWindow->hwndLCD, L" ", L" ");
 
 	RECT rc;
 	GetClientRect(lpMainWindow->hwndFrame, &rc);
@@ -230,8 +235,8 @@ int EnableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 
 	POINT ptSrc = {0 , 0};
 	SIZE size;
-	size.cx = (LONG)(width * lpCalc->skin_scale);
-	size.cy = (LONG)(height * lpCalc->skin_scale);
+	size.cx = (LONG)(width * lpMainWindow->skin_scale);
+	size.cy = (LONG)(height * lpMainWindow->skin_scale);
 
 	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
 	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, WS_VISIBLE);
@@ -241,7 +246,7 @@ int EnableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 	HDC hdc = CreateCompatibleDC(hScreen);
 	HBITMAP hBmp = CreateCompatibleBitmap(hScreen, size.cx, size.cy);
 	HBITMAP hBmpOld = (HBITMAP)SelectObject(hdc, hBmp);
-	AlphaBlend(hdc, 0, 0, size.cx, size.cy, lpCalc->hdcButtons, 0, 0, width, height, bf);
+	AlphaBlend(hdc, 0, 0, size.cx, size.cy, lpMainWindow->hdcButtons, 0, 0, width, height, bf);
 	BOOL done = UpdateLayeredWindow(lpMainWindow->hwndFrame, hScreen, NULL, &size, hdc, &ptSrc, RGB(255, 255, 255), &bf, ULW_ALPHA);
 	DWORD error;
 	if (!done) {
@@ -250,13 +255,13 @@ int EnableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 
 	DeleteDC(hdc);
 	ReleaseDC(NULL, hScreen);
-	UpdateWindow(lpCalc->hwndLCD);
+	UpdateWindow(lpMainWindow->hwndLCD);
 
-	BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
+	BitBlt(lpMainWindow->hdcButtons, 0, 0, lpMainWindow->rectSkin.right, lpMainWindow->rectSkin.bottom, lpMainWindow->hdcSkin, 0, 0, SRCCOPY);
 
 	// Create the two buttons that appear when the skin is cutout
-	if (!lpCalc->hwndSmallClose) {
-		lpCalc->hwndSmallClose = CreateWindow(
+	if (lpMainWindow->hwndSmallClose == NULL) {
+		lpMainWindow->hwndSmallClose = CreateWindow(
 			g_szSmallButtonsName,
 			g_szSmallClose,
 			WS_POPUP,
@@ -266,18 +271,18 @@ int EnableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 			(HMENU) NULL,
 			g_hInst,
 			(LPVOID)lpMainWindow);
-		if (lpCalc->hwndSmallClose == NULL) {
+		if (lpMainWindow->hwndSmallClose == NULL) {
 			return 1;
 		}
 		if (SetAttrib) {
-			SetAttrib(lpCalc->hwndSmallClose, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+			SetAttrib(lpMainWindow->hwndSmallClose, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 		}
 
-		SetWindowLongPtr(lpCalc->hwndSmallClose, GWL_STYLE, WS_VISIBLE);
+		SetWindowLongPtr(lpMainWindow->hwndSmallClose, GWL_STYLE, WS_VISIBLE);
 	}
 
-	if (!lpCalc->hwndSmallMinimize) {
-		lpCalc->hwndSmallMinimize = CreateWindowEx(
+	if (lpMainWindow->hwndSmallMinimize == NULL) {
+		lpMainWindow->hwndSmallMinimize = CreateWindowEx(
 			0,
 			g_szSmallButtonsName,
 			g_szSmallMinimize,
@@ -288,18 +293,18 @@ int EnableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 			(HMENU) NULL,
 			g_hInst,
 			(LPVOID)lpMainWindow);
-		if (lpCalc->hwndSmallMinimize == NULL) {
+		if (lpMainWindow->hwndSmallMinimize == NULL) {
 			return 1;
 		}
 		if (SetAttrib) {
-			SetAttrib(lpCalc->hwndSmallMinimize, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+			SetAttrib(lpMainWindow->hwndSmallMinimize, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 		}
-		SetWindowLongPtr(lpCalc->hwndSmallMinimize, GWL_STYLE, WS_VISIBLE);
+		SetWindowLongPtr(lpMainWindow->hwndSmallMinimize, GWL_STYLE, WS_VISIBLE);
 	}
-	InvalidateRect(lpCalc->hwndSmallClose, NULL, FALSE);
-	UpdateWindow(lpCalc->hwndSmallClose);
-	InvalidateRect(lpCalc->hwndSmallMinimize, NULL, FALSE);
-	UpdateWindow(lpCalc->hwndSmallMinimize);
+	InvalidateRect(lpMainWindow->hwndSmallClose, NULL, FALSE);
+	UpdateWindow(lpMainWindow->hwndSmallClose);
+	InvalidateRect(lpMainWindow->hwndSmallMinimize, NULL, FALSE);
+	UpdateWindow(lpMainWindow->hwndSmallMinimize);
 
 	if (hDwmModule) {
 		FreeLibrary(hDwmModule);
@@ -314,24 +319,30 @@ int EnableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 /* Remove the cutout region from the window and delete
  * the small minimize and close buttons
  */
-int DisableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
+int DisableCutout(LPMAINWINDOW lpMainWindow) {
+	if (lpMainWindow == NULL) {
+		return 1;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
 	// still support XP so have to load this manually
 	HMODULE hDwmModule = LoadLibrary(DWMAPI_DLL);
 	if (hDwmModule) {
 		BOOL disableTransition = TRUE;
 		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hDwmModule, DWM_SET_WINDOW_ATTRIB);
 		if (SetAttrib != NULL) {
-			SetAttrib(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+			SetAttrib(lpMainWindow->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 		}
 		FreeLibrary(hDwmModule);
 	}
 
-	int scale = lpCalc->bSkinEnabled ? DEFAULT_SKIN_SCALE : lpCalc->scale;
-	if (!lpCalc->hwndLCD || !GetParent(lpCalc->hwndLCD )) {
+	int scale = lpMainWindow->bSkinEnabled ? DEFAULT_SKIN_SCALE : lpMainWindow->scale;
+	if (lpMainWindow->hwndLCD == NULL || GetParent(lpMainWindow->hwndLCD) == NULL) {
 		int lcd_width = lpCalc->cpu.pio.lcd->display_width;
 		int lcd_height = lpCalc->cpu.pio.lcd->height;
-		DestroyWindow(lpCalc->hwndLCD);
-		lpCalc->hwndLCD = CreateWindowEx(
+		DestroyWindow(lpMainWindow->hwndLCD);
+		lpMainWindow->hwndLCD = NULL;
+		lpMainWindow->hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
 			_T("LCD"),
@@ -344,14 +355,14 @@ int DisableCutout(LPMAINWINDOW lpMainWindow, LPCALC lpCalc) {
 	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_EXSTYLE, 0);
 	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, (WS_TILEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));
 
-	if (lpCalc->hwndSmallClose) {
-		DestroyWindow(lpCalc->hwndSmallClose);
-		lpCalc->hwndSmallClose = NULL;
+	if (lpMainWindow->hwndSmallClose != NULL) {
+		DestroyWindow(lpMainWindow->hwndSmallClose);
+		lpMainWindow->hwndSmallClose = NULL;
 	}
 
-	if (lpCalc->hwndSmallMinimize) {
-		DestroyWindow(lpCalc->hwndSmallMinimize);
-		lpCalc->hwndSmallMinimize = NULL;
+	if (lpMainWindow->hwndSmallMinimize != NULL) {
+		DestroyWindow(lpMainWindow->hwndSmallMinimize);
+		lpMainWindow->hwndSmallMinimize = NULL;
 	}
 
 	InvalidateRect(lpMainWindow->hwndFrame, NULL, TRUE);

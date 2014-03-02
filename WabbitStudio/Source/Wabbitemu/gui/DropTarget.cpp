@@ -171,14 +171,14 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 		pdd->type = DROPIMAGE_COPY;
 		wcscpy_s(pdd->szMessage, L"Transfer to %1");
 		wcscpy_s(pdd->szInsert, L"Wabbitemu");
-		lpCalc->bDoDrag = TRUE;
+		lpMainWindow->bDoDrag = TRUE;
 
 		*pdwEffect = *pdwEffect & DROPEFFECT_COPY;
 	} else {
 		pdd->type = DROPIMAGE_INVALID;
 		wcscpy_s(pdd->szMessage, L"Cannot transfer to %1");
 		wcscpy_s(pdd->szInsert, L"Wabbitemu");
-		lpCalc->bDoDrag = FALSE;
+		lpMainWindow->bDoDrag = FALSE;
 
 		*pdwEffect = DROPEFFECT_NONE;
 	}
@@ -213,14 +213,7 @@ HRESULT __stdcall CDropTarget::DragLeave() {
 		return E_POINTER;
 	}
 
-	LPCALC lpCalc = lpMainWindow->lpCalc;
-	if (lpCalc == NULL) {
-		return E_POINTER;
-	}
-
-	if (lpCalc != NULL) {
-		lpCalc->bDoDrag = false;
-	}
+	lpMainWindow->bDoDrag = false;
 
 	return S_OK;
 }
@@ -233,7 +226,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 	STGMEDIUM stgmed;
 	TCHAR path[MAX_PATH];
 	ZeroMemory(path, sizeof(path));
-	BOOL valid = TRUE;
+	BOOL valid = FALSE;
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
 	if (lpMainWindow == NULL) {
 		return E_POINTER;
@@ -247,7 +240,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 	lpMainWindow->is_archive_only = TRUE;
 	lpMainWindow->is_calc_file = TRUE;
 
-	for (UINT i = 0; i < m_nAccepted; i++) {
+	for (UINT i = 0; i < m_nAccepted && !valid; i++) {
 		if (SUCCEEDED(pDataObject->GetData(&m_pAccepted[i], &stgmed))) {
 			switch (m_pAccepted[i].cfFormat) {
 				case CF_HDROP: {
@@ -256,7 +249,6 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 					while (count--) {
 						DragQueryFile((HDROP) pData, count, path, ARRAYSIZE(path));
 						TIFILE_t *tifile = importvar(path, TRUE);
-						valid = tifile != NULL;
 						//check if we can go in either ram or archive
 						if (tifile && tifile->flash == NULL) {
 							lpMainWindow->is_archive_only = FALSE;
@@ -266,12 +258,15 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 							tifile->type == LABEL_TYPE || tifile->type == BREAKPOINT_TYPE))
 						{
 							lpMainWindow->is_calc_file = FALSE;
+							valid = TRUE;
 						}
 
-						if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 &&
-							lpCalc->model != TI_73 && lpCalc->model != TI_85))
-						{
-							valid = FALSE;
+						if (tifile != NULL) {
+							if (tifile->backup != NULL && (lpCalc->model == TI_82 &&
+								lpCalc->model == TI_73 && lpCalc->model == TI_85))
+							{
+								valid = TRUE;
+							}
 						}
 
 						FreeTiFile(tifile);
@@ -365,66 +360,66 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 		for (UINT i = 0; i < m_nAccepted; i++) {
 			if (SUCCEEDED(pDataObject->GetData(&m_pAccepted[i], &stgmed))) {
 				switch (m_pAccepted[i].cfFormat) {
-					case CF_HDROP: {
-							PVOID pData = GlobalLock(stgmed.hGlobal);
-							SendMessage(m_hwndTarget, WM_DROPFILES, (WPARAM) pData, NULL);
+				case CF_HDROP: {
+					PVOID pData = GlobalLock(stgmed.hGlobal);
+					SendMessage(m_hwndTarget, WM_DROPFILES, (WPARAM) pData, NULL);
 
-							GlobalUnlock(stgmed.hGlobal);
-							lpCalc->bDoDrag = false;
-							return S_OK;
-						}
-					default: {
-							if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW)) {
-								LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
-								LPTSTR lpszFileGroup = NULL;
+					GlobalUnlock(stgmed.hGlobal);
+					lpMainWindow->bDoDrag = false;
+					return S_OK;
+				}
+				default: {
+					if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW)) {
+						LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
+						LPTSTR lpszFileGroup = NULL;
 
-								for (u_int i = 0; i < lpfgd->cItems; i++) {
-									TCHAR szFileName[MAX_PATH];
-									ZeroMemory(szFileName, sizeof(szFileName));
+						for (u_int i = 0; i < lpfgd->cItems; i++) {
+							TCHAR szFileName[MAX_PATH];
+							ZeroMemory(szFileName, sizeof(szFileName));
 
-									TCHAR szTemp[L_tmpnam_s];
-									ZeroMemory(szTemp, sizeof(szTemp));	
-									_ttmpnam_s(szTemp);
+							TCHAR szTemp[L_tmpnam_s];
+							ZeroMemory(szTemp, sizeof(szTemp));	
+							_ttmpnam_s(szTemp);
 
-									GetStorageString(szFileName, sizeof(szFileName));
-									StringCbCat(szFileName, sizeof(szFileName), szTemp);
+							GetStorageString(szFileName, sizeof(szFileName));
+							StringCbCat(szFileName, sizeof(szFileName), szTemp);
 
-									FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
-									STGMEDIUM stgmedData = {0};
-									if (SUCCEEDED(pDataObject->GetData(&fmtstm, &stgmedData))) {
-										LPBYTE lpBuffer = (LPBYTE) malloc(lpfgd->fgd[i].nFileSizeLow);
+							FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
+							STGMEDIUM stgmedData = {0};
+							if (SUCCEEDED(pDataObject->GetData(&fmtstm, &stgmedData))) {
+								LPBYTE lpBuffer = (LPBYTE) malloc(lpfgd->fgd[i].nFileSizeLow);
 
-										ULONG cbRead = 0;
-										if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead))) {
-											FILE *file;
-											_tfopen_s(&file, szFileName, _T("wb"));
-											if (file != NULL) {
-												fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
-												fclose(file);
-												SendFileToCalc(lpMainWindow->hwndFrame, lpCalc, szFileName, TRUE, DropMemoryTarget(m_hwndTarget));
-												tempFiles.push_back(szFileName);
-											}
-										}
-										free(lpBuffer);
-										ReleaseStgMedium(&stgmedData);
+								ULONG cbRead = 0;
+								if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead))) {
+									FILE *file;
+									_tfopen_s(&file, szFileName, _T("wb"));
+									if (file != NULL) {
+										fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
+										fclose(file);
+										SendFileToCalc(lpMainWindow->hwndFrame, lpCalc, szFileName, TRUE, DropMemoryTarget(m_hwndTarget));
+										tempFiles.push_back(szFileName);
 									}
 								}
-								GlobalUnlock(stgmed.hGlobal);
+								free(lpBuffer);
+								ReleaseStgMedium(&stgmedData);
 							}
-
-							break;
 						}
+						GlobalUnlock(stgmed.hGlobal);
+					}
+
+					break;
 				}
-				ReleaseStgMedium(&stgmed);
 			}
 
+			ReleaseStgMedium(&stgmed);
+			}
 		}
 
 	} else {
 		*pdwEffect = DROPEFFECT_NONE;
 	}
 	
-	lpCalc->bDoDrag = false;
+	lpMainWindow->bDoDrag = false;
 	return S_OK;
 }
 

@@ -216,110 +216,69 @@ int CPU_reset(CPU_t *cpu) {
 	cpu->mem_c->banks = cpu->mem_c->normal_banks;
 	cpu->mem_c->boot_mapped = FALSE;
 	cpu->mem_c->hasChangedPage0 = FALSE;
+	memset(cpu->mem_c->protected_page, 0, sizeof(cpu->mem_c->protected_page));
+	cpu->mem_c->protected_page_set = 0;
 #ifdef WITH_REVERSE
 	cpu->prev_instruction = cpu->prev_instruction_list;
 	memset(cpu->prev_instruction_list, 0, sizeof(cpu->prev_instruction_list));
 	cpu->reverse_instr = 0;
 #endif
-	// TODO: eliminate this
+	
 	switch (cpu->pio.model) {
 	case TI_81: {
-					bank_state_t banks[5] = {
-						{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->flash + 0x1 * PAGE_SIZE, 0x1, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->flash + 0x1 * PAGE_SIZE, 0x1, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
-						{ NULL, 0, FALSE, FALSE, FALSE }
-					};
-					memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
-					break;
+		bank_state_t banks[5] = {
+			{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->flash + 0x1 * PAGE_SIZE, 0x1, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->flash + 0x1 * PAGE_SIZE, 0x1, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
+			{ NULL, 0, FALSE, FALSE, FALSE }
+		};
+		memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
+		break;
 	}
 	case TI_82:
 	case TI_83: {
-					bank_state_t banks[5] = {
-						{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->flash + 0x00 * PAGE_SIZE, 0x00, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->ram + 0x01 * PAGE_SIZE, 0x01, FALSE, TRUE, FALSE },
-						{ cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
-						{ NULL, 0, FALSE, FALSE, FALSE }
-					};
-					memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
-					break;
+		bank_state_t banks[5] = {
+			{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->flash + 0x00 * PAGE_SIZE, 0x00, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->ram + 0x01 * PAGE_SIZE, 0x01, FALSE, TRUE, FALSE },
+			{ cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
+			{ NULL, 0, FALSE, FALSE, FALSE }
+		};
+		memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
+		break;
 	}
 	case TI_85:
 	case TI_86: {
-					bank_state_t banks[5] = {
-						{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->flash + 0x0F * PAGE_SIZE, 0x0F, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
-						{ NULL, 0, FALSE, FALSE, FALSE }
-					};
+		bank_state_t banks[5] = {
+			{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->flash + 0x0F * PAGE_SIZE, 0x0F, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
+			{ NULL, 0, FALSE, FALSE, FALSE }
+		};
 
-					memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
-					break;
+		memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
+		break;
 	}
 	case TI_73:
-	case TI_83P: {
-					 /*bank_state_t banks[5] = {
-					 {cpu->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-					 {cpu->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
-					 {cpu->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
-					 {cpu->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-					 {NULL,										0,		FALSE,	FALSE,	FALSE}
-					 };
-					 cpu->pc = 0x4000;*/
-					 memset(cpu->mem_c->protected_page, 0, sizeof(cpu->mem_c->protected_page));
-					 cpu->mem_c->protected_page_set = 0;
-					 /*	Address										page	write?	ram?	no exec?	*/
-					 bank_state_t banks[5] = {
-						 { cpu->mem_c->flash + 0x1f * PAGE_SIZE, 0x1f, FALSE, FALSE, FALSE },
-						 { cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						 { cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						 { cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
-						 { NULL, 0, FALSE, FALSE, FALSE }
-					 };
-					 memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
-					 break;
-	}
+	case TI_83P:
 	case TI_83PSE:
-	case TI_84PSE: {
-					   /*	Address										page	write?	ram?	no exec?	*/
-					   bank_state_t banks[5] = {
-						   { cpu->mem_c->flash + 0x7f * PAGE_SIZE, 0x7f, FALSE, FALSE, FALSE },
-						   { cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						   { cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						   { cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
-						   { NULL, 0, FALSE, FALSE, FALSE }
-					   };
-
-					   memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
-					   break;
-	}
-	case TI_84P: {
-					 /*	Address										page	write?	ram?	no exec?	*/
-					 bank_state_t banks[5] = {
-						 { cpu->mem_c->flash + 0x3f * PAGE_SIZE, 0x3f, FALSE, FALSE, FALSE },
-						 { cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						 { cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						 { cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
-						 { NULL, 0, FALSE, FALSE, FALSE }
-					 };
-					 memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
-					 break;
-	}
+	case TI_84PSE: 
+	case TI_84P:
 	case TI_84PCSE: {
-					/*	Address										page	write?	ram?	no exec?	*/
-					bank_state_t banks[5] = {
-						{ cpu->mem_c->flash + 0xff * PAGE_SIZE, 0xff, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
-						{ cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
-						{ NULL, 0, FALSE, FALSE, FALSE }
-					};
+		int bootPage = cpu->mem_c->flash_pages - 1;
+		/*	Address		page	write?	ram?	no exec?	*/
+		bank_state_t banks[5] = {
+			{ cpu->mem_c->flash + bootPage * PAGE_SIZE, bootPage, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->flash, 0, FALSE, FALSE, FALSE },
+			{ cpu->mem_c->ram, 0, FALSE, TRUE, FALSE },
+			{ NULL, 0, FALSE, FALSE, FALSE }
+		};
 
-					memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
-					break;
+		memcpy(cpu->mem_c->normal_banks, banks, sizeof(banks));
+		break;
 	}
 	}
 	return 0;

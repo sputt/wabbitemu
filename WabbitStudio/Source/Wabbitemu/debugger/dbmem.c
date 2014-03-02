@@ -139,10 +139,10 @@ void MemGotoAddress(HWND hwnd, int addr) {
 }
 
 static waddr_t GetWaddr(mempane_settings *mps, unsigned int addr) {
-	waddr_t waddr;
+	waddr_t waddr = { 0 };
 	switch (mps->type) {
 		case REGULAR:
-			return addr16_to_waddr(mps->lpCalc->cpu.mem_c, addr);
+			return addr16_to_waddr(mps->lpCalc->cpu.mem_c, (uint16_t) addr);
 		case RAM:
 		case FLASH:
 			return addr32_to_waddr(addr, mps->type == RAM);
@@ -162,7 +162,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	static HWND hwndVal;
 	int kMemWidth;
 	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	mp_settings *mps;
+	mp_settings *mps = NULL;
 	if (lpTabInfo != NULL) {
 		mps = (mp_settings *)lpTabInfo->tabInfo;
 	}
@@ -265,6 +265,10 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		{
 			RECT rc;
 			GetClientRect(hwnd, &rc);
+
+			if (mps == NULL) {
+				return 0;
+			}
 
 			WINDOWPOS wp;
 			HDLAYOUT hdl;
@@ -699,7 +703,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						waddr_t waddr;
 						int addr = mps->sel + i;
 						if (mps->type == REGULAR) {
-							waddr = addr16_to_waddr(&mps->lpCalc->mem_c, addr);
+							waddr = addr16_to_waddr(&mps->lpCalc->mem_c, (uint16_t)addr);
 						} else {
 							waddr = addr32_to_waddr(addr, mps->type == RAM);
 						}
@@ -723,6 +727,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					ShowWindow(hwndDialog, SW_SHOW);
 					break;
 				case DB_FIND_NEXT: {
+					// TODO: fix for each mem pane
 					int addr = mps->addr;
 					while (addr < 0xFFFF && mem_read(&mps->lpCalc->mem_c, addr) != find_value)
 						addr++;

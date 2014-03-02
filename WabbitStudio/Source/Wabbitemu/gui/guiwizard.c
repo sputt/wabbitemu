@@ -566,7 +566,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						break;
 					}
 
-					LoadRegistrySettings(lpCalc);
+					LoadRegistrySettings(lpMainWindow, lpCalc);
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
 					lpCalc->active = TRUE;
 					lpCalc->model = model;
@@ -609,7 +609,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						calc_turn_on(lpCalc);
 					}
 
-					gui_frame_update(lpCalc, lpMainWindow);
+					gui_frame_update(lpMainWindow);
 					// write the output from file
 					Static_SetText(hOSStaticProgress, _T("Saving File"));
 					MFILE *romfile = ExportRom(buffer, lpCalc);
@@ -1089,7 +1089,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						calc_turn_on(lpCalc);
 					}
 
-					gui_frame_update(lpCalc, lpMainWindow);
+					gui_frame_update(lpMainWindow);
 					// write the output from file
 					MFILE *romfile = ExportRom(buffer, lpCalc);
 					if (romfile != NULL) {

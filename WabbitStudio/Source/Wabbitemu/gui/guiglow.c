@@ -4,21 +4,25 @@
 
 extern HDC hdcSkin;
 
-void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADWIDTH, BOOL bSkinEnabled) {
+void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADWIDTH, BOOL bSkinEnabled, double skinScale) {
 	
 	// Create the buffer bitmap
 	HDC hdcBuf = CreateCompatibleDC(hdc);
-	HBITMAP hbmBuf = CreateCompatibleBitmap(hdc, r->right - r->left + (2*GIFGRADWIDTH), r->bottom - r->top + (2*GIFGRADWIDTH));
+	LONG lcdWidth = r->right - r->left;
+	LONG lcdHeight = r->bottom - r->top;
+
+	HBITMAP hbmBuf = CreateCompatibleBitmap(hdc, lcdWidth + (2*GIFGRADWIDTH), lcdHeight + (2*GIFGRADWIDTH));
 	SelectObject(hdcBuf, hbmBuf);
 	
 	if (bSkinEnabled) {
-		BitBlt(hdcBuf, 0, 0, r->right - r->left + (2*GIFGRADWIDTH), r->bottom - r->top + (2*GIFGRADWIDTH),
-				hdcSkin, r->left - GIFGRADWIDTH, r->top - GIFGRADWIDTH, SRCCOPY);
+		SetStretchBltMode(hdcBuf, HALFTONE);
+		StretchBlt(hdcBuf, 0, 0, lcdWidth + (2*GIFGRADWIDTH), lcdHeight + (2*GIFGRADWIDTH),
+			hdcSkin, (r->left - GIFGRADWIDTH) * skinScale, (r->top - GIFGRADWIDTH) * skinScale, 
+			(lcdWidth + (2 * GIFGRADWIDTH))* skinScale, (lcdHeight + (2 * GIFGRADWIDTH)) * skinScale, SRCCOPY);
 	} else {
-		RECT rc = {0, 0, r->right - r->left + (2*GIFGRADWIDTH), r->bottom - r->top + (2*GIFGRADWIDTH)};
+		RECT rc = {0, 0, lcdWidth + (2*GIFGRADWIDTH), lcdHeight + (2*GIFGRADWIDTH)};
 		FillRect(hdcBuf, &rc, GetStockBrush(GRAY_BRUSH));
 	}
-			
 	
 	// Set up the alpha function for the bitmap with alpha values
 	BLENDFUNCTION bf;

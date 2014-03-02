@@ -102,6 +102,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 	fileName++;
 
 	unsigned int equate;
+	unsigned int num_labels = 0;
 	label_struct *label = &lpCalc->labels[0];	
 
 	_tfopen_s(&labelFile, lpszFileName, _T("r"));
@@ -124,9 +125,13 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 		fgets(buffer, 256, labelFile);
 #endif
 #endif
+		if (num_labels == ARRAYSIZE(lpCalc->labels)) {
+			break;
+		}
+
 		i = 0;
 		if (buffer[0] != ';')
-			i = _stscanf_s(buffer, _T("%s = $%X"), name, &equate);
+			i = _stscanf(buffer, _T("%s = $%X"), name, &equate);
 		if (i == 2) {
 			length = (int) _tcslen(name);
 			if (!label_search_tios(name, equate, lpCalc->model)) {
@@ -140,7 +145,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 					int page_offset = (equate >> 16) & 0xFF;
 					
 					label->IsRAM = FALSE;
-					if (lpCalc->last_transferred_app == NULL) {
+					if (lpCalc->last_transferred_app.page_count == 0) {
 						upages_t upage;
 						state_userpages(&lpCalc->cpu, &upage);
 						label->page = upage.start;
@@ -163,6 +168,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 					label->page = 1;
 				}
 				label++;
+				num_labels++;
 			}
 		}
 	}

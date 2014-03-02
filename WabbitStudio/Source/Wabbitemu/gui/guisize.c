@@ -18,24 +18,24 @@ unsigned int GetDefaultKeymapScale(int model) {
 	}
 }
 
-LRESULT HandleMoveMessage(HWND hwnd, LPCALC lpCalc) {
-	if (lpCalc->bCutout && lpCalc->bSkinEnabled) {
-		UINT left = (LONG)(lpCalc->rectLCD.left * lpCalc->skin_scale);
-		UINT top = (LONG)(lpCalc->rectLCD.top * lpCalc->skin_scale);
+LRESULT HandleMoveMessage(HWND hwnd, LPMAINWINDOW lpMainWindow) {
+	if (lpMainWindow->bCutout && lpMainWindow->bSkinEnabled) {
+		UINT left = (LONG)(lpMainWindow->rectLCD.left * lpMainWindow->skin_scale);
+		UINT top = (LONG)(lpMainWindow->rectLCD.top * lpMainWindow->skin_scale);
 
 		HDWP hdwp = BeginDeferWindowPos(3);
 		RECT rc;
 		GetWindowRect(hwnd, &rc);
 		OffsetRect(&rc, left, top);
-		DeferWindowPos(hdwp, lpCalc->hwndLCD, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE);
+		DeferWindowPos(hdwp, lpMainWindow->hwndLCD, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE);
 		EndDeferWindowPos(hdwp);
-		PositionLittleButtons(hwnd);
+		PositionLittleButtons(hwnd, lpMainWindow);
 	}
 
 	return 0;
 }
 
-LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabled) {
+LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPMAINWINDOW lpMainWindow, LPCALC lpCalc, BOOL skinEnabled) {
 	if (lpCalc == NULL) {
 		return 0;
 	}
@@ -43,17 +43,17 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabl
 	u_int width;
 	HMENU hMenu = GetMenu(hwnd);
 	RECT rc, clientRect;
-	CopyRect(&rc, &lpCalc->rectLCD);
+	CopyRect(&rc, &lpMainWindow->rectLCD);
 
 	UINT default_scale = GetDefaultKeymapScale(lpCalc->model);
-	UINT scale = skinEnabled ? default_scale : max(lpCalc->scale, default_scale);
+	UINT scale = skinEnabled ? default_scale : max(lpMainWindow->scale, default_scale);
 	int silentMode = silent_mode ? SWP_HIDEWINDOW : 0;
 	LONG lcdWidth, lcdHeight;
 	if (skinEnabled) {
 		lcdWidth = (rc.right - rc.left) / default_scale;
 		lcdHeight = (rc.bottom - rc.top) / default_scale;
-		lcdWidth = (LONG)(lcdWidth * lpCalc->skin_scale);
-		lcdHeight = (LONG)(lcdHeight *lpCalc->skin_scale);
+		lcdWidth = (LONG)(lcdWidth * lpMainWindow->skin_scale);
+		lcdHeight = (LONG)(lcdHeight *lpMainWindow->skin_scale);
 	} else {
 		LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 		if (lcd == NULL) {
@@ -77,33 +77,42 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPCALC lpCalc, BOOL skinEnabl
 			// if the lcd is less than client, center the lcd
 			rc.left += (width - lcdWidth) / 2;
 		}
-	} else if (lpCalc->bCutout) {
-		UINT left = (LONG)(lpCalc->rectLCD.left * lpCalc->skin_scale);
-		UINT top = (LONG)(lpCalc->rectLCD.top * lpCalc->skin_scale);
+	} else if (lpMainWindow->bCutout) {
+		UINT left = (LONG)(lpMainWindow->rectLCD.left * lpMainWindow->skin_scale);
+		UINT top = (LONG)(lpMainWindow->rectLCD.top * lpMainWindow->skin_scale);
 
 		GetWindowRect(hwnd, &rc);
 		OffsetRect(&rc, left, top);
 	} else {
-		rc.left = (LONG)(rc.left * lpCalc->skin_scale);
-		rc.top = (LONG)(rc.top * lpCalc->skin_scale);
+		rc.left = (LONG)(rc.left * lpMainWindow->skin_scale);
+		rc.top = (LONG)(rc.top * lpMainWindow->skin_scale);
 	}
 
 	MoveWindow(hwndLcd, rc.left, rc.top, lcdWidth, lcdHeight, TRUE);
 
 	// force little buttons to be correct
-	if (lpCalc->bCutout && skinEnabled) {
-		PositionLittleButtons(hwnd);
+	if (lpMainWindow->bCutout && skinEnabled) {
+		PositionLittleButtons(hwnd, lpMainWindow);
 	}
 
-	if (lpCalc->hwndStatusBar != NULL) {
-		SendMessage(lpCalc->hwndStatusBar, WM_SIZE, SIZE_RESTORED, 0);
+	if (lpMainWindow->hwndStatusBar != NULL) {
+		SendMessage(lpMainWindow->hwndStatusBar, WM_SIZE, SIZE_RESTORED, 0);
 	}
 
 	UpdateWindow(hwndLcd);
 	return 0;
 }
 
-LRESULT HandleLCDSizingMessage(HWND hwnd, HWND hwndStatusBar, LPCALC lpCalc, WPARAM wParam, RECT *prc, LONG lcdWidth) {
+LRESULT HandleLCDSizingMessage(HWND hwnd, HWND hwndStatusBar, LPMAINWINDOW lpMainWindow, WPARAM wParam, RECT *prc, LONG lcdWidth) {
+	if (lpMainWindow == NULL) {
+		return 1;
+	}
+
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+	if (lpCalc == NULL) {
+		return 1;
+	}
+
 	LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 	LONG ClientAdjustWidth, ClientAdjustHeight;
 	LONG AdjustWidth, AdjustHeight;
@@ -175,7 +184,7 @@ LRESULT HandleLCDSizingMessage(HWND hwnd, HWND hwndStatusBar, LPCALC lpCalc, WPA
 	}
 
 
-	lpCalc->scale = min(cx_mult, cy_mult);
+	lpMainWindow->scale = min(cx_mult, cy_mult);
 
 	switch (wParam) {
 	case WMSZ_BOTTOMLEFT:
@@ -235,7 +244,11 @@ double GetSkinScale(LONG ClientNewWidth, LONG ClientNewHeight,
 	return skin_scale;
 }
 
-LRESULT HandleSkinSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc) {
+LRESULT HandleSkinSizingMessage(HWND hwnd, LPMAINWINDOW lpMainWindow, WPARAM wParam, RECT *prc) {
+	if (lpMainWindow == NULL) {
+		return 1;
+	}
+
 	LONG ClientOldWidth, ClientOldHeight;
 	LONG ClientNewWidth, ClientNewHeight;
 
@@ -274,8 +287,8 @@ LRESULT HandleSkinSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *p
 		DiffWidth = (SKIN_WIDTH * ClientNewHeight / SKIN_HEIGHT) - ClientNewWidth;
 	}
 
-	lpCalc->skin_scale = GetSkinScale(ClientNewWidth, ClientNewHeight,
-		&DiffWidth, &DiffHeight, lpCalc->default_skin_scale);
+	lpMainWindow->skin_scale = GetSkinScale(ClientNewWidth, ClientNewHeight,
+		&DiffWidth, &DiffHeight, lpMainWindow->default_skin_scale);
 
 	switch (wParam) {
 	case WMSZ_TOPLEFT:
@@ -303,12 +316,12 @@ LRESULT HandleSkinSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *p
 	return 1;
 }
 
-LRESULT GetMinMaxInfo(HWND hwnd, LPCALC lpCalc, MINMAXINFO *info) {
-	if (lpCalc == NULL) {
+LRESULT GetMinMaxInfo(HWND hwnd, LPMAINWINDOW lpMainWindow, MINMAXINFO *info) {
+	if (lpMainWindow == NULL) {
 		return 0;
 	}
 
-	if (!lpCalc->bSkinEnabled) {
+	if (!lpMainWindow->bSkinEnabled) {
 		return 0;
 	}
 

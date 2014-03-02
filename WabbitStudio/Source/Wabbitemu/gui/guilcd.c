@@ -287,8 +287,16 @@ HANDLE DDBToDIB(HBITMAP bitmap, DWORD dwCompression)
 }
 
 void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
+	if (lpMainWindow == NULL) {
+		return;
+	}
+
 	unsigned char * screen;
 	LPCALC lpCalc = lpMainWindow->lpCalc;
+	if (lpCalc == NULL) {
+		return;
+	}
+
 	LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 	if (lcd == NULL) {
 		_tprintf_s(_T("Invalid LCD pointer"));
@@ -310,163 +318,123 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 	}
 
 	BITMAPINFO *info = lpCalc->model >= TI_84PCSE ? colorbi : bi;
-	if (lcd->active == FALSE) {
-		int displaySize = lpCalc->model >= TI_84PCSE ? COLOR_LCD_DISPLAY_SIZE : GRAY_DISPLAY_SIZE;
-		BYTE *lcd_data = (BYTE *) malloc(displaySize);
-		ZeroMemory(lcd_data, displaySize);
+	
+	BOOL lcd_scaled = (rc.right - rc.left) % lcd->display_width;
+	screen = lcd->image(lcd);
 
-		if (StretchDIBits(
-			hdc,
-			rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
-			0, 0, lcd->display_width, lcd->height,
-			lcd_data,
-			info,
-			DIB_RGB_COLORS,
-			SRCCOPY) == 0) 
+	if (lcd_scaled) {
+		LONG clientWidth = rc.right - rc.left;
+		LONG clientHeight = rc.bottom - rc.top;
+		LONG clientScaleWidth = max(1, clientWidth / lcd->display_width) * lcd->display_width;
+		LONG clientScaleHeight = max(1, clientHeight / lcd->height) * lcd->height;
+
+		Graphics graphics(hdc);
+		Bitmap lcdBitmap(info, screen);
+		Bitmap scaledBitmap((INT)clientScaleWidth, (INT)clientScaleHeight, &graphics);
+		Bitmap *bitmap = &lcdBitmap;
+		if (clientScaleWidth != lcd->display_width && clientScaleHeight != lcd->height) {
+			Graphics scaledGraphics(&scaledBitmap);
+			scaledGraphics.SetInterpolationMode(InterpolationModeNearestNeighbor);
+			// +1 because otherwise there is a black line at max width and max height
+			Rect scaleRect(rc.left, rc.top, clientScaleWidth + 1, clientScaleHeight + 1);
+			scaledGraphics.DrawImage(&lcdBitmap, scaleRect, 0, 0, lcd->display_width, lcd->height, UnitPixel);
+			bitmap = &scaledBitmap;
+		}
+
+		graphics.SetInterpolationMode(InterpolationModeLowQuality);
+		Rect rect(rc.left, rc.top, clientWidth + 1, clientHeight + 1);
+		graphics.DrawImage(bitmap, rect, 0, 0, clientScaleWidth, clientScaleHeight, UnitPixel);
+		rect.Width--;
+		rect.Height--;
+		graphics.SetClip(rect);
+	} else {
+		SetStretchBltMode(hdc, BLACKONWHITE);
+		if (StretchDIBits(hdc,
+						rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
+						0, 0, lcd->display_width, lcd->height,
+						screen,
+						info,
+						DIB_RGB_COLORS,
+						SRCCOPY) == 0)
 		{
 			_tprintf_s(_T("error in SetDIBitsToDevice\n"));
 		}
+	}
 
-		if (lpCalc->bDoDrag == TRUE) {
+	BLENDFUNCTION bf;
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = 160;
+	bf.AlphaFormat = 0;
 
-			hdcOverlay = DrawDragPanes(hwnd, hdcDest, lpMainWindow);
-			BLENDFUNCTION bf;
-			bf.BlendOp = AC_SRC_OVER;
-			bf.BlendFlags = 0;
-			bf.SourceConstantAlpha = 160;
-			bf.AlphaFormat = 0;
-			if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
-						hdcOverlay, 0, 0, rc.right, rc.bottom,
-						bf ) == FALSE) _tprintf_s(_T("alpha blend 1 failed\n"));
+	if (lpMainWindow->bDoDrag == TRUE) {
+		hdcOverlay = DrawDragPanes(hwnd, hdcDest, lpMainWindow);
 
-			DeleteDC(hdcOverlay);
-
-		}
-
-		if (BitBlt(hdcDest, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
-			hdc, 0, 0, SRCCOPY) == FALSE) 
+		if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
+					hdcOverlay, 0, 0, rc.right, rc.bottom,
+					bf ) == FALSE) 
 		{
-			_tprintf_s(_T("BitBlt failed\n"));
+			_tprintf_s(_T("alpha blend 1 failed\n"));
 		}
 
-		free(lcd_data);
+		DeleteDC(hdcOverlay);
+	}
 
-	} else {
-		BOOL lcd_scaled = (rc.right - rc.left) % lcd->display_width;
-		screen = lcd->image(lcd);
+	bf.SourceConstantAlpha = 108;
 
-		if (lcd_scaled) {
-			LONG clientWidth = rc.right - rc.left;
-			LONG clientHeight = rc.bottom - rc.top;
-			LONG clientScaleWidth = max(1, clientWidth / lcd->display_width) * lcd->display_width;
-			LONG clientScaleHeight = max(1, clientHeight / lcd->height) * lcd->height;
+	POINT pt;
+	pt.x = rc.left;
+	pt.y = rc.top;
+	ClientToScreen(hwnd, &pt);
+	ScreenToClient(GetParent(hwnd), &pt);
 
-			Graphics graphics(hdc);
-			Bitmap lcdBitmap(info, screen);
-			Bitmap scaledBitmap((INT)clientScaleWidth, (INT)clientScaleHeight, &graphics);
-			Bitmap *bitmap = &lcdBitmap;
-			if (clientScaleWidth != lcd->display_width && clientScaleHeight != lcd->height) {
-				Graphics scaledGraphics(&scaledBitmap);
-				scaledGraphics.SetInterpolationMode(InterpolationModeNearestNeighbor);
-				// +1 because otherwise there is a black line at max width and max height
-				Rect scaleRect(rc.left, rc.top, clientScaleWidth + 1, clientScaleHeight + 1);
-				scaledGraphics.DrawImage(&lcdBitmap, scaleRect, 0, 0, lcd->display_width, lcd->height, UnitPixel);
-				bitmap = &scaledBitmap;
-			}
-
-			graphics.SetInterpolationMode(InterpolationModeLowQuality);
-			Rect rect(rc.left, rc.top, clientWidth + 1, clientHeight + 1);
-			graphics.DrawImage(bitmap, rect, 0, 0, clientScaleWidth, clientScaleHeight, UnitPixel);
-			rect.Width--;
-			rect.Height--;
-			graphics.SetClip(rect);
-		} else {
-			SetStretchBltMode(hdc, BLACKONWHITE);
-			if (StretchDIBits(hdc,
-							rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
-							0, 0, lcd->display_width, lcd->height,
-							screen,
-							info,
-							DIB_RGB_COLORS,
-							SRCCOPY) == 0)
-			{
-				_tprintf_s(_T("error in SetDIBitsToDevice\n"));
-			}
+	if (alphablendfail < 100 && lpMainWindow->bAlphaBlendLCD && lcd->active != FALSE &&
+		!lcd_scaled && lpCalc->model < TI_84PCSE) 
+	{
+		if (AlphaBlend(	hdc, rc.left, rc.top, rc.right,  rc.bottom,
+			lpMainWindow->hdcSkin, lpMainWindow->rectLCD.left, lpMainWindow->rectLCD.top,
+			lpMainWindow->rectLCD.right - lpMainWindow->rectLCD.left,
+			lpMainWindow->rectLCD.bottom - lpMainWindow->rectLCD.top, bf) == FALSE) {
+			//printf("alpha blend 2 failed\n");
+			alphablendfail++;
 		}
-
-		BLENDFUNCTION bf;
-		bf.BlendOp = AC_SRC_OVER;
-		bf.BlendFlags = 0;
-		bf.SourceConstantAlpha = 160;
-		bf.AlphaFormat = 0;
-
-		if (lpCalc->bDoDrag == TRUE) {
-			hdcOverlay = DrawDragPanes(hwnd, hdcDest, lpMainWindow);
-
-			if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
-						hdcOverlay, 0, 0, rc.right, rc.bottom,
-						bf ) == FALSE) {
-				_tprintf_s(_T("alpha blend 1 failed\n"));
-			}
-
-			DeleteDC(hdcOverlay);
-		}
-
-		bf.SourceConstantAlpha = 108;
-
-		POINT pt;
-		pt.x = rc.left;
-		pt.y = rc.top;
-		ClientToScreen(hwnd, &pt);
-		ScreenToClient(GetParent(hwnd), &pt);
-
-		if (alphablendfail < 100 && lpCalc->bAlphaBlendLCD && !lcd_scaled && lpCalc->model < TI_84PCSE) {
-			if (AlphaBlend(	hdc, rc.left, rc.top, rc.right,  rc.bottom,
-				lpCalc->hdcSkin, lpCalc->rectLCD.left, lpCalc->rectLCD.top,
-				lpCalc->rectLCD.right - lpCalc->rectLCD.left,
-				lpCalc->rectLCD.bottom - lpCalc->rectLCD.top, bf )  == FALSE) {
-				//printf("alpha blend 2 failed\n");
-				alphablendfail++;
-			}
-		}
+	}
 
 #ifdef WITH_AVI
 #include "avi_utils.h"
-		HBITMAP hbm;
-		if (is_recording) {
-			BYTE *pBitsDest;
-			hbm = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
-			HDC newhdc = CreateCompatibleDC(hdc);
-			SelectObject(newhdc, hbm);
-			BitBlt(newhdc, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top, hdc, 0, 0, SRCCOPY);
-			HANDLE ptr = DDBToDIB(hbm, BI_RGB);
-			BITMAPINFO *nbi = (BITMAPINFO *) malloc(sizeof(BITMAPINFOHEADER));
-			nbi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			nbi->bmiHeader.biWidth = rc.right - rc.left;
-			nbi->bmiHeader.biHeight = rc.bottom - rc.top;
-			nbi->bmiHeader.biPlanes = 1;
-			nbi->bmiHeader.biBitCount = 32;
-			nbi->bmiHeader.biCompression = BI_RGB;
-			nbi->bmiHeader.biSizeImage = 0;
-			nbi->bmiHeader.biXPelsPerMeter = 0;
-			nbi->bmiHeader.biYPelsPerMeter = 0;
-			nbi->bmiHeader.biClrUsed = MAX_SHADES+1;
-			nbi->bmiHeader.biClrImportant = MAX_SHADES+1;
-			DWORD dwBmpSize = ((nbi->bmiHeader.biWidth * nbi->bmiHeader.biBitCount + 31) / 32) * 4 * nbi->bmiHeader.biHeight;
-			HBITMAP newhbm = CreateDIBSection(newhdc, nbi, DIB_RGB_COLORS, (void **) &pBitsDest, NULL, NULL);
-			memcpy(pBitsDest, ptr, dwBmpSize);
-			currentAvi->AppendNewFrame(newhbm);
-			DeleteObject(hbm);
-			DeleteObject(newhbm);
-			free(nbi);
-		}
-#endif
-		if (BitBlt(	hdcDest, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
-			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("Bit blit failed\n"));
-
-		free(screen);
-
+	HBITMAP hbm;
+	if (is_recording) {
+		BYTE *pBitsDest;
+		hbm = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
+		HDC newhdc = CreateCompatibleDC(hdc);
+		SelectObject(newhdc, hbm);
+		BitBlt(newhdc, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top, hdc, 0, 0, SRCCOPY);
+		HANDLE ptr = DDBToDIB(hbm, BI_RGB);
+		BITMAPINFO *nbi = (BITMAPINFO *) malloc(sizeof(BITMAPINFOHEADER));
+		nbi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		nbi->bmiHeader.biWidth = rc.right - rc.left;
+		nbi->bmiHeader.biHeight = rc.bottom - rc.top;
+		nbi->bmiHeader.biPlanes = 1;
+		nbi->bmiHeader.biBitCount = 32;
+		nbi->bmiHeader.biCompression = BI_RGB;
+		nbi->bmiHeader.biSizeImage = 0;
+		nbi->bmiHeader.biXPelsPerMeter = 0;
+		nbi->bmiHeader.biYPelsPerMeter = 0;
+		nbi->bmiHeader.biClrUsed = MAX_SHADES+1;
+		nbi->bmiHeader.biClrImportant = MAX_SHADES+1;
+		DWORD dwBmpSize = ((nbi->bmiHeader.biWidth * nbi->bmiHeader.biBitCount + 31) / 32) * 4 * nbi->bmiHeader.biHeight;
+		HBITMAP newhbm = CreateDIBSection(newhdc, nbi, DIB_RGB_COLORS, (void **) &pBitsDest, NULL, NULL);
+		memcpy(pBitsDest, ptr, dwBmpSize);
+		currentAvi->AppendNewFrame(newhbm);
+		DeleteObject(hbm);
+		DeleteObject(newhbm);
+		free(nbi);
 	}
+#endif
+	if (BitBlt(	hdcDest, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
+		hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("Bit blit failed\n"));
+
+	free(screen);
 	DeleteObject(bmpBuf);
 	DeleteDC(hdc);
 }
@@ -495,8 +463,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				{RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL}
 			};
 
-			LPCALC lpCalc = lpMainWindow->lpCalc;
-			if (lpCalc->hwndLCD == NULL) {
+			if (lpMainWindow->hwndLCD == NULL) {
 				RegisterDropWindow(hwnd, (IDropTarget **) &lpMainWindow->pDropTarget);
 				lpMainWindow->pDropTarget->AddAcceptedFormat(&fmtetc[0]);
 				lpMainWindow->pDropTarget->AddAcceptedFormat(&fmtetc[1]);
@@ -540,6 +507,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				colorbi->bmiHeader.biClrUsed = 0;
 				colorbi->bmiHeader.biClrImportant = 0;
 			}
+
 			ReleaseDC(hwnd, hdc);
 
 			return 0;
@@ -561,14 +529,14 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			PaintLCD(hwnd, hdcDest, lpMainWindow);
 			EndPaint(hwnd, &ps);	
 			
-			if (lpCalc->hwndStatusBar) {
-				if (clock() > lpCalc->sb_refresh + CLOCKS_PER_SEC / 2) {
+			if (lpMainWindow->hwndStatusBar) {
+				if (clock() > lpMainWindow->sb_refresh + CLOCKS_PER_SEC / 2) {
 					if (lcd && lcd->active)
 						StringCbPrintf(sz_status, sizeof(sz_status), _T("FPS: %0.2lf"), lcd->ufps);
 					else
 						StringCbPrintf(sz_status, sizeof(sz_status),  _T("FPS: -"));
-					SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 0, (LPARAM) sz_status);
-					lpCalc->sb_refresh = clock();
+					SendMessage(lpMainWindow->hwndStatusBar, SB_SETTEXT, 0, (LPARAM)sz_status);
+					lpMainWindow->sb_refresh = clock();
 				}
 			}
 			return 0;
@@ -647,7 +615,10 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					GetStorageString(fn, sizeof(fn));
 					StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.png"));
 
-					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					if (lpCalc == NULL) {
+						break;
+					}
+
 					LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 					if (lcd == NULL) {
 						break;
@@ -807,9 +778,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				free(colorbi);
 			}
 
-			if (hwnd == lpCalc->hwndLCD) {
+			if (hwnd == lpMainWindow->hwndLCD) {
 				UnregisterDropWindow(hwnd, (IDropTarget *) lpMainWindow->pDropTarget);
-				lpCalc->hwndLCD = NULL;
 			}
 			return 0;
 		}

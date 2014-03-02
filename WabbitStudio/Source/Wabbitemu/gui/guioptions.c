@@ -440,15 +440,15 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 			hBrowseKey = GetDlgItem(hwndDlg, IDC_BROWSEKEY);
 			hSkinText = GetDlgItem(hwndDlg, IDC_SKNFILE);
 			hKeyText = GetDlgItem(hwndDlg, IDC_KEYFILE);
-			BOOL CustomSkinSetting = lpCalc->bCustomSkin;
+			BOOL CustomSkinSetting = lpMainWindow->bCustomSkin;
 			SkinOptionsToggleCustomSkin(hwndDlg, CustomSkinSetting);
-			Button_SetCheck(chkCutout, lpCalc->bCutout);
-			Button_SetCheck(chkAlphaBlend, lpCalc->bAlphaBlendLCD);
-			Button_SetCheck(chkCustom, lpCalc->bCustomSkin);
+			Button_SetCheck(chkCutout, lpMainWindow->bCutout);
+			Button_SetCheck(chkAlphaBlend, lpMainWindow->bAlphaBlendLCD);
+			Button_SetCheck(chkCustom, lpMainWindow->bCustomSkin);
 			SendMessage(hColorSelect, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) LoadBitmap(g_hInst, _T("SkinPicker")));
-			backupFaceplate = lpCalc->FaceplateColor;
-			Edit_SetText(hSkinText, lpCalc->skin_path);
-			Edit_SetText(hKeyText, lpCalc->keymap_path);
+			backupFaceplate = lpMainWindow->FaceplateColor;
+			Edit_SetText(hSkinText, lpMainWindow->skin_path);
+			Edit_SetText(hKeyText, lpMainWindow->keymap_path);
 			return 0;
 		}
 		case WM_COMMAND: {
@@ -488,8 +488,8 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 							GetCursorPos(&ptCursor);
 							ScreenToClient(hColorSelect, &ptCursor);
 							COLORREF selectedColor = GetPixel(hColorPicker, ptCursor.x, ptCursor.y);
-							lpCalc->FaceplateColor = selectedColor;
-							gui_frame_update(lpCalc, lpMainWindow);
+							lpMainWindow->FaceplateColor = selectedColor;
+							gui_frame_update(lpMainWindow);
 							SetFocus(hwndDlg);
 							break;
 						}
@@ -504,24 +504,24 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 		case WM_NOTIFY: {
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_RESET: {
-					lpCalc->FaceplateColor = backupFaceplate;
-					gui_frame_update(lpCalc, lpMainWindow);
+					lpMainWindow->FaceplateColor = backupFaceplate;
+					gui_frame_update(lpMainWindow);
 					return TRUE;
 				}
 				case PSN_APPLY: {
-					lpCalc->bCutout = Button_GetCheck(chkCutout);
-					lpCalc->bAlphaBlendLCD = Button_GetCheck(chkAlphaBlend);
-					lpCalc->bCustomSkin = Button_GetCheck(chkCustom);
+					lpMainWindow->bCutout = Button_GetCheck(chkCutout);
+					lpMainWindow->bAlphaBlendLCD = Button_GetCheck(chkAlphaBlend);
+					lpMainWindow->bCustomSkin = Button_GetCheck(chkCustom);
 
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
-					backupFaceplate = lpCalc->FaceplateColor;
+					backupFaceplate = lpMainWindow->FaceplateColor;
 
 					TCHAR lpStrFile[MAX_PATH];
 					Edit_GetText(hSkinText, lpStrFile, sizeof(lpStrFile));
-					StringCbCopy(lpCalc->skin_path, sizeof(lpCalc->skin_path), lpStrFile);
+					StringCbCopy(lpMainWindow->skin_path, sizeof(lpMainWindow->skin_path), lpStrFile);
 					Edit_GetText(hKeyText, lpStrFile, sizeof(lpStrFile));
-					StringCbCopy(lpCalc->keymap_path, sizeof(lpCalc->skin_path), lpStrFile);
-					gui_frame_update(lpCalc, lpMainWindow);
+					StringCbCopy(lpMainWindow->keymap_path, sizeof(lpMainWindow->skin_path), lpStrFile);
+					gui_frame_update(lpMainWindow);
 					return TRUE;
 				}
 				case PSN_KILLACTIVE:
@@ -597,10 +597,10 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					if (persec == 0.0)
 						persec = 50.0;
 
-					lpCalc->bAlwaysOnTop = Button_GetCheck(alwaysTop_check);
-					lpCalc->bTIOSDebug = !Button_GetCheck(tiosDebug_check);
+					lpMainWindow->bAlwaysOnTop = Button_GetCheck(alwaysTop_check);
+					lpMainWindow->bTIOSDebug = !Button_GetCheck(tiosDebug_check);
 					check_updates = Button_GetCheck(checkUpdates_check);
-					gui_frame_update(lpCalc, lpMainWindow);
+					gui_frame_update(lpMainWindow);
 
 					//we need to persist this immediately
 					if (portable_mode) {
@@ -620,12 +620,12 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(showWhatsNew_check, show_whats_new);
 			Button_SetCheck(saveState_check, exit_save_state);
 			Button_SetCheck(loadFiles_check, new_calc_on_load_files);
-			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);
+			Button_SetCheck(alwaysTop_check, lpMainWindow->bAlwaysOnTop);
 			Button_SetCheck(portableMode_check, portable_mode);
 			Button_SetCheck(exeViolation_check, break_on_exe_violation);
 			Button_SetCheck(invalidFlash_check, break_on_invalid_flash);
 			Button_SetCheck(turnOn_check, auto_turn_on);
-			Button_SetCheck(tiosDebug_check, !lpCalc->bTIOSDebug);
+			Button_SetCheck(tiosDebug_check, !lpMainWindow->bTIOSDebug);
 			Button_SetCheck(checkUpdates_check, check_updates);
 			return TRUE;
 		}
@@ -860,7 +860,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			Edit_SetText(edtRom_version, lpCalc->rom_version);
 #endif
 			Edit_SetText(edtRom_model, CalcModelTxt[lpCalc->model]);
-			Button_GetCheck(extraSpeed_check, lpCalc->cpu.timer_c->timer_version > 1);
+			Button_SetCheck(extraSpeed_check, lpCalc->cpu.timer_c->timer_version > 1);
 			Button_SetCheck(ramPages_check, lpCalc->cpu.mem_c->ram_version == 2);
 			Button_SetCheck(old83p_check, lpCalc->cpu.cpu_version);
 			TCHAR szRomSize[16];
@@ -1107,7 +1107,7 @@ int GetNumKeyEntries(keyprog_t *keys) {
 
 void AssignEmuKey(HWND hwnd, keyprog_t *keys) {
 	int i;
-	DWORD key = editKeyPressed;
+	UINT key = editKeyPressed;
 	int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED);
 	if(active >= 0) {
 		LVITEM lvi;

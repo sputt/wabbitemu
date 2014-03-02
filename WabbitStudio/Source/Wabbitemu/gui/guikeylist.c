@@ -33,12 +33,12 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			POINT pt;
 			hImageList = ImageList_Create(60, 60, ILC_COLOR32 | ILC_MASK, 8*7, 0);
 
-			HDC hdcMask = CreateCompatibleDC(lpCalc->hdcButtons);
-			HBITMAP hbmMask = CreateCompatibleBitmap(lpCalc->hdcButtons, 60, 60);
+			HDC hdcMask = CreateCompatibleDC(lpMainWindow->hdcButtons);
+			HBITMAP hbmMask = CreateCompatibleBitmap(lpMainWindow->hdcButtons, 60, 60);
 			SelectObject(hdcMask, hbmMask);
 
-			HDC hdcButton = CreateCompatibleDC(lpCalc->hdcButtons);
-			HBITMAP hbmButton  = CreateCompatibleBitmap(lpCalc->hdcButtons, 60, 60);
+			HDC hdcButton = CreateCompatibleDC(lpMainWindow->hdcButtons);
+			HBITMAP hbmButton = CreateCompatibleBitmap(lpMainWindow->hdcButtons, 60, 60);
 			SelectObject(hdcButton, hbmButton);
 
 			RECT r = {0, 0, 60, 60};
@@ -50,15 +50,15 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 					extern RECT ButtonRect[64];
 					brect = ButtonRect[bit + (group << 3)];
 					if (brect.left != 0) {
-						HDC hdcButtons = CreateCompatibleDC(lpCalc->hdcButtons);
-						HBITMAP hbm = CreateCompatibleBitmap(lpCalc->hdcButtons, 64, 64);
+						HDC hdcButtons = CreateCompatibleDC(lpMainWindow->hdcButtons);
+						HBITMAP hbm = CreateCompatibleBitmap(lpMainWindow->hdcButtons, 64, 64);
 						HGDIOBJ hbmOld = SelectObject(hdcButtons, hbm);
 
 						FillRect(hdcButtons, &r, br);
 
-						UINT keymap_scale = (UINT)(1.0 / lpCalc->default_skin_scale);
-						DrawButtonStateNoSkin(hdcButtons, lpCalc->hdcSkin, lpCalc->hdcKeymap, brect, DBS_COPY, keymap_scale);
-						DrawButtonShadow(hdcButtons, lpCalc->hdcKeymap, brect, keymap_scale);
+						UINT keymap_scale = (UINT)(1.0 / lpMainWindow->default_skin_scale);
+						DrawButtonStateNoSkin(hdcButtons, lpMainWindow->hdcSkin, lpMainWindow->hdcKeymap, brect, DBS_COPY, keymap_scale);
+						DrawButtonShadow(hdcButtons, lpMainWindow->hdcKeymap, brect, keymap_scale);
 
 						SelectObject(hdcButtons, hbmOld);
 						DeleteDC(hdcButtons);
@@ -105,15 +105,16 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				case BN_CLICKED: {
 					switch (LOWORD(wParam)) {
 						case IDC_BTN_CLEARKEYS: {
-							key_string *current = lpCalc->last_keypress_head;
+							key_string *current = lpMainWindow->last_keypress_head;
 							while (current) {
 								free(current->text);
 								key_string *next = current->next;
 								free(current);
 								current = next;
 							}
-							lpCalc->last_keypress_head = NULL;
-							lpCalc->num_keypresses = 0;
+
+							lpMainWindow->last_keypress_head = NULL;
+							lpMainWindow->num_keypresses = 0;
 							ListView_DeleteAllItems(hListKeys);
 							break;
 						}
@@ -124,7 +125,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 							if (!SaveFile(lpStrFile, lpstrFilter, _T("Save key file"), _T(".key"), 0, 0)) {
 								FILE *file;
 								_tfopen_s(&file, lpStrFile, _T("wb"));
-								key_string *current = lpCalc->last_keypress_head;
+								key_string *current = lpMainWindow->last_keypress_head;
 								while (current) {
 									_ftprintf_s(file, _T("Bit: %d Group: %d\r\n"), current->bit, current->group);
 									current = current->next;
@@ -150,22 +151,23 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 					int index = ListView_GetNextItem(hListKeys, -1, LVNI_SELECTED);
 					while (index != -1) {
 						ListView_DeleteItem(hListKeys, index);
-						key_string *current = lpCalc->last_keypress_head;
+						key_string *current = lpMainWindow->last_keypress_head;
 						key_string *prev = current;
-						for (int i = 0; i < lpCalc->num_keypresses - index - 1; i++) {
+						for (int i = 0; i < lpMainWindow->num_keypresses - index - 1; i++) {
 							prev = current;
 							current = current->next;
 						}
-						if (current == lpCalc->last_keypress_head) {
+						if (current == lpMainWindow->last_keypress_head) {
 							free(current->text);
-							lpCalc->last_keypress_head = current->next;
+							lpMainWindow->last_keypress_head = current->next;
 							free(current);
 						} else {
 							free(current->text);
 							prev->next = current->next;
 							free(current);				
 						}
-						lpCalc->num_keypresses--;
+
+						lpMainWindow->num_keypresses--;
 						index = ListView_GetNextItem(hListKeys, -1, LVNI_SELECTED);
 					}
 					SendMessage(hwnd, WM_USER, REFRESH_LISTVIEW, 0);
@@ -194,10 +196,10 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 					current = current->next;
 				}
 			}*/
-			if (lpCalc->num_keypresses >= MAX_KEYPRESS_HISTORY) {
+			if (lpMainWindow->num_keypresses >= MAX_KEYPRESS_HISTORY) {
 				ListView_DeleteItem(hListKeys, 0);
 			}
-			key_string *current = lpCalc->last_keypress_head;
+			key_string *current = lpMainWindow->last_keypress_head;
 			if (current) {
 				LVITEM lItem;
 				lItem.mask = LVIF_IMAGE;

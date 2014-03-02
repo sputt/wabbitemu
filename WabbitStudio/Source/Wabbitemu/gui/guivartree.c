@@ -149,8 +149,10 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					}
 					
 					if (app || symbol) {
-						gui_debug(lpCalc);
-						SendMessage(lpCalc->hwndDebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);
+						// TODO: fix
+						/*LPMAINWINDOW lpMainWindow
+						HWND hwndDebug = gui_debug_hwnd(lpMainWindow);
+						SendMessage(hwndDebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);*/
 					}
 					break;
 				}

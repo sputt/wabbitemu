@@ -12,14 +12,12 @@
 #include "breakpoint.h"
 #include "state.h"
 
-#include "label.h"
-
 typedef enum {
 	GDS_IDLE,
 	GDS_STARTING,
 	GDS_RECORDING,
 	GDS_ENDING
-} gif_disp_states;
+} gif_disp_state;
 
 typedef enum {
 	NO_EVENT = 0,
@@ -43,13 +41,12 @@ typedef struct profiler {
 	uint64_t ram_data[MAX_RAM_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
 } profiler_t;
 
-
-struct key_string {
-	TCHAR *text;
-	int group;
-	int bit;
-	struct key_string *next;
-};
+typedef struct {
+	TCHAR *name;
+	BOOL IsRAM;
+	uint8_t page;
+	uint16_t addr;
+} label_struct;
 
 struct tagCALC;
 
@@ -75,6 +72,7 @@ typedef struct tagCALC {
 	time_t time_error;
 
 	BOOL active;
+	BOOL running;
 	volatile BOOL fake_running;
 	CPU_t cpu;
 	memory_context_t mem_c;
@@ -89,58 +87,14 @@ typedef struct tagCALC {
 		breakpoint_t **cond_breakpoints[2];
 	};
 
-	DWORD scale;
-	double default_skin_scale;
-	double skin_scale;
-	BOOL bCutout;
-	BOOL bSkinEnabled;
-	BOOL bTIOSDebug;
-	BOOL running;
-	BOOL bDoDrag;
-	BOOL bCustomSkin;
-	BOOL bAlwaysOnTop;
-	BOOL bAlphaBlendLCD;
-
 	int speed;
 	BYTE breakpoints[0x10000];
-	label_struct labels[6000];
+	label_struct labels[10000];
 	profiler_t profiler;
 
-	TCHAR labelfn[256];
-	applist_t applist;
-	apphdr_t *last_transferred_app;
-
-	gif_disp_states gif_disp_state;
+	apphdr_t last_transferred_app;
 
 	registered_event_t registered_events[MAX_REGISTERED_EVENTS];
-
-#ifdef _WINDOWS
-	HWND hwndLCD;
-	HWND hwndDetachedFrame;
-	HWND hwndDetachedLCD;
-	HWND hwndStatusBar;
-	HWND hwndDebug;
-	HWND hwndButtonOverlay;
-	HWND hwndSmallClose;
-	HWND hwndSmallMinimize;
-	HWND hwndKeyListDialog;
-
-	HDC hdcSkin;
-	HDC hdcButtons;
-	HDC hdcKeymap;
-
-	clock_t sb_refresh;
-
-	key_string *last_keypress_head;
-	int num_keypresses;
-
-	RECT rectSkin;
-	RECT rectLCD;
-	COLORREF FaceplateColor;
-	TCHAR skin_path[256];
-	TCHAR keymap_path[256];
-#endif
-
 } calc_t, CALC, *LPCALC;
 
 #ifdef QUICKLOOK

@@ -269,12 +269,13 @@ static LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG De
 						//calc_turn_on(lpCalc);
 					} else {
 						// Rebuild the app list
-						state_build_applist(&lpCalc->cpu, &lpCalc->applist);
+						applist_t applist;
+						state_build_applist(&lpCalc->cpu, &applist);
 
 						u_int i;
-						for (i = 0; i < lpCalc->applist.count; i++) {
-							if (_tcsncmp((TCHAR *) var->flash->name, lpCalc->applist.apps[i].name, 8) == 0) {
-								lpCalc->last_transferred_app = &lpCalc->applist.apps[i];
+						for (i = 0; i < applist.count; i++) {
+							if (_tcsncmp((TCHAR *) var->flash->name, applist.apps[i].name, 8) == 0) {
+								lpCalc->last_transferred_app = applist.apps[i];
 								break;
 							}
 						}
@@ -337,13 +338,11 @@ static LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG De
 			break;
 		}
 		case LABEL_TYPE: {
-				StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), lpszFileName);
-				_tprintf_s(_T("loading label file for slot %d: %s\n"), lpCalc->slot, lpszFileName);
-				VoidLabels(lpCalc);
-				labels_app_load(lpCalc, lpCalc->labelfn);
-				result = LERR_SUCCESS;
-				break;
-			}
+			VoidLabels(lpCalc);
+			labels_app_load(lpCalc, lpszFileName);
+			result = LERR_SUCCESS;
+			break;
+		}
 		case BREAKPOINT_TYPE:
 			break;
 		}
@@ -382,7 +381,7 @@ static LRESULT CALLBACK FrameSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 
 			SetWindowPos(hwndTransfer, NULL, 
 				wr.left + ((wr.right - wr.left) - dwSendWidth) / 2,
-				rcLcd.top + (rcLcd.bottom - rcLcd.top) / 2,
+				rcLcd.top + (rcLcd.bottom - rcLcd.top - dwSendHeight) / 2,
 				dwSendWidth, dwSendHeight,
 				SWP_NOSIZE | SWP_NOZORDER);
 			break;

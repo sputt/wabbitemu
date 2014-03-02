@@ -442,7 +442,8 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 						HWND hwndSprite = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SPRITEVIEWER), hwnd, SpriteViewerDialogProc, (LPARAM) lpTabInfo);
 						ShowWindow(hwndSprite, SW_SHOW);
 						SendMessage(hwndSprite, WM_USER, DB_UPDATE, 0);
-						SetWindowPos(hwndSprite, NULL, 0, 0, watch->width * lpCalc->scale + 30, watch->height * lpCalc->scale + 50, SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+						int scale = lpCalc->model >= TI_84PCSE ? 1 : 2;
+						SetWindowPos(hwndSprite, NULL, 0, 0, watch->width * scale + 30, watch->height * scale + 50, SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 						lpDebugInfo->hwndSpriteViewer[lpnmitem->iItem] = hwndSprite;
 						lpnmitem->lParam = (LPARAM) hwndSprite;
 						break;

@@ -89,7 +89,6 @@ static void DuplicateCalc(LPCALC lpCalc) {
 	duplicate_calc = (LPCALC) malloc(sizeof(calc_t));
 	ZeroMemory(duplicate_calc, sizeof(calc_t));
 	duplicate_calc->active = TRUE;
-	duplicate_calc->gif_disp_state = GDS_IDLE;
 	duplicate_calc->speed = 100;
 	//calcs[i].breakpoint_callback = calc_debug_callback;
 	
@@ -104,7 +103,6 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		Edit_GetText(hwndEditControl, buf, ARRAYSIZE(buf));
 		int value = GetWindowLongPtr(hwndEditControl, GWLP_USERDATA);
 		int row_num = LOWORD(value);
-		int col_num = HIWORD(value);
 		//handles getting the user input and converting it to an int
 		//can convert bin, hex, and dec
 		value = StringToValue(buf);
@@ -114,7 +112,7 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		uint8_t byte_value = value & 0xFF;
 		int port_num = port_map[row_num];
 		BOOL output_backup = lpCalc->cpu.output;
-		int bus_backup = lpCalc->cpu.bus;
+		unsigned char bus_backup = lpCalc->cpu.bus;
 		lpCalc->cpu.bus = byte_value;
 		lpCalc->cpu.output = TRUE;
 		lpCalc->cpu.pio.devices[port_num].code(&lpCalc->cpu, &(lpCalc->cpu.pio.devices[port_num]));
@@ -156,7 +154,7 @@ static void on_running_changed(LPCALC lpCalc, LPVOID lParam) {
 LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndListView;
 	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	LPCALC lpCalc;
+	LPCALC lpCalc = NULL;
 	if (lpDebugInfo != NULL) {
 		lpCalc = lpDebugInfo->lpCalc;
 	}
@@ -342,16 +340,19 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			}
 			return TRUE;
 		}
-		case WM_DESTROY:
-			calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwndListView);
+		case WM_DESTROY: {
+			if (lpCalc != NULL) {
+				calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwndListView);
+			}
+
 			if (duplicate_calc != NULL) {
 				calc_slot_free(duplicate_calc);
 				free(duplicate_calc);
+				duplicate_calc = NULL;
 			}
-			duplicate_calc = NULL;
 			return FALSE;
+		}
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
-	return FALSE;
 }

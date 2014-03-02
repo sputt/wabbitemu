@@ -51,7 +51,6 @@ LPCALC calc_slot_new(void) {
 		if (calcs[i].active == FALSE) {
 			memset(&calcs[i], 0, sizeof(calc_t));
 			calcs[i].active = TRUE;
-			calcs[i].gif_disp_state = GDS_IDLE;
 			calcs[i].speed = 100;
 			calcs[i].slot = i;
 			calcs[i].breakpoint_callback = calc_debug_callback;

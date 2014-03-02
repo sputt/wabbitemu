@@ -36,8 +36,6 @@ int GetEncoderClsid(const WCHAR *format, CLSID *pClsid) {
 }
 
 void export_png(LPCALC lpCalc, TCHAR *filename) {
-	RECT rc;
-	GetClientRect(lpCalc->hwndLCD, &rc);
 	LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 	PixelFormat format;
 	if (lcd->bytes_per_pixel == 3) {

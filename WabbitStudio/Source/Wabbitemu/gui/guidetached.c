@@ -17,12 +17,12 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		int lcdWidth =  lpCalc->cpu.pio.lcd->display_width;
 		int lcdHeight = lpCalc->cpu.pio.lcd->height;
-		lpCalc->hwndDetachedLCD = CreateWindowEx(
+		lpMainWindow->hwndDetachedLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
 			_T("LCD"),
 			WS_VISIBLE | WS_CHILD,
-			0, 0, lcdWidth * lpCalc->scale, lcdHeight * lpCalc->scale,
+			0, 0, lcdWidth * lpMainWindow->scale, lcdHeight * lpMainWindow->scale,
 			hwnd, NULL, g_hInst, (LPVOID *)lpMainWindow);
 		return FALSE;
 	}
@@ -32,9 +32,8 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
-		LPCALC lpCalc = lpMainWindow->lpCalc;
-		lpCalc->hwndDetachedLCD = NULL;
-		lpCalc->hwndDetachedFrame = NULL;
+		lpMainWindow->hwndDetachedLCD = NULL;
+		lpMainWindow->hwndDetachedFrame = NULL;
 		return FALSE;
 	}
 	case WM_KEYDOWN: {
@@ -43,8 +42,7 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
-		LPCALC lpCalc = lpMainWindow->lpCalc;
-		HandleKeyDown(lpMainWindow, lpCalc, wParam);
+		HandleKeyDown(lpMainWindow, wParam);
 		return FALSE;
 	}
 	case WM_KEYUP: {
@@ -57,8 +55,7 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
-		LPCALC lpCalc = lpMainWindow->lpCalc;
-		HandleKeyUp(lpMainWindow, lpCalc, wParam);
+		HandleKeyUp(lpMainWindow, wParam);
 		return FALSE;
 	}
 	case WM_COMMAND:
@@ -71,7 +68,7 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		LPCALC lpCalc = lpMainWindow->lpCalc;
 		LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
-		return HandleLCDSizingMessage(hwnd, NULL, lpCalc, wParam, (RECT *)lParam, lcd->display_width);
+		return HandleLCDSizingMessage(hwnd, NULL, lpMainWindow, wParam, (RECT *)lParam, lcd->display_width);
 	}
 	case WM_SIZE: {
 		LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -80,7 +77,7 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 
 		LPCALC lpCalc = lpMainWindow->lpCalc;
-		return HandleSizeMessage(hwnd, lpCalc->hwndDetachedLCD, lpCalc, FALSE);
+		return HandleSizeMessage(hwnd, lpMainWindow->hwndDetachedLCD, lpMainWindow, lpCalc, FALSE);
 	}
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);

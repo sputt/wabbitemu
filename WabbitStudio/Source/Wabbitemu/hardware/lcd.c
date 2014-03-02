@@ -217,6 +217,7 @@ static void LCD_command(CPU_t *cpu, device_t *dev) {
 		CRD_SWITCH(cpu->bus) {
 			CRD_CASE(DPE):
 				lcd->base.active = CRD_DATA(DPE);
+				LCD_enqueue(cpu, lcd);
 				break;
 			CRD_CASE(86E):
 				lcd->word_len = CRD_DATA(86E);
@@ -486,5 +487,11 @@ u_char *LCD_update_image(LCD_t *lcd) {
  */
 u_char* LCD_image(LCDBase_t *lcdBase) {
 	LCD_t *lcd = (LCD_t *)lcdBase;
+	if (lcdBase->active == FALSE) {
+		u_char *screen = (u_char *)malloc(GRAY_DISPLAY_SIZE);
+		ZeroMemory(screen, GRAY_DISPLAY_SIZE);
+		return screen;
+	}
+
 	return LCD_update_image(lcd);
 }

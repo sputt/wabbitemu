@@ -61,7 +61,13 @@ typedef struct tagDEBUGWINDOWINFO
 
 	DISPLAY_BASE dispType;
 	WINDOWPLACEMENT db_placement;
-	HWND htoolbar, hdisasm, hreg, hmem, hwatch, hBreakpoints, hDebug;
+	HWND hDebug;
+	HWND htoolbar;
+	HWND hdisasm;
+	HWND hreg;
+	HWND hmem;
+	HWND hwatch;
+	HWND hBreakpoints;
 	HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
 	int total_mem_pane, total_disasm_pane;
 	HWND hmemlist[MAX_MEM_TABS];
@@ -83,7 +89,8 @@ typedef struct tagDEBUGWINDOWINFO
 	ep_state expand_pane_state;	
 	
 	long long code_count_tstates;
-	BOOL is_ready;
+	volatile BOOL is_ready;
+	BOOL bTIOSDebug;
 } DEBUGWINDOWINFO, *LPDEBUGWINDOWINFO;
 
 typedef struct tagTABWINDOWINFO {

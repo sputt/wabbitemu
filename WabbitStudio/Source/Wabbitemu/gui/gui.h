@@ -66,20 +66,71 @@ class CWabbitemu;
 
 #define REG_UPDATE		1
 
+
+struct key_string {
+	TCHAR *text;
+	int group;
+	int bit;
+	struct key_string *next;
+};
+
 typedef struct MainWindow {
 	LPCALC lpCalc;
 
 	HWND hwndFrame;
+	HWND hwndLCD;
+	HWND hwndDetachedFrame;
+	HWND hwndDetachedLCD;
+	HWND hwndStatusBar;
+	HWND hwndSmallClose;
+	HWND hwndSmallMinimize;
+	HWND hwndKeyListDialog;
+	HWND hwndDebug;
 
+	HDC hdcSkin;
+	HDC hdcButtons;
+	HDC hdcKeymap;
+
+	RECT rectSkin;
+	RECT rectLCD;
+	COLORREF FaceplateColor;
+	// custom skin path
+	TCHAR skin_path[256];
+	// custom keymap path
+	TCHAR keymap_path[256];
+
+	key_string *last_keypress_head;
+	int num_keypresses;
+
+	DWORD scale;
+	double default_skin_scale;
+	double skin_scale;
+	BOOL bCutout;
+	BOOL bSkinEnabled;
+	BOOL running;
+	BOOL bDoDrag;
+	BOOL bCustomSkin;
+	BOOL bAlwaysOnTop;
+	BOOL bAlphaBlendLCD;
+
+	gif_disp_state gif_disp_state;
+	int GIFGradientWidth = 1;
+	int GIFAdd = 1;
+
+	// used for fps counter
+	clock_t sb_refresh;
+	// frame context menu location
 	POINT ctxtPt;
 
 	CWabbitemu *pWabbitemu;
 	CDropTarget *pDropTarget;
 	BOOL is_archive_only;
 	BOOL is_calc_file;
+
+	BOOL bTIOSDebug;
 } MainWindow_t, *LPMAINWINDOW;
 
-void gui_debug(LPCALC lpCalc);
+HWND gui_debug_hwnd(LPMAINWINDOW lpMainWindow);
 LPMAINWINDOW gui_frame(LPCALC lpCalc);
 void GetFileCurrentVersionString(TCHAR *buf, size_t len);
 LPMAINWINDOW create_calc_frame_register_events();
@@ -100,6 +151,10 @@ public :
 	LPMAINWINDOW CreateNewFrame(LPCALC lpCalc);
 	void DestroyFrame(LPMAINWINDOW lpMainWindow);
 	HWND CheckValidFrameHandle(HWND hwndToCheck);
+	HWND CheckValidOtherHandle(HWND hwndToCheck);
+	HWND CheckValidDebugHandle(HWND hwndToCheck);
+
+	void CWabbitemuModule::SetGIFState(gif_disp_state state);
 
 	bool ParseCommandLine(LPCTSTR lpCmdLine, HRESULT* pnRetCode);
 

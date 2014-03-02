@@ -202,7 +202,7 @@ waddr_t OffsetWaddr(memory_context_t *memc, ViewType type, waddr_t waddr, int of
 }
 
 /* returns number of bytes read */
-int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, Z80_info_t *result) {
+int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, BOOL bTIOSDebug, Z80_info_t *result) {
 	int i, prefix = 0, pi = 0;
 	memory_context_t *memc = &lpCalc->mem_c;
 	for (i = 0; i < count; i++, result++, prefix = 0) {
@@ -262,8 +262,9 @@ int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, Z80_info
 					(x != 0) &&
 					(lpCalc->cpu.iy == 0x89F0) &&
 					(lpCalc->model >= TI_83P) &&
-					lpCalc->bTIOSDebug &&
-					flagname && bitname) {
+					bTIOSDebug &&
+					flagname && bitname)
+				{
 					if (z == 6) {
 						result->index += (DA_BIT_IF - DA_BIT);
 						result->a1 = (INT_PTR) bitname;
@@ -670,7 +671,7 @@ int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, Z80_info
 						waddr = GetNextAddr(memc, type, waddr);
 						waddr = GetNextAddr(memc, type, waddr);
 
-						if ((result->a1 == 0x0050) && lpCalc->bTIOSDebug) {
+						if ((result->a1 == 0x0050) && bTIOSDebug) {
 							result->index = DA_BJUMP;
 							result->a1 = wmem_read16(memc, waddr);
 							waddr = GetNextAddr(memc, type, waddr);
@@ -711,7 +712,7 @@ int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, Z80_info
 				waddr = GetNextAddr(memc, type, waddr);
 			} else
 			if (z == 7) {
-				if ((y == 5) && lpCalc->bTIOSDebug) {
+				if ((y == 5) && bTIOSDebug) {
 					result->index = DA_BCALL;
 					int tmp = wmem_read16(memc, waddr);
 						waddr = GetNextAddr(memc, type, waddr);

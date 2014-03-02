@@ -115,7 +115,7 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 }
 
 
-void GetOpenSendFileName(HWND hwnd) {
+void GetOpenSendFileName(HWND hwnd, LPCALC lpCalc) {
 	OPENFILENAME ofn;
 	int result;
 	const TCHAR lpstrFilter[] = _T("Known File Types\0*.73?;*.82?;*.83?;*.8x?;*.8c?;*.85?;*.86?;*.sav;*.rom;*.lab\0\
@@ -135,7 +135,6 @@ void GetOpenSendFileName(HWND hwnd) {
 	
 	static OFNHookOptions HookOptions;
 	
-	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	HookOptions.model = lpCalc->cpu.pio.model;
 
 	ZeroMemory(filepath, sizeof(filepath));
