@@ -547,37 +547,36 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			InvalidateRect(hwnd, NULL, TRUE);
 			return 0;
 		}
-		case WM_CONTEXTMENU:
-			{
-				HMENU hmenuMain = GetMenu(lpMainWindow->hwndFrame);
-				if (hmenuMain == NULL) {
-					return 0;
-				}
-
-				TCHAR menuStringBuffer[256];
-				int i = 0;
-				BOOL success = TRUE;
-				HMENU hmenuContext = CreatePopupMenu();
-				while (success) {
-					MENUITEMINFO menuItemInfo = {0};
-					menuItemInfo.cbSize = sizeof(MENUITEMINFO);
-					menuItemInfo.fMask = MIIM_STRING;
-					menuItemInfo.cch = 255;
-					menuItemInfo.dwTypeData = menuStringBuffer;
-					success = GetMenuItemInfo(hmenuMain, i, TRUE, &menuItemInfo);
-					if (success) {
-						InsertMenu(hmenuContext, -1, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), menuItemInfo.dwTypeData);
-						i++;
-					}
-				}
-
-				if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenuContext)) {
-					DefWindowProc(hwnd, Message, wParam, lParam);
-				}
-
-				//DestroyMenu(hmenuContext);
+		case WM_CONTEXTMENU: {
+			HMENU hmenuMain = GetMenu(lpMainWindow->hwndFrame);
+			if (hmenuMain == NULL) {
 				return 0;
 			}
+
+			TCHAR menuStringBuffer[256];
+			int i = 0;
+			BOOL success = TRUE;
+			HMENU hmenuContext = CreatePopupMenu();
+			while (success) {
+				MENUITEMINFO menuItemInfo = {0};
+				menuItemInfo.cbSize = sizeof(MENUITEMINFO);
+				menuItemInfo.fMask = MIIM_STRING;
+				menuItemInfo.cch = 255;
+				menuItemInfo.dwTypeData = menuStringBuffer;
+				success = GetMenuItemInfo(hmenuMain, i, TRUE, &menuItemInfo);
+				if (success) {
+					InsertMenu(hmenuContext, -1, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), menuItemInfo.dwTypeData);
+					i++;
+				}
+			}
+
+			if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenuContext)) {
+				DefWindowProc(hwnd, Message, wParam, lParam);
+			}
+
+			//DestroyMenu(hmenuContext);
+			return 0;
+		}
 		case WM_CLOSE:
 		case WM_COMMAND: {
 			SendMessage(lpMainWindow->hwndFrame, Message, wParam, lParam);
@@ -593,153 +592,152 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 
 		case WM_MOUSEMOVE: {
-				static DWORD dwDragCountdown = 0;
-				if (wParam != MK_LBUTTON) {
-					dwDragCountdown = 0;
-				} else if (gif_write_state == GIF_IDLE) {
-					// TODO: make this not ugly and work
-					if (++dwDragCountdown < (u_int) GetSystemMetrics(SM_CXDRAG)) return 0;
+			static DWORD dwDragCountdown = 0;
+			if (wParam != MK_LBUTTON) {
+				dwDragCountdown = 0;
+			} else if (gif_write_state == GIF_IDLE) {
+				// TODO: make this not ugly and work
+				if (++dwDragCountdown < (u_int) GetSystemMetrics(SM_CXDRAG)) return 0;
 
-					CDataObject *pDataObject;
-					CDropSource *pDropSource;
-					IDragSourceHelper2 *pDragSourceHelper;
+				CDataObject *pDataObject;
+				CDropSource *pDropSource;
+				IDragSourceHelper2 *pDragSourceHelper;
 
-					RECT rc;
-					GetClientRect(hwnd, &rc);
+				RECT rc;
+				GetClientRect(hwnd, &rc);
 
-					ptOffset.x = GET_X_LPARAM(lParam);
-					ptOffset.y = GET_Y_LPARAM(lParam);
+				ptOffset.x = GET_X_LPARAM(lParam);
+				ptOffset.y = GET_Y_LPARAM(lParam);
 
-					// Create the GIF that is going to be produced by the drag
-					TCHAR fn[MAX_PATH];
-					GetStorageString(fn, sizeof(fn));
-					StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.png"));
+				// Create the GIF that is going to be produced by the drag
+				TCHAR fn[MAX_PATH];
+				GetStorageString(fn, sizeof(fn));
+				StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.png"));
 
-					if (lpCalc == NULL) {
-						break;
-					}
+				if (lpCalc == NULL) {
+					break;
+				}
 
-					LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
-					if (lcd == NULL) {
-						break;
-					}
+				LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
+				if (lcd == NULL) {
+					break;
+				}
 					
-					export_png(lpCalc, fn);
+				export_png(lpCalc, fn);
 
-					int file_size = 0;
-					FILE *file;
-					_tfopen_s(&file, fn, _T("rb"));
-					if (file != NULL) {
-						fseek(file, 0L, SEEK_END);
-						file_size = ftell(file);
-						fclose(file);
-					}
+				int file_size = 0;
+				FILE *file;
+				_tfopen_s(&file, fn, _T("rb"));
+				if (file != NULL) {
+					fseek(file, 0L, SEEK_END);
+					file_size = ftell(file);
+					fclose(file);
+				}
 
-					FORMATETC fmtetc[] = {
-						{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
-						{RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL },
-						{RegisterClipboardFormat(_T("WabbitShot")), 0, DVASPECT_CONTENT, 0, TYMED_NULL},
-						{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
-					};
+				FORMATETC fmtetc[] = {
+					{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
+					{RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL },
+					{RegisterClipboardFormat(_T("WabbitShot")), 0, DVASPECT_CONTENT, 0, TYMED_NULL},
+					{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
+				};
 
-					STGMEDIUM stgmed[NumElm(fmtetc)];
-					ZeroMemory(stgmed, sizeof(stgmed));
+				STGMEDIUM stgmed[NumElm(fmtetc)];
+				ZeroMemory(stgmed, sizeof(stgmed));
 
-					// Do the file group descriptor
-					stgmed[0].hGlobal = GlobalAlloc(GHND, sizeof(FILEGROUPDESCRIPTOR) + sizeof(FILEDESCRIPTOR));
-					stgmed[0].tymed = TYMED_HGLOBAL;
+				// Do the file group descriptor
+				stgmed[0].hGlobal = GlobalAlloc(GHND, sizeof(FILEGROUPDESCRIPTOR) + sizeof(FILEDESCRIPTOR));
+				stgmed[0].tymed = TYMED_HGLOBAL;
 
-					FILEGROUPDESCRIPTOR *fgd = (FILEGROUPDESCRIPTOR *) GlobalLock(stgmed[0].hGlobal);
-					fgd->cItems = 1;
+				FILEGROUPDESCRIPTOR *fgd = (FILEGROUPDESCRIPTOR *) GlobalLock(stgmed[0].hGlobal);
+				fgd->cItems = 1;
 
-					FILEDESCRIPTOR *fd = fgd->fgd;
-					ZeroMemory(fd, sizeof(FILEDESCRIPTOR));
+				FILEDESCRIPTOR *fd = fgd->fgd;
+				ZeroMemory(fd, sizeof(FILEDESCRIPTOR));
 
-					fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
-					fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-					fd->nFileSizeLow = file_size;
-					StringCbCopy(fd->cFileName, sizeof(fd->cFileName), _T("wabbitemu.png"));
-					GlobalUnlock(stgmed[0].hGlobal);
+				fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
+				fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+				fd->nFileSizeLow = file_size;
+				StringCbCopy(fd->cFileName, sizeof(fd->cFileName), _T("wabbitemu.png"));
+				GlobalUnlock(stgmed[0].hGlobal);
 
-					// Now do file contents
-					stgmed[1].hGlobal = GlobalAlloc(GHND, file_size);
-					stgmed[1].tymed = TYMED_HGLOBAL;
+				// Now do file contents
+				stgmed[1].hGlobal = GlobalAlloc(GHND, file_size);
+				stgmed[1].tymed = TYMED_HGLOBAL;
 
-					FILE *fgif;
-					_tfopen_s(&fgif, fn, _T("rb"));
-					if (fgif != NULL) {
-						char *buf = (char *) GlobalLock(stgmed[1].hGlobal);
-						fread(buf, file_size, 1, fgif);
-						fclose(fgif);
+				FILE *fgif;
+				_tfopen_s(&fgif, fn, _T("rb"));
+				if (fgif != NULL) {
+					char *buf = (char *) GlobalLock(stgmed[1].hGlobal);
+					fread(buf, file_size, 1, fgif);
+					fclose(fgif);
 
-						GlobalUnlock(stgmed[1].hGlobal);
-					} else {
-						MessageBox(NULL, _T("Opening the PNG failed\n"), _T("Wabbitemu"), MB_OK);
-					}
+					GlobalUnlock(stgmed[1].hGlobal);
+				} else {
+					MessageBox(NULL, _T("Opening the PNG failed\n"), _T("Wabbitemu"), MB_OK);
+				}
 
 
-					// Create the CH_DROP that many apps can use
-					stgmed[3].hGlobal = GlobalAlloc(GHND, sizeof(DROPFILES) + _tcslen(fn) + 2);
-					stgmed[3].tymed = TYMED_HGLOBAL;
+				// Create the CH_DROP that many apps can use
+				stgmed[3].hGlobal = GlobalAlloc(GHND, sizeof(DROPFILES) + _tcslen(fn) + 2);
+				stgmed[3].tymed = TYMED_HGLOBAL;
 
-					DROPFILES *df = (DROPFILES *) GlobalLock(stgmed[3].hGlobal);
+				DROPFILES *df = (DROPFILES *) GlobalLock(stgmed[3].hGlobal);
 
-					df[0].fWide = FALSE;
-					df[0].pFiles = sizeof(DROPFILES);
-					df[0].fNC = FALSE;
+				df[0].fWide = FALSE;
+				df[0].pFiles = sizeof(DROPFILES);
+				df[0].fNC = FALSE;
 
-					memset(&df[1], 0, _tcslen(fn) + 2);
-					StringCbCopy((TCHAR *) &df[1], _tcslen(fn) + 1, fn);
-					GlobalUnlock(stgmed[3].hGlobal);
+				memset(&df[1], 0, _tcslen(fn) + 2);
+				StringCbCopy((TCHAR *) &df[1], _tcslen(fn) + 1, fn);
+				GlobalUnlock(stgmed[3].hGlobal);
 
-					// Create IDataObject and IDropSource COM objects
-					HRESULT hres;
-					pDropSource = new CDropSource();
-					hres = CreateDataObject(fmtetc, stgmed, NumElm(fmtetc), (IDataObject **) &pDataObject);
-					if (hres != S_OK) {
-						MessageBox(hwnd, _T("Error in CreateDataObject"), _T("Error"), MB_OK);
-						pDropSource->Release();
-						return 0;
-					}
+				// Create IDataObject and IDropSource COM objects
+				HRESULT hres;
+				pDropSource = new CDropSource();
+				hres = CreateDataObject(fmtetc, stgmed, NumElm(fmtetc), (IDataObject **) &pDataObject);
+				if (hres != S_OK) {
+					MessageBox(hwnd, _T("Error in CreateDataObject"), _T("Error"), MB_OK);
+					pDropSource->Release();
+					return 0;
+				}
 
-					IID IID_IDragSourceHelper2;
-					CLSIDFromString((LPOLESTR) L"{83E07D0D-0C5F-4163-BF1A-60B274051E40}", &IID_IDragSourceHelper2);
+				IID IID_IDragSourceHelper2;
+				CLSIDFromString((LPOLESTR) L"{83E07D0D-0C5F-4163-BF1A-60B274051E40}", &IID_IDragSourceHelper2);
 
-					hres = CoCreateInstance(
-						CLSID_DragDropHelper,
-						NULL,
-						CLSCTX_INPROC_SERVER,
-						IID_IDragSourceHelper,
-						(LPVOID *) &pDragSourceHelper);
-					if (hres != S_OK) {
-						TCHAR buf[64];
-						StringCbPrintf(buf, sizeof(buf), _T("Error in CoCreateInstance\r\nError code: %X"), hres);
-						MessageBox(hwnd, buf, _T("Error"), MB_OK);
-						pDropSource->Release();
-						return 0;
-					}
+				hres = CoCreateInstance(
+					CLSID_DragDropHelper,
+					NULL,
+					CLSCTX_INPROC_SERVER,
+					IID_IDragSourceHelper,
+					(LPVOID *) &pDragSourceHelper);
+				if (hres != S_OK) {
+					TCHAR buf[64];
+					StringCbPrintf(buf, sizeof(buf), _T("Error in CoCreateInstance\r\nError code: %X"), hres);
+					MessageBox(hwnd, buf, _T("Error"), MB_OK);
+					pDropSource->Release();
+					return 0;
+				}
 
-					hres = pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource->m_pDataobject);
-					if (hres != S_OK) {
-						MessageBox(hwnd, _T("Error in pDataObject->QueryInterface"), _T("Error"), MB_OK);
-						pDragSourceHelper->Release();
-						pDataObject->Release();
-						pDropSource->Release();
-						return 0;
-					}
-					DWORD dwEffect = DROPEFFECT_NONE;
-					hres = DoDragDrop((IDataObject*) pDataObject, (IDropSource*) pDropSource,  DROPEFFECT_COPY, &dwEffect);
-					if (hres != S_OK && hres != DRAGDROP_S_CANCEL && hres != DRAGDROP_S_DROP) {
-						MessageBox(hwnd, _T("Error in DoDragDrop"), _T("Error"), MB_OK);
-					}
-
+				hres = pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource->m_pDataobject);
+				if (hres != S_OK) {
+					MessageBox(hwnd, _T("Error in pDataObject->QueryInterface"), _T("Error"), MB_OK);
 					pDragSourceHelper->Release();
 					pDataObject->Release();
 					pDropSource->Release();
+					return 0;
 				}
-				return 0;
-		}
+				DWORD dwEffect = DROPEFFECT_NONE;
+				hres = DoDragDrop((IDataObject*) pDataObject, (IDropSource*) pDropSource,  DROPEFFECT_COPY, &dwEffect);
+				if (hres != S_OK && hres != DRAGDROP_S_CANCEL && hres != DRAGDROP_S_DROP) {
+					MessageBox(hwnd, _T("Error in DoDragDrop"), _T("Error"), MB_OK);
+				}
 
+				pDragSourceHelper->Release();
+				pDataObject->Release();
+				pDropSource->Release();
+			}
+			return 0;
+		}
 		case WM_COPYDATA: {
 			PCOPYDATASTRUCT copyDataStruct = (PCOPYDATASTRUCT) lParam;
 			int size = (int) copyDataStruct->cbData;
@@ -785,6 +783,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		default:
 			if (Message == RegisterWindowMessage(_T("ShellGetDragImage"))) {
+				// TODO: fix
 				LPSHDRAGIMAGE pDragImage = (LPSHDRAGIMAGE) lParam;
 				RECT rc;
 				GetClientRect(hwnd, &rc);
@@ -817,8 +816,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				u_char *screen = lpCalc->cpu.pio.lcd->image(lpCalc->cpu.pio.lcd);
 				FillRect(hdc, &rc, (HBRUSH) GetStockObject(BLACK_BRUSH));
 
-				// TODO: fix
-				//screen = GIFGREYLCD();
 				if (StretchDIBits(
 					hdc,
 					0, 16, 96,  64,

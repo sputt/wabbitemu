@@ -385,7 +385,7 @@ LPMAINWINDOW create_calc_frame_register_events() {
 		return NULL;
 	}
 
-	LPMAINWINDOW lpMainWindow = gui_frame(lpCalc);
+	LPMAINWINDOW lpMainWindow = _Module.CreateNewFrame(lpCalc);
 	if (lpMainWindow == NULL) {
 		return NULL;
 	}
@@ -816,7 +816,7 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 HWND CWabbitemuModule::CheckValidFrameHandle(HWND hwndToCheck) {
 	for (auto it = m_lpMainWindows.begin(); it != m_lpMainWindows.end(); it++) {
 		LPMAINWINDOW lpMainWindow = *it;
-		if (lpMainWindow->hwndFrame == hwndToCheck) {
+		if (lpMainWindow->hwndFrame == hwndToCheck || lpMainWindow->hwndLCD == hwndToCheck) {
 			return lpMainWindow->hwndLCD;
 		}
 	}
@@ -832,8 +832,7 @@ HWND CWabbitemuModule::CheckValidOtherHandle(HWND hwndToCheck) {
 			continue;
 		}
 
-		BOOL valid = lpMainWindow->hwndSmallClose == hwndToCheck || lpMainWindow->hwndSmallMinimize;
-		if (valid) {
+		if (lpMainWindow->hwndSmallClose == hwndToCheck || lpMainWindow->hwndSmallMinimize == hwndToCheck) {
 			return lpMainWindow->hwndLCD;
 		}
 	}
@@ -871,16 +870,24 @@ void CWabbitemuModule::RunMessageLoop()
 	while (GetMessage(&Msg, NULL, 0, 0)) {
 		HACCEL haccel = haccelmain;
 		HWND hwndtop = GetForegroundWindow();
-		if (hwndtop) {
+		if (hwndtop != NULL) {
 			if (CheckValidDebugHandle(hwndtop)) {
 				haccel = hacceldebug;
-			} else if (hwndtop = CheckValidFrameHandle(hwndtop)) {
-				haccel = haccelmain;
-				SetForegroundWindow(hwndtop);
-			} else if (hwndtop = CheckValidOtherHandle(hwndtop)) {
-				haccel = haccelmain;
 			} else {
-				haccel = NULL;
+				HWND newhwndtop = CheckValidFrameHandle(hwndtop);
+				if (newhwndtop != NULL) {
+					haccel = haccelmain;
+					SetForegroundWindow(hwndtop);
+					hwndtop = newhwndtop;
+				} else {
+					newhwndtop = CheckValidOtherHandle(hwndtop);
+					if (newhwndtop != NULL) {
+						haccel = haccelmain;
+						hwndtop = newhwndtop;
+					} else {
+						haccel = NULL;
+					}
+				}
 			}
 		}
 

@@ -480,8 +480,6 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 
 			DWORD dwHeight = tm.tmHeight*3/2;
 			DWORD dwWidth = prc.right - prc.left - GetSystemMetrics(SM_CXVSCROLL);
-			// TODO: bug here, this takes into account all panes in all debug windows
-			// need to only be local to the debug window
 			int index = GetWindowLongPtr(hwnd, GWLP_ID) - EXPAND_PANE_BASE_ID;
 
 			// Add in all the previous windows
