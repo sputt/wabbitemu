@@ -469,17 +469,19 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 
 		if (i > 0x10) {
 			page = start_page + i;
-		}
-		else {
+		} else {
 			page = i;
+		}
+
+		if (i >= cpu->mem_c->flash_pages) {
+			break;
 		}
 
 		int sector = (page / 4) * 4;
 		int size;
 		if (sector >= cpu->mem_c->flash_pages - 4) {
 			size = PAGE_SIZE * 2;
-		}
-		else {
+		} else {
 			size = PAGE_SIZE * 4;
 		}
 
@@ -496,6 +498,10 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 		}
 		else {
 			page = i;
+		}
+
+		if (i >= cpu->mem_c->flash_pages) {
+			break;
 		}
 
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
