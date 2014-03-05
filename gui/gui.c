@@ -81,10 +81,31 @@ POINT drop_pt;
 BOOL gif_anim_advance;
 BOOL silent_mode = FALSE;
 BOOL is_exiting = FALSE;
+HWND hwndCurrentDlg = NULL;
 
 extern keyprog_t keygrps[256];
 extern keyprog_t keysti83[256];
 extern keyprog_t keysti86[256];
+
+key_string_t ti86keystrings[KEY_STRING_SIZE] = {
+	{ _T("F5"), 6, 0 }, { _T("F4"), 6, 1 }, { _T("F3"), 6, 2 }, { _T("F2"), 6, 3 }, { _T("F1"), 6, 4 }, { _T("2ND"), 6, 5 }, { _T("EXIT"), 6, 6 }, { _T("MORE"), 6, 7 },
+	{ _T("ON"), 5, 0 }, { _T("STO"), 5, 1 }, { _T(","), 5, 2 }, { _T("x^2"), 5, 3 }, { _T("LN"), 5, 4 }, { _T("LOG"), 5, 5 }, { _T("GRAPH"), 5, 6 }, { _T("ALPHA"), 5, 7 },
+	{ _T("0"), 4, 0 }, { _T("1"), 4, 1 }, { _T("4"), 4, 2 }, { _T("7"), 4, 3 }, { _T("EE"), 4, 4 }, { _T("SIN"), 4, 5 }, { _T("STAT"), 4, 6 }, { _T("x-Var"), 4, 7 },
+	{ _T("."), 3, 0 }, { _T("2"), 3, 1 }, { _T("5"), 3, 2 }, { _T("8"), 3, 3 }, { _T("("), 3, 4 }, { _T("COS"), 3, 5 }, { _T("PRGM"), 3, 6 }, { _T("DEL"), 3, 7 },
+	{ _T("(-)"), 2, 0 }, { _T("3"), 2, 1 }, { _T("6"), 2, 2 }, { _T("9"), 2, 3 }, { _T(")"), 2, 4 }, { _T("TAN"), 2, 5 }, { _T("CUSTOM"), 2, 6 }, { _T(""), 2, 7 },
+	{ _T("ENTER"), 1, 0 }, { _T("+"), 1, 1 }, { _T("-"), 1, 2 }, { _T("x"), 1, 3 }, { _T("/"), 1, 4 }, { _T("^"), 1, 5 }, { _T("CLEAR"), 1, 6 }, { _T(""), 1, 7 },
+	{ _T("DOWN"), 0, 0 }, { _T("LEFT"), 0, 1 }, { _T("RIGHT"), 0, 2 }, { _T("UP"), 0, 3 }, { _T(""), 0, 4 }, { _T(""), 0, 5 }, { _T(""), 0, 6 }, { _T(""), 0, 7 },
+};
+
+key_string_t ti83pkeystrings[KEY_STRING_SIZE] = {
+	{ _T("GRAPH"), 6, 0 }, { _T("TRACE"), 6, 1 }, { _T("ZOOM"), 6, 2 }, { _T("WINDOW"), 6, 3 }, { _T("Y="), 6, 4 }, { _T("2ND"), 6, 5 }, { _T("MODE"), 6, 6 }, { _T("DEL"), 6, 7 },
+	{ _T("ON"), 5, 0 }, { _T("STO"), 5, 1 }, { _T("LN"), 5, 2 }, { _T("LOG"), 5, 3 }, { _T("x^2"), 5, 4 }, { _T("x^-1"), 5, 5 }, { _T("MATH"), 5, 6 }, { _T("ALPHA"), 5, 7 },
+	{ _T("0"), 4, 0 }, { _T("1"), 4, 1 }, { _T("4"), 4, 2 }, { _T("7"), 4, 3 }, { _T(","), 4, 4 }, { _T("SIN"), 4, 5 }, { _T("APPS"), 4, 6 }, { _T("X,T,0,n"), 4, 7 },
+	{ _T("."), 3, 0 }, { _T("2"), 3, 1 }, { _T("5"), 3, 2 }, { _T("8"), 3, 3 }, { _T("("), 3, 4 }, { _T("COS"), 3, 5 }, { _T("PRGM"), 3, 6 }, { _T("STAT"), 3, 7 },
+	{ _T("(-)"), 2, 0 }, { _T("3"), 2, 1 }, { _T("6"), 2, 2 }, { _T("9"), 2, 3 }, { _T(")"), 2, 4 }, { _T("TAN"), 2, 5 }, { _T("VARS"), 2, 6 }, { _T(""), 2, 7 },
+	{ _T("ENTER"), 1, 0 }, { _T("+"), 1, 1 }, { _T("-"), 1, 2 }, { _T("x"), 1, 3 }, { _T("/"), 1, 4 }, { _T("^"), 1, 5 }, { _T("CLEAR"), 1, 6 }, { _T(""), 1, 7 },
+	{ _T("DOWN"), 0, 0 }, { _T("LEFT"), 0, 1 }, { _T("RIGHT"), 0, 2 }, { _T("UP"), 0, 3 }, { _T(""), 0, 4 }, { _T(""), 0, 5 }, { _T(""), 0, 6 }, { _T(""), 0, 7 },
+};
 
 void gui_debug(LPCALC lpCalc, LPVOID lParam);
 
@@ -636,6 +657,7 @@ LPMAINWINDOW CWabbitemuModule::CreateNewFrame(LPCALC lpCalc) {
 		return NULL;
 	}
 
+	lpMainWindow->keys_pressed = new list<key_string_t>;
 	m_lpMainWindows.push_back(lpMainWindow);
 	return lpMainWindow;
 }
@@ -643,6 +665,7 @@ LPMAINWINDOW CWabbitemuModule::CreateNewFrame(LPCALC lpCalc) {
 void CWabbitemuModule::DestroyFrame(LPMAINWINDOW lpMainWindow) {
 	for (auto it = m_lpMainWindows.begin(); it != m_lpMainWindows.end(); it++) {
 		if (*it == lpMainWindow) {
+			delete lpMainWindow->keys_pressed;
 			m_lpMainWindows.erase(it);
 			break;
 		}
@@ -914,8 +937,9 @@ void CWabbitemuModule::RunMessageLoop()
 			}
 		}
 
-		extern HWND hModelessDialog;
-		if (!TranslateAccelerator(hwndtop, haccel, &Msg) && !IsDialogMessage(hModelessDialog, &Msg)) {
+		if (!TranslateAccelerator(hwndtop, haccel, &Msg) && 
+			(hwndCurrentDlg == NULL || !IsDialogMessage(hwndCurrentDlg, &Msg)))
+		{
 			TranslateMessage(&Msg);
 			DispatchMessage(&Msg);
 		}

@@ -54,47 +54,27 @@ void FindButtonsRect(BitmapData *bitmapData) {
 	}
 }
 
-extern key_string ti83pkeystrings[KEY_STRING_SIZE];
-extern key_string ti86keystrings[KEY_STRING_SIZE];
 void LogKeypress(LPMAINWINDOW lpMainWindow, int model, int group, int bit) {
 	int i;
-	key_string *keystrings = model == TI_85 || model == TI_86 ? ti86keystrings : ti83pkeystrings;
+	key_string_t *keystrings = model == TI_85 || model == TI_86 ? ti86keystrings : ti83pkeystrings;
 	for (i = 0; i < KEY_STRING_SIZE; i++) {
 		if (keystrings[i].group == group && keystrings[i].bit == bit) {
 			break;
 		}
 	}
+
 	if (i == KEY_STRING_SIZE) {
 		return;
 	}
-	key_string *current = (key_string *) malloc(sizeof(key_string));
-	current->bit = bit;
-	current->group = group;
-	current->next = lpMainWindow->last_keypress_head;
-	current->text = (TCHAR *) malloc(_tcslen(keystrings[i].text) + 1);
-	StringCbCopy(current->text, _tcslen(keystrings[i].text) + 1, keystrings[i].text);
-	lpMainWindow->last_keypress_head = current;
-	lpMainWindow->num_keypresses++;
 
-	if (lpMainWindow->num_keypresses > MAX_KEYPRESS_HISTORY) {
-		key_string *current = lpMainWindow->last_keypress_head;
-		key_string *last = current;
-		while (current) {
-			if (current->next != NULL) {
-				last = current;
-				current = current->next;
-			} else {
-				break;
-			}
-		}
-		free(current->text);
-		free(current);
-		last->next = NULL;
-		if (last == lpMainWindow->last_keypress_head) {
-			lpMainWindow->last_keypress_head = NULL;
-		}
+	key_string_t current;
+	current.bit = bit;
+	current.group = group;
+	current.text = keystrings[i].text;
+	lpMainWindow->keys_pressed->push_back(current);
 
-		lpMainWindow->num_keypresses--;
+	if (lpMainWindow->keys_pressed->size() >= MAX_KEYPRESS_HISTORY) {
+		lpMainWindow->keys_pressed->pop_front();
 	}
 
 	if (lpMainWindow->hwndKeyListDialog) {
@@ -102,7 +82,7 @@ void LogKeypress(LPMAINWINDOW lpMainWindow, int model, int group, int bit) {
 	}
 }	
 
-void DrawButtonShadow(HDC hdc, HDC hdcKeymap, RECT brect, UINT keymap_scale)
+void DrawButtonShadow(HDC hdc, HDC hdcKeymap, RECT brect)
 {
 	int width = brect.right - brect.left;
 	int height = brect.bottom - brect.top;
@@ -144,7 +124,7 @@ void DrawButtonShadow(HDC hdc, HDC hdcKeymap, RECT brect, UINT keymap_scale)
 	}
 }
 
-void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, RECT brect, UINT state, UINT keymap_scale) {
+void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, RECT brect, UINT state) {
 	DisplayButtonState dbs = (DisplayButtonState)state;
 	LONG width = brect.right - brect.left;
 	LONG height = brect.bottom - brect.top;
@@ -178,9 +158,11 @@ void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, RECT brect, UINT
 
 	LPUINT pPixel = bitmap;
 	for (; pPixel < bitmap + (width * height); pPixel++) {
-		if (*pPixel == 0xFFFFFFFF) {
-			*pPixel = 0x00000000;
-		} else if (dbs & DBS_COPY) {
+		if (dbs & DBS_COPY) {
+			if (*pPixel != 0xFFFFFFFF) {
+				*pPixel = 0x00000000;
+			}
+		} else if (*pPixel == 0xFFFFFFFF) {
 			*pPixel = 0x00000000;
 		} else if (dbs & DBS_LOCK) {
 			*pPixel = 0x80FF0000;
@@ -204,11 +186,12 @@ void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, RECT brect, UINT
 
 	free(bitmap);
 	DeleteDC(hdcMask);
+	DeleteObject(hbm);
 	return;
 }
 
 
-void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, RECT brect, UINT state, UINT keymap_scale) {
+void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, RECT brect, UINT state) {
 	if (IsRectEmpty(&brect)) {
 		return;
 	}
@@ -220,7 +203,7 @@ void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, RECT brect, UINT state, UINT ke
 	HBITMAP hbmButton = CreateCompatibleBitmap(hdcSkin, width, height);
 	SelectObject(hdc, hbmButton);
 
-	DrawButtonStateNoSkin(hdc, hdcSkin, hdcKeymap, brect, state, keymap_scale);
+	DrawButtonStateNoSkin(hdc, hdcSkin, hdcKeymap, brect, state);
 	
 	BitBlt(hdcSkin, brect.left, brect.top, width, height,
 				hdc, 0, 0, SRCCOPY);
@@ -229,17 +212,7 @@ void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, RECT brect, UINT state, UINT ke
 	DeleteObject(hdc);
 }
 
-void DrawButtonStatesAll(LPMAINWINDOW lpMainWindow, HDC hdcSkin, HDC hdcKeymap) {
-	if (lpMainWindow == NULL) {
-		return;
-	}
-
-	LPCALC lpCalc = lpMainWindow->lpCalc;
-	if (lpCalc == NULL) {
-		return;
-	}
-
-	keypad_t *keypad = lpCalc->cpu.pio.keypad;
+void DrawButtonStatesAll(keypad_t *keypad, HDC hdcSkin, HDC hdcKeymap) {
 	if (keypad == NULL) {
 		return;
 	}
@@ -247,16 +220,15 @@ void DrawButtonStatesAll(LPMAINWINDOW lpMainWindow, HDC hdcSkin, HDC hdcKeymap) 
 	int group, bit;
 	POINT pt;
 	RECT brect;
-	UINT keymap_scale = (UINT)(1.0 / lpMainWindow->default_skin_scale);
 	for(group = 0; group < 7; group++) {
 		for(bit = 0; bit < 8; bit++) {
 			brect = ButtonRect[bit + (group << 3)];
 			if (brect.left != 0) {
 				int val = keypad->keys[group][bit];
 				if (val & KEY_LOCKPRESS) {
-					DrawButtonState(hdcSkin, hdcKeymap, brect, DBS_LOCK | DBS_DOWN, keymap_scale);
+					DrawButtonState(hdcSkin, hdcKeymap, brect, DBS_LOCK | DBS_DOWN);
 				} else if ((val & KEY_MOUSEPRESS) || (val & KEY_KEYBOARDPRESS)) {
-					DrawButtonState(hdcSkin, hdcKeymap, brect, DBS_PRESS | DBS_DOWN, keymap_scale);
+					DrawButtonState(hdcSkin, hdcKeymap, brect, DBS_PRESS | DBS_DOWN);
 				}
 			}
 		}
@@ -265,11 +237,11 @@ void DrawButtonStatesAll(LPMAINWINDOW lpMainWindow, HDC hdcSkin, HDC hdcKeymap) 
 	group	= 5;
 	bit		= 0;
 	brect = ButtonRect[bit + (group << 3)];
-	int val = lpCalc->cpu.pio.keypad->on_pressed;
+	int val = keypad->on_pressed;
 	if (val & KEY_LOCKPRESS) {
-		DrawButtonState(hdcSkin, hdcKeymap, brect, DBS_LOCK | DBS_DOWN, keymap_scale);
+		DrawButtonState(hdcSkin, hdcKeymap, brect, DBS_LOCK | DBS_DOWN);
 	} else if ((val & KEY_MOUSEPRESS) || (val & KEY_KEYBOARDPRESS)) {
-		DrawButtonState(hdcSkin, hdcKeymap, brect, DBS_PRESS | DBS_DOWN, keymap_scale);
+		DrawButtonState(hdcSkin, hdcKeymap, brect, DBS_PRESS | DBS_DOWN);
 	}
 }
 
@@ -356,7 +328,7 @@ void FinalizeButtons(LPMAINWINDOW lpMainWindow) {
 	}
 
 	if (lpMainWindow->bSkinEnabled && !lpMainWindow->bCutout) {
-		DrawButtonStatesAll(lpMainWindow, lpMainWindow->hdcButtons, lpMainWindow->hdcKeymap);
+		DrawButtonStatesAll(lpCalc->cpu.pio.keypad, lpMainWindow->hdcButtons, lpMainWindow->hdcKeymap);
 		InvalidateRect(lpMainWindow->hwndFrame, NULL, FALSE);
 	}
 }

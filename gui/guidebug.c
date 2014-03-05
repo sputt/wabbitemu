@@ -997,8 +997,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				TabCtrl_SetCurSel(lpDebugInfo->hdisasm, 0);
 				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
 				free(pnmhdr);
-				HWND hTab = GetMemPaneHWND(lpDebugInfo, TabCtrl_GetCurSel(lpDebugInfo->hdisasm));
-				MemGotoAddress(hTab, (int) lParam);
+				int tabIndex = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
+				HWND hTab = GetMemPaneHWND(lpDebugInfo, tabIndex);
+				MemGotoAddress(hTab, (int)lParam);
 				break;
 			}
 			case DB_DISASM_GOTO_ADDR: {
@@ -1017,7 +1018,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
 				free(pnmhdr);
 				int addr = (waddr->addr % PAGE_SIZE) + waddr->page * PAGE_SIZE;
-				DisasmGotoAddress(lpDebugInfo->hdisasmlist[TabCtrl_GetCurSel(lpDebugInfo->hdisasm)], addr);
+				int tabIndex = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
+				HWND hTab = GetDisasmPaneHWND(lpDebugInfo, tabIndex);
+				DisasmGotoAddress(hTab, addr);
 				break;
 			}
 			case DB_MEM_GOTO_ADDR: {
@@ -1035,7 +1038,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
 				free(pnmhdr);
 				int addr = (waddr->addr % PAGE_SIZE) + waddr->page * PAGE_SIZE;
-				MemGotoAddress(lpDebugInfo->hmemlist[TabCtrl_GetCurSel(lpDebugInfo->hmem)], addr);
+				int tabIndex = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
+				HWND hTab = GetMemPaneHWND(lpDebugInfo, tabIndex);
+				MemGotoAddress(hTab, addr);
 				break;
 			}
 			case DB_BREAKPOINT:
@@ -1072,6 +1077,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			case DB_STOP: {
 				LPCALC lpCalc = lpDebugInfo->lpCalc;
 				calc_set_running(lpCalc, FALSE);
+				int index = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
+				HWND hTab = GetDisasmPaneHWND(lpDebugInfo, index);
+				DisasmGotoAddress(hTab, lpCalc->cpu.pc);
 				Debug_UpdateWindow(hwnd);
 				break;
 			}

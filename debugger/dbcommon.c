@@ -7,11 +7,6 @@
 #include "label.h"
 
 extern HINSTANCE g_hInst;
-
-int find_value;
-BOOL big_endian;
-BOOL search_backwards;
-HWND hModelessDialog;
 static WNDPROC wpOrigEditProc;
 
 static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -57,8 +52,16 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 		wpOrigEditProc = (WNDPROC)SetWindowLongPtr(hEditAddr, GWLP_WNDPROC, (LONG_PTR)EditSubclassProc);
 		LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)lParam;
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lpDebugInfo);
-		hModelessDialog = hwndDlg;
 		return TRUE;
+	}
+	case WM_ACTIVATE: {
+		if (0 == wParam) {
+			hwndCurrentDlg = NULL;
+		} else {
+			hwndCurrentDlg = hwndDlg;
+		}
+
+		return FALSE;
 	}
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
@@ -119,66 +122,6 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 		}
 		break;
 		}
-	}
-	return FALSE;
-}
-
-INT_PTR CALLBACK FindDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND edtAddr, forwardsCheck, backwardsCheck, littleEndianCheck, bigEndianCheck;
-	switch (Message) {
-	case WM_INITDIALOG: {
-		edtAddr = GetDlgItem(hwndDlg, IDC_EDT_FIND);
-		forwardsCheck = GetDlgItem(hwndDlg, IDC_RADIO_FORWARDS);
-		backwardsCheck = GetDlgItem(hwndDlg, IDC_RADIO_BACKWARDS);
-
-		littleEndianCheck = GetDlgItem(hwndDlg, IDC_RADIO_LITTLEENDIAN);
-		bigEndianCheck = GetDlgItem(hwndDlg, IDC_RADIO_BIGENDIAN);
-
-		SetFocus(GetDlgItem(hwndDlg, IDC_EDT_FIND));
-		Button_SetCheck(forwardsCheck, TRUE);
-		Button_SetCheck(bigEndianCheck, TRUE);
-		big_endian = TRUE;
-		search_backwards = FALSE;
-
-		LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)lParam;
-		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lpDebugInfo);
-		return FALSE;
-	}
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-			case IDC_FIND_NEXT: {
-				TCHAR result[32];
-				GetDlgItemText(hwndDlg, IDC_EDT_FIND, result, 32);
-				_stscanf_s(result, _T("%x"), &find_value);
-
-				LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-				SendMessage(lpDebugInfo->hDebug, WM_COMMAND, DB_FIND_NEXT, 0);
-				return TRUE;
-			}
-			case IDCANCEL:
-				EndDialog(hwndDlg, IDCANCEL);
-				break;
-		}
-		switch(HIWORD(wParam)) {
-			case BN_CLICKED: {
-				switch (LOWORD(wParam)) {
-					case IDC_RADIO_BACKWARDS:
-						search_backwards = TRUE;
-						break;
-					case IDC_RADIO_FORWARDS:
-						search_backwards = FALSE;
-						break;
-					case IDC_RADIO_LITTLEENDIAN:
-						big_endian = FALSE;
-						break;
-					case IDC_RADIO_BIGENDIAN:
-						big_endian = TRUE;
-						break;
-				}
-				break;
-			}
-		}
-		break;
 	}
 	return FALSE;
 }

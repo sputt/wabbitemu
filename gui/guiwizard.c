@@ -416,6 +416,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 									break;
 								case TI_84PCSE:
 									ComboBox_AddString(hComboOS, _T("OS 4.0"));
+									ComboBox_AddString(hComboOS, _T("OS 4.2"));
 									break;
 								}
 							}
@@ -651,14 +652,18 @@ static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version)
 			break;
 		case TI_84P:
 		case TI_84PSE:
-			if (version)
+			if (version) {
 				url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS243.8Xu");
-			else
+			} else {
 				url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS.8Xu");
+			}
 			break;
 		case TI_84PCSE:
-			// TODO: find the correct link
-			url = _T("http://education.ti.com/download/en/ASIA/5F0CBAC101194542B16B80BCE6CB3602/4D5547F48BBA4384BB85A645D7772A1A/TI84PlusC_OS.8Cu");
+			if (version) {
+				url = _T("http://education.ti.com/download/en/ASIA/5F0CBAC101194542B16B80BCE6CB3602/4D5547F48BBA4384BB85A645D7772A1A/TI84PlusC_OS.8Cu");
+			} else {
+				url = _T("http://education.ti.com/download/en/ASIA/5F0CBAC101194542B16B80BCE6CB3602/0BB0CC9043204D52BF22BC717A917A9A/TI84PlusC_OS-4.20.8Cu");
+			}
 			break;
 	}
 	HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, callback);
@@ -873,6 +878,10 @@ DWORD write_boot_page(LPCALC lpCalc, TCHAR *file_path, int boot_page, int boot_p
 		return 1;
 	}
 
+	if (boot_var->var->length != 0x4002) {
+		return 2;
+	}
+
 	int current_page;
 	if (boot_var->var->name[6] == '2') {
 		current_page = boot_page2;
@@ -1067,7 +1076,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 
 					error = write_boot_page(lpCalc, browse, boot_page, boot_page2);
 					if (error) {
-						MessageBox(NULL, _T("Error opening first boot page file"), _T("Error"), MB_OK);
+						MessageBox(NULL, _T("Error invalid first boot page file"), _T("Error"), MB_OK);
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 						break;
 					}
@@ -1077,7 +1086,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						Edit_GetText(hEditVar2, browse, MAX_PATH);
 						error = write_boot_page(lpCalc, browse, boot_page, boot_page2);
 						if (error) {
-							MessageBox(NULL, _T("Error opening second boot page file"), _T("Error"), MB_OK);
+							MessageBox(NULL, _T("Error invalid second boot page file"), _T("Error"), MB_OK);
 							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 							break;
 						}

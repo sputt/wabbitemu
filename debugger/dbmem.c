@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
-#include "core.h"
 #include "dbmem.h"
-#include "resource.h"
+#include "dbfinddialog.h"
+#include "core.h"
 #include "registry.h"
 #include "guidebug.h"
 
@@ -10,7 +10,6 @@
 
 extern HWND hwndLastFocus;
 extern HINSTANCE g_hInst;
-extern int find_value;
 
 static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
 	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -123,9 +122,8 @@ static VALUE_FORMAT GetValueFormat(mp_settings *mps) {
 }
 
 void MemGotoAddress(HWND hwnd, int addr) {
-	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
-
+	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	mp_settings *mps = (mp_settings *)lpTabInfo->tabInfo;
 	SCROLLINFO si;
 	si.cbSize = sizeof(SCROLLINFO);
 	si.fMask = SIF_POS;
@@ -719,79 +717,87 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 			}
-			HWND hwndDialog;
 			switch(LOWORD(wParam))
 			{
-				case DB_OPEN_FIND:
-					hwndDialog = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC) FindDialogProc);
-					ShowWindow(hwndDialog, SW_SHOW);
-					break;
-				case DB_FIND_NEXT: {
-					// TODO: fix for each mem pane
-					int addr = mps->addr;
-					while (addr < 0xFFFF && mem_read(&mps->lpCalc->mem_c, addr) != find_value)
-						addr++;
-					if (addr > 0xFFFF) {
-						MessageBox(NULL, _T("Value not found"), _T("Find results"), MB_OK);
-						break;
-					}
-					mps->addr = addr;
-					SetFocus(hwnd);
-					Debug_UpdateWindow(hwnd);
+			case DB_OPEN_FIND: {
+				if (IsWindow(mps->hFindDialog)) {
+					SetFocus(mps->hFindDialog);
 					break;
 				}
-				case DB_GOTO: {
-					if (mps->hGotoDialog != NULL) {
-						SetFocus(mps->hGotoDialog);
-					} else {
-						mps->hGotoDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd,
-							(DLGPROC)GotoDialogProc, (LPARAM)lpTabInfo->lpDebugInfo);
-						position_goto_dialog(mps->hGotoDialog);
-					}
-					break;
-				}
-				case DB_BREAKPOINT: {
-					waddr_t waddr = GetWaddr(mps, mps->sel);
-					if (check_break(&mps->lpCalc->mem_c, waddr))
-						clear_break(&mps->lpCalc->mem_c, waddr);
-					else
-						set_break(&mps->lpCalc->mem_c, waddr);
 
-					RECT rc;
-					GetClientRect(hwnd, &rc);
-					InvalidateRect(hwnd, &rc, FALSE);
-					break;
+				find_dialog_params_t params = { 0 };
+				params.hwndParent = hwnd;
+				params.lpCalc = mps->lpCalc;
+				params.start_addr = mps->sel;
+				params.type = mps->type;
+				mps->hFindDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC)FindDialogProc, (LPARAM)&params);
+				ShowWindow(mps->hFindDialog, SW_SHOW);
+				break;
+			}
+			case DB_FIND_CLOSE: {
+				mps->hFindDialog = NULL;
+				break;
+			}
+			case DB_FIND_NEXT: {
+				int global_addr = (int)lParam;
+				mps->addr = global_addr;
+				mps->sel = global_addr;
+				InvalidateRect(hwnd, NULL, FALSE);
+				UpdateWindow(hwnd);
+				return 0;
+			}
+			case DB_GOTO: {
+				if (mps->hGotoDialog != NULL) {
+					SetFocus(mps->hGotoDialog);
+				} else {
+					mps->hGotoDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd,
+						(DLGPROC)GotoDialogProc, (LPARAM)lpTabInfo->lpDebugInfo);
+					position_goto_dialog(mps->hGotoDialog);
 				}
-				case DB_MEMPOINT_WRITE: {
-					waddr_t waddr = GetWaddr(mps, mps->sel);
-					if (check_mem_write_break(&mps->lpCalc->mem_c, waddr))
-						clear_mem_write_break(&mps->lpCalc->mem_c, waddr);
-					else
-						set_mem_write_break(&mps->lpCalc->mem_c, waddr);
+				break;
+			}
+			case DB_BREAKPOINT: {
+				waddr_t waddr = GetWaddr(mps, mps->sel);
+				if (check_break(&mps->lpCalc->mem_c, waddr))
+					clear_break(&mps->lpCalc->mem_c, waddr);
+				else
+					set_break(&mps->lpCalc->mem_c, waddr);
 
-					RECT rc;
-					GetClientRect(hwnd, &rc);
-					InvalidateRect(hwnd, &rc, FALSE);
-					break;
-				}
-				case DB_MEMPOINT_READ: {
-					waddr_t waddr = GetWaddr(mps, mps->sel);
-					if (check_mem_read_break(&mps->lpCalc->mem_c, waddr))
-						clear_mem_read_break(&mps->lpCalc->mem_c, waddr);
-					else
-						set_mem_read_break(&mps->lpCalc->mem_c, waddr);
+				RECT rc;
+				GetClientRect(hwnd, &rc);
+				InvalidateRect(hwnd, &rc, FALSE);
+				break;
+			}
+			case DB_MEMPOINT_WRITE: {
+				waddr_t waddr = GetWaddr(mps, mps->sel);
+				if (check_mem_write_break(&mps->lpCalc->mem_c, waddr))
+					clear_mem_write_break(&mps->lpCalc->mem_c, waddr);
+				else
+					set_mem_write_break(&mps->lpCalc->mem_c, waddr);
 
-					RECT rc;
-					GetClientRect(hwnd, &rc);
-					InvalidateRect(hwnd, &rc, FALSE);
-					break;
-				}
-				case DB_STEP:
-				case DB_STEPOVER:
-				case DB_STEPBACK:
-					// FIXME: forward to parent
-					SendMessage(lpTabInfo->lpDebugInfo->hdisasm, WM_COMMAND, wParam, 0);
-					break;
+				RECT rc;
+				GetClientRect(hwnd, &rc);
+				InvalidateRect(hwnd, &rc, FALSE);
+				break;
+			}
+			case DB_MEMPOINT_READ: {
+				waddr_t waddr = GetWaddr(mps, mps->sel);
+				if (check_mem_read_break(&mps->lpCalc->mem_c, waddr))
+					clear_mem_read_break(&mps->lpCalc->mem_c, waddr);
+				else
+					set_mem_read_break(&mps->lpCalc->mem_c, waddr);
+
+				RECT rc;
+				GetClientRect(hwnd, &rc);
+				InvalidateRect(hwnd, &rc, FALSE);
+				break;
+			}
+			case DB_STEP:
+			case DB_STEPOVER:
+			case DB_STEPBACK:
+				// FIXME: forward to parent
+				SendMessage(lpTabInfo->lpDebugInfo->hdisasm, WM_COMMAND, wParam, 0);
+				break;
 			}
 			return 0;
 		}
