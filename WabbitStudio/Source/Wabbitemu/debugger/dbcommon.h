@@ -6,20 +6,6 @@
 
 #include "dbreg.h"
 
-void position_goto_dialog(HWND hGotoDialog);
-int get_value(HWND hwndParent);
-INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK FindDialogProc(HWND, UINT, WPARAM, LPARAM);
-int ValueSubmit(HWND hwndDlg, void *loc, int size, int max_value = INT_MAX);
-LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, BYTE opacity);
-const TCHAR * byte_to_binary(int x, BOOL isWord = FALSE);
-int xtoi(const TCHAR *xs);
-int StringToValue(TCHAR *str);
-
-#define Debug_UpdateWindow(hwnd) SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
-#define Debug_CreateWindow(hwnd) SendMessage(hwnd, WM_USER, DB_CREATE, 0);
-
 typedef enum {
 	HEX2,
 	HEX4,
@@ -48,6 +34,20 @@ typedef struct {
 	int total;
 	BOOL state[32];
 } ep_state;
+
+void position_goto_dialog(HWND hGotoDialog);
+int get_value(HWND hwndParent);
+INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam);
+int ValueSubmit(HWND hwndDlg, void *loc, int size, int max_value = INT_MAX);
+LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, BYTE opacity);
+const TCHAR * byte_to_binary(int x, BOOL isWord = FALSE);
+int xtoi(const TCHAR *xs);
+int StringToValue(TCHAR *str);
+void GetNextWaddr(LPCALC lpCalc, ViewType type, int *bank_num, waddr_t *waddr);
+
+#define Debug_UpdateWindow(hwnd) SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+#define Debug_CreateWindow(hwnd) SendMessage(hwnd, WM_USER, DB_CREATE, 0);
 
 static const TCHAR* DisplayTypeString = _T("Disp_Type");
 

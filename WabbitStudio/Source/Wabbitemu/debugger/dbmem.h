@@ -27,6 +27,7 @@ typedef struct mempane_settings {
 	int cyRow;
 	int cyHeader;
 	HWND hGotoDialog;
+	HWND hFindDialog;
 } mempane_settings_t;
 
 typedef mempane_settings_t mp_settings;

@@ -325,8 +325,18 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 	if (lcd_scaled) {
 		LONG clientWidth = rc.right - rc.left;
 		LONG clientHeight = rc.bottom - rc.top;
-		LONG clientScaleWidth = max(1, clientWidth / lcd->display_width) * lcd->display_width;
-		LONG clientScaleHeight = max(1, clientHeight / lcd->height) * lcd->height;
+		LONG widthScale = 1;
+		LONG heightScale = 1;
+		while (clientWidth > lcd->display_width * widthScale) {
+			widthScale++;
+		}
+
+		while (clientHeight > lcd->height * heightScale) {
+			heightScale++;
+		}
+
+		LONG clientScaleWidth = widthScale * lcd->display_width;
+		LONG clientScaleHeight = heightScale * lcd->height;
 
 		Graphics graphics(hdc);
 		Bitmap lcdBitmap(info, screen);

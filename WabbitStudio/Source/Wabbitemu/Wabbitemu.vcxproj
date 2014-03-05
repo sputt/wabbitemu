@@ -81,6 +81,7 @@
     <ClCompile Include="debugger\dbcolorlcd.c" />
     <ClCompile Include="debugger\dbcommon.c" />
     <ClCompile Include="debugger\dbdisasm.c" />
+    <ClCompile Include="debugger\dbfinddialog.c" />
     <ClCompile Include="debugger\dbmem.c" />
     <ClCompile Include="Debugger\dbmonitor.c" />
     <ClCompile Include="Debugger\dbprofile.c" />
@@ -306,6 +307,7 @@
     <ClInclude Include="debugger\dbcolorlcd.h" />
     <ClInclude Include="debugger\dbcommon.h" />
     <ClInclude Include="debugger\dbdisasm.h" />
+    <ClInclude Include="debugger\dbfinddialog.h" />
     <ClInclude Include="debugger\dbmem.h" />
     <ClInclude Include="Debugger\dbmonitor.h" />
     <ClInclude Include="Debugger\dbprofile.h" />

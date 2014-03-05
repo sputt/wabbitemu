@@ -66,13 +66,14 @@ class CWabbitemu;
 
 #define REG_UPDATE		1
 
-
-struct key_string {
+typedef struct {
 	TCHAR *text;
 	int group;
 	int bit;
-	struct key_string *next;
-};
+} key_string_t;
+
+extern key_string_t ti83pkeystrings[KEY_STRING_SIZE];
+extern key_string_t ti86keystrings[KEY_STRING_SIZE];
 
 typedef struct MainWindow {
 	LPCALC lpCalc;
@@ -99,8 +100,7 @@ typedef struct MainWindow {
 	// custom keymap path
 	TCHAR keymap_path[256];
 
-	key_string *last_keypress_head;
-	int num_keypresses;
+	list<key_string_t> *keys_pressed;
 
 	DWORD scale;
 	double default_skin_scale;
@@ -173,5 +173,6 @@ private:
 };
 
 extern CWabbitemuModule _Module;
+extern HWND hwndCurrentDlg;
 
 #endif
