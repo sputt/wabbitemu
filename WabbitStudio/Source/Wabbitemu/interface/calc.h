@@ -117,6 +117,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates);
 int calc_run_all(void);
 BOOL calc_start_screenshot(const TCHAR *filename);
 void calc_stop_screenshot();
+const TCHAR *calc_get_model_string(int model);
 void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback, LPVOID lParam);
 void calc_unregister_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback, LPVOID lParam);
 
@@ -166,24 +167,6 @@ GLOBAL int link_hub_count;
 GLOBAL int calc_waiting_link;
 GLOBAL BOOL portable_mode;
 GLOBAL TCHAR portSettingsPath[MAX_PATH];
-
-
-GLOBAL const TCHAR *CalcModelTxt[]
-#ifdef CALC_C
-= {	_T("TI-81"),
-	_T("TI-82"),
-	_T("TI-83"),
-	_T("TI-85"),
-	_T("TI-86"),
-	_T("TI-73"),
-	_T("TI-83+"),
-	_T("TI-83+SE"),
-	_T("TI-84+"),
-	_T("TI-84+SE"),
-	_T("TI-84+CSE"),
-	_T("???")}
-#endif
-;
 
 #define _HAS_CALC_H
 #endif

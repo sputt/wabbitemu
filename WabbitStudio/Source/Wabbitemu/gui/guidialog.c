@@ -47,7 +47,7 @@ void SendBugReport(TCHAR *nameBuffer, TCHAR *emailBuffer, TCHAR *titleBuffer, TC
 	GetFileCurrentVersionString(versionBuffer, sizeof(versionBuffer));
 	StringCbCat(bugReport, MAX_BUG_LEN, versionBuffer);
 	StringCbCat(bugReport, MAX_BUG_LEN, _T("\r\nRom Version: "));
-	StringCbCat(bugReport, MAX_BUG_LEN, CalcModelTxt[calcs[0].model]);
+	StringCbCat(bugReport, MAX_BUG_LEN, calc_get_model_string(calcs[0].model));
 	StringCbCat(bugReport, MAX_BUG_LEN, _T(" "));
 #ifdef _UNICODE
 	size_t size;

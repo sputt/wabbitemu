@@ -859,7 +859,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 #else
 			Edit_SetText(edtRom_version, lpCalc->rom_version);
 #endif
-			Edit_SetText(edtRom_model, CalcModelTxt[lpCalc->model]);
+			Edit_SetText(edtRom_model, calc_get_model_string(lpCalc->model));
 			Button_SetCheck(extraSpeed_check, lpCalc->cpu.timer_c->timer_version > 1);
 			Button_SetCheck(ramPages_check, lpCalc->cpu.mem_c->ram_version == 2);
 			Button_SetCheck(old83p_check, lpCalc->cpu.cpu_version);

@@ -24,6 +24,21 @@
 
 #define FRAME_SUBDIVISIONS 1024
 
+const TCHAR *CalcModelTxt[] = {
+	_T("TI-81"),
+	_T("TI-82"),
+	_T("TI-83"),
+	_T("TI-85"),
+	_T("TI-86"),
+	_T("TI-73"),
+	_T("TI-83+"),
+	_T("TI-83+SE"),
+	_T("TI-84+"),
+	_T("TI-84+SE"),
+	_T("TI-84+CSE"),
+	_T("???")
+};
+
 static void calc_debug_callback(LPCALC lpCalc);
 void exe_violation_callback(CPU_t *cpu);
 void invalid_flash_callback(CPU_t *cpu);
@@ -589,6 +604,10 @@ BOOL calc_start_screenshot(const TCHAR *filename) {
 
 void calc_stop_screenshot() {
 	gif_write_state = GIF_END;
+}
+
+const TCHAR *calc_get_model_string(int model) {
+	return CalcModelTxt[model];
 }
 
 void calc_pause_linked() {

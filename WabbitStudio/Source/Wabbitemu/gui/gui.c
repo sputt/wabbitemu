@@ -1451,7 +1451,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			else*/
 			link_connect_hub(lpCalc->slot, &lpCalc->cpu);
 			TCHAR buf[64];
-			StringCbCopy(buf, sizeof(buf), CalcModelTxt[lpCalc->model]);
+			StringCbCopy(buf, sizeof(buf), calc_get_model_string(lpCalc->model));
 			StringCbCat(buf, sizeof(buf), _T(" Connected"));
 			SendMessage(lpMainWindow->hwndStatusBar, SB_SETTEXT, 1, (LPARAM)buf);
 			StringCbPrintf(buf, sizeof(buf), _T("Wabbitemu (%d)"), lpCalc->slot + 1);
