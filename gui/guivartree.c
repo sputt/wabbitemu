@@ -464,7 +464,7 @@ void RefreshTreeView(BOOL New) {
 				tvs.hParent				= TVI_ROOT;
 				tvs.hInsertAfter		= TVI_ROOT;
 				tvs.item.mask			= TVIF_IMAGE | TVIF_SELECTEDIMAGE |TVIF_TEXT;
-				tvs.item.pszText		= (LPTSTR) CalcModelTxt[calcs[slot].model];
+				tvs.item.pszText		= (LPTSTR)calc_get_model_string(calcs[slot].model);
 				tvs.item.cchTextMax		= (int) _tcslen(tvs.item.pszText) + 1;
 				tvs.item.iImage			= TI_ICON_84PSE;
 				tvs.item.iSelectedImage	= tvs.item.iImage;

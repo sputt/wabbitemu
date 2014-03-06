@@ -40,7 +40,7 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 #else
 			SendMessage(edtRom_version, WM_SETTEXT, 0, (LPARAM) lpCalc->rom_version);
 #endif
-			SendMessage(edtModel, WM_SETTEXT, 0, (LPARAM) CalcModelTxt[lpCalc->model]);
+			SendMessage(edtModel, WM_SETTEXT, 0, (LPARAM)calc_get_model_string(lpCalc->model));
 			
 			LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
 

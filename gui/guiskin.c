@@ -79,8 +79,7 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 		rc.top = (LONG)(rc.top * lpMainWindow->skin_scale);
 		rc.right = (LONG)(rc.right * lpMainWindow->skin_scale);
 		rc.bottom = (LONG)(rc.bottom * lpMainWindow->skin_scale);
-		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
-		rc.bottom += GetSystemMetrics(SM_CYMENU);
+		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , hMenu != NULL);
 	} else {
 		LPCALC lpCalc = lpMainWindow->lpCalc;
 		bChecked = MF_UNCHECKED;
@@ -94,7 +93,7 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 		// set the text. Text on the left will be the FPS (set in LCD code)
 		// text on the right will be the model currently being emulated
 		SendMessage(lpMainWindow->hwndStatusBar, SB_SETPARTS, 2, (LPARAM)&iStatusWidths);
-		SendMessage(lpMainWindow->hwndStatusBar, SB_SETTEXT, 1, (LPARAM)CalcModelTxt[lpCalc->model]);
+		SendMessage(lpMainWindow->hwndStatusBar, SB_SETTEXT, 1, (LPARAM)calc_get_model_string(lpCalc->model));
 		// get the height of the status bar and factor that into our total app window height
 		RECT src;
 		GetWindowRect(lpMainWindow->hwndStatusBar, &src);
@@ -126,7 +125,7 @@ enum DRAWSKINERROR {
 	ERROR_KEYMAP,
 };
 
-DRAWSKINERROR DrawSkin(HDC hdc, LPMAINWINDOW lpMainWindow, Bitmap *m_pBitmapSkin, Bitmap *m_pBitmapKeymap) {
+DRAWSKINERROR DrawSkin(HDC hdc, LPMAINWINDOW lpMainWindow, Bitmap *m_pBitmapSkin, Bitmap *m_pBitmapKeymap, BOOL drawFaceplate) {
 	if (!m_pBitmapSkin) {
 		return ERROR_SKIN;
 	}
@@ -134,8 +133,6 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPMAINWINDOW lpMainWindow, Bitmap *m_pBitmapSkin
 	if (!m_pBitmapKeymap) {
 		return ERROR_KEYMAP;
 	}
-	
-	LPCALC lpCalc = lpMainWindow->lpCalc;
 
 	HBITMAP hbmSkinOld, hbmKeymapOld;
 	// translate to regular GDI compatibility to simplify coding :/
@@ -152,7 +149,6 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPMAINWINDOW lpMainWindow, Bitmap *m_pBitmapSkin
 
 	LONG skinWidth = lpMainWindow->rectSkin.right;
 	LONG skinHeight = lpMainWindow->rectSkin.bottom;
-	BOOL drawFaceplate = lpCalc->model == TI_84PSE || lpCalc->model == TI_84PCSE && !lpMainWindow->bCustomSkin;
 	if (drawFaceplate) {
 		if (DrawFaceplateRegion(lpMainWindow->hdcSkin, lpMainWindow->default_skin_scale, lpMainWindow->FaceplateColor)) {
 			return ERROR_FACEPLATE;
@@ -250,6 +246,7 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 		DeleteDC(lpMainWindow->hdcButtons);
 	}
 
+	int model = lpMainWindow->lpCalc->model;
 	lpMainWindow->hdcKeymap = CreateCompatibleDC(hdc);
 	lpMainWindow->hdcSkin = CreateCompatibleDC(hdc);
 	lpMainWindow->hdcButtons = CreateCompatibleDC(hdc);
@@ -282,8 +279,8 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 		}
 
 		LPCALC lpCalc = lpMainWindow->lpCalc;
-		hbmSkin.Load(CalcModelTxt[lpCalc->model], _T("PNG"), g_hInst);
-		switch(lpCalc->model) {
+		hbmSkin.Load(calc_get_model_string(model), _T("PNG"), g_hInst);
+		switch(model) {
 			case TI_81:
 				hbmKeymap.Load(_T("TI-81Keymap"), _T("PNG"), g_hInst);
 				break;
@@ -373,7 +370,8 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, lpMainWindow->rectSkin.right, lpMainWindow->rectSkin.bottom);
 	SelectObject(lpMainWindow->hdcButtons, hbmTemp);
 	
-	switch (DrawSkin(hdc, lpMainWindow, m_pBitmapSkin, m_pBitmapKeymap)) {
+	BOOL drawFaceplate = model == TI_84PSE || model == TI_84PCSE && !lpMainWindow->bCustomSkin;
+	switch (DrawSkin(hdc, lpMainWindow, m_pBitmapSkin, m_pBitmapKeymap, drawFaceplate)) {
 		case ERROR_FACEPLATE:
 			MessageBox(lpMainWindow->hwndFrame, _T("Unable to draw faceplate"), _T("Error"), MB_OK);
 			break;
