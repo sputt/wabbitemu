@@ -612,7 +612,7 @@ const TCHAR *calc_get_model_string(int model) {
 
 void calc_pause_linked() {
 	for (int i = 0; i < MAX_CALCS; i++) {
-		if (calcs[i].active && link_connected_hub(i)) {
+		if (calcs[i].active && calcs[i].running && link_connected_hub(i)) {
 			calc_set_running(&calcs[i], FALSE);
 		}
 	}
@@ -620,24 +620,23 @@ void calc_pause_linked() {
 
 void calc_unpause_linked() {
 	for (int i = 0; i < MAX_CALCS; i++) {
-		if (calcs[i].active && link_connected_hub(i)) {
+		if (calcs[i].active && !calcs[i].running && link_connected_hub(i)) {
 			calc_set_running(&calcs[i], TRUE);
 		}
 	}
 }
 
 void calc_set_running(LPCALC lpCalc, BOOL running) {
-	if (!link_connected_hub(lpCalc->slot)) {
-		lpCalc->running = running;
-	}
-
-	if (running) {
-		calc_unpause_linked();
-	} else {
-		calc_pause_linked();
-	}
-
+	lpCalc->running = running;
 	notify_event(lpCalc, ROM_RUNNING_EVENT);
+
+	if (link_connected_hub(lpCalc->slot)) {
+		if (running) {
+			calc_unpause_linked();
+		} else {
+			calc_pause_linked();
+		}
+	}
 }
 
 int calc_run_all(void) {
