@@ -30,20 +30,17 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			if (hImageList) {
 				ImageList_Destroy(hImageList);
 			}
+
+#define KEYLIST_BUTTON_WIDTH 60
+#define KEYLIST_BUTTON_HEIGHT 60
 			POINT pt;
-			hImageList = ImageList_Create(60, 60, ILC_COLOR32 | ILC_MASK, 8*7, 0);
+			hImageList = ImageList_Create(KEYLIST_BUTTON_WIDTH, KEYLIST_BUTTON_HEIGHT, ILC_COLOR32 | ILC_MASK, 8 * 7, 0);
 
-			HDC hdcMask = CreateCompatibleDC(lpMainWindow->hdcButtons);
-			HBITMAP hbmMask = CreateCompatibleBitmap(lpMainWindow->hdcButtons, 60, 60);
-			SelectObject(hdcMask, hbmMask);
-
-			HDC hdcButton = CreateCompatibleDC(lpMainWindow->hdcButtons);
-			HBITMAP hbmButton = CreateCompatibleBitmap(lpMainWindow->hdcButtons, 60, 60);
-			SelectObject(hdcButton, hbmButton);
-
-			RECT r = {0, 0, 60, 60};
-			HBRUSH br = CreateSolidBrush(RGB(0, 255, 0));
+			RECT r = { 0, 0, KEYLIST_BUTTON_WIDTH, KEYLIST_BUTTON_HEIGHT };
 			RECT brect;
+
+			LONG largestWidth = 0;
+			LONG largestHeight = 0;
 
 			for (int group = 0; group < 7; group++) {
 				for (int bit = 0; bit < 8; bit++) {
@@ -53,36 +50,35 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 					LONG rectWidth = brect.right - brect.left;
 					LONG rectHeight = brect.bottom - brect.top;
+					LONG scaleWidth = rectWidth * 3 / 2 / keymap_scale;
+					LONG scaleHeight = rectHeight * 3 / 2 / keymap_scale;
 
-					HDC hdcButton = CreateCompatibleDC(lpMainWindow->hdcButtons);
-					HBITMAP hbm = CreateCompatibleBitmap(lpMainWindow->hdcButtons, r.right, r.bottom);
-					HGDIOBJ hbmOld = SelectObject(hdcButton, hbm);
-					HDC hdcScaledButton = CreateCompatibleDC(lpMainWindow->hdcButtons);
-					HBITMAP hbmScaledButton = CreateCompatibleBitmap(lpMainWindow->hdcButtons, rectWidth, rectHeight);
-					SelectObject(hdcScaledButton, hbmScaledButton);
+					if (scaleWidth > largestWidth) {
+						largestWidth = scaleWidth;
+					}
+					if (scaleHeight > largestHeight) {
+						largestHeight = scaleHeight;
+					}
+					
+					Bitmap bitmapButton(rectWidth, rectHeight, PixelFormat32bppARGB);
+					DrawButtonStateNoSkin(&bitmapButton, lpMainWindow->m_lpBitmapSkin, lpMainWindow->m_lpBitmapKeymap, brect, DBS_COPY);
 
-					FillRect(hdcButton, &r, GetStockBrush(WHITE_BRUSH));
-					DrawButtonStateNoSkin(hdcScaledButton, lpMainWindow->hdcSkin, lpMainWindow->hdcKeymap, brect, DBS_COPY);
-
-					LONG scaleWidth = rectWidth / keymap_scale;
-					LONG scaleHeight = rectHeight / keymap_scale;
-					SetStretchBltMode(hdcButton, HALFTONE);
-					StretchBlt(hdcButton, (r.right - scaleWidth) / 2, (r.bottom - scaleHeight) / 2, scaleWidth, scaleHeight,
-						hdcScaledButton, 0, 0, rectWidth, rectHeight, SRCCOPY);
-						
-					SelectObject(hdcButton, hbmOld);
-					DeleteDC(hdcButton);
+					Bitmap scaledButton(KEYLIST_BUTTON_WIDTH, KEYLIST_BUTTON_HEIGHT);
+					Graphics g(&scaledButton);
+					g.SetInterpolationMode(InterpolationModeHighQuality);
+					Rect destRect((r.right - scaleWidth) / 2, (r.bottom - scaleHeight) / 2, scaleWidth, scaleHeight);
+					g.DrawImage(&bitmapButton, destRect, 0, 0, rectWidth, rectHeight, UnitPixel);
+					HBITMAP hbm;
+					scaledButton.GetHBITMAP(Color::Lime, &hbm);
 
 					ImageList_AddMasked(hImageList, hbm, RGB(0, 255, 0));
 
 					DeleteObject(hbm);
-					DeleteObject(hbmScaledButton);
-					DeleteDC(hdcScaledButton);
 				}
 			}
 
 			ListView_SetView(hListKeys, LV_VIEW_TILE);
-			SIZE size = { 70, 70 };
+			SIZE size = { largestWidth + 10, largestHeight + 10 };
 			LVTILEVIEWINFO ltvi = {0};
 			ltvi.cbSize   = sizeof(ltvi);
 			ltvi.dwFlags  = LVTVIF_FIXEDSIZE;

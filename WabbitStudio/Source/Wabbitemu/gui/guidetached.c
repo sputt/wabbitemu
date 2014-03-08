@@ -77,7 +77,10 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 
 		LPCALC lpCalc = lpMainWindow->lpCalc;
-		return HandleSizeMessage(hwnd, lpMainWindow->hwndDetachedLCD, lpMainWindow, lpCalc, FALSE);
+		RECT rc;
+		GetClientRect(hwnd, &rc);
+		AdjustWindowRect(&rc, WS_CAPTION, FALSE);
+		return HandleSizeMessage(hwnd, lpMainWindow->hwndDetachedLCD, lpMainWindow, lpCalc, FALSE, FALSE, &rc);
 	}
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);

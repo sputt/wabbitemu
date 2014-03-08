@@ -88,13 +88,15 @@ typedef struct MainWindow {
 	HWND hwndKeyListDialog;
 	HWND hwndDebug;
 
-	HDC hdcSkin;
-	HDC hdcButtons;
-	HDC hdcKeymap;
+	Bitmap *m_lpBitmapRenderedSkin;
+	Bitmap *m_lpBitmapSkin;
+	Bitmap *m_lpBitmapKeymap;
 
-	RECT rectSkin;
-	RECT rectLCD;
-	COLORREF FaceplateColor;
+	Rect m_RectSkin;
+	Rect m_RectLCD;
+	// not a color for compatibility
+	COLORREF m_FaceplateColor;
+
 	// custom skin path
 	TCHAR skin_path[256];
 	// custom keymap path
@@ -126,6 +128,7 @@ typedef struct MainWindow {
 	CDropTarget *pDropTarget;
 	BOOL is_archive_only;
 	BOOL is_calc_file;
+	BOOL silent_mode;
 
 	BOOL bTIOSDebug;
 } MainWindow_t, *LPMAINWINDOW;

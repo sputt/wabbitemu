@@ -881,6 +881,9 @@
     <Midl>
       <TypeLibraryName>$(ProjectDir)$(ProjectName).tlb</TypeLibraryName>
     </Midl>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='WindowsPhone8|Win32'">
     <ClCompile>
@@ -1078,6 +1081,9 @@
     <Midl>
       <TypeLibraryName>$(ProjectDir)$(ProjectName).tlb</TypeLibraryName>
     </Midl>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='WindowsPhone8|x64'">
     <ClCompile>

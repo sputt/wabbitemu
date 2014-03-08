@@ -5,6 +5,7 @@ int EnableCutout(LPMAINWINDOW lpMainWindow);
 int DisableCutout(LPMAINWINDOW);
 LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void PositionLittleButtons(HWND, LPMAINWINDOW);
+void UpdateWabbitemuLayeredWindow(LPMAINWINDOW lpMainWindow);
 
 #define g_szSmallClose _T("wabbitclose")
 #define g_szSmallMinimize _T("wabbitminimize")

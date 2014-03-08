@@ -8,11 +8,10 @@
 #include "guisize.h"
 #include "CGdiPlusBitmap.h"
 
-extern BOOL silent_mode;
 extern HINSTANCE g_hInst;
 #define LCD_MARKER_COLOR 0xFFFF0000
 
-BOOL FindLCDRect(BitmapData *bitmapData, RECT *rectLCD) {
+BOOL FindLCDRect(BitmapData *bitmapData, Rect *rectLCD) {
 	int foundX = -1, foundY = -1;
 	// find the top left corner of the screen (marked as a red rectangle)
 	UINT *pixels = (UINT *)bitmapData->Scan0; 
@@ -30,20 +29,20 @@ BOOL FindLCDRect(BitmapData *bitmapData, RECT *rectLCD) {
 	if (foundX == -1 || foundY == -1) {
 		return FALSE;
 	}
-	rectLCD->left = foundX;
-	rectLCD->top = foundY;
+	rectLCD->X = foundX;
+	rectLCD->Y = foundY;
 	//find right edge
 	do {
 		foundX++;
 		pixel = pixels[foundY * bitmapData->Width + foundX];
 	} while (pixel == LCD_MARKER_COLOR);
-	rectLCD->right = foundX--;
+	rectLCD->Width = foundX-- - rectLCD->X;
 	//find left edge
 	do { 
 		foundY++;
 		pixel = pixels[foundY * bitmapData->Width + foundX];
 	} while (pixel == LCD_MARKER_COLOR);
-	rectLCD->bottom = foundY;
+	rectLCD->Height = foundY - rectLCD->Y;
 	return TRUE;
 }
 
@@ -58,7 +57,10 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 
 	if (lpMainWindow->bSkinEnabled) {
 		bChecked = MF_CHECKED;
-		CopyRect(&rc, &lpMainWindow->rectSkin);
+		rc.left = lpMainWindow->m_RectSkin.X;
+		rc.top = lpMainWindow->m_RectSkin.Y;
+		rc.right = lpMainWindow->m_RectSkin.GetRight();
+		rc.bottom = lpMainWindow->m_RectSkin.GetBottom();
 		LONG screenHeight = (LONG) GetSystemMetrics(SM_CYVIRTUALSCREEN);
 		LONG clientHeight = rc.bottom - rc.top;
 		// not checking if you screenWidth < rectWidth
@@ -79,7 +81,6 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 		rc.top = (LONG)(rc.top * lpMainWindow->skin_scale);
 		rc.right = (LONG)(rc.right * lpMainWindow->skin_scale);
 		rc.bottom = (LONG)(rc.bottom * lpMainWindow->skin_scale);
-		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , hMenu != NULL);
 	} else {
 		LPCALC lpCalc = lpMainWindow->lpCalc;
 		bChecked = MF_UNCHECKED;
@@ -97,7 +98,6 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 		// get the height of the status bar and factor that into our total app window height
 		RECT src;
 		GetWindowRect(lpMainWindow->hwndStatusBar, &src);
-		AdjustWindowRect(&rc, (WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~WS_MAXIMIZEBOX, hMenu != NULL);
 		rc.bottom += src.bottom - src.top;
 	}
 
@@ -106,124 +106,55 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 	}
 
 	UINT flags = SWP_NOMOVE;
-	if (!lpMainWindow->bAlwaysOnTop) {
+	if (lpMainWindow->bAlwaysOnTop == FALSE) {
 		flags |= SWP_NOZORDER;
 	}
 
-	if (silent_mode == TRUE) {
+	if (lpMainWindow->silent_mode == TRUE) {
 		flags |= SWP_HIDEWINDOW;
 	} else {
 		flags |= SWP_SHOWWINDOW;
 	}
 
-	SetWindowPos(lpMainWindow->hwndFrame, HWND_TOPMOST, 0, 0, rc.right - rc.left, rc.bottom - rc.top, flags);
+	LONG clientWidth = rc.right - rc.left;
+	LONG clientHeight = rc.bottom - rc.top;
+	AdjustWindowRect(&rc, WS_TILEDWINDOW | WS_CLIPCHILDREN, hMenu != NULL);
+	LONG windowWidth = rc.right - rc.left;
+	LONG windowHeight = rc.bottom - rc.top;
+
+	SetWindowPos(lpMainWindow->hwndFrame, HWND_TOPMOST, 0, 0, windowWidth, windowHeight, flags);
+	SendMessage(lpMainWindow->hwndFrame, WM_SIZE, SIZE_RESTORED, MAKELPARAM(clientWidth, clientHeight));
 }
 
-enum DRAWSKINERROR {
-	ERROR_FACEPLATE = 1,
-	ERROR_SKIN,
-	ERROR_KEYMAP,
-};
-
-DRAWSKINERROR DrawSkin(HDC hdc, LPMAINWINDOW lpMainWindow, Bitmap *m_pBitmapSkin, Bitmap *m_pBitmapKeymap, BOOL drawFaceplate) {
-	if (!m_pBitmapSkin) {
-		return ERROR_SKIN;
+Bitmap *DrawSkin(Bitmap *pBitmapSkin, Bitmap *pBitmapKeymap, Color faceplateColor,
+	BOOL isCutout, double default_skin_scale)
+{
+	if (pBitmapSkin == NULL) {
+		return NULL;
 	}
 
-	if (!m_pBitmapKeymap) {
-		return ERROR_KEYMAP;
+	if (pBitmapKeymap == NULL) {
+		return NULL;
 	}
 
-	HBITMAP hbmSkinOld, hbmKeymapOld;
-	// translate to regular GDI compatibility to simplify coding :/
-	m_pBitmapKeymap->GetHBITMAP(Color::White, &hbmKeymapOld);
-	SelectObject(lpMainWindow->hdcKeymap, hbmKeymapOld);
-	// get the HBITMAP for the skin DONT change the first value, it is necessary for transparency to work
-	m_pBitmapSkin->GetHBITMAP(Color::AlphaMask, &hbmSkinOld);
-	HDC hdcOverlay = CreateCompatibleDC(lpMainWindow->hdcSkin);
-	HBITMAP blankBitmap = CreateCompatibleBitmap(hdc, m_pBitmapSkin->GetWidth(), m_pBitmapSkin->GetHeight());
-	SelectObject(lpMainWindow->hdcSkin, blankBitmap);
-	if (!lpMainWindow->bCutout || !lpMainWindow->bSkinEnabled) {
-		FillRect(lpMainWindow->hdcSkin, &lpMainWindow->rectSkin, GetStockBrush(GRAY_BRUSH));
+	Rect skinRect(0, 0, pBitmapSkin->GetWidth(), pBitmapSkin->GetHeight());
+	Bitmap *renderedSkin = new Bitmap(skinRect.Width, skinRect.Height, PixelFormat32bppARGB);
+	Graphics g(renderedSkin);
+
+	if (!isCutout) {
+		SolidBrush grayBrush(Color::Gray);
+		g.FillRectangle(&grayBrush, skinRect);
 	}
 
-	LONG skinWidth = lpMainWindow->rectSkin.right;
-	LONG skinHeight = lpMainWindow->rectSkin.bottom;
-	if (drawFaceplate) {
-		if (DrawFaceplateRegion(lpMainWindow->hdcSkin, lpMainWindow->default_skin_scale, lpMainWindow->FaceplateColor)) {
-			return ERROR_FACEPLATE;
-		}
+	if (faceplateColor.GetValue() != 0) {
+		SolidBrush faceplateBrush(faceplateColor);
+		Region faceplateRegion(GetFaceplateRegion(default_skin_scale));
+		g.FillRegion(&faceplateBrush, &faceplateRegion);
 	}
 
-	// this needs to be done so we can alpha blend the screen
-	SelectObject(hdcOverlay, hbmSkinOld);
-	BLENDFUNCTION bf;
-	bf.BlendOp = AC_SRC_OVER;
-	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = 255;
-	bf.AlphaFormat = AC_SRC_ALPHA;
-	
-	AlphaBlend(lpMainWindow->hdcSkin, 0, 0, skinWidth, skinHeight, hdcOverlay,
-		lpMainWindow->rectSkin.left, lpMainWindow->rectSkin.top, skinWidth, skinHeight, bf);
-	BitBlt(lpMainWindow->hdcButtons, 0, 0, skinWidth, skinHeight, lpMainWindow->hdcSkin, 0, 0, SRCCOPY);
-	FinalizeButtons(lpMainWindow);
+	g.DrawImage(pBitmapSkin, skinRect);
 
-	if (drawFaceplate) {
-		BITMAPINFOHEADER bih;
-		ZeroMemory(&bih, sizeof(BITMAPINFOHEADER));
-		bih.biSize = sizeof(BITMAPINFOHEADER);
-		bih.biWidth = skinWidth;
-		bih.biHeight = skinHeight;
-		bih.biPlanes = 1;
-		bih.biBitCount = 32;
-		bih.biCompression = BI_RGB;
-		BITMAPINFO bi;
-		bi.bmiHeader = bih;
-		bi.bmiColors[0].rgbBlue = 0;
-		bi.bmiColors[0].rgbGreen = 0;
-		bi.bmiColors[0].rgbRed = 0;
-		bi.bmiColors[0].rgbReserved = 0;
-		// Gets the "bits" from the bitmap and copies them into a buffer
-		// which is pointed to by lpBitmap.
-
-		DWORD dwBmpSize = ((skinWidth * bi.bmiHeader.biBitCount + 31) / 32) * 4 * skinHeight;
-		LPUINT bitmap = (LPUINT) malloc(dwBmpSize);		
-
-		GetDIBits(lpMainWindow->hdcSkin, (HBITMAP)GetCurrentObject(lpMainWindow->hdcButtons, OBJ_BITMAP),
-			0, skinHeight,
-			bitmap,
-			&bi, DIB_RGB_COLORS);
-
-		// this really sucked to figure out, but basically you can't touch
-		// the alpha channel in a bitmap unless you use GetDIBits to get it
-		// in an array, change the highest byte, then reset with SetDIBits
-		// This colors the faceplate that way
-		LPUINT pPixel = bitmap;
-		HRGN rgn = GetFaceplateRegion(lpMainWindow->default_skin_scale);
-		unsigned int x, y;
-		for (y = 0; y < skinHeight; y++) {
-			for (x = 0; x < skinWidth; x++) {
-				if (PtInRegion(rgn, x, skinHeight - y)) {
-					*pPixel |= 0xFF000000;
-				}
-				pPixel++;
-			}
-		}
-
-		SetDIBitsToDevice(lpMainWindow->hdcButtons, 0, 0, skinWidth, skinHeight, 0, 0, 0,
-			skinHeight,
-			bitmap,
-			&bi, DIB_RGB_COLORS);
-		DeleteObject(rgn);
-		free(bitmap);
-	}
-
-	DeleteObject(hbmKeymapOld);
-	DeleteObject(hbmSkinOld);
-	DeleteObject(blankBitmap);
-	DeleteDC(hdcOverlay);
-
-	return (DRAWSKINERROR) ERROR_SUCCESS;
+	return renderedSkin;
 }
 
 // TRUE if success, FALSE if failure
@@ -233,26 +164,24 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 	}
 
 	int skinWidth = 0, skinHeight = 0, keymapWidth = -1, keymapHeight = -1;
-	HDC hdc = GetDC(lpMainWindow->hwndFrame);
-	if (lpMainWindow->hdcKeymap) {
-		DeleteDC(lpMainWindow->hdcKeymap);
+
+	if (lpMainWindow->m_lpBitmapSkin) {
+		delete lpMainWindow->m_lpBitmapSkin;
 	}
 
-	if (lpMainWindow->hdcSkin) {
-		DeleteDC(lpMainWindow->hdcSkin);
+	if (lpMainWindow->m_lpBitmapKeymap) {
+		delete lpMainWindow->m_lpBitmapKeymap;
 	}
 
-	if (lpMainWindow->hdcButtons) {
-		DeleteDC(lpMainWindow->hdcButtons);
+	if (lpMainWindow->m_lpBitmapRenderedSkin) {
+		delete lpMainWindow->m_lpBitmapRenderedSkin;
 	}
 
 	int model = lpMainWindow->lpCalc->model;
-	lpMainWindow->hdcKeymap = CreateCompatibleDC(hdc);
-	lpMainWindow->hdcSkin = CreateCompatibleDC(hdc);
-	lpMainWindow->hdcButtons = CreateCompatibleDC(hdc);
 	//load skin and keymap
 	CGdiPlusBitmapResource hbmSkin, hbmKeymap;
-	Bitmap *m_pBitmapSkin = NULL, *m_pBitmapKeymap = NULL;
+	Bitmap *pBitmapSkin = NULL;
+	Bitmap *pBitmapKeymap = NULL;
 	if (lpMainWindow->bCustomSkin) {
 #ifdef _UNICODE
 		m_pBitmapSkin = new Bitmap(lpCalc->skin_path);
@@ -261,19 +190,19 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 		wchar_t widePath[MAX_PATH];
 		size_t converted;
 		mbstowcs_s(&converted, widePath, lpMainWindow->skin_path, (size_t) ARRAYSIZE(widePath));
-		m_pBitmapSkin = new Bitmap(widePath);
+		pBitmapSkin = new Bitmap(widePath);
 		mbstowcs_s(&converted, widePath, lpMainWindow->keymap_path, (size_t)ARRAYSIZE(widePath));
-		m_pBitmapKeymap = new Bitmap(widePath);
+		pBitmapKeymap = new Bitmap(widePath);
 #endif
 	}
 
-	if (!m_pBitmapSkin || m_pBitmapSkin->GetWidth() == 0 || m_pBitmapKeymap->GetWidth() == 0) {
+	if (!pBitmapSkin || pBitmapSkin->GetWidth() == 0 || pBitmapKeymap->GetWidth() == 0) {
 		if (lpMainWindow->bCustomSkin) {
 			MessageBox(lpMainWindow->hwndFrame, _T("Custom skin failed to load."), _T("Error"), MB_OK);
-			delete m_pBitmapKeymap;
-			delete m_pBitmapSkin;
-			m_pBitmapKeymap = NULL;
-			m_pBitmapSkin = NULL;
+			delete pBitmapKeymap;
+			delete pBitmapSkin;
+			pBitmapKeymap = NULL;
+			pBitmapSkin = NULL;
 			// your skin failed to load, lets disable it and load the normal skin
 			lpMainWindow->bCustomSkin = FALSE;
 		}
@@ -310,18 +239,19 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 				hbmKeymap.Load(_T("TI-83+Keymap"), _T("PNG"), g_hInst);
 				break;
 		}
-		m_pBitmapSkin = hbmSkin.m_pBitmap;
-		m_pBitmapKeymap = hbmKeymap.m_pBitmap;
+
+		pBitmapSkin = hbmSkin.m_pBitmap;
+		pBitmapKeymap = hbmKeymap.m_pBitmap->Clone(0, 0, hbmSkin.m_pBitmap->GetWidth(), hbmSkin.m_pBitmap->GetHeight(), PixelFormat24bppRGB);
 	}
 
-	if (m_pBitmapSkin) {
-		skinWidth = m_pBitmapSkin->GetWidth();
-		skinHeight = m_pBitmapSkin->GetHeight();
+	if (pBitmapSkin) {
+		skinWidth = pBitmapSkin->GetWidth();
+		skinHeight = pBitmapSkin->GetHeight();
 	}
 
-	if (m_pBitmapKeymap) {
-		keymapWidth = m_pBitmapKeymap->GetWidth();
-		keymapHeight = m_pBitmapKeymap->GetHeight();
+	if (pBitmapKeymap) {
+		keymapWidth = pBitmapKeymap->GetWidth();
+		keymapHeight = pBitmapKeymap->GetHeight();
 	}
 
 	if ((skinWidth % SKIN_WIDTH) || (skinHeight % SKIN_HEIGHT) || skinHeight <= 0 || skinWidth <= 0) {
@@ -342,12 +272,12 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 		lpMainWindow->default_skin_scale = (double)SKIN_WIDTH / skinWidth;
 		lpMainWindow->skin_scale = lpMainWindow->skin_scale * lpMainWindow->default_skin_scale;
 		
-		lpMainWindow->rectSkin.right = skinWidth;
-		lpMainWindow->rectSkin.bottom = skinHeight;
+		lpMainWindow->m_RectSkin.Width = skinWidth;
+		lpMainWindow->m_RectSkin.Height = skinHeight;
 		BitmapData *data = new BitmapData;
 		Rect keymapRect(0, 0, keymapWidth, keymapHeight);
-		m_pBitmapKeymap->LockBits(&keymapRect, ImageLockModeRead, PixelFormat32bppARGB, data);
-		BOOL foundScreen = FindLCDRect(data, &lpMainWindow->rectLCD);
+		pBitmapKeymap->LockBits(&keymapRect, ImageLockModeRead, PixelFormat32bppARGB, data);
+		BOOL foundScreen = FindLCDRect(data, &lpMainWindow->m_RectLCD);
 
 		if (!foundScreen) {
 			free(data);
@@ -358,29 +288,27 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 
 		FindButtonsRect(data);
 
-		free(data);
-
+		pBitmapKeymap->UnlockBits(data);
+		delete data;
 	}
 
 	if (lpMainWindow->hwndFrame == NULL) {
 		return FALSE;
 	}
 
-	// set the size of the HDC
-	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, lpMainWindow->rectSkin.right, lpMainWindow->rectSkin.bottom);
-	SelectObject(lpMainWindow->hdcButtons, hbmTemp);
+	lpMainWindow->m_lpBitmapKeymap = pBitmapKeymap;
 	
-	BOOL drawFaceplate = model == TI_84PSE || model == TI_84PCSE && !lpMainWindow->bCustomSkin;
-	switch (DrawSkin(hdc, lpMainWindow, m_pBitmapSkin, m_pBitmapKeymap, drawFaceplate)) {
-		case ERROR_FACEPLATE:
-			MessageBox(lpMainWindow->hwndFrame, _T("Unable to draw faceplate"), _T("Error"), MB_OK);
-			break;
-		case ERROR_SKIN:
-			MessageBox(lpMainWindow->hwndFrame, _T("Unable to load skin resource"), _T("Error"), MB_OK);
-			break;
-		case ERROR_KEYMAP:
-			MessageBox(lpMainWindow->hwndFrame, _T("Unable to load keymap resource"), _T("Error"), MB_OK);
-			break;
+	Color faceplateColor = model == TI_84PSE || model == TI_84PCSE && !lpMainWindow->bCustomSkin ? 
+		Color(0xFF, GetRValue(lpMainWindow->m_FaceplateColor), GetGValue(lpMainWindow->m_FaceplateColor),
+		GetBValue(lpMainWindow->m_FaceplateColor)) : 0;
+	Bitmap *renderedSkin = DrawSkin(pBitmapSkin, pBitmapKeymap, faceplateColor,
+		lpMainWindow->bCutout, lpMainWindow->default_skin_scale);
+	if (renderedSkin == NULL) {
+		MessageBox(lpMainWindow->hwndFrame, _T("Unable to draw skin"), _T("Error"), MB_OK);
+		lpMainWindow->bSkinEnabled = FALSE;
+	} else {
+		lpMainWindow->m_lpBitmapSkin = renderedSkin;
+		lpMainWindow->m_lpBitmapRenderedSkin = renderedSkin->Clone(lpMainWindow->m_RectSkin, PixelFormat32bppARGB);
 	}
 
 	if (lpMainWindow->bCutout && lpMainWindow->bSkinEnabled) {
@@ -392,19 +320,6 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 	}
 
 	UpdateWabbitemuMainWindow(lpMainWindow);
-
-	if (lpMainWindow->bCustomSkin) {
-		if (m_pBitmapKeymap) {
-			delete m_pBitmapKeymap;
-		}
-		if (m_pBitmapSkin) {
-			delete m_pBitmapSkin;
-		}
-	}
-	DeleteObject(hbmTemp);
-	ReleaseDC(lpMainWindow->hwndFrame, hdc);
-
-	SendMessage(lpMainWindow->hwndFrame, WM_SIZE, SIZE_RESTORED, 0);
 
 	return TRUE;
 }

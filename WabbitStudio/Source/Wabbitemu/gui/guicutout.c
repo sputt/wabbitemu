@@ -60,21 +60,7 @@ LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 				row = 13;
 			}
 
-			RECT r;
-			GetWindowRect(hwnd, &r);
-			POINT p;
-			p.x = r.left;
-			p.y = r.top;
-
-			ScreenToClient(hwnd, &p);
-			BitBlt(hdc, 0, 0, 13, 13, lpMainWindow->hdcButtons, p.x, p.y, SRCCOPY);
-
-			BLENDFUNCTION bf;
-			bf.BlendOp = AC_SRC_OVER;
-			bf.BlendFlags = 0;
-			bf.SourceConstantAlpha = 160;
-			bf.AlphaFormat = 0;
-			AlphaBlend(hdc, 0, 0, 13, 13, hdcButtons, col, row, 13, 13, bf );
+			BitBlt(hdc, 0, 0, 13, 13, hdcButtons, col, row, SRCCOPY);
 
 			DeleteDC(hdcButtons);
 			DeleteObject(hbmButtons);
@@ -177,6 +163,47 @@ static LRESULT CALLBACK TestButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
+void UpdateWabbitemuLayeredWindow(LPMAINWINDOW lpMainWindow) {
+	BLENDFUNCTION bf;
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = 255;
+	bf.AlphaFormat = AC_SRC_ALPHA;
+
+	u_int width = lpMainWindow->m_RectSkin.Width;
+	u_int height = lpMainWindow->m_RectSkin.Height;
+
+	RECT rc;
+	GetClientRect(lpMainWindow->hwndFrame, &rc);
+	POINT rectTopLeft;
+	rectTopLeft.x = rc.left;
+	rectTopLeft.y = rc.top;
+
+	POINT ptSrc = { 0, 0 };
+	SIZE size;
+	size.cx = (LONG)(width * lpMainWindow->skin_scale);
+	size.cy = (LONG)(height * lpMainWindow->skin_scale);
+
+	HDC hScreen = GetDC(NULL);
+	// resize the skin to be correct size
+	HDC hdc = CreateCompatibleDC(hScreen);
+	HBITMAP hBmp = CreateCompatibleBitmap(hScreen, size.cx, size.cy);
+	SelectObject(hdc, hBmp);
+	Graphics graphics(hdc);
+	Rect rect(0, 0, size.cx, size.cy);
+	graphics.SetInterpolationMode(InterpolationModeLowQuality);
+	Status status = graphics.DrawImage(lpMainWindow->m_lpBitmapRenderedSkin, rect, 0, 0, width, height, UnitPixel);
+	BOOL done = UpdateLayeredWindow(lpMainWindow->hwndFrame, hScreen, NULL, &size, hdc, &ptSrc, RGB(255, 255, 255), &bf, ULW_ALPHA);
+	DWORD error;
+	if (!done) {
+		error = GetLastError();
+	}
+
+	DeleteObject(hBmp);
+	DeleteDC(hdc);
+	ReleaseDC(NULL, hScreen);
+}
+
 /* Using a layered window, make the frame window transparent.
  * Also create buttons to allow minimize and close while in skin mode
  */
@@ -188,15 +215,6 @@ int EnableCutout(LPMAINWINDOW lpMainWindow) {
 	LPCALC lpCalc = lpMainWindow->lpCalc;
 	DwmSetAttrib SetAttrib = NULL;
 	BOOL disableTransition = TRUE;
-
-	BLENDFUNCTION bf;
-	bf.BlendOp = AC_SRC_OVER;
-	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = 255;
-	bf.AlphaFormat = AC_SRC_ALPHA;
-
-	u_int width = lpMainWindow->rectSkin.right;
-	u_int height = lpMainWindow->rectSkin.bottom;
 
 	int scale = DEFAULT_SKIN_SCALE;
 
@@ -227,37 +245,11 @@ int EnableCutout(LPMAINWINDOW lpMainWindow) {
 	ShowWindow(lpMainWindow->hwndLCD, TRUE);
 	SetWindowTheme(lpMainWindow->hwndLCD, L" ", L" ");
 
-	RECT rc;
-	GetClientRect(lpMainWindow->hwndFrame, &rc);
-	POINT rectTopLeft;
-	rectTopLeft.x = rc.left;
-	rectTopLeft.y = rc.top;
-
-	POINT ptSrc = {0 , 0};
-	SIZE size;
-	size.cx = (LONG)(width * lpMainWindow->skin_scale);
-	size.cy = (LONG)(height * lpMainWindow->skin_scale);
-
 	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
 	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, WS_VISIBLE);
 
-	HDC hScreen = GetDC(NULL);
-	// resize the skin to be correct size
-	HDC hdc = CreateCompatibleDC(hScreen);
-	HBITMAP hBmp = CreateCompatibleBitmap(hScreen, size.cx, size.cy);
-	HBITMAP hBmpOld = (HBITMAP)SelectObject(hdc, hBmp);
-	AlphaBlend(hdc, 0, 0, size.cx, size.cy, lpMainWindow->hdcButtons, 0, 0, width, height, bf);
-	BOOL done = UpdateLayeredWindow(lpMainWindow->hwndFrame, hScreen, NULL, &size, hdc, &ptSrc, RGB(255, 255, 255), &bf, ULW_ALPHA);
-	DWORD error;
-	if (!done) {
-		error = GetLastError();
-	}
-
-	DeleteDC(hdc);
-	ReleaseDC(NULL, hScreen);
+	UpdateWabbitemuLayeredWindow(lpMainWindow);
 	UpdateWindow(lpMainWindow->hwndLCD);
-
-	BitBlt(lpMainWindow->hdcButtons, 0, 0, lpMainWindow->rectSkin.right, lpMainWindow->rectSkin.bottom, lpMainWindow->hdcSkin, 0, 0, SRCCOPY);
 
 	// Create the two buttons that appear when the skin is cutout
 	if (lpMainWindow->hwndSmallClose == NULL) {
@@ -353,7 +345,7 @@ int DisableCutout(LPMAINWINDOW lpMainWindow) {
 
 
 	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_EXSTYLE, 0);
-	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, (WS_TILEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));
+	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, (WS_TILEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN));
 
 	if (lpMainWindow->hwndSmallClose != NULL) {
 		DestroyWindow(lpMainWindow->hwndSmallClose);

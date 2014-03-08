@@ -261,7 +261,9 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 		Add_SE_Delay(cpu);
 
 	//int min_wait = MICROSECONDS(lcd->lcd_delay);
-	if (lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->base.last_tstate)) {
+	if (cpu->pio.model >= TI_83P && 
+		lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->base.last_tstate))
+	{
 		cpu->output = FALSE;
 		cpu->input = FALSE;
 		return;
