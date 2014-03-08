@@ -290,14 +290,15 @@ TCHAR *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, TCHAR *buffer) {
 		TCHAR *p = buffer;
 		BOOL is_imaginary = FALSE;
 	TI_num_extract:
-		;
 		uint8_t type = mem_read(cpu->mem_c, ptr++);
 		int exp = (TCHAR) (mem_read(cpu->mem_c, ptr++) ^ 0x80);
-		if (exp == -128) exp = 128;
+		if (exp == -128) {
+			exp = 128;
+		}
 		
 		u_char FP[14];
 		int i, sigdigs = 1;
-		for (i = 0; i < 14; i+=2, ptr++) {
+		for (i = 0; i < 14; i += 2, ptr++) {
 			u_char next_byte = mem_read(cpu->mem_c, ptr);
 			FP[i] = next_byte >> 4;
 			FP[i + 1] = next_byte & 0x0F;
@@ -310,8 +311,11 @@ TCHAR *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, TCHAR *buffer) {
 			}
 		}
 		
-		if (type & 0x80) *p++ = '-';
-		else if (is_imaginary) *p++ = '+';
+		if (type & 0x80) {
+			*p++ = '-';
+		} else if (is_imaginary) {
+			*p++ = '+';
+		}
 		
 		if (abs(exp) > 14) {
 			for (i = 0; i < sigdigs; i++) {
@@ -319,10 +323,10 @@ TCHAR *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, TCHAR *buffer) {
 				if ((i + 1) < sigdigs && i == 0) *p++ = '.';
 			}
 
-			StringCbPrintf(p, _tcslen(p), _T("*10^%d"), exp);
+			StringCbPrintf(p, 32, _T("*10^%d"), exp);
 			p += _tcslen(p);
 		} else {
-			for (i = min(exp + 1, 0); i < sigdigs || i < (exp + 1); i++) {
+			for (i = min(exp, 0); i < sigdigs || i < (exp + 1); i++) {
 				*p++ = (i >= 0 ? FP[i] : 0) + '0';
 				if ((i + 1) < sigdigs && i == exp) {
 					*p++ = '.';

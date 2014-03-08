@@ -20,8 +20,8 @@ unsigned int GetDefaultKeymapScale(int model) {
 
 LRESULT HandleMoveMessage(HWND hwnd, LPMAINWINDOW lpMainWindow) {
 	if (lpMainWindow->bCutout && lpMainWindow->bSkinEnabled) {
-		UINT left = (LONG)(lpMainWindow->rectLCD.left * lpMainWindow->skin_scale);
-		UINT top = (LONG)(lpMainWindow->rectLCD.top * lpMainWindow->skin_scale);
+		UINT left = (LONG)(lpMainWindow->m_RectLCD.X * lpMainWindow->skin_scale);
+		UINT top = (LONG)(lpMainWindow->m_RectLCD.Y * lpMainWindow->skin_scale);
 
 		HDWP hdwp = BeginDeferWindowPos(3);
 		RECT rc;
@@ -35,23 +35,24 @@ LRESULT HandleMoveMessage(HWND hwnd, LPMAINWINDOW lpMainWindow) {
 	return 0;
 }
 
-LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPMAINWINDOW lpMainWindow, LPCALC lpCalc, BOOL skinEnabled) {
+LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPMAINWINDOW lpMainWindow, LPCALC lpCalc,
+	BOOL isSkinEnabled, BOOL isCutout, RECT *newClientRect)
+{
 	if (lpCalc == NULL) {
 		return 0;
 	}
 
 	u_int width;
 	HMENU hMenu = GetMenu(hwnd);
-	RECT rc, clientRect;
-	CopyRect(&rc, &lpMainWindow->rectLCD);
+	RECT clientRect;
 
 	UINT default_scale = GetDefaultKeymapScale(lpCalc->model);
-	UINT scale = skinEnabled ? default_scale : max(lpMainWindow->scale, default_scale);
+	UINT scale = isSkinEnabled ? default_scale : max(lpMainWindow->scale, default_scale);
 	int silentMode = silent_mode ? SWP_HIDEWINDOW : 0;
 	LONG lcdWidth, lcdHeight;
-	if (skinEnabled) {
-		lcdWidth = (rc.right - rc.left) / default_scale;
-		lcdHeight = (rc.bottom - rc.top) / default_scale;
+	if (isSkinEnabled) {
+		lcdWidth = lpMainWindow->m_RectLCD.Width / default_scale;
+		lcdHeight = lpMainWindow->m_RectLCD.Height / default_scale;
 		lcdWidth = (LONG)(lcdWidth * lpMainWindow->skin_scale);
 		lcdHeight = (LONG)(lcdHeight *lpMainWindow->skin_scale);
 	} else {
@@ -70,28 +71,31 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPMAINWINDOW lpMainWindow, LP
 	GetClientRect(hwnd, &clientRect);
 	width = clientRect.right - clientRect.left;
 
-	if (!skinEnabled) {
-		rc.top = 0;
-		rc.left = 0;
+	POINT lcdPoint;
+	if (!isSkinEnabled) {
+		lcdPoint.x = 0;
+		lcdPoint.y = 0;
 		if (width > lcdWidth) {
 			// if the lcd is less than client, center the lcd
-			rc.left += (width - lcdWidth) / 2;
+			lcdPoint.x += (width - lcdWidth) / 2;
 		}
-	} else if (lpMainWindow->bCutout) {
-		UINT left = (LONG)(lpMainWindow->rectLCD.left * lpMainWindow->skin_scale);
-		UINT top = (LONG)(lpMainWindow->rectLCD.top * lpMainWindow->skin_scale);
+	} else if (isCutout) {
+		UINT left = (LONG)(lpMainWindow->m_RectLCD.GetLeft() * lpMainWindow->skin_scale);
+		UINT top = (LONG)(lpMainWindow->m_RectLCD.GetTop() * lpMainWindow->skin_scale);
 
+		RECT rc;
 		GetWindowRect(hwnd, &rc);
-		OffsetRect(&rc, left, top);
+		lcdPoint.x = left + rc.left;
+		lcdPoint.y = top + rc.top;
 	} else {
-		rc.left = (LONG)(rc.left * lpMainWindow->skin_scale);
-		rc.top = (LONG)(rc.top * lpMainWindow->skin_scale);
+		lcdPoint.x = (LONG)(lpMainWindow->m_RectLCD.GetLeft() * lpMainWindow->skin_scale);
+		lcdPoint.y = (LONG)(lpMainWindow->m_RectLCD.GetTop() * lpMainWindow->skin_scale);
 	}
 
-	MoveWindow(hwndLcd, rc.left, rc.top, lcdWidth, lcdHeight, TRUE);
+	MoveWindow(hwndLcd, lcdPoint.x, lcdPoint.y, lcdWidth, lcdHeight, TRUE);
 
 	// force little buttons to be correct
-	if (lpMainWindow->bCutout && skinEnabled) {
+	if (lpMainWindow->bCutout && isSkinEnabled) {
 		PositionLittleButtons(hwnd, lpMainWindow);
 	}
 
@@ -119,10 +123,7 @@ LRESULT HandleLCDSizingMessage(HWND hwnd, HWND hwndStatusBar, LPMAINWINDOW lpMai
 
 	// Adjust for border and menu
 	RECT rc = {0, 0, 0, 0};
-	AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW, FALSE);
-	if (GetMenu(hwnd) != NULL) {
-		rc.bottom += GetSystemMetrics(SM_CYMENU);
-	}
+	AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW, GetMenu(hwnd) != NULL);
 
 	RECT src;
 	if (hwndStatusBar != NULL) {
@@ -279,11 +280,13 @@ LRESULT HandleSkinSizingMessage(HWND hwnd, LPMAINWINDOW lpMainWindow, WPARAM wPa
 	LONG AdjustHeight = ClientNewHeight - ClientOldHeight;
 
 	double SkinRatio = (double)SKIN_WIDTH / (double)SKIN_HEIGHT;
+	double CurrentRatio = (double)ClientNewWidth / (double)ClientNewHeight;
 	LONG DiffWidth = 0;
 	LONG DiffHeight = 0;
 	if (AdjustWidth > AdjustHeight) {
 		DiffHeight = (SKIN_HEIGHT * ClientNewWidth / SKIN_WIDTH) - ClientNewHeight;
-	} else if (AdjustHeight > AdjustWidth) {
+	} else if ((AdjustHeight > AdjustWidth) || (CurrentRatio - SkinRatio) > DBL_EPSILON) {
+		// second case may be caused by being sent WM_SIZE (eg aero snap)
 		DiffWidth = (SKIN_WIDTH * ClientNewHeight / SKIN_HEIGHT) - ClientNewWidth;
 	}
 

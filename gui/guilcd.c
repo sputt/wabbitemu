@@ -29,8 +29,6 @@ extern HINSTANCE g_hInst;
 extern HDC hdcSkin;
 extern BOOL is_exiting;
 
-static int alphablendfail = 0;
-
 BITMAPINFO *bi = NULL; 
 BITMAPINFO *colorbi = NULL;
 
@@ -304,6 +302,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 	}
 	RECT rc;
 	GetClientRect(hwnd, &rc);
+	Rect *rectLCD = &lpMainWindow->m_RectLCD;
 
 	HDC hdcOverlay, hdc = CreateCompatibleDC(hdcDest);
 	HBITMAP bmpBuf;
@@ -317,6 +316,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 		SelectObject(hdc, bmpBuf);
 	}
 
+	Graphics graphics(hdc);
 	BITMAPINFO *info = lpCalc->model >= TI_84PCSE ? colorbi : bi;
 	
 	BOOL lcd_scaled = (rc.right - rc.left) % lcd->display_width;
@@ -338,7 +338,6 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 		LONG clientScaleWidth = widthScale * lcd->display_width;
 		LONG clientScaleHeight = heightScale * lcd->height;
 
-		Graphics graphics(hdc);
 		Bitmap lcdBitmap(info, screen);
 		Bitmap scaledBitmap((INT)clientScaleWidth, (INT)clientScaleHeight, &graphics);
 		Bitmap *bitmap = &lcdBitmap;
@@ -390,24 +389,28 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 		DeleteDC(hdcOverlay);
 	}
 
-	bf.SourceConstantAlpha = 108;
-
 	POINT pt;
 	pt.x = rc.left;
 	pt.y = rc.top;
 	ClientToScreen(hwnd, &pt);
 	ScreenToClient(GetParent(hwnd), &pt);
 
-	if (alphablendfail < 100 && lpMainWindow->bAlphaBlendLCD && lcd->active != FALSE &&
+	if (lpMainWindow->bAlphaBlendLCD && lcd->active != FALSE &&
 		!lcd_scaled && lpCalc->model < TI_84PCSE) 
 	{
-		if (AlphaBlend(	hdc, rc.left, rc.top, rc.right,  rc.bottom,
-			lpMainWindow->hdcSkin, lpMainWindow->rectLCD.left, lpMainWindow->rectLCD.top,
-			lpMainWindow->rectLCD.right - lpMainWindow->rectLCD.left,
-			lpMainWindow->rectLCD.bottom - lpMainWindow->rectLCD.top, bf) == FALSE) {
-			//printf("alpha blend 2 failed\n");
-			alphablendfail++;
-		}
+		ImageAttributes attr;
+		const ColorMatrix colorMatrix = {
+			1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.424f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.0f, 1.0f
+		};
+		attr.SetColorMatrix(&colorMatrix, ColorMatrixFlagsDefault, ColorAdjustTypeBitmap);
+		Rect rect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+		graphics.DrawImage(lpMainWindow->m_lpBitmapSkin, rect, 
+			rectLCD->GetLeft(), rectLCD->GetTop(), rectLCD->Width, rectLCD->Height,
+			UnitPixel, &attr);
 	}
 
 #ifdef WITH_AVI

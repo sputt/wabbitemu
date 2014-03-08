@@ -254,8 +254,7 @@ POINT GetStartPoint() {
 LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 	RECT r;
 
-	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
-	r.bottom += GetSystemMetrics(SM_CYMENU);
+	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, TRUE);
 
 	// this is to do some checks on some bad registry settings we may have saved
 	// its also good for multiple monitors, in case wabbit was on a monitor that
@@ -283,11 +282,12 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 	}
 
 	lpMainWindow->lpCalc = lpCalc;
+	lpMainWindow->silent_mode = silent_mode;
 	lpMainWindow->hwndFrame = CreateWindowEx(
 		WS_EX_APPWINDOW | (lpMainWindow->bCutout ? WS_EX_LAYERED : 0),
 		g_szAppName,
 		_T("Wabbitemu"),
-		(WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */),
+		WS_TILEDWINDOW | WS_CLIPCHILDREN,
 		startPoint.x, startPoint.y, r.right - r.left, r.bottom - r.top,
 		NULL, 0, g_hInst, (LPVOID) lpMainWindow);
 
@@ -295,16 +295,10 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 		return NULL;
 	}
 
-	HDC hdc = GetDC(lpMainWindow->hwndFrame);
-	lpMainWindow->hdcSkin = CreateCompatibleDC(hdc);
-
-	GetClientRect(lpMainWindow->hwndFrame, &r);
 	lpCalc->running = TRUE;
 	lpCalc->speed = 100;
 	HMENU hmenu = GetMenu(lpMainWindow->hwndFrame);
 	CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
-
-	ReleaseDC(lpMainWindow->hwndFrame, hdc);
 	return lpMainWindow;
 }
 
@@ -1033,35 +1027,39 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			int grayred = (int)(((double)lpMainWindow->GIFGradientWidth / GIFGRAD_PEAK) * 50);
 			HDC hWindow = GetDC(hwnd);
-			DrawGlow(lpMainWindow->hdcSkin, hWindow, &screen, RGB(127 - grayred, 127 - grayred, 127 + grayred),
+			Graphics g(lpMainWindow->m_lpBitmapRenderedSkin);
+			DrawGlow(g.GetHDC(), hWindow, &screen, RGB(127 - grayred, 127 - grayred, 127 + grayred),
 				lpMainWindow->GIFGradientWidth, lpMainWindow->bSkinEnabled, 1.0 / lpMainWindow->skin_scale);
 			ReleaseDC(hwnd, hWindow);
 			InflateRect(&screen, lpMainWindow->GIFGradientWidth, lpMainWindow->GIFGradientWidth);
 			ValidateRect(hwnd, &screen);
 		}
 
-		if (lpMainWindow->bSkinEnabled && lpMainWindow->bCutout) {
-			ValidateRect(hwnd, NULL);
-			return 0;
-		}
-
 		PAINTSTRUCT ps;
-		RECT rc;
-		GetClientRect(hwnd, &rc);
 		HDC hdc = BeginPaint(hwnd, &ps);
 
 		if (lpMainWindow->bSkinEnabled) {
-			LONG windowWidth = rc.right - rc.left;
-			LONG windowHeight = rc.bottom - rc.top;
-			LONG skinWidth = lpMainWindow->rectSkin.right - lpMainWindow->rectSkin.left;
-			LONG skinHeight = lpMainWindow->rectSkin.bottom - lpMainWindow->rectSkin.top;
+			if (lpMainWindow->bCutout) {
+				// still pretty resource intensive
+				//UpdateWabbitemuLayeredWindow(lpMainWindow);
+			} else {
+				LONG updateWidth = ps.rcPaint.right - ps.rcPaint.left;
+				LONG updateHeight = ps.rcPaint.bottom - ps.rcPaint.top;
 
-			SetStretchBltMode(hdc, HALFTONE);
-			StretchBlt(hdc, 0, 0, windowWidth, windowHeight,
-				lpMainWindow->hdcButtons, 0, 0, skinWidth, skinHeight, SRCCOPY);
-			BitBlt(lpMainWindow->hdcButtons, 0, 0, skinWidth, skinHeight, lpMainWindow->hdcSkin, 0, 0, SRCCOPY);
+				double skin_scale = lpMainWindow->skin_scale;
+				Rect updateRect(ps.rcPaint.left, ps.rcPaint.top, updateWidth, updateHeight);
+				Graphics g(hdc);
+				g.SetInterpolationMode(InterpolationModeLowQuality);
+				g.DrawImage(lpMainWindow->m_lpBitmapRenderedSkin, updateRect,
+					ps.rcPaint.left / skin_scale, ps.rcPaint.top / skin_scale,
+					updateWidth / skin_scale, updateHeight / skin_scale, UnitPixel);
+			}
+
+			delete lpMainWindow->m_lpBitmapRenderedSkin;
+			lpMainWindow->m_lpBitmapRenderedSkin = lpMainWindow->m_lpBitmapSkin
+				->Clone(lpMainWindow->m_RectSkin, PixelFormat32bppARGB);
 		} else {
-			FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
+			FillRect(hdc, &ps.rcPaint, GetStockBrush(GRAY_BRUSH));
 		}
 
 		ReleaseDC(hwnd, hdc);
@@ -1085,15 +1083,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				lpNewWindow->bSkinEnabled = lpMainWindow->bSkinEnabled;
 				lpNewWindow->bCutout = lpMainWindow->bCutout;
 				lpNewWindow->scale = lpMainWindow->scale;
-				lpNewWindow->FaceplateColor = lpMainWindow->FaceplateColor;
+				lpNewWindow->m_FaceplateColor = lpMainWindow->m_FaceplateColor;
 				lpNewWindow->bAlphaBlendLCD = lpMainWindow->bAlphaBlendLCD;
+				gui_frame_update(lpNewWindow);
+
 				if (lpCalcNew->model < TI_84PCSE) {
 					LCD_t *lcd = (LCD_t *) lpCalcNew->cpu.pio.lcd;
 					lcd->shades = ((LCD_t *)lpCalc->cpu.pio.lcd)->shades;
-				}
-
-				if (!lpCalcNew->cpu.pio.lcd->active) {
-					calc_turn_on(lpCalcNew);
 				}
 
 				RECT rc;
@@ -1102,7 +1098,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				GetWindowRect(lpMainWindow->hwndFrame, &newrc);
 				SetWindowPos(lpNewWindow->hwndFrame, NULL, newrc.left + rc.right - rc.left, newrc.top, 0, 0,
 					SWP_NOSIZE | SWP_NOZORDER);
-				gui_frame_update(lpNewWindow);
 			} else {
 				calc_slot_free(lpCalcNew);
 				SendMessage(hwnd, WM_COMMAND, IDM_HELP_WIZARD, 0);
@@ -1360,6 +1355,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						group = 2;
 						bit = 0;
 						break;
+					case '^':
+						press_alpha = FALSE;
+						group = 1;
+						bit = 5;
+						break;
+					case '/':
+						press_alpha = FALSE;
+						group = 1;
+						bit = 4;
+						break;
+					case '*':
+						press_alpha = FALSE;
+						group = 1;
+						bit = 3;
+						break;
+					case '-':
+						press_alpha = FALSE;
+						group = 1;
+						bit = 2;
+						break;
+					case '+':
+						press_alpha = FALSE;
+						group = 1;
+						bit = 1;
+						break;
 					}
 				}
 
@@ -1384,6 +1404,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						press_key(lpCalc, 5, 7);
 					}
 				} else if (shiftFlags & SHIFT_ALPHA) {
+					press_key(lpCalc, 5, 7);
 					press_key(lpCalc, 5, 7);
 					// if lowercase is enabled we have to press alpha again
 					if (isLowercaseEnabled) {
@@ -1680,14 +1701,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		LONG x = (LONG)(pt.x / lpMainWindow->skin_scale);
 		LONG y = (LONG)(pt.y / lpMainWindow->skin_scale);
-		COLORREF c = GetPixel(lpMainWindow->hdcKeymap, x, y);
-		if (GetRValue(c) == 0xFF) {
+		Color c;
+		lpMainWindow->m_lpBitmapKeymap->GetPixel(x, y, &c);
+		if (c.GetRed() == 0xFF) {
 			FinalizeButtons(lpMainWindow);
 			return 0;
 		}
 
-		group = GetGValue(c) >> 4;
-		bit	= GetBValue(c) >> 4;
+		group = c.GetGreen() >> 4;
+		bit	= c.GetBlue() >> 4;
 		LogKeypress(lpMainWindow, lpCalc->model, group, bit);
 		if (group == KEYGROUP_ON && bit == KEYBIT_ON){
 			kp->on_pressed |= KEY_MOUSEPRESS;
@@ -1727,10 +1749,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		// convert to the scale it is displayed at
 		LONG x = (LONG)(pt.x / lpMainWindow->skin_scale);
 		LONG y = (LONG)(pt.y / lpMainWindow->skin_scale);
-		COLORREF c = GetPixel(lpMainWindow->hdcKeymap, x, y);
-		if (GetRValue(c) == 0xFF) return 0;
-		group	= GetGValue(c) >> 4;
-		bit		= GetBValue(c) >> 4;
+		Color c;
+		lpMainWindow->m_lpBitmapKeymap->GetPixel(x, y, &c);
+		if (c.GetRed() == 0xFF) return 0;
+		group	= c.GetGreen() >> 4;
+		bit		= c.GetBlue() >> 4;
 
 		if (group == KEYGROUP_ON && bit == KEYBIT_ON) {
 			lpCalc->cpu.pio.keypad->on_pressed ^= KEY_LOCKPRESS;
@@ -1758,10 +1781,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		if (lpMainWindow->bSkinEnabled) {
 			return HandleSkinSizingMessage(hwnd, lpMainWindow, wParam, (RECT *)lParam);
 		}
-		return HandleLCDSizingMessage(hwnd, lpMainWindow->hwndStatusBar, lpMainWindow, wParam, (RECT *)lParam, lpCalc->cpu.pio.lcd->width);
+
+		return HandleLCDSizingMessage(hwnd, lpMainWindow->hwndStatusBar, lpMainWindow,
+			wParam, (RECT *)lParam, lpCalc->cpu.pio.lcd->width);
 	}
-	case WM_SIZE:
-		return HandleSizeMessage(hwnd, lpMainWindow->hwndLCD, lpMainWindow, lpCalc, lpMainWindow->bSkinEnabled);
+	case WM_SIZE: {
+		RECT rc = { 0 };
+		rc.bottom = HIWORD(lParam);
+		rc.right = LOWORD(lParam);
+		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW, TRUE);
+		if (lpMainWindow->bSkinEnabled) {
+			HandleSkinSizingMessage(hwnd, lpMainWindow, WMSZ_BOTTOMRIGHT, &rc);
+		} else {
+			HandleLCDSizingMessage(hwnd, lpMainWindow->hwndStatusBar, lpMainWindow,
+				WMSZ_BOTTOMRIGHT, &rc, lpCalc->cpu.pio.lcd->width);
+		}
+
+		LONG newWidth = rc.right - rc.left;
+		LONG newHeight = rc.bottom - rc.top;
+		SetWindowPos(hwnd, NULL, 0, 0, newWidth, newHeight, SWP_NOMOVE | SWP_NOZORDER);
+
+		return HandleSizeMessage(hwnd, lpMainWindow->hwndLCD, lpMainWindow, lpCalc,
+			lpMainWindow->bSkinEnabled, lpMainWindow->bCutout, &rc);
+	}
 	case WM_MOVE: {
 		if (lpCalc == NULL) {
 			break;
@@ -1862,11 +1904,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 	case WM_DESTROY: {
-		DeleteDC(lpMainWindow->hdcKeymap);
-		DeleteDC(lpMainWindow->hdcSkin);
-		lpMainWindow->hdcKeymap = NULL;
-		lpMainWindow->hdcSkin = NULL;
-
 		if (lpMainWindow->hwndLCD != NULL) {
 			DestroyWindow(lpMainWindow->hwndLCD);
 			lpMainWindow->hwndLCD = NULL;
@@ -1907,7 +1944,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			case HTRIGHT:
 			case HTTOP:
 			case HTBOTTOM:
-				return HTCLIENT;
+				return HTNOWHERE;
 			default:
 				if (htRet == HTCLIENT) {
 					break;
@@ -1926,7 +1963,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			ScreenToClient(hwnd, &pt);
 			LONG x = (LONG)(pt.x / lpMainWindow->skin_scale);
 			LONG y = (LONG)(pt.y / lpMainWindow->skin_scale);
-			if (GetRValue(GetPixel(lpMainWindow->hdcKeymap, x, y)) != 0xFF) {
+			Color c;
+			lpMainWindow->m_lpBitmapKeymap->GetPixel(x, y, &c);
+			if (c.GetRed() != 0xFF) {
 				return htRet;
 			}
 

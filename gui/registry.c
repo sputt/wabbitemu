@@ -309,7 +309,7 @@ HRESULT LoadRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCal
 	lpMainWindow->scale = (int)QueryWabbitKey(_T("screen_scale"));
 	StringCbCopy(skinScale, sizeof(skinScale), (TCHAR *) QueryWabbitKey(_T("skin_scale")));
 	lpMainWindow->skin_scale = atof(skinScale);
-	lpMainWindow->FaceplateColor = (COLORREF)QueryWabbitKey(_T("faceplate_color"));
+	lpMainWindow->m_FaceplateColor = (COLORREF)QueryWabbitKey(_T("faceplate_color"));
 	exit_save_state = (BOOL) QueryWabbitKey(_T("exit_save_state"));
 	new_calc_on_load_files = (BOOL) QueryWabbitKey(_T("load_files_first"));
 	do_backups = (BOOL) QueryWabbitKey(_T("do_backups"));
@@ -422,7 +422,7 @@ HRESULT SaveRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCal
 		SaveWabbitKey(_T("check_updates"), REG_DWORD, &check_updates);
 		SaveWabbitKey(_T("show_whats_new"), REG_DWORD, &show_whats_new);
 
-		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpMainWindow->FaceplateColor);
+		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpMainWindow->m_FaceplateColor);
 		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpMainWindow->bCustomSkin);
 		SaveWabbitKey(_T("skin_path"), REG_SZ, &lpMainWindow->skin_path);
 		SaveWabbitKey(_T("keymap_path"), REG_SZ, &lpMainWindow->keymap_path);

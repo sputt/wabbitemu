@@ -446,7 +446,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(chkAlphaBlend, lpMainWindow->bAlphaBlendLCD);
 			Button_SetCheck(chkCustom, lpMainWindow->bCustomSkin);
 			SendMessage(hColorSelect, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) LoadBitmap(g_hInst, _T("SkinPicker")));
-			backupFaceplate = lpMainWindow->FaceplateColor;
+			backupFaceplate = lpMainWindow->m_FaceplateColor;
 			Edit_SetText(hSkinText, lpMainWindow->skin_path);
 			Edit_SetText(hKeyText, lpMainWindow->keymap_path);
 			return 0;
@@ -488,7 +488,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 							GetCursorPos(&ptCursor);
 							ScreenToClient(hColorSelect, &ptCursor);
 							COLORREF selectedColor = GetPixel(hColorPicker, ptCursor.x, ptCursor.y);
-							lpMainWindow->FaceplateColor = selectedColor;
+							lpMainWindow->m_FaceplateColor = selectedColor;
 							gui_frame_update(lpMainWindow);
 							SetFocus(hwndDlg);
 							break;
@@ -504,7 +504,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 		case WM_NOTIFY: {
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_RESET: {
-					lpMainWindow->FaceplateColor = backupFaceplate;
+					lpMainWindow->m_FaceplateColor = backupFaceplate;
 					gui_frame_update(lpMainWindow);
 					return TRUE;
 				}
@@ -514,7 +514,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 					lpMainWindow->bCustomSkin = Button_GetCheck(chkCustom);
 
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
-					backupFaceplate = lpMainWindow->FaceplateColor;
+					backupFaceplate = lpMainWindow->m_FaceplateColor;
 
 					TCHAR lpStrFile[MAX_PATH];
 					Edit_GetText(hSkinText, lpStrFile, sizeof(lpStrFile));
