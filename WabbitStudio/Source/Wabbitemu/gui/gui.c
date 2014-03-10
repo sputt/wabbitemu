@@ -423,8 +423,8 @@ void destroy_calc_frame(LPMAINWINDOW lpMainWindow) {
 		return;
 	}
 
-	_Module.DestroyFrame(lpMainWindow);
 	DestroyWindow(lpMainWindow->hwndFrame);
+	_Module.DestroyFrame(lpMainWindow);
 }
 
 /*
@@ -776,8 +776,6 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 			return E_UNEXPECTED;
 		}
 
-		m_lpMainWindows.push_back(lpMainWindow);
-
 		lpCalc = lpMainWindow->lpCalc;
 		if (lpCalc == NULL) {
 			return E_UNEXPECTED;
@@ -1086,6 +1084,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				lpNewWindow->bSkinEnabled = lpMainWindow->bSkinEnabled;
 				lpNewWindow->bCutout = lpMainWindow->bCutout;
 				lpNewWindow->scale = lpMainWindow->scale;
+				lpNewWindow->skin_scale = lpMainWindow->skin_scale;
 				lpNewWindow->m_FaceplateColor = lpMainWindow->m_FaceplateColor;
 				lpNewWindow->bAlphaBlendLCD = lpMainWindow->bAlphaBlendLCD;
 				gui_frame_update(lpNewWindow);
@@ -1892,8 +1891,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 
 				destroy_calc_frame(lpMainWindow);
-				CancelFileThreadSend(lpCalc);
-				calc_slot_free(lpCalc);
+
 				if (calc_count() == 0) {
 					PostQuitMessage(0);
 				}
@@ -1926,11 +1924,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			lpMainWindow->hwndSmallMinimize = NULL;
 		}
 
+		CancelFileThreadSend(lpCalc);
+		calc_slot_free(lpCalc);
+
 		//if (link_connected(lpCalc->slot))
 		//	link_disconnect(&lpCalc->cpu);
-
-		free(lpMainWindow);
-		lpMainWindow = NULL;
 		return 0;
 	}
 	case WM_NCHITTEST:

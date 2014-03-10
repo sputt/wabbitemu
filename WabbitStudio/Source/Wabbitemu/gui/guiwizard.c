@@ -112,6 +112,11 @@ LPMAINWINDOW DoWizardSheet(HWND hwndOwner) {
 	psh.pfnCallback = NULL;
 	psh.pszIcon = NULL;
 	PropertySheet(&psh);
+
+	if (error) {
+		return NULL;
+	}
+
 	return lpMainWindow;
 }
 
@@ -546,6 +551,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 					lpMainWindow = create_calc_frame_register_events();
 					if (lpMainWindow == NULL || lpMainWindow->lpCalc == NULL) {
+						destroy_calc_frame(lpMainWindow);
+						lpMainWindow = NULL;
 						MessageBox(hwnd, _T("Unable to create main window"), _T("Error"), MB_OK | MB_ICONERROR);
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 						return TRUE;
@@ -555,6 +562,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					TCHAR hexFile[MAX_PATH];
 					DWORD error = ExtractBootFree(model, hexFile);
 					if (error) {
+						destroy_calc_frame(lpMainWindow);
+						lpMainWindow = NULL;
 						MessageBox(hwnd, _T("Unable to extract boot page"), _T("Error"), MB_OK);
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 						break;
@@ -562,6 +571,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 					error = (DWORD) calc_init_model(lpCalc, model, NULL);
 					if (error) {
+						destroy_calc_frame(lpMainWindow);
+						lpMainWindow = NULL;
 						MessageBox(hwnd, _T("Unable to create new calc"), _T("Error"), MB_OK);
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 						break;
@@ -577,6 +588,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					FILE *file;
 					_tfopen_s(&file, hexFile, _T("rb"));
 					if (file == NULL) {
+						destroy_calc_frame(lpMainWindow);
+						lpMainWindow = NULL;
 						MessageBox(hwnd, _T("Unable to open the boot page"), _T("Error"), MB_OK);
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 						break;
@@ -593,6 +606,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						if (tifile == NULL || tifile->type != FLASH_TYPE || tifile->flash == NULL ||
 							tifile->flash->type != FLASH_TYPE_OS)
 						{
+							destroy_calc_frame(lpMainWindow);
+							lpMainWindow = NULL;
 							MessageBox(hwnd, _T("Error: OS file is corrupt or invalid"), _T("Error"), MB_OK);
 							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 							break;
@@ -1024,6 +1039,8 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 
 					lpMainWindow = create_calc_frame_register_events();
 					if (lpMainWindow == NULL || lpMainWindow->lpCalc == NULL) {
+						destroy_calc_frame(lpMainWindow);
+						lpMainWindow = NULL;
 						MessageBox(hwnd, _T("Unable to create main window"), _T("Error"), MB_OK | MB_ICONERROR);
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 						return TRUE;
@@ -1032,6 +1049,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					LPCALC lpCalc = lpMainWindow->lpCalc;
 					DWORD error = (DWORD) calc_init_model(lpCalc, model, NULL);
 					if (error) {
+						destroy_calc_frame(lpMainWindow);
 						MessageBox(hwnd, _T("Unable to init calc"), _T("Error"), MB_OK);
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 						break;
@@ -1049,6 +1067,8 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						if (tifile == NULL || tifile->type != FLASH_TYPE || tifile->flash == NULL ||
 							tifile->flash->type != FLASH_TYPE_OS) 
 						{
+							destroy_calc_frame(lpMainWindow);
+							lpMainWindow = NULL;
 							MessageBox(hwnd, _T("Error: OS file is corrupt or invalid"), _T("Error"), MB_OK);
 							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 							break;
@@ -1076,6 +1096,8 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 
 					error = write_boot_page(lpCalc, browse, boot_page, boot_page2);
 					if (error) {
+						destroy_calc_frame(lpMainWindow);
+						lpMainWindow = NULL;
 						MessageBox(NULL, _T("Error invalid first boot page file"), _T("Error"), MB_OK);
 						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 						break;
@@ -1086,6 +1108,8 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						Edit_GetText(hEditVar2, browse, MAX_PATH);
 						error = write_boot_page(lpCalc, browse, boot_page, boot_page2);
 						if (error) {
+							destroy_calc_frame(lpMainWindow);
+							lpMainWindow = NULL;
 							MessageBox(NULL, _T("Error invalid second boot page file"), _T("Error"), MB_OK);
 							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
 							break;
