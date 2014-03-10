@@ -138,6 +138,7 @@ HWND gui_debug_hwnd(LPMAINWINDOW lpMainWindow);
 LPMAINWINDOW gui_frame(LPCALC lpCalc);
 void GetFileCurrentVersionString(TCHAR *buf, size_t len);
 LPMAINWINDOW create_calc_frame_register_events();
+void destroy_calc_frame(LPMAINWINDOW lpMainWindow);
 extern HACCEL haccelmain;
 
 void RegisterWindowClasses(void);

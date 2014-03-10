@@ -457,9 +457,12 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	case TI_84PSE:
 		start_page = 0x60;
 		break;
-	default:
+	case TI_83P:
+	case TI_84PCSE:
 		start_page = 0x00;
 		break;
+	default:
+		return LERR_MODEL;
 	}
 
 	for (i = 0; i < ARRAYSIZE(tifile->flash->data); i++) {
