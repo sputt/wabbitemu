@@ -19,6 +19,8 @@
 #define GRAY_DISPLAY_SIZE 	(DISPLAY_SIZE * 8)
 // Frames to spread gray generation over
 #define LCD_GRAY_SPREAD		6.0
+#define LCD_MAX_CONTRAST	40
+#define LCD_MID_CONTRAST	(LCD_MAX_CONTRAST / 2)
 
 /* 
  * Maximum shades the LCD will be able to

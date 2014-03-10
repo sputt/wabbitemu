@@ -704,7 +704,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				LPCALC lpCalc = lpDebugInfo->lpCalc;
 				calc_reset(lpCalc);
 				HWND hTab = GetDisasmPaneHWND(lpDebugInfo, TabCtrl_GetCurSel(lpDebugInfo->hdisasm));
-				DisasmGotoAddress(hTab, 0);
+				Debug_GotoAddr(hTab, 0);
 				Debug_UpdateWindow(hwnd);
 				break;
 			}
@@ -986,7 +986,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
 				free(pnmhdr);
 				HWND hTab = GetDisasmPaneHWND(lpDebugInfo, TabCtrl_GetCurSel(lpDebugInfo->hdisasm));
-				DisasmGotoAddress(hTab, (int) lParam);
+				Debug_GotoAddr(hTab, lParam);
 				break;
 			}
 			case DB_REGULAR_MEM_GOTO_ADDR: {
@@ -999,7 +999,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				free(pnmhdr);
 				int tabIndex = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
 				HWND hTab = GetMemPaneHWND(lpDebugInfo, tabIndex);
-				MemGotoAddress(hTab, (int)lParam);
+				Debug_GotoAddr(hTab, lParam);
 				break;
 			}
 			case DB_DISASM_GOTO_ADDR: {
@@ -1020,7 +1020,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				int addr = (waddr->addr % PAGE_SIZE) + waddr->page * PAGE_SIZE;
 				int tabIndex = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
 				HWND hTab = GetDisasmPaneHWND(lpDebugInfo, tabIndex);
-				DisasmGotoAddress(hTab, addr);
+				Debug_GotoAddr(hTab, addr);
 				break;
 			}
 			case DB_MEM_GOTO_ADDR: {
@@ -1040,7 +1040,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				int addr = (waddr->addr % PAGE_SIZE) + waddr->page * PAGE_SIZE;
 				int tabIndex = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
 				HWND hTab = GetMemPaneHWND(lpDebugInfo, tabIndex);
-				MemGotoAddress(hTab, addr);
+				Debug_GotoAddr(hTab, addr);
 				break;
 			}
 			case DB_BREAKPOINT:
@@ -1079,7 +1079,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				calc_set_running(lpCalc, FALSE);
 				int index = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
 				HWND hTab = GetDisasmPaneHWND(lpDebugInfo, index);
-				DisasmGotoAddress(hTab, lpCalc->cpu.pc);
+				Debug_GotoAddr(hTab, lpCalc->cpu.pc);
 				Debug_UpdateWindow(hwnd);
 				break;
 			}

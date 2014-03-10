@@ -121,21 +121,6 @@ static VALUE_FORMAT GetValueFormat(mp_settings *mps) {
 	return format;
 }
 
-void MemGotoAddress(HWND hwnd, int addr) {
-	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	mp_settings *mps = (mp_settings *)lpTabInfo->tabInfo;
-	SCROLLINFO si;
-	si.cbSize = sizeof(SCROLLINFO);
-	si.fMask = SIF_POS;
-	si.nPos = mps->addr;
-	SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-
-	mps->addr = addr;
-	mps->sel = addr;
-
-	Debug_UpdateWindow(hwnd);
-}
-
 static waddr_t GetWaddr(mempane_settings *mps, unsigned int addr) {
 	waddr_t waddr = { 0 };
 	switch (mps->type) {
@@ -921,7 +906,20 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				}
-				MemGotoAddress(hwnd, goto_addr);
+				Debug_GotoAddr(hwnd, goto_addr);
+			}
+			case DB_GOTO_ADDR: {
+				int addr = (int)lParam;
+				SCROLLINFO si;
+				si.cbSize = sizeof(SCROLLINFO);
+				si.fMask = SIF_POS;
+				si.nPos = mps->addr;
+				SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
+				mps->addr = addr;
+				mps->sel = addr;
+
+				Debug_UpdateWindow(hwnd);
 			}
 			}
 			return 0;

@@ -63,6 +63,7 @@ class CWabbitemu;
 #define DB_RESUME       2
 #define DB_GOTO_RESULT	3
 #define DB_SPRITE_CLOSE 3
+#define DB_GOTO_ADDR	4
 
 #define REG_UPDATE		1
 

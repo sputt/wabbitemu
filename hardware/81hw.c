@@ -31,10 +31,11 @@ static void port2(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		//HACK: still not sure exactly how this works :P
-		lcd->base.contrast = lcd->base_level - 19 + cpu->bus;
-		if (lcd->base.contrast > 64)
-			lcd->base.contrast = 64;
+		lcd->base.contrast = cpu->bus & 0x1F;
+		if (lcd->base.contrast >= LCD_MAX_CONTRAST) {
+			lcd->base.contrast = LCD_MAX_CONTRAST - 1;
+		}
+
 		cpu->output = FALSE;
 	}
 	return;

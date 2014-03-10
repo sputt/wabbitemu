@@ -14,14 +14,10 @@ typedef struct KEYPROG {
 	int bit;
 } keyprog_t;
 
-//shhh..Redefine for sake of ease
-#define VKF_EQUAL	0xBB
-#define VKF_COMMA	0xBC
-#define VKF_MINUS	0xBD
-#define VKF_PERIOD	0xBE
-#define VKF_LBRACKET 0xDB
-#define VKF_RBRACKET 0xDD
-#define VKF_QUOTE	0xDE
+#define MAX_KEY_MAPPINGS 256
+#define VK_EQUAL	VK_OEM_PLUS
+#define VK_LBRACKET VK_OEM_4
+#define VK_RBRACKET VK_OEM_6
 
 keypad_t *keypad_init();
 void keypad(CPU_t *, device_t *);

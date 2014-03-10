@@ -3,6 +3,7 @@
 #include "guidebug.h"
 #include "dbdisasm.h"
 #include "dbtoolbar.h"
+#include "dbcommon.h"
 #include "dbfinddialog.h"
 #include "core.h"
 #include "guicontext.h"
@@ -72,7 +73,7 @@ void sprint_data(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 }
 
 void sprint_command(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
-	MyDrawText(lpCalc, hdc, r, zinf, REGULAR, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+	MyDrawText(lpCalc, hdc, r, zinf, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
 }
 
 void sprint_size(LPCALC, HDC hdc, Z80_info_t *zinf, RECT *r) {
@@ -99,20 +100,6 @@ void sprint_clocks(LPCALC, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	}
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
-}
-
-void DisasmGotoAddress(HWND hwnd, int addr) {
-	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
-	SCROLLINFO si;
-	si.cbSize = sizeof(SCROLLINFO);
-	si.fMask = SIF_POS;
-	si.nPos = addr;
-	SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-
-	SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, addr), 0);
-	dps->nSel = addr;
-	Debug_UpdateWindow(hwnd);
 }
 
 static int GetMaxAddr(dp_settings *dps) {
@@ -246,10 +233,14 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 
 	disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, cpu->pc), 1, bTIOSDebug, &zinflocal);
 
+	const double five_seconds = 5.0;
 	if (cpu->halt) {
 		if (cpu->iff1) {
-			while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && cpu->halt == TRUE )
+			while ((tc_elapsed(cpu->timer_c) - time) < five_seconds &&
+				cpu->halt == TRUE)
+			{
 				CPU_step(cpu);
+			}
 		} else {
 			cpu->halt = FALSE;
 		}
@@ -260,7 +251,9 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 		if (cpu->sp != old_stack) {
 			double time = tc_elapsed(cpu->timer_c);
 			uint16_t old_sp = cpu->sp;
-			while ((tc_elapsed(cpu->timer_c) - time) < 5.0 && !had_exe_violation) {
+			while ((tc_elapsed(cpu->timer_c) - time) < five_seconds &&
+				!had_exe_violation)
+			{
 				uint16_t old_pc = cpu->pc;
 				CPU_step(cpu);
 
@@ -282,8 +275,11 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 	} else {
 		for (i = 0; i < ARRAYSIZE(usable_commands); i++) {
 			if (zinflocal.index == usable_commands[i]) {
-				while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && cpu->pc != (zinflocal.waddr.addr + zinflocal.size))
+				while ((tc_elapsed(cpu->timer_c) - time) < five_seconds &&
+					cpu->pc != (zinflocal.waddr.addr + zinflocal.size))
+				{
 					CPU_step(cpu);
+				}
 				return;
 			}
 		}
@@ -1173,8 +1169,26 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					if (dps->type == REGULAR) {
 						dps->lpCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
 					} else {
-						// TODO: consider if we try swapping pages here
-						dps->lpCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
+						waddr_t waddr = dps->zinf[dps->iSel].waddr;
+						u_int i;
+						for (i = 0; i < 4; i++) {
+							bank_t bank = dps->lpCalc->mem_c.banks[i];
+							if (bank.page == waddr.page && waddr.is_ram == bank.ram) {
+								dps->lpCalc->cpu.pc = (uint16_t)(mc_base(waddr.addr) + i * PAGE_SIZE);
+								break;
+							}
+						}
+
+						if (i == 4) {
+							TCHAR *pageType = waddr.is_ram ? _T("RAM") : _T("Flash");
+							TCHAR msg[256];
+							int bank = waddr.is_ram ? 2 : 1;
+							StringCbPrintf(msg, sizeof(msg), _T("Swap %s page %02X into bank %d?"), pageType, waddr.page, bank);
+							if (MessageBox(hwnd, msg, _T("Swap page?"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
+								change_page(&dps->lpCalc->mem_c, bank, waddr.page, waddr.is_ram);
+								dps->lpCalc->cpu.pc = (uint16_t)(mc_base(waddr.addr) + bank * PAGE_SIZE);
+							}
+						}
 					}
 					
 					cycle_pcs(dps);
@@ -1595,7 +1609,21 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						break;
 					}
 					}
-					DisasmGotoAddress(hwnd, goto_addr);
+
+					Debug_GotoAddr(hwnd, goto_addr);
+					break;
+				}
+				case DB_GOTO_ADDR: {
+					int addr = (int)lParam;
+					SCROLLINFO si;
+					si.cbSize = sizeof(SCROLLINFO);
+					si.fMask = SIF_POS;
+					si.nPos = addr;
+					SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
+					SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, addr), 0);
+					dps->nSel = addr;
+					Debug_UpdateWindow(hwnd);
 					break;
 				}
 			}

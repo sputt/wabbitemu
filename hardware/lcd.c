@@ -8,9 +8,9 @@
  * Differing interpretations of contrast require that
  * each model has its own base contrast level. 
  */
-#define BASE_LEVEL_83PSE	48
-#define BASE_LEVEL_83P		55
-#define BASE_LEVEL_83		43
+#define BASE_LEVEL_83P		24
+#define BASE_LEVEL_83		30
+#define TRUCOLOR(color, bits) ((color) * (0xFF / ((1 << (bits)) - 1)))
 
 /* 
  * Column and Row Driver opcodes, opcode masks, and data masks
@@ -69,9 +69,7 @@ static void LCD_command(CPU_t *cpu, device_t *dev);
 static void LCD_data(CPU_t *cpu, device_t *dev);
 
 #define NORMAL_DELAY 60		//tstates
-//#define MICROSECONDS(xx) (((cpu->timer_c->freq * 10 / MHZ_6) * xx) / 10)
 #define MICROSECONDS(xx) (((cpu->timer_c->freq * 10 / MHZ_6) * NORMAL_DELAY) / 10) + (xx - NORMAL_DELAY)
-//static FILE *log;
 
 /* 
  * Initialize LCD for a given CPU
@@ -91,28 +89,24 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	lcd->base.bytes_per_pixel = 1;
 	
 	switch (model) {
-		case TI_82:
-		case TI_83:
-			lcd->base_level = BASE_LEVEL_83;
-			break;
-		//v2 of the 81 will come in as an 82/83
-		case TI_81:
-		case TI_85:
-		case TI_86:
-			lcd->base_level = BASE_LEVEL_83P;
-			lcd->base.contrast = lcd->base_level;
-			break;
-		case TI_73:
-		case TI_83P:
-			lcd->base_level = BASE_LEVEL_83P;
-			break;
-		case TI_83PSE:
-		case TI_84P:
-			lcd->base_level = BASE_LEVEL_83PSE;
-			break;
-		default:
-			lcd->base_level = BASE_LEVEL_83P;
-			break;
+	case TI_82:
+	case TI_83:
+		lcd->base_level = BASE_LEVEL_83;
+		break;
+	case TI_73:
+	case TI_83P:
+	case TI_83PSE:
+	case TI_84P:
+	case TI_84PSE:
+		lcd->base_level = BASE_LEVEL_83P;
+		break;
+	//v2 of the 81 will come in as an 82/83
+	case TI_81:
+	case TI_85:
+	case TI_86:
+	default:
+		lcd->base_level = 0;
+		break;
 	}
 
 	lcd->base.height = 64;
@@ -194,22 +188,19 @@ static void Add_SE_Delay(CPU_t *cpu) {
  */
 static void LCD_command(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
-	if (cpu->pio.model > TI_83P)
+	if (cpu->pio.model > TI_83P) {
 		Add_SE_Delay(cpu);
-	//int min_wait = MICROSECONDS(lcd->lcd_delay);
+	}
+
 	if (cpu->pio.model >= TI_83P && lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->base.last_tstate)) {
 		cpu->output = FALSE;
 		if (cpu->input) {
 			cpu->input = FALSE;
-			//this is set so that the sign flag will be properly set to indicate an error
+			// this is set so that the sign flag will be properly 
+			// set to indicate an error
 			cpu->bus = 0x80;
 		}
 	}
-	/*char buffer[1010];
-	sprintf(buffer, "%d\n", cpu->timer_c->tstates);
-	OutputDebugString(buffer);
-	sprintf(buffer, "%d\n", cpu->pc);
-	OutputDebugString(buffer);*/
 
 	if (cpu->output) {
 		lcd->base.last_tstate = tc_tstates(cpu->timer_c);
@@ -240,7 +231,7 @@ static void LCD_command(CPU_t *cpu, device_t *dev) {
 				lcd->base.x = CRD_DATA(SXE);
 				break;
 			CRD_CASE(SCE):
-				lcd->base.contrast = CRD_DATA(SCE);
+				lcd->base.contrast = CRD_DATA(SCE) - lcd->base_level;
 				break;
 		}
 		cpu->output = FALSE;
@@ -437,17 +428,23 @@ u_char *LCD_update_image(LCD_t *lcd) {
 	LCDBase_t *lcdBase = (LCDBase_t *) lcd;
 	u_char *screen = (u_char *) malloc(GRAY_DISPLAY_SIZE);
 	ZeroMemory(screen, GRAY_DISPLAY_SIZE);
-	int level = abs((int) lcdBase->contrast - (int) lcd->base_level);
-	int base = (lcdBase->contrast - 54) * 24;
-	if (base < 0) {
-		base = 0;
+
+	int bits = 0;
+	int n = lcd->shades;
+	while (n > 0) {
+		bits++;
+		n >>= 1;
 	}
 
-	if (level > 12) {
-		level = 0;
-	} else {
-		level = (12 - level) * (255 - base) / lcd->shades / 12;
+	int alpha = ((lcd->base.contrast % LCD_MID_CONTRAST) * 100 / LCD_MID_CONTRAST);
+	int contrast_color = 0xFF;
+	if (lcd->base.contrast < LCD_MID_CONTRAST) {
+		alpha = 100 - alpha;
+		contrast_color = 0x00;
 	}
+
+	int alpha_overlay = (alpha * contrast_color / 100);
+	int inverse_alpha = 100 - alpha;
 
 	u_int row, col;
 	for (row = 0; row < LCD_HEIGHT; row++) {
@@ -456,7 +453,7 @@ u_char *LCD_update_image(LCD_t *lcd) {
 			u_int i;
 			
 			for (i = 0; i < lcd->shades; i++) {
-				u_int u = lcd->queue[i][row * 16 + col];
+				u_int u = lcd->queue[i][row * LCD_MEM_WIDTH + col];
 				p7 += u & 1; u >>= 1;
 				p6 += u & 1; u >>= 1;
 				p5 += u & 1; u >>= 1;
@@ -468,14 +465,14 @@ u_char *LCD_update_image(LCD_t *lcd) {
 			}
 			
 			u_char *scol = &screen[row * LCD_WIDTH + col * 8];
-			scol[0] = (u_char)(p0 * level + base);
-			scol[1] = (u_char)(p1 * level + base);
-			scol[2] = (u_char)(p2 * level + base);
-			scol[3] = (u_char)(p3 * level + base);
-			scol[4] = (u_char)(p4 * level + base);
-			scol[5] = (u_char)(p5 * level + base);
-			scol[6] = (u_char)(p6 * level + base);
-			scol[7] = (u_char)(p7 * level + base);
+			scol[0] = alpha_overlay + TRUCOLOR(p0, bits) * inverse_alpha / 100;
+			scol[1] = alpha_overlay + TRUCOLOR(p1, bits) * inverse_alpha / 100;
+			scol[2] = alpha_overlay + TRUCOLOR(p2, bits) * inverse_alpha / 100;
+			scol[3] = alpha_overlay + TRUCOLOR(p3, bits) * inverse_alpha / 100;
+			scol[4] = alpha_overlay + TRUCOLOR(p4, bits) * inverse_alpha / 100;
+			scol[5] = alpha_overlay + TRUCOLOR(p5, bits) * inverse_alpha / 100;
+			scol[6] = alpha_overlay + TRUCOLOR(p6, bits) * inverse_alpha / 100;
+			scol[7] = alpha_overlay + TRUCOLOR(p7, bits) * inverse_alpha / 100;
 		}
 	}
 

@@ -8,8 +8,6 @@
 
 static double timer_freq[4] = { 1.0 / 800.0, 1.0 / 400.0, 3.0 / 800.0, 1.0 / 200.0 };
 
-//this would make it impossible to open multiple 86s...
-//static int screen_addr = 0xFC00;
 static void port10(CPU_t *, device_t *);
 
 // 86 screen offset
@@ -36,11 +34,11 @@ static void port2(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		//lcd->contrast ranges from 24 - 64
-		//HACK: still not sure exactly how this works :P
-		lcd->base.contrast = lcd->base_level - 15 + cpu->bus;
-		if (lcd->base.contrast > 64)
-			lcd->base.contrast = 64;
+		lcd->base.contrast = (cpu->bus & 0x1F) + 16;
+		if (lcd->base.contrast >= LCD_MAX_CONTRAST) {
+			lcd->base.contrast = LCD_MAX_CONTRAST - 1;
+		}
+
 		cpu->output = FALSE;
 	}
 	return;

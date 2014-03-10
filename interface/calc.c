@@ -18,10 +18,6 @@
 #include "colorlcd.h"
 #include "savestate.h"
 
-#ifdef _WINDOWS
-#include "CWabbitemu.h"
-#endif
-
 #define FRAME_SUBDIVISIONS 1024
 
 const TCHAR *CalcModelTxt[] = {

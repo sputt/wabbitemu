@@ -20,8 +20,12 @@ public:
 	HRESULT AddRequiredFormat(FORMATETC *pFormatEtc);
 	HRESULT AddAcceptedFormat(FORMATETC *pFormatEtc);
 
+	SEND_FLAG DropMemoryTarget(HWND hwnd);
+
 	CDropTarget(HWND);
 	~CDropTarget();
+
+	POINT m_DropPt;
 
 private:
 	LONG m_lRefCount;
@@ -40,5 +44,3 @@ private:
 
 void RegisterDropWindow(HWND hwnd,   IDropTarget **ppDropTarget);
 void UnregisterDropWindow(HWND hwnd, IDropTarget *pDropTarget);
-
-SEND_FLAG DropMemoryTarget(HWND);
