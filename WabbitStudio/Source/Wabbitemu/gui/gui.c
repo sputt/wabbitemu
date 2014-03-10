@@ -77,7 +77,6 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 HINSTANCE g_hInst;
 HACCEL hacceldebug;
 HACCEL haccelmain;
-POINT drop_pt;
 BOOL gif_anim_advance;
 BOOL silent_mode = FALSE;
 BOOL is_exiting = FALSE;
@@ -113,7 +112,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 
-void gui_draw(LPCALC lpCalc, LPVOID lParam) {
+void gui_draw(LPCALC, LPVOID lParam) {
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
 	if (lpMainWindow->hwndLCD != NULL) {
 		InvalidateRect(lpMainWindow->hwndLCD, NULL, FALSE);
@@ -1050,9 +1049,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				Rect updateRect(ps.rcPaint.left, ps.rcPaint.top, updateWidth, updateHeight);
 				Graphics g(hdc);
 				g.SetInterpolationMode(InterpolationModeLowQuality);
-				g.DrawImage(lpMainWindow->m_lpBitmapRenderedSkin, updateRect,
-					ps.rcPaint.left / skin_scale, ps.rcPaint.top / skin_scale,
-					updateWidth / skin_scale, updateHeight / skin_scale, UnitPixel);
+				g.DrawImage(lpMainWindow->m_lpBitmapRenderedSkin,
+					updateRect,
+					(INT) (ps.rcPaint.left / skin_scale),
+					(INT) (ps.rcPaint.top / skin_scale),
+					(INT) (updateWidth / skin_scale), 
+					(INT) (updateHeight / skin_scale),
+					UnitPixel);
 			}
 
 			delete lpMainWindow->m_lpBitmapRenderedSkin;
@@ -1296,8 +1299,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				BOOL press_alpha = !isdigit(num);
 				int group = 0, bit = 0;
 				keyprog_t *keys = lpCalc->model == TI_86 || lpCalc->model == TI_85 ? keysti86 : keysti83;
-				for (int i = 0; i < 256; i++) {
-					if (keys[i].vk == toupper(num)) {
+				for (int i = 0; i < MAX_KEY_MAPPINGS; i++) {
+					if (keys[i].vk == (UINT) toupper(num)) {
 						group = keys[i].group;
 						bit = keys[i].bit;
 						break;
@@ -1308,6 +1311,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					press_alpha = FALSE;
 					group = 3;
 					bit = 0;
+				} else if (num == '-') {
+					press_alpha = FALSE;
+					group = 1;
+					bit = 2;
 				}
 
 				if (group == 0 && bit == 0) {
@@ -1369,11 +1376,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						press_alpha = FALSE;
 						group = 1;
 						bit = 3;
-						break;
-					case '-':
-						press_alpha = FALSE;
-						group = 1;
-						bit = 2;
 						break;
 					case '+':
 						press_alpha = FALSE;
@@ -1640,16 +1642,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 		}
 
-		int group, bit;
-		POINT pt;
 		BOOL repostMessage = FALSE;
 		keypad_t *kp = lpCalc->cpu.pio.keypad;
 
 		ReleaseCapture();
 		KillTimer(hwnd, KEY_TIMER);
 
-		for (group = 0; group < 7; group++) {
-			for (bit = 0; bit < 8; bit++) {
+		for (int group = 0; group < 7; group++) {
+			for (int bit = 0; bit < 8; bit++) {
 				if (kp->last_pressed[group][bit] - lpCalc->cpu.timer_c->tstates >= MIN_KEY_DELAY || !lpCalc->running) {
 					kp->keys[group][bit] &= (~KEY_MOUSEPRESS);
 				} else {
@@ -1737,7 +1737,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		int group,bit;
 		POINT pt;
-		keypad_t *kp = (keypad_t *) (&lpCalc->cpu)->pio.devices[1].aux;
+		keypad_t *kp = lpCalc->cpu.pio.keypad;
 
 		pt.x	= GET_X_LPARAM(lParam);
 		pt.y	= GET_Y_LPARAM(lParam);
@@ -1886,9 +1886,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					SaveRegistrySettings(lpMainWindow, lpCalc);
 
-				}
-
-				if (calc_count() == 1) {
 					is_exiting = TRUE;
 					free(link_hub[MAX_CALCS]);
 					link_hub[MAX_CALCS] = NULL;

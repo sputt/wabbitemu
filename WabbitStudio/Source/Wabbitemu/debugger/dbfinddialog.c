@@ -52,7 +52,7 @@ static waddr_t * FindValue(find_dialog_params_t params, int valueToFind, BOOL se
 		}
 	} else {
 		if (params.type == REGULAR) {
-			waddr = addr16_to_waddr(&lpCalc->mem_c, params.start_addr + 1);
+			waddr = addr16_to_waddr(&lpCalc->mem_c, (uint16_t)(params.start_addr + 1));
 		} else {
 			waddr = addr32_to_waddr(params.start_addr + 1, params.type == RAM);
 		}

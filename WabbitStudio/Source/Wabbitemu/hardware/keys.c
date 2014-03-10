@@ -246,7 +246,7 @@ static keyprog_t keygrps[256] = {
 	{RIGHT, 0, 2} // Right Arrow
 };
 #else
-keyprog_t defaultkeysti83[256] = {
+keyprog_t defaultkeysti83[MAX_KEY_MAPPINGS] = {
 #ifdef _WINDOWS
 	{ 'A' , 5 , 6 },
 	{ 'B' , 4 , 6 },
@@ -290,14 +290,14 @@ keyprog_t defaultkeysti83[256] = {
 	{ '8' , 3 , 3 },
 	{ '9' , 2 , 3 },
 	{ VK_RETURN , 1 , 0 },
-	{ VKF_PERIOD , 3 , 0 },
-	{ VKF_COMMA , 4 , 4 },
+	{ VK_OEM_PERIOD, 3, 0 },
+	{ VK_OEM_COMMA, 4, 4 },
 	{ VK_ADD , 1 , 1 },
 	{ VK_SUBTRACT , 1 , 2 },
 	{ VK_MULTIPLY , 1 , 3 },
 	{ VK_DIVIDE , 1 , 4 },
-	{ VKF_LBRACKET , 3 , 4 },
-	{ VKF_RBRACKET , 2 , 4 },
+	{ VK_LBRACKET , 3 , 4 },
+	{ VK_RBRACKET , 2 , 4 },
 	{ VK_F1 , 6 , 4 },
 	{ VK_F2 , 6 , 3 },
 	{ VK_F3 , 6 , 2 },
@@ -307,14 +307,14 @@ keyprog_t defaultkeysti83[256] = {
 	{ VK_LSHIFT , 6 , 5 },			// l shift
 	{ VK_CONTROL, 5 , 7 },			// l control
 	{ VK_RSHIFT , 1 , 6 },
-	{ VKF_MINUS , 2 , 0 },
-	{ VKF_EQUAL , 4 , 7 },
-	{ VK_PRIOR , 4 , 6 },
-	{ VK_NEXT , 3 , 6 },
+	{ VK_OEM_MINUS, 2, 0 },
+	{ VK_EQUAL  , 4 , 7 },
+	{ VK_PRIOR  , 4 , 6 },
+	{ VK_NEXT   , 3 , 6 },
 	{ VK_INSERT , 2 , 6 },
 	{ VK_DELETE , 6 , 7 },
-	{ VK_HOME , 5 , 6 },
-	{ VK_END , 3 , 7 },
+	{ VK_HOME   , 5 , 6 },
+	{ VK_END    , 3 , 7 },
 #ifndef _DEBUG
 	{ VK_NUMPAD0 , 4 , 0 },
 #endif
@@ -338,7 +338,7 @@ keyprog_t defaultkeysti83[256] = {
 #endif
 	{ -1, -1, -1},
 };
-keyprog_t defaultkeysti86[256] = {
+keyprog_t defaultkeysti86[MAX_KEY_MAPPINGS] = {
 #ifdef _WINDOWS
 	{ 'A' , 5 , 5 },
 	{ 'B' , 4 , 5 },
@@ -382,14 +382,14 @@ keyprog_t defaultkeysti86[256] = {
 	{ '8' , 3 , 3 },
 	{ '9' , 2 , 3 },
 	{ VK_RETURN , 1 , 0 },
-	{ VKF_PERIOD , 3 , 0 },
-	{ VKF_COMMA , 4 , 4 },
+	{ VK_OEM_PERIOD , 3 , 0 },
+	{ VK_OEM_COMMA , 4 , 4 },
 	{ VK_ADD , 1 , 1 },
 	{ VK_SUBTRACT , 1 , 2 },
 	{ VK_MULTIPLY , 1 , 3 },
 	{ VK_DIVIDE , 1 , 4 },
-	{ VKF_LBRACKET , 3 , 4 },
-	{ VKF_RBRACKET , 2 , 4 },
+	{ VK_LBRACKET , 3 , 4 },
+	{ VK_RBRACKET , 2 , 4 },
 	{ VK_F1 , 6 , 4 },
 	{ VK_F2 , 6 , 3 },
 	{ VK_F3 , 6 , 2 },
@@ -399,8 +399,8 @@ keyprog_t defaultkeysti86[256] = {
 	{ VK_LSHIFT , 6 , 5 },			// l shift
 	{ VK_CONTROL, 5 , 7 },			// l control
 	{ VK_RSHIFT , 1 , 6 },
-	{ VKF_MINUS , 2 , 0 },
-	{ VKF_EQUAL , 4 , 7 },
+	{ VK_OEM_MINUS , 2 , 0 },
+	{ VK_EQUAL , 4 , 7 },
 	{ VK_PRIOR , 4 , 6 },
 	{ VK_NEXT , 3 , 6 },
 	{ VK_INSERT , 2 , 6 },
@@ -430,9 +430,9 @@ keyprog_t defaultkeysti86[256] = {
 #endif
 	{ -1, -1, -1},
 };
-keyprog_t keysti83[256];
-keyprog_t keysti86[256];
-keyprog_t keygrps[256];
+keyprog_t keysti83[MAX_KEY_MAPPINGS];
+keyprog_t keysti86[MAX_KEY_MAPPINGS];
+keyprog_t keygrps[MAX_KEY_MAPPINGS];
 #endif
 	
 keypad_t *keypad_init() {

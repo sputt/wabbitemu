@@ -7,8 +7,6 @@
 #include "fileutilities.h"
 #include "var.h"
 
-extern POINT drop_pt;
-
 CDropTarget::CDropTarget(HWND hwnd) {
 	m_hwndTarget = hwnd;
 	m_lRefCount = 1;
@@ -20,7 +18,8 @@ CDropTarget::CDropTarget(HWND hwnd) {
 	m_nAccepted = 0;
 	m_pAccepted = NULL;
 
-	HRESULT hr = CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_SERVER, IID_IDropTargetHelper, (LPVOID *) &m_pDropTargetHelper);
+	CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_SERVER, 
+		IID_IDropTargetHelper, (LPVOID *) &m_pDropTargetHelper);
 }
 
 CDropTarget::~CDropTarget() {
@@ -116,7 +115,9 @@ HRESULT __stdcall CDropTarget::QueryInterface(REFIID riid, LPVOID *ppvObject) {
 }
 
 
-HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
+HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD,
+	POINTL pt, DWORD *pdwEffect)
+{
 	DWORD i;
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};
@@ -131,8 +132,8 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 
 	if (i > 0) {
 		m_fAllowDrop = TRUE;
-		drop_pt.x = pt.x;
-		drop_pt.y = pt.y;
+		m_DropPt.x = pt.x;
+		m_DropPt.y = pt.y;
 	}
 
 	for (i = 0; i < m_nAccepted; i++) {
@@ -149,7 +150,12 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 	}
 
 
-	FORMATETC fmtetc[] = {{RegisterClipboardFormat(_T("DropDescription")), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL }};
+	CLIPFORMAT format = (CLIPFORMAT)RegisterClipboardFormat(_T("DropDescription"));
+	if (format == NULL) {
+		return E_FAIL;
+	}
+
+	FORMATETC fmtetc[] = {{format, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL }};
 	STGMEDIUM stgmed[] = {{0}};
 	
 	stgmed[0].tymed = TYMED_HGLOBAL;
@@ -187,7 +193,7 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 	return pDataObject->SetData(fmtetc, stgmed, TRUE);
 }
 
-HRESULT __stdcall CDropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
+HRESULT __stdcall CDropTarget::DragOver(DWORD, POINTL pt, DWORD *pdwEffect) {
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};
 		m_pDropTargetHelper->DragOver(&p, *pdwEffect);
@@ -195,8 +201,8 @@ HRESULT __stdcall CDropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdw
 
 	if (m_fAllowDrop == TRUE) {
 		*pdwEffect = *pdwEffect & DROPEFFECT_COPY;
-		drop_pt.x = pt.x;
-		drop_pt.y = pt.y;
+		m_DropPt.x = pt.x;
+		m_DropPt.y = pt.y;
 	} else {
 		*pdwEffect = DROPEFFECT_NONE;
 	}
@@ -216,10 +222,6 @@ HRESULT __stdcall CDropTarget::DragLeave() {
 	lpMainWindow->bDoDrag = false;
 
 	return S_OK;
-}
-
-static BOOL WriteStreamToFile(IStream *pStream, LPCTSTR lpszFileName) {
-	//pStream->g
 }
 
 BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
@@ -245,7 +247,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 			switch (m_pAccepted[i].cfFormat) {
 				case CF_HDROP: {
 					PVOID pData = GlobalLock(stgmed.hGlobal);
-					int count = DragQueryFile((HDROP) pData, ~0, path, 256);
+					UINT count = DragQueryFile((HDROP) pData, (UINT) ~0, path, 256);
 					while (count--) {
 						DragQueryFile((HDROP) pData, count, path, ARRAYSIZE(path));
 						TIFILE_t *tifile = importvar(path, TRUE);
@@ -277,7 +279,6 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 				default: {
 					if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW)) {
 						LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW)GlobalLock(stgmed.hGlobal);
-						LPTSTR lpszFileGroup = NULL;
 
 						for (u_int i = 0; i < lpfgd->cItems; i++) {
 							TCHAR szTemp[L_tmpnam_s];
@@ -286,7 +287,8 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 							GetStorageString(path, sizeof(path));
 							StringCbCat(path, sizeof(path), szTemp);
 
-							FORMATETC fmtstm = { RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM };
+							CLIPFORMAT format = (CLIPFORMAT)RegisterClipboardFormat(CFSTR_FILECONTENTS);
+							FORMATETC fmtstm = { format, 0, DVASPECT_CONTENT, i, TYMED_ISTREAM };
 							STGMEDIUM stgmedData = { 0 };
 							if (SUCCEEDED(pDataObject->GetData(&fmtstm, &stgmedData))) {
 								LPBYTE lpBuffer = (LPBYTE)malloc(lpfgd->fgd[i].nFileSizeLow);
@@ -334,7 +336,9 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 	return valid;
 }
 
-HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
+HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD,
+	POINTL pt, DWORD *pdwEffect) 
+{
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
 	if (lpMainWindow == NULL) {
 		return E_POINTER;
@@ -369,44 +373,43 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 					return S_OK;
 				}
 				default: {
-					if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW)) {
-						LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
-						LPTSTR lpszFileGroup = NULL;
-
-						for (u_int i = 0; i < lpfgd->cItems; i++) {
-							TCHAR szFileName[MAX_PATH];
-							ZeroMemory(szFileName, sizeof(szFileName));
-
-							TCHAR szTemp[L_tmpnam_s];
-							ZeroMemory(szTemp, sizeof(szTemp));	
-							_ttmpnam_s(szTemp);
-
-							GetStorageString(szFileName, sizeof(szFileName));
-							StringCbCat(szFileName, sizeof(szFileName), szTemp);
-
-							FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
-							STGMEDIUM stgmedData = {0};
-							if (SUCCEEDED(pDataObject->GetData(&fmtstm, &stgmedData))) {
-								LPBYTE lpBuffer = (LPBYTE) malloc(lpfgd->fgd[i].nFileSizeLow);
-
-								ULONG cbRead = 0;
-								if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead))) {
-									FILE *file;
-									_tfopen_s(&file, szFileName, _T("wb"));
-									if (file != NULL) {
-										fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
-										fclose(file);
-										SendFileToCalc(lpMainWindow->hwndFrame, lpCalc, szFileName, TRUE, DropMemoryTarget(m_hwndTarget));
-										tempFiles.push_back(szFileName);
-									}
-								}
-								free(lpBuffer);
-								ReleaseStgMedium(&stgmedData);
-							}
-						}
-						GlobalUnlock(stgmed.hGlobal);
+					if (m_pAccepted[i].cfFormat != RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW)) {
+						break;
 					}
 
+					LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
+
+					for (u_int i = 0; i < lpfgd->cItems; i++) {
+						TCHAR szFileName[MAX_PATH] = { 0 };
+
+						TCHAR szTemp[L_tmpnam_s] = { 0 };
+						_ttmpnam_s(szTemp);
+
+						GetStorageString(szFileName, sizeof(szFileName));
+						StringCbCat(szFileName, sizeof(szFileName), szTemp);
+
+						CLIPFORMAT format = (CLIPFORMAT)RegisterClipboardFormat(CFSTR_FILECONTENTS);
+						FORMATETC fmtstm = {format, 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
+						STGMEDIUM stgmedData = {0};
+						if (SUCCEEDED(pDataObject->GetData(&fmtstm, &stgmedData))) {
+							LPBYTE lpBuffer = (LPBYTE) malloc(lpfgd->fgd[i].nFileSizeLow);
+
+							ULONG cbRead = 0;
+							if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead))) {
+								FILE *file;
+								_tfopen_s(&file, szFileName, _T("wb"));
+								if (file != NULL) {
+									fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
+									fclose(file);
+									SendFileToCalc(lpMainWindow->hwndFrame, lpCalc, szFileName, TRUE, DropMemoryTarget(m_hwndTarget));
+									tempFiles.push_back(szFileName);
+								}
+							}
+							free(lpBuffer);
+							ReleaseStgMedium(&stgmedData);
+						}
+					}
+					GlobalUnlock(stgmed.hGlobal);
 					break;
 				}
 			}
@@ -423,7 +426,7 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 	return S_OK;
 }
 
-SEND_FLAG DropMemoryTarget(HWND hwnd) {
+SEND_FLAG CDropTarget::DropMemoryTarget(HWND hwnd) {
 	RECT lr, rr;
 	POINT p;
 	SEND_FLAG ram;
@@ -432,7 +435,7 @@ SEND_FLAG DropMemoryTarget(HWND hwnd) {
 	CopyRect(&rr, &lr);
 	lr.right /= 2;			//left half
 	rr.left = lr.right;		//right half
-	p = drop_pt;			//DragQueryPoint((HDROP) wParam, &p);
+	p = m_DropPt;			//DragQueryPoint((HDROP) wParam, &p);
 //	printf("p %d,%d\n",p.x,p.y);
 	SwitchToThisWindow(GetParent(hwnd), TRUE);
 

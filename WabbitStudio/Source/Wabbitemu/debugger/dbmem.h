@@ -34,6 +34,5 @@ typedef mempane_settings_t mp_settings;
 
 
 LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-void MemGotoAddress(HWND hwnd, int addr);
 
 #endif

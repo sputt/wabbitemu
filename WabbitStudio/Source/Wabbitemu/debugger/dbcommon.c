@@ -215,7 +215,7 @@ int ValueSubmit(HWND hwndDlg, void *loc, int size, int max_value) {
 
 static WNDPROC wndProcEdit;
 
-LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 
 	switch (Message) {
 		case WM_KEYDOWN:

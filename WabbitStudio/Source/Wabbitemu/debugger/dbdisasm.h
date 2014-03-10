@@ -66,6 +66,5 @@ void cycle_pcs(dp_settings *);
 #define DB_DISASM		40
 
 void cycle_pcs(dp_settings *dps);
-void DisasmGotoAddress(HWND hwnd, int addr);
 
 #endif

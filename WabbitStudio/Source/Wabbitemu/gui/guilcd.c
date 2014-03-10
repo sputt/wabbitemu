@@ -68,7 +68,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 		return hdc;
 	}
 
-	POINT pt = drop_pt;
+	POINT pt = lpMainWindow->pDropTarget->m_DropPt;
 	ScreenToClient(hwnd, &pt);
 
 	TRIVERTEX vert[4];
@@ -774,7 +774,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			while (count--) {
 				DragQueryFile((HDROP) wParam, count, fn, 256);
-				SendFileToCalc(lpMainWindow->hwndFrame, lpCalc, fn, TRUE, DropMemoryTarget(hwnd));
+				SEND_FLAG sendFlag = lpMainWindow->pDropTarget->DropMemoryTarget(hwnd);
+				SendFileToCalc(lpMainWindow->hwndFrame, lpCalc, fn, TRUE, sendFlag);
 			}
 			return 0;
 		}

@@ -197,10 +197,10 @@ void DrawButtonStatesAll(keypad_t *keypad, HWND hwndFrame, Bitmap *pBitmapSkin, 
 
 				RECT scaleRect;
 				CopyRect(&scaleRect, &brect);
-				scaleRect.left *= skinScale;
-				scaleRect.right *= skinScale;
-				scaleRect.top *= skinScale;
-				scaleRect.bottom *= skinScale;
+				scaleRect.left = (LONG)(scaleRect.left * skinScale);
+				scaleRect.right = (LONG)(scaleRect.right * skinScale);
+				scaleRect.top = (LONG)(scaleRect.top * skinScale);
+				scaleRect.bottom = (LONG)(scaleRect.bottom * skinScale);
 				InvalidateRect(hwndFrame, &scaleRect, FALSE);
 			}
 		}

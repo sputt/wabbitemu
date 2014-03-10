@@ -7,7 +7,7 @@
 #include "ftp.h"
 #include "guiupdate.h"
 
-INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM) {
 	switch (Message) {
 	case WM_INITDIALOG: {
 		TCHAR versionString[32];
@@ -107,7 +107,7 @@ void SendBugReport(TCHAR *nameBuffer, TCHAR *emailBuffer, TCHAR *titleBuffer, TC
 	return;
 }
 
-INT_PTR CALLBACK BugReportDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK BugReportDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM) {
 	TCHAR attachFileNameBuffer[MAX_PATH];
 	switch (Message) {
 	case WM_INITDIALOG: {
@@ -202,7 +202,6 @@ INT_PTR CALLBACK ExportOSDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			u_char (*flash)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) lpCalc->cpu.mem_c->flash;
 			unsigned char *buffer = NULL;
 			unsigned char *bufferPtr = buffer;
-			int currentPage = -1;
 			for (int i = 0; i < lpCalc->cpu.mem_c->flash_pages; i++) {
 				if (ListView_GetCheckState(hListPagesToExport, i)) {
 					bufferSize += PAGE_SIZE;
@@ -211,6 +210,7 @@ INT_PTR CALLBACK ExportOSDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 						memcpy(new_buffer, buffer, bufferSize - PAGE_SIZE);
 						free(buffer);
 					}
+
 					buffer = new_buffer;
 					bufferPtr = buffer + bufferSize - PAGE_SIZE;
 					memcpy(bufferPtr, flash[i], PAGE_SIZE);
@@ -230,7 +230,7 @@ INT_PTR CALLBACK ExportOSDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 	return FALSE;
 }
 
-INT_PTR CALLBACK WhatsNewDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK WhatsNewDialogProc(HWND hwndDlg, UINT Message, WPARAM, LPARAM) {
 	switch (Message) {
 		case WM_INITDIALOG: {
 			TCHAR *newText = GetWhatsNewText();
@@ -240,7 +240,6 @@ INT_PTR CALLBACK WhatsNewDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 				return FALSE;
 			}
 			HWND hwndText = GetDlgItem(hwndDlg, IDC_EDIT_WHATSNEW);
-			Edit_SetSel(hwndText, -1, -1);
 			Edit_SetText(hwndText, newText);
 
 			free(newText);
@@ -248,7 +247,7 @@ INT_PTR CALLBACK WhatsNewDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 		}
 		case WM_COMMAND: {
 			HWND hwndText = GetDlgItem(hwndDlg, IDC_EDIT_WHATSNEW);
-			Edit_SetSel(hwndText, -1, -1);
+			Edit_SetSel(hwndText, (WPARAM)-1, (LPARAM)-1);
 			return TRUE;
 		}
 		case WM_CLOSE:

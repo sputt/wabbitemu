@@ -51,7 +51,7 @@ void press_textA(TCHAR *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 }
 
 
-void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, ViewType type, const TCHAR *fmt, ...) {
+void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
 	TCHAR *p;
 	va_list argp;
 	RECT r = *rc;
@@ -62,7 +62,7 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, ViewType typ
 	if (calc_size == FALSE) {
 		calc_size = TRUE;
 		
-		MyDrawText(lpCalc, hdc, rc, zinf, REGULAR, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+		MyDrawText(lpCalc, hdc, rc, zinf, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
 		
 		TCHAR szFilltext[1024];
 		memset(szFilltext, 'A', mspf_size);
@@ -148,7 +148,6 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, ViewType typ
 				}
 				case 'a': //address
 					{
-						waddr_t waddr = OffsetWaddr(lpCalc->cpu.mem_c, REGULAR, zinf->waddr, 2);
 						TCHAR *name;
 						int val = (int) va_arg(argp, INT_PTR);
 

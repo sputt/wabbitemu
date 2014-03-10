@@ -192,7 +192,7 @@ void UpdateWabbitemuLayeredWindow(LPMAINWINDOW lpMainWindow) {
 	Graphics graphics(hdc);
 	Rect rect(0, 0, size.cx, size.cy);
 	graphics.SetInterpolationMode(InterpolationModeLowQuality);
-	Status status = graphics.DrawImage(lpMainWindow->m_lpBitmapRenderedSkin, rect, 0, 0, width, height, UnitPixel);
+	graphics.DrawImage(lpMainWindow->m_lpBitmapRenderedSkin, rect, 0, 0, width, height, UnitPixel);
 	BOOL done = UpdateLayeredWindow(lpMainWindow->hwndFrame, hScreen, NULL, &size, hdc, &ptSrc, RGB(255, 255, 255), &bf, ULW_ALPHA);
 	DWORD error;
 	if (!done) {
