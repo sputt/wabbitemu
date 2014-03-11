@@ -82,12 +82,12 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 					label_struct *label;
 					label = lookup_label(lpCalc, result);
 					if (label == NULL) {
-						success = _stscanf_s(result, _T("%x"), &goto_addr);
+						success = _stscanf(result, _T("%x"), &goto_addr);
 					} else {
 						goto_addr = label->addr;
 					}
 				} else {
-					success = _stscanf_s(result + 1, _T("%x"), &goto_addr);
+					success = _stscanf(result + 1, _T("%x"), &goto_addr);
 				}
 			}
 
@@ -159,16 +159,16 @@ int ValueSubmit(HWND hwndDlg, void *loc, int size, int max_value) {
 		switch (format) {
 		case HEX2:
 		case HEX4:
-			_stscanf_s(result, _T("%x"), (int *) value);
+			_stscanf(result, _T("%x"), (int *) value);
 			if (*((int *) value) > max_value)
 				*((int *) value) = max_value;
 			break;
 		case FLOAT2:
 		case FLOAT4:
 			if (size == sizeof(float)) {
-				_stscanf_s(result, _T("%f"), (float *) value);
+				_stscanf(result, _T("%f"), (float *) value);
 			} else {
-				_stscanf_s(result, _T("%lf"), (double *) value);
+				_stscanf(result, _T("%lf"), (double *) value);
 			}
 
 			if (*((float *) value) > max_value) {
@@ -176,7 +176,7 @@ int ValueSubmit(HWND hwndDlg, void *loc, int size, int max_value) {
 			}
 			break;
 		case DEC3:
-			_stscanf_s(result, _T("%d"), (int*) value);
+			_stscanf(result, _T("%d"), (int*) value);
 			if (*((int *) value) > max_value) {
 				*((int *) value) = max_value;
 			}
@@ -195,7 +195,7 @@ int ValueSubmit(HWND hwndDlg, void *loc, int size, int max_value) {
 			break;
 		}
 		case CHAR1:
-			_stscanf_s(result, _T("%c"), (char *) value);
+			_stscanf(result, _T("%c"), (char *) value);
 			if (*((char *)value) > (char)max_value) {
 				*((char *) value) = (char)max_value;
 			}
@@ -248,7 +248,7 @@ void SubclassEdit(HWND hwndEdt, HFONT hfontLucida, int edit_width, VALUE_FORMAT 
 // Converts a hexadecimal string to integer
 int xtoi(const TCHAR *xs) {
 	int val;
-	int error = _stscanf_s(xs, _T("%X"), &val);
+	int error = _stscanf(xs, _T("%X"), &val);
 	if (error == EOF)
 		return INT_MAX;
 	return val;
