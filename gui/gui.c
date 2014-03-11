@@ -4,6 +4,7 @@
 
 #include "core.h"
 #include "calc.h"
+#include "83psehw.h"
 #include "label.h"
 
 #include "gif.h"
@@ -330,6 +331,33 @@ void load_settings(LPCALC lpCalc, LPVOID lParam) {
 	SendMessage(lpMainWindow->hwndFrame, WM_FRAME_UPDATE, 0, 0);
 }
 
+void sync_calc_clock(LPCALC lpCalc, LPVOID) {
+	if (lpCalc->model < TI_84P) {
+		return;
+	}
+
+	SE_AUX_t *se_aux = lpCalc->cpu.pio.se_aux;
+	if (se_aux == NULL) {
+		return;
+	}
+
+	time_t now;
+	time_t result;
+	struct tm now_tm;
+	time(&now);
+	localtime_s(&now_tm, &now);
+	result = mktime(&now_tm);
+
+	struct tm ti_epoch = { 0 };
+	ti_epoch.tm_mday = 1;
+	ti_epoch.tm_isdst = now_tm.tm_isdst;
+	ti_epoch.tm_year = 97;
+	result -= mktime(&ti_epoch);
+
+	se_aux->clock.set = result;
+	se_aux->clock.base = result;
+}
+
 void check_bootfree_and_update(LPCALC lpCalc, LPVOID) {
 	if (lpCalc->model < TI_73) {
 		return;
@@ -408,6 +436,7 @@ LPMAINWINDOW create_calc_frame_register_events() {
 	calc_register_event(lpCalc, ROM_LOAD_EVENT, &load_settings, lpMainWindow);
 	calc_register_event(lpCalc, ROM_LOAD_EVENT, &load_key_settings, NULL);
 	calc_register_event(lpCalc, ROM_LOAD_EVENT, &check_bootfree_and_update, NULL);
+	calc_register_event(lpCalc, ROM_LOAD_EVENT, &sync_calc_clock, NULL);
 	calc_register_event(lpCalc, ROM_RUNNING_EVENT, &update_calc_running, lpMainWindow);
 	calc_register_event(lpCalc, BREAKPOINT_EVENT, &fire_com_breakpoint, lpMainWindow);
 	if (!_Module.GetParsedCmdArgs()->no_create_calc) {

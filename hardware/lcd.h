@@ -70,7 +70,7 @@ typedef struct LCDBase {
 	devp data;								// Port 11 function
 	BOOL active;							// TRUE = on, FALSE = off
 	u_int x, y, z;							// LCD cursors
-	u_int contrast;							// 0 to 63
+	u_int contrast;							// 0 to 39 or 31
 	LCD_CURSOR_MODE cursor_mode;			// Y_UP, Y_DOWN, X_UP, X_DOWN
 	int width;
 	int display_width;

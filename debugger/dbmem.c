@@ -538,6 +538,19 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			RECT r;
 			GetClientRect(hwnd, &r);
 			int data_length = mps->nCols * mps->nRows * mps->mode;
+			int max_addr = 0;
+			switch (mps->type) {
+			case REGULAR:
+				max_addr = 0x10000;
+				break;
+			case RAM:
+				max_addr = mps->lpCalc->mem_c.ram_size;
+				break;
+			case FLASH:
+				max_addr = mps->lpCalc->mem_c.flash_size;
+				break;
+			}
+
 			switch (wParam) {
 				case VK_NEXT:
 					SendMessage(hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
@@ -546,13 +559,12 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					SendMessage(hwnd, WM_VSCROLL, SB_PAGEUP, 0);
 					break;
 				case VK_RIGHT:
-
 					if ((mps->sel - mps->addr)/mps->mode % mps->nCols == mps->nCols-1) {
 						mps->sel -= (mps->nCols - 1) * mps->mode;
 						break;
 					}
 				case VK_TAB:
-					if (mps->sel <= 0x10000 - mps->mode)
+					if (mps->sel < max_addr - mps->mode)
 						mps->sel+=mps->mode;
 					break;
 				case VK_LEFT:
@@ -568,7 +580,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						SendMessage(hwnd, WM_VSCROLL, SB_LINEUP, 0);
 					break;
 				case VK_DOWN:
-					if (mps->sel + mps->nCols * mps->mode < 0x10000)
+					if (mps->sel + mps->nCols * mps->mode < max_addr)
 						mps->sel += mps->nCols * mps->mode;
 					if (mps->sel > mps->addr + data_length)
 						SendMessage(hwnd, WM_VSCROLL, SB_LINEDOWN, 0);
@@ -687,6 +699,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						int addr = mps->sel + i;
 						if (mps->type == REGULAR) {
 							waddr = addr16_to_waddr(&mps->lpCalc->mem_c, (uint16_t)addr);
+							waddr.addr %= PAGE_SIZE;
 						} else {
 							waddr = addr32_to_waddr(addr, mps->type == RAM);
 						}
@@ -814,17 +827,27 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					int value = 0;
 					int shift, b;
 					waddr_t waddr = GetWaddr(mps, addr);
+					int next_page = addr / PAGE_SIZE * PAGE_SIZE + PAGE_SIZE;
 					for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
-						waddr.addr = (addr + b) % PAGE_SIZE;
-							waddr.page = !waddr.is_ram ? (addr + b) / PAGE_SIZE: (waddr.addr ? waddr.page : waddr.page + 1);
-							value += wmem_read(mps->lpCalc->cpu.mem_c, waddr) << shift;
+						int next_addr = waddr.addr + b;
+						if (next_addr > next_page) {
+							next_addr %= PAGE_SIZE;
+							waddr.page++;
+							next_page += PAGE_SIZE;
+						}
+						
+						waddr.addr = next_addr;
+
+						value += wmem_read(mps->lpCalc->cpu.mem_c, waddr) << shift;
 					}
 
 					TCHAR szFmt[8];
-					if (mps->bText)
+					if (mps->bText) {
 						StringCbCopy(szFmt, sizeof(szFmt), _T("%c"));
-					else
-						StringCbPrintf(szFmt, sizeof(szFmt), _T("%%0%dx"), mps->mode*2);
+					} else {
+						StringCbPrintf(szFmt, sizeof(szFmt), _T("%%0%dx"), mps->mode * 2);
+					}
+
 					StringCbPrintf(szInitial, sizeof(szFmt), szFmt, value);
 
 					hwndVal =
