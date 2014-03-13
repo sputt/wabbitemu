@@ -10,13 +10,16 @@ class CAviFile
 	HDC					m_hAviDC;
 	HANDLE				m_hHeap;
 	LPVOID				m_lpBits;					// Useful for holding the bitmap content, if any
-	LONG				m_lSample;					// Keeps track of the current Frame Index
+	LONG				m_lVSample;					// Keeps track of the current video frame Index
+	LONG				m_lASample;					// Keeps track of the current audio frame Index
 	PAVIFILE			m_pAviFile;
 	PAVISTREAM			m_pAviStream;
 	PAVISTREAM			m_pAviCompressedStream;
+	PAVISTREAM			m_pAviAudioStream;
 	AVISTREAMINFO		m_AviStreamInfo;
 	AVICOMPRESSOPTIONS	m_AviCompressOptions;
 	DWORD				m_dwFrameRate;				// Frames Per Second Rate (FPS)
+	DWORD				m_dwQuality;				// Video Quality
 	DWORD				m_dwFCCHandler;				// Video Codec FourCC	
 	TCHAR				m_szFileName[MAX_PATH];		// Holds the Output Movie File Name
 	TCHAR				m_szErrMsg[MAX_PATH];		// Holds the Last Error Message, if any
@@ -66,7 +69,8 @@ public:
 	/// </Remarks>
 	CAviFile(LPCTSTR lpszFileName=_T("Output.avi"), 
 			DWORD dwCodec = mmioFOURCC('M','P','G','4'),
-			DWORD dwFrameRate = 1);
+			DWORD dwFrameRate = 1,
+			DWORD dwQuality = -1);
 
 	/// <Summary> 
 	/// Destructor closes the movie file and flushes all the frames
@@ -84,6 +88,8 @@ public:
 	/// of the bitmap pointed to by the input pBits.
 	/// </Summary>
 	HRESULT	AppendNewFrame(int nWidth, int nHeight, LPVOID pBits,int nBitsPerPixel);
+
+	HRESULT AppendAudioData(WAVEFORMATEX *wfx, void *dat, unsigned long numbytes);
 
 	/// <Summary>
 	/// Returns the last error message, if any.

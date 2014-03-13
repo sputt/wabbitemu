@@ -370,6 +370,10 @@ void cycle_pcs(dp_settings *dps) {
 	dps->nPCs[0] = dps->lpCalc->cpu.pc;
 }
 
+void clear_pcs(dp_settings *dps) {
+	memset(dps->nPCs, -1, sizeof(dps->nPCs));
+}
+
 void reverse_cycle_pcs(dp_settings *dps) {
 	for (int i = 0; i < PC_TRAILS - 1; i++) {
 		dps->nPCs[i] = dps->nPCs[i + 1];
@@ -440,7 +444,12 @@ static void on_running_changed(LPCALC lpCalc, LPVOID lParam) {
 	dp_settings *dps = NULL;
 	if (lpTabInfo != NULL) {
 		dps = (dp_settings *)lpTabInfo->tabInfo;
-		cycle_pcs(dps);
+		if (lpCalc->running) {
+			clear_pcs(dps);
+		} else {
+			cycle_pcs(dps);
+		}
+
 		invalidate_pcs(hDisasm, dps);
 	}
 	Debug_UpdateWindow(hDisasm);

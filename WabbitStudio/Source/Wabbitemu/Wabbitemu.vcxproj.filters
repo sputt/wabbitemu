@@ -259,9 +259,6 @@
     <ClCompile Include="utilities\miniunz.c">
       <Filter>Source Files\Utilities\Compression</Filter>
     </ClCompile>
-    <ClCompile Include="utilities\avi_utils.c">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="utilities\sendfileswindows.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -587,9 +584,6 @@
     </ClInclude>
     <ClInclude Include="utilities\miniunz.h">
       <Filter>Header Files\Utilities\Compression</Filter>
-    </ClInclude>
-    <ClInclude Include="utilities\avi_utils.h">
-      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="utilities\sendfileswindows.h">
       <Filter>Source Files\Utilities</Filter>

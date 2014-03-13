@@ -25,21 +25,14 @@ typedef enum {
 	LCD_ENQUEUE_EVENT,
 	ROM_RUNNING_EVENT,
 	BREAKPOINT_EVENT,
+	GIF_FRAME_EVENT,
+	AVI_VIDEO_FRAME_EVENT,
+	AVI_AUDIO_FRAME_EVENT,
 } EVENT_TYPE;
 
-#define MIN_BLOCK_SIZE 16
-#define MAX_FLASH_PAGE_SIZE 0x80
-#define MAX_RAM_PAGE_SIZE 0x08
 #define MAX_REGISTERED_EVENTS 0xFF
 #define KEY_STRING_SIZE 56
-
-typedef struct profiler {
-	BOOL running;
-	int blockSize;
-	uint64_t totalTime;
-	uint64_t flash_data[MAX_FLASH_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
-	uint64_t ram_data[MAX_RAM_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
-} profiler_t;
+#define AVI_FPS 24
 
 typedef struct {
 	TCHAR *name;
@@ -90,7 +83,6 @@ typedef struct tagCALC {
 	int speed;
 	BYTE breakpoints[0x10000];
 	label_struct labels[10000];
-	profiler_t profiler;
 
 	apphdr_t last_transferred_app;
 
@@ -144,15 +136,6 @@ void calc_erase_certificate(unsigned char *, int);
 
 GLOBAL calc_t calcs[MAX_CALCS];
 
-#ifdef USE_AVI
-#include "avi_utils.h"
-#include "avifile.h"
-GLOBAL CAviFile *currentAvi;
-GLOBAL HAVI recording_avi;
-GLOBAL BOOL is_recording;
-#endif
-
-GLOBAL u_int frame_counter;
 GLOBAL BOOL exit_save_state;
 GLOBAL BOOL check_updates;
 GLOBAL BOOL show_whats_new;

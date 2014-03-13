@@ -13,6 +13,7 @@ INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 		TCHAR versionString[32];
 		GetFileCurrentVersionString(versionString, sizeof(versionString));
 		SetDlgItemText(hwndDlg, IDC_STC_VERSTRING, versionString);
+		SetFocus(GetDlgItem(hwndDlg, IDOK));
 		return FALSE;
 	}
 	case WM_COMMAND:

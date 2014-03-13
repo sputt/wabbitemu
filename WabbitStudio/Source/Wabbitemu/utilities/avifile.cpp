@@ -7,21 +7,25 @@
 
 CAviFile:: CAviFile(LPCTSTR lpszFileName /* =_T("Output.avi") */, 
 			DWORD dwCodec /* = mmioFOURCC('M','P','G','4') */,
-			DWORD dwFrameRate /* = 1 */)
+			DWORD dwFrameRate /* = 1 */,
+			DWORD dwQuality /* = -1 */)
 {
 
 	AVIFileInit();
 
-	m_hHeap=NULL;
-	m_hAviDC=NULL;
-	m_lpBits=NULL;
-	m_lSample=NULL;
-	m_pAviFile=NULL;
-	m_pAviStream=NULL;
-	m_pAviCompressedStream=NULL;
+	m_hHeap = NULL;
+	m_hAviDC = NULL;
+	m_lpBits = NULL;
+	m_lVSample = NULL;
+	m_lASample = NULL;
+	m_pAviFile = NULL;
+	m_pAviStream = NULL;
+	m_pAviCompressedStream = NULL;
+	m_pAviAudioStream = NULL;
 
 	m_dwFCCHandler = dwCodec;
 	m_dwFrameRate = dwFrameRate;
+	m_dwQuality = dwQuality;
 
 	_tcscpy_s(m_szFileName, lpszFileName);
 	_tcscpy_s(m_szErrMsg, _T("Method Succeeded"));
@@ -58,6 +62,10 @@ void CAviFile::ReleaseMemory()
 	{
 		AVIStreamRelease(m_pAviCompressedStream);
 		m_pAviCompressedStream=NULL;
+	}
+	if (m_pAviAudioStream) {
+		AVIStreamRelease(m_pAviAudioStream);
+		m_pAviAudioStream = NULL;
 	}
 	if(m_pAviStream)
 	{
@@ -125,7 +133,7 @@ HRESULT CAviFile::InitMovieCreation(int nFrameWidth, int nFrameHeight, int nBits
 	m_AviStreamInfo.fccHandler	= m_dwFCCHandler;
 	m_AviStreamInfo.dwScale		= 1;
 	m_AviStreamInfo.dwRate		= m_dwFrameRate;	// Frames Per Second;
-	m_AviStreamInfo.dwQuality	= -1;				// Default Quality
+	m_AviStreamInfo.dwQuality	= m_dwQuality;		// Quality
 	m_AviStreamInfo.dwSuggestedBufferSize = nMaxWidth*nMaxHeight*4;
 	SetRect(&m_AviStreamInfo.rcFrame, 0, 0, nFrameWidth, nFrameHeight);
 	_tcscpy_s(m_AviStreamInfo.szName, _T("Video Stream"));
@@ -161,7 +169,7 @@ HRESULT CAviFile::InitMovieCreation(int nFrameWidth, int nFrameHeight, int nBits
 	bmpInfo.bmiHeader.biCompression	= BI_RGB;
 	bmpInfo.bmiHeader.biBitCount	= nBitsPerPixel;
 	bmpInfo.bmiHeader.biSize		= sizeof(BITMAPINFOHEADER);
-	bmpInfo.bmiHeader.biSizeImage	= bmpInfo.bmiHeader.biWidth*bmpInfo.bmiHeader.biHeight*bmpInfo.bmiHeader.biBitCount/8;
+	bmpInfo.bmiHeader.biSizeImage = bmpInfo.bmiHeader.biWidth*bmpInfo.bmiHeader.biHeight*bmpInfo.bmiHeader.biBitCount / 8;
 
 	if(FAILED(AVIStreamSetFormat(m_pAviCompressedStream,0,(LPVOID)&bmpInfo, bmpInfo.bmiHeader.biSize)))
 	{
@@ -212,7 +220,7 @@ HRESULT CAviFile::AppendFrameUsual(HBITMAP hBitmap)
 
 	GetDIBits(m_hAviDC,hBitmap,0,bmpInfo.bmiHeader.biHeight,m_lpBits,&bmpInfo,DIB_RGB_COLORS);
 
-	if(FAILED(AVIStreamWrite(m_pAviCompressedStream,m_lSample++,1,m_lpBits,bmpInfo.bmiHeader.biSizeImage,0,NULL,NULL)))
+	if (FAILED(AVIStreamWrite(m_pAviCompressedStream, m_lVSample++, 1, m_lpBits, bmpInfo.bmiHeader.biSizeImage, 0, NULL, NULL)))
 	{
 		SetErrorMessage(_T("Unable to Write Video Stream to the output Movie File"));
 
@@ -255,9 +263,9 @@ HRESULT	CAviFile::AppendFrameFirstTime(int nWidth, int nHeight, LPVOID pBits,int
 
 HRESULT	CAviFile::AppendFrameUsual(int nWidth, int nHeight, LPVOID pBits,int nBitsPerPixel)
 {
-	DWORD	dwSize=nWidth*nHeight*nBitsPerPixel/8;
+	DWORD dwSize = nWidth * nHeight * nBitsPerPixel / 8;
 
-	if(FAILED(AVIStreamWrite(m_pAviCompressedStream,m_lSample++,1,pBits,dwSize,0,NULL,NULL)))
+	if (FAILED(AVIStreamWrite(m_pAviCompressedStream, m_lVSample++, 1, pBits, dwSize, 0, NULL, NULL))) 
 	{
 		SetErrorMessage(_T("Unable to Write Video Stream to the output Movie File"));
 
@@ -272,4 +280,54 @@ HRESULT	CAviFile::AppendFrameUsual(int nWidth, int nHeight, LPVOID pBits,int nBi
 HRESULT	CAviFile::AppendDummy(int nWidth, int nHeight, LPVOID pBits,int nBitsPerPixel)
 {
 	return E_FAIL;
+}
+
+HRESULT CAviFile::AppendAudioData(WAVEFORMATEX *wfx, void *dat, unsigned long numbytes) {
+	if (dat == NULL || numbytes == 0) {
+		return AVIERR_BADPARAM;
+	}
+	
+	if (wfx->nChannels == 0) {
+		return AVIERR_BADFORMAT;
+	}
+
+	unsigned long numsamps = numbytes * 8 / wfx->wBitsPerSample;
+	if ((numsamps * wfx->wBitsPerSample / 8) != numbytes) {
+		return AVIERR_BADPARAM;
+	}
+
+	if (m_pAviAudioStream == NULL) // create the stream if necessary
+	{
+		if (m_pAviFile == NULL) {
+			return S_OK;
+		}
+
+		AVISTREAMINFO ahdr;
+		ZeroMemory(&ahdr, sizeof(ahdr));
+		ahdr.fccType = streamtypeAUDIO;
+		ahdr.dwScale = wfx->nBlockAlign;
+		ahdr.dwRate = wfx->nSamplesPerSec * wfx->nBlockAlign;
+		ahdr.dwSampleSize = wfx->nBlockAlign;
+		ahdr.dwQuality = (DWORD)-1;
+		HRESULT hr = AVIFileCreateStream(m_pAviFile, &m_pAviAudioStream, &ahdr);
+		if (hr != AVIERR_OK) {
+			SetErrorMessage(_T("Unable to create audio stream"));
+			return E_FAIL;
+		}
+
+		hr = AVIStreamSetFormat(m_pAviAudioStream, m_lVSample, wfx, sizeof(WAVEFORMATEX) + wfx->cbSize);
+		if (hr != AVIERR_OK) {
+			SetErrorMessage(_T("Unable to set audio stream format"));
+			return E_FAIL;
+		}
+	}
+
+	HRESULT hr = AVIStreamWrite(m_pAviAudioStream, m_lASample, numsamps, dat, numbytes, 0, NULL, NULL);
+	if (hr != AVIERR_OK) {
+		SetErrorMessage(_T("Unable to Write Audio Stream to the output Movie File"));
+		return E_FAIL;
+	}
+
+	m_lASample += numsamps;
+	return S_OK;
 }

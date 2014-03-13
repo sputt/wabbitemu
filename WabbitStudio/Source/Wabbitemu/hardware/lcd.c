@@ -71,6 +71,29 @@ static void LCD_data(CPU_t *cpu, device_t *dev);
 #define NORMAL_DELAY 60		//tstates
 #define MICROSECONDS(xx) (((cpu->timer_c->freq * 10 / MHZ_6) * NORMAL_DELAY) / 10) + (xx - NORMAL_DELAY)
 
+void set_model_baselevel(LCD_t *lcd, int model) {
+	switch (model) {
+	case TI_82:
+	case TI_83:
+		lcd->base_level = BASE_LEVEL_83;
+		break;
+	case TI_73:
+	case TI_83P:
+	case TI_83PSE:
+	case TI_84P:
+	case TI_84PSE:
+		lcd->base_level = BASE_LEVEL_83P;
+		break;
+		//v2 of the 81 will come in as an 82/83
+	case TI_81:
+	case TI_85:
+	case TI_86:
+	default:
+		lcd->base_level = 0;
+		break;
+	}
+}
+
 /* 
  * Initialize LCD for a given CPU
  */
@@ -88,26 +111,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	lcd->base.image = &LCD_image;
 	lcd->base.bytes_per_pixel = 1;
 	
-	switch (model) {
-	case TI_82:
-	case TI_83:
-		lcd->base_level = BASE_LEVEL_83;
-		break;
-	case TI_73:
-	case TI_83P:
-	case TI_83PSE:
-	case TI_84P:
-	case TI_84PSE:
-		lcd->base_level = BASE_LEVEL_83P;
-		break;
-	//v2 of the 81 will come in as an 82/83
-	case TI_81:
-	case TI_85:
-	case TI_86:
-	default:
-		lcd->base_level = 0;
-		break;
-	}
+	set_model_baselevel(lcd, model);
 
 	lcd->base.height = 64;
 	lcd->base.width = 128;
@@ -133,6 +137,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
 	lcd->base.ufps = 0.0f;
 	lcd->base.lastgifframe = tc_elapsed(cpu->timer_c);
+	lcd->base.lastaviframe = tc_elapsed(cpu->timer_c);
 	lcd->base.write_avg = 0.0f;
 	lcd->base.write_last = tc_elapsed(cpu->timer_c);
 	return lcd;
@@ -144,6 +149,7 @@ static void LCD_timer_refresh(CPU_t * cpu) {
 	lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
 	lcd->base.ufps = 0.0f;
 	lcd->base.lastgifframe = tc_elapsed(cpu->timer_c);
+	lcd->base.lastaviframe = tc_elapsed(cpu->timer_c);
 	lcd->base.write_avg = 0.0f;
 	lcd->base.write_last = tc_elapsed(cpu->timer_c);
 	lcd->lcd_delay = NORMAL_DELAY;
@@ -425,7 +431,6 @@ void LCD_clear(LCD_t *lcd) {
 
 
 u_char *LCD_update_image(LCD_t *lcd) {
-	LCDBase_t *lcdBase = (LCDBase_t *) lcd;
 	u_char *screen = (u_char *) malloc(GRAY_DISPLAY_SIZE);
 	ZeroMemory(screen, GRAY_DISPLAY_SIZE);
 
@@ -465,14 +470,14 @@ u_char *LCD_update_image(LCD_t *lcd) {
 			}
 			
 			u_char *scol = &screen[row * LCD_WIDTH + col * 8];
-			scol[0] = alpha_overlay + TRUCOLOR(p0, bits) * inverse_alpha / 100;
-			scol[1] = alpha_overlay + TRUCOLOR(p1, bits) * inverse_alpha / 100;
-			scol[2] = alpha_overlay + TRUCOLOR(p2, bits) * inverse_alpha / 100;
-			scol[3] = alpha_overlay + TRUCOLOR(p3, bits) * inverse_alpha / 100;
-			scol[4] = alpha_overlay + TRUCOLOR(p4, bits) * inverse_alpha / 100;
-			scol[5] = alpha_overlay + TRUCOLOR(p5, bits) * inverse_alpha / 100;
-			scol[6] = alpha_overlay + TRUCOLOR(p6, bits) * inverse_alpha / 100;
-			scol[7] = alpha_overlay + TRUCOLOR(p7, bits) * inverse_alpha / 100;
+			scol[0] = (u_char) (alpha_overlay + TRUCOLOR(p0, bits) * inverse_alpha / 100);
+			scol[1] = (u_char)(alpha_overlay + TRUCOLOR(p1, bits) * inverse_alpha / 100);
+			scol[2] = (u_char)(alpha_overlay + TRUCOLOR(p2, bits) * inverse_alpha / 100);
+			scol[3] = (u_char)(alpha_overlay + TRUCOLOR(p3, bits) * inverse_alpha / 100);
+			scol[4] = (u_char)(alpha_overlay + TRUCOLOR(p4, bits) * inverse_alpha / 100);
+			scol[5] = (u_char)(alpha_overlay + TRUCOLOR(p5, bits) * inverse_alpha / 100);
+			scol[6] = (u_char)(alpha_overlay + TRUCOLOR(p6, bits) * inverse_alpha / 100);
+			scol[7] = (u_char)(alpha_overlay + TRUCOLOR(p7, bits) * inverse_alpha / 100);
 		}
 	}
 

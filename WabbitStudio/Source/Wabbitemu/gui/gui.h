@@ -4,6 +4,7 @@
 #include "calc.h"
 #include "guicommandline.h"
 #include "DropTarget.h"
+#include "avifile.h"
 
 class CWabbitemu;
 
@@ -120,6 +121,9 @@ typedef struct MainWindow {
 	int GIFGradientWidth = 1;
 	int GIFAdd = 1;
 
+	CAviFile *m_CurrentAvi;
+	BOOL m_IsRecording;
+
 	// used for fps counter
 	clock_t sb_refresh;
 	// frame context menu location
@@ -159,7 +163,7 @@ public :
 	HWND CheckValidOtherHandle(HWND hwndToCheck);
 	HWND CheckValidDebugHandle(HWND hwndToCheck);
 
-	void CWabbitemuModule::SetGIFState(gif_disp_state state);
+	void SetGIFState(gif_disp_state state);
 
 	bool ParseCommandLine(LPCTSTR lpCmdLine, HRESULT* pnRetCode);
 

@@ -4,7 +4,7 @@
 #include "dbcommon.h"
 
 LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static LPCALC lpCalc;
+	LPCALC lpCalc;
 	switch(Message) {
 		case WM_INITDIALOG:
 			lpCalc = (LPCALC) lParam;
@@ -22,7 +22,8 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 						MessageBox(hwnd, _T("Block size must be at least 16 bytes"), _T("Error"), MB_OK);
 						break;
 					}
-					lpCalc->profiler.blockSize = output;
+
+					lpCalc->cpu.profiler.blockSize = output;
 					EndDialog(hwnd, IDOK);
 					break;
 				}

@@ -6,15 +6,38 @@
 void state_userpages(CPU_t *, upages_t*);
 TCHAR *symbol_to_string(CPU_t *, symbol83P_t *, TCHAR *);
 
-int find_header(u_char (*dest)[PAGE_SIZE], int page, int ident1, int ident2) {
-	int i;
-	//apparently non user apps have a slightly different header
-	//therefore we have to actually find the identifier
-	for (i = 0; i < PAGE_SIZE; i++)
-		if (dest[page][i] == ident1 && dest[page][i + 1] == ident2)
-			return dest[page][i + 2];
-	return -1;	
+// output contains field data
+// returns field size
+u_char find_field(u_char *dest, u_char id1, u_char id2, u_char **output) {
+	for (int i = 0; i < PAGE_SIZE; i++) {
+		if (dest[i] == id1 && (dest[i + 1] & 0xF0) == (id2 & 0xF0)) {
+			if (output != NULL) {
+				*output = dest + i + 2;
+			}
+			return dest[i + 1] & 0x0F;
+		}
+	}
+
+	if (output != NULL) {
+		*output = NULL;
+	}
+
+	return 0;
 }
+
+/*
+* Finds the page size identifier and returns the number of pages specified.
+* If the identifiers cannot be found, 0 is returned.
+*/
+int get_page_size(u_char *dest) {
+	u_char size = find_field(dest, 0x80, 0x80, &dest);
+	if (dest == NULL) {
+		return 0;
+	}
+
+	return *dest;
+}
+
 
 /* Generate a list of applications */
 void state_build_applist(CPU_t *cpu, applist_t *applist) {
@@ -40,20 +63,20 @@ void state_build_applist(CPU_t *cpu, applist_t *applist) {
 			page >= upages.end &&
 			applist->count < ARRAYSIZE(applist->apps) &&
 			flash[page][0x00] == 0x80 && flash[page][0x01] == 0x0F &&
-			find_header(flash, page, 0x80, 0x48) != -1 &&
-			(page_size = find_header(flash, page, 0x80, 0x81)) != -1;
-			
-			page -= page_size, applist->count++) {
+			find_field(flash[page], 0x80, 0x40, NULL) &&
+			(page_size = get_page_size(flash[page])) != 0;
+
+			page -= page_size, applist->count++) 
+	{
 		
 		apphdr_t *ah = &applist->apps[applist->count];
 		u_int i;
-		for (i = 0; i < PAGE_SIZE; i++)
-			if (flash[page][i] == 0x80 && flash[page][i + 1] == 0x48)
-				break;
-		memcpy(ah->name, &flash[page][i + 2], 8);
+		u_char *appName;
+		int nameLen = find_field(flash[page], 0x80, 0x40, &appName);
+		memcpy(ah->name, appName, nameLen);
 		ah->name[8] = '\0';
 		ah->page = page;
-		ah->page_count = find_header(flash, page, 0x80, 0x81);
+		ah->page_count = page_size;
 
 	}
 }

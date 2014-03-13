@@ -517,36 +517,6 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	return LERR_SUCCESS;
 }
 
-u_char find_field(u_char *dest, u_char id1, u_char id2, u_char **output) {
-	int i;
-	// apparently non user apps have a slightly different header
-	// therefore we have to actually find the identifier
-	for (i = 0; i < PAGE_SIZE; i++) {
-		if (dest[i] == id1 && (dest[i + 1] & 0xF0) == (id2 & 0xF0)) {
-			*output = dest + i + 2;
-			return dest[i + 1] & 0x0F;
-		}
-	}
-
-	*output = NULL;
-	return 0;
-}
-
-/*
-* Finds the page size identifier and returns the number of pages specified.
-* If the identifiers cannot be found, 0 is returned.
-*/
-int get_page_size(u_char *dest) {
-	//apparently non user apps have a slightly different header
-	//therefore we have to actually find the identifier
-	u_char size = find_field(dest, 0x80, 0x80, &dest);
-	if (dest == NULL) {
-		return 0;
-	}
-
-	return *dest;
-}
-
 static LINK_ERR replace_app(CPU_t *cpu, TIFILE_t *tifile, upages_t upages, u_char(*dest)[PAGE_SIZE], int page) {
 	int pageDiff = tifile->flash->pages - get_page_size(dest[page]);
 	u_int currentPage = page - tifile->flash->pages;
@@ -673,7 +643,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 	}
 
-	cpu->mem_c->flash_upper = page - tifile->flash->pages;
+	cpu->mem_c->flash_upper = page;
 	for (i = page - 7; i <= page + tifile->flash->pages - 8; i++) {
 		// -8 is for the start of user mem
 		cpu->mem_c->protected_page[i / 8] &= ~(1 << (i % 8));

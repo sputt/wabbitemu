@@ -52,7 +52,6 @@
 #include "registry.h"
 #include "sendfileswindows.h"
 #include "state.h"
-#include "avi_utils.h"
 #include "ftp.h"
 
 #include "CWabbitemu.h"
@@ -65,6 +64,7 @@
 #define BOOTFREE_VER_MAJOR 11
 #define BOOTFREE_VER_MINOR 259
 #define WM_FRAME_UPDATE WM_USER
+#define WM_AVI_AUDIO_FRAME WM_USER+1
 
 CWabbitemuModule _Module;
 
@@ -135,6 +135,176 @@ void gui_draw(LPCALC, LPVOID lParam) {
 		}
 
 		skip = (skip + 1) % 4;
+	}
+}
+
+HANDLE DDBToDIB(HBITMAP bitmap, DWORD dwCompression) {
+	BITMAP			bm;
+	BITMAPINFOHEADER	bi;
+	LPBITMAPINFOHEADER 	lpbi;
+	DWORD			dwLen;
+	HANDLE			hDIB;
+	HANDLE			handle;
+	HDC 			hDC;
+
+
+	// The function has no arg for bitfields
+	if (dwCompression == BI_BITFIELDS)
+		return NULL;
+
+	// Get bitmap information
+	GetObject(bitmap, sizeof(bm), (LPSTR)&bm);
+
+	// Initialize the bitmapinfoheader
+	bi.biSize = sizeof(BITMAPINFOHEADER);
+	bi.biWidth = bm.bmWidth;
+	bi.biHeight = bm.bmHeight;
+	bi.biPlanes = 1;
+	bi.biBitCount = bm.bmPlanes * bm.bmBitsPixel;
+	bi.biCompression = dwCompression;
+	bi.biSizeImage = 0;
+	bi.biXPelsPerMeter = 0;
+	bi.biYPelsPerMeter = 0;
+	bi.biClrUsed = 0;
+	bi.biClrImportant = 0;
+
+	// Compute the size of the  infoheader and the color table
+	int nColors = (1 << bi.biBitCount);
+	if (nColors > 256)
+		nColors = 0;
+	dwLen = bi.biSize + nColors * sizeof(RGBQUAD);
+
+	// We need a device context to get the DIB from
+	hDC = GetDC(NULL);
+
+	// Allocate enough memory to hold bitmapinfoheader and color table
+	hDIB = GlobalAlloc(GMEM_FIXED, dwLen);
+
+	if (!hDIB) {
+		ReleaseDC(NULL, hDC);
+		return NULL;
+	}
+
+	lpbi = (LPBITMAPINFOHEADER)hDIB;
+
+	*lpbi = bi;
+
+	// Call GetDIBits with a NULL lpBits param, so the device driver 
+	// will calculate the biSizeImage field 
+	GetDIBits(hDC, bitmap, 0L, (DWORD)bi.biHeight,
+		(LPBYTE)NULL, (LPBITMAPINFO)lpbi, (DWORD)DIB_RGB_COLORS);
+
+	bi = *lpbi;
+
+	// If the driver did not fill in the biSizeImage field, then compute it
+	// Each scan line of the image is aligned on a DWORD (32bit) boundary
+	if (bi.biSizeImage == 0) {
+		bi.biSizeImage = ((((bi.biWidth * bi.biBitCount) + 31) & ~31) / 8)
+			* bi.biHeight;
+
+		// If a compression scheme is used the result may in fact be larger
+		// Increase the size to account for this.
+		if (dwCompression != BI_RGB)
+			bi.biSizeImage = (bi.biSizeImage * 3) / 2;
+	}
+
+	// Realloc the buffer so that it can hold all the bits
+	dwLen += bi.biSizeImage;
+	handle = GlobalReAlloc(hDIB, dwLen, GMEM_MOVEABLE);
+	if (handle) {
+		hDIB = handle;
+	} else {
+		GlobalFree(hDIB);
+		ReleaseDC(NULL, hDC);
+		return NULL;
+	}
+
+	// Get the bitmap bits
+	lpbi = (LPBITMAPINFOHEADER)hDIB;
+
+	// FINALLY get the DIB
+	BOOL bGotBits = GetDIBits(hDC, bitmap,
+		0L,				// Start scan line
+		(DWORD)bi.biHeight,		// # of scan lines
+		/*(LPBYTE)lpbi 			// address for bitmap bits
+		+ (bi.biSize + nColors * sizeof(RGBQUAD))*/ (LPBYTE)hDIB,
+		(LPBITMAPINFO)lpbi,		// address of bitmapinfo
+		(DWORD)DIB_RGB_COLORS);		// Use RGB for color table
+
+	if (!bGotBits) {
+		GlobalFree(hDIB);
+
+		ReleaseDC(NULL, hDC);
+		return NULL;
+	}
+
+	ReleaseDC(NULL, hDC);
+	return hDIB;
+}
+
+void handle_avi_video_frame(LPCALC, LPVOID lParam) {
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
+	if (lpMainWindow == NULL || !lpMainWindow->m_IsRecording) {
+		return;
+	}
+
+	HWND hwnd = lpMainWindow->hwndLCD;
+	HDC hdc = GetDC(hwnd);
+	RECT rc;
+	GetClientRect(hwnd, &rc);
+	HBITMAP hbm = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
+	HDC newhdc = CreateCompatibleDC(hdc);
+	SelectObject(newhdc, hbm);
+	BitBlt(newhdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, hdc, 0, 0, SRCCOPY);
+
+	HRESULT hResult = lpMainWindow->m_CurrentAvi->AppendNewFrame(hbm);
+	if (FAILED(hResult)) {
+		TCHAR buf[512];
+		StringCbCopy(buf, sizeof(buf), lpMainWindow->m_CurrentAvi->GetLastErrorMessage());
+		SendMessage(lpMainWindow->hwndFrame, WM_COMMAND, MAKEWPARAM(IDM_FILE_AVI, 0), 0);
+		MessageBox(lpMainWindow->hwndFrame, buf, _T("Error writing video data"), MB_OK | MB_ICONERROR);
+	}
+
+	DeleteObject(hbm);
+}
+
+void handle_avi_audio_frame(LPCALC, LPVOID lParam) {
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
+	if (lpMainWindow == NULL || !lpMainWindow->m_IsRecording) {
+		return;
+	}
+
+	// this will come in on a background thread, send it to the main thread to
+	// avoid race conditions
+	SendMessage(lpMainWindow->hwndFrame, WM_AVI_AUDIO_FRAME, 0, 0);
+}
+
+void avi_audio_frame(LPMAINWINDOW lpMainWindow) {
+	if (lpMainWindow == NULL || !lpMainWindow->m_IsRecording) {
+		return;
+	}
+
+	AUDIO_t *audio = lpMainWindow->lpCalc->audio;
+
+	u_char *buffer[BankSize];
+	unsigned char* dataout = (unsigned char *)&audio->buffer[audio->PlayPnt];
+	unsigned char* datain = (unsigned char *)buffer;
+	unsigned char* dataend = (unsigned char *)&audio->buffer[BUFFER_SMAPLES];
+	for (int i = 0; i < BankSize; i++) {
+		if (dataout >= dataend) {
+			dataout = (unsigned char *)&audio->buffer[0];
+		}
+
+		datain[i] = dataout[0];
+		dataout++;
+	}
+	HRESULT hResult = lpMainWindow->m_CurrentAvi->AppendAudioData(&audio->wfx,
+		buffer, BankSize);
+	if (FAILED(hResult)) {
+		TCHAR buf[512];
+		StringCbCopy(buf, sizeof(buf), lpMainWindow->m_CurrentAvi->GetLastErrorMessage());
+		SendMessage(lpMainWindow->hwndFrame, WM_COMMAND, MAKEWPARAM(IDM_FILE_AVI, 0), 0);
+		MessageBox(lpMainWindow->hwndFrame, buf, _T("Error writing audio data"), MB_OK | MB_ICONERROR);
 	}
 }
 
@@ -354,8 +524,8 @@ void sync_calc_clock(LPCALC lpCalc, LPVOID) {
 	ti_epoch.tm_year = 97;
 	result -= mktime(&ti_epoch);
 
-	se_aux->clock.set = result;
-	se_aux->clock.base = result;
+	se_aux->clock.set = (unsigned long)result;
+	se_aux->clock.base = (unsigned long)result;
 }
 
 void check_bootfree_and_update(LPCALC lpCalc, LPVOID) {
@@ -439,6 +609,9 @@ LPMAINWINDOW create_calc_frame_register_events() {
 	calc_register_event(lpCalc, ROM_LOAD_EVENT, &sync_calc_clock, NULL);
 	calc_register_event(lpCalc, ROM_RUNNING_EVENT, &update_calc_running, lpMainWindow);
 	calc_register_event(lpCalc, BREAKPOINT_EVENT, &fire_com_breakpoint, lpMainWindow);
+	calc_register_event(lpCalc, GIF_FRAME_EVENT, &handle_screenshot, NULL);
+	calc_register_event(lpCalc, AVI_VIDEO_FRAME_EVENT, &handle_avi_video_frame, lpMainWindow);
+	calc_register_event(lpCalc, AVI_AUDIO_FRAME_EVENT, &handle_avi_audio_frame, lpMainWindow);
 	if (!_Module.GetParsedCmdArgs()->no_create_calc) {
 		calc_register_event(lpCalc, BREAKPOINT_EVENT, &gui_debug, lpMainWindow);
 	}
@@ -841,10 +1014,6 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 
 	LoadCommandlineFiles(&m_parsedArgs, (LPARAM) lpMainWindow, LoadToLPCALC);
 
-#ifdef WITH_AVI
-	is_recording = FALSE;
-#endif
-
 	// Set the one global timer for all calcs
 	SetTimer(NULL, 0, TPF, TimerProc);
 
@@ -971,7 +1140,7 @@ HRESULT CWabbitemuModule::PostMessageLoop() {
 	// Make sure the GIF has terminated
 	if (gif_write_state == GIF_FRAME) {
 		gif_write_state = GIF_END;
-		handle_screenshot();
+		handle_screenshot(NULL, NULL);
 	}
 
 	// Shutdown GDI+
@@ -1013,6 +1182,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		gui_frame_update(lpMainWindow);
 		break;
 	}
+	case WM_AVI_AUDIO_FRAME:
+		avi_audio_frame(lpMainWindow);
+		break;
 	case WM_PAINT: {
 		if (gif_anim_advance) {
 			switch (lpMainWindow->gif_disp_state) {
@@ -1139,7 +1311,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			GetOpenSendFileName(hwnd, lpCalc);
 			SetWindowText(hwnd, _T("Wabbitemu"));
 			break;
-							}
+		}
 		case IDM_FILE_SAVE: {
 			TCHAR FileName[MAX_PATH];
 			const TCHAR lpstrFilter[] = _T("Known File types ( *.sav; *.rom; *.bin) \0*.sav;*.rom;*.bin\0\
@@ -1225,15 +1397,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 			lpCalc->running = TRUE;
 			break;
-								}
+		}
 		case IDM_FILE_AVI: {
-#ifdef USE_AVI
 			HMENU hmenu = GetMenu(hwnd);
-			if (is_recording) {
-				delete currentAvi;
-				currentAvi = NULL;
-				//CloseAvi(recording_avi);
-				is_recording = FALSE;
+			if (lpMainWindow->m_IsRecording) {
+				lpMainWindow->m_IsRecording = FALSE;
+				delete lpMainWindow->m_CurrentAvi;
+				lpMainWindow->m_CurrentAvi = NULL;
 				CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_AVI, MF_BYCOMMAND | MF_UNCHECKED);
 			} else {
 				lpCalc->running = FALSE;
@@ -1241,18 +1411,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (!SaveFile(lpszFile, _T("AVIs (*.avi)\0*.avi\0All Files (*.*)\0*.*\0\0"),
 					_T("Wabbitemu Export AVI"), _T("avi"), OFN_PATHMUSTEXIST, 0)) {
 
-						GetCompression();
-						currentAvi = new CAviFile(lpszFile, /*mmioFOURCC('U', 'Y', 'V', 'Y')*/0x63646976, FPS);
-						//recording_avi = CreateAvi(lpszFile, FPS, NULL);
-						//create an initial first frame so we can set compression
-						is_recording = TRUE;
+					extern BITMAPINFO *bi, *colorbi;
+					LPBITMAPINFO info = lpMainWindow->lpCalc->model >= TI_84PCSE ? colorbi : bi;
+
+					COMPVARS compVar = { 0 };
+					compVar.cbSize = sizeof(COMPVARS);
+
+					if (ICCompressorChoose(hwnd, 0, info, NULL, &compVar, NULL)) {
+						lpMainWindow->m_CurrentAvi = new CAviFile(lpszFile, compVar.fccHandler, AVI_FPS, compVar.lQ);
+						lpMainWindow->m_IsRecording = TRUE;
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_AVI, MF_BYCOMMAND | MF_CHECKED);
+					}
 				}
 				lpCalc->running = TRUE;
 			}
-#endif
 			break;
-						   }
+		}
 		case IDM_FILE_CLOSE:
 			return SendMessage(hwnd, WM_CLOSE, 0, 0);
 		case IDM_FILE_EXIT:
