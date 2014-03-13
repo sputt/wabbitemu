@@ -267,6 +267,18 @@ typedef struct reverse_time {
 	BYTE r;
 } reverse_time_t;
 
+#define MIN_BLOCK_SIZE 16
+#define MAX_FLASH_PAGE_SIZE 0xFF
+#define MAX_RAM_PAGE_SIZE 0x08
+
+typedef struct profiler {
+	BOOL running;
+	int blockSize;
+	uint64_t totalTime;
+	uint64_t flash_data[MAX_FLASH_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
+	uint64_t ram_data[MAX_RAM_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
+} profiler_t;
+
 typedef struct CPU {
 	/* Register bank 0 */
 	regpair(a, f, af);
@@ -281,7 +293,7 @@ typedef struct CPU {
 	/* Remaining CPU registers */
 	regpair(ixh, ixl, ix);
 	regpair(iyh, iyl, iy);
-	unsigned short pc, sp, old_pc;
+	unsigned short pc, sp;
 	unsigned char i, r, bus, link_write;
 	int imode;
 	BOOL interrupt;
@@ -303,6 +315,9 @@ typedef struct CPU {
 	BOOL is_link_instruction;
 	unsigned long long linking_time;
 	unsigned long long hasHitEnter;
+
+	profiler_t profiler;
+	unsigned short old_pc;
 
 	void(*exe_violation_callback)(struct CPU *);
 	void(*invalid_flash_callback)(struct CPU *);

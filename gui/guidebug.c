@@ -539,9 +539,10 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				SendMessage(lpDebugInfo->hreg, WM_SIZE, 0, 0); // didn't help
 			}
 
-			if (lpCalc->profiler.running) {
+			if (lpCalc->cpu.profiler.running) {
 				CheckMenuItem(GetSubMenu(GetMenu(hwnd), 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
 			}
+
 			if (lpDebugInfo->code_count_tstates != -1) {
 				CheckMenuItem(GetSubMenu(GetMenu(hwnd), 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_CHECKED);
 			}
@@ -736,15 +737,17 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 			case IDM_TOOLS_PROFILE: {
 				LPCALC lpCalc = lpDebugInfo->lpCalc;
-				lpCalc->profiler.running = !lpCalc->profiler.running;
+				profiler_t *profiler = &lpCalc->cpu.profiler;
+				profiler->running = !profiler->running;
 				HMENU hmenu = GetMenu(hwnd);
-				if (lpCalc->profiler.running) {
+				if (profiler->running) {
 					int result = (int) DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGPROFILE), hwnd, (DLGPROC) ProfileDialogProc, (LPARAM) lpCalc);
 					if (result == IDCANCEL) {
-						lpCalc->profiler.running = !lpCalc->profiler.running;
+						profiler->running = !profiler->running;
 					} else {
-						ZeroMemory(lpCalc->profiler.flash_data, sizeof(lpCalc->profiler.flash_data));
-						ZeroMemory(lpCalc->profiler.ram_data, sizeof(lpCalc->profiler.ram_data));
+						ZeroMemory(profiler->flash_data, sizeof(profiler->flash_data));
+						ZeroMemory(profiler->ram_data, sizeof(profiler->ram_data));
+						profiler->totalTime = 0;
 						CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
 					}
 				} else {
@@ -754,10 +757,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					if (BrowseFile(buffer, _T("	Text file  (*.txt)\0*.txt\0	All Files (*.*)\0*.*\0\0"),
 						_T("Wabbitemu Save Profile"), _T("txt"), 0, 1)) {
 						//make the profiler running again
-						lpCalc->profiler.running = TRUE;
+						profiler->running = TRUE;
 						break;
 					}
-					profiler_t *profiler = &lpCalc->profiler;
 					_tfopen_s(&file, buffer, _T("wb"));
 					_ftprintf_s(file, _T("Total Tstates: %i\r\n"), profiler->totalTime);
 					_ftprintf_s(file, _T("Flash Memory:\r\n"));
@@ -766,7 +768,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 						for (int i = 0; i < PAGE_SIZE / profiler->blockSize; i++) 
 						{
 							data = (double) profiler->flash_data[j][i] / (double) profiler->totalTime;
-							if (data != 0.0) 
+							if ((data - 0.0) < DBL_EPSILON)
 							{
 								_ftprintf_s(file, _T("%02X: $%04X - $%04X:\t%f%%\t%d tstates\r\n"), 
 												j,

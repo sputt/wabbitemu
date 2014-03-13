@@ -930,6 +930,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				}
 				Debug_GotoAddr(hwnd, goto_addr);
+				break;
 			}
 			case DB_GOTO_ADDR: {
 				int addr = (int)lParam;
@@ -943,6 +944,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				mps->sel = addr;
 
 				Debug_UpdateWindow(hwnd);
+				break;
 			}
 			}
 			return 0;

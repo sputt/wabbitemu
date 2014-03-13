@@ -11,7 +11,6 @@
 #include "device.h"
 #include "var.h"
 #include "gif.h"
-#include "screenshothandle.h"
 #include "link.h"
 #include "keys.h"
 #include "lcd.h"
@@ -42,6 +41,7 @@ void mem_read_callback(CPU_t *cpu);
 void mem_write_callback(CPU_t *cpu);
 void port_debug_callback(void *arg1, void *arg2);
 void lcd_enqueue_callback(CPU_t *cpu);
+void audio_frame_callback(CPU_t *cpu);
 
 /*
  * Determine the slot for a new calculator.  Return a pointer to the calc
@@ -88,6 +88,7 @@ static int audio_init(LPCALC lpCalc) {
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
 	lpCalc->audio->timer_c	= &lpCalc->timer_c;
+	lpCalc->audio->cpu		= &lpCalc->cpu;
 	return 0;
 }
 
@@ -99,6 +100,7 @@ static void setup_callbacks(LPCALC lpCalc) {
 	lpCalc->cpu.lcd_enqueue_callback = lcd_enqueue_callback;
 	lpCalc->cpu.pio.breakpoint_callback = port_debug_callback;
 	lpCalc->cpu.mem_c->breakpoint_manager_callback = check_break_callback;
+	lpCalc->audio->audio_frame_callback = audio_frame_callback;
 }
 
 /* 81 */
@@ -480,23 +482,6 @@ int calc_run_frame(LPCALC lpCalc) {
 	return 0;
 }
 
-void handle_profiling(LPCALC lpCalc, uint64_t oldTStates, uint16_t oldPC)
-{
-	if (!lpCalc->profiler.running) {
-		return;
-	}
-
-	uint64_t time = tc_tstates(&lpCalc->timer_c) - oldTStates;
-	lpCalc->profiler.totalTime += time;
-	bank_t bank = lpCalc->cpu.mem_c->banks[mc_bank(oldPC)];
-	int block = oldPC / lpCalc->profiler.blockSize;
-	if (bank.ram) {
-		lpCalc->profiler.ram_data[bank.page][block] += time;
-	} else {
-		lpCalc->profiler.flash_data[bank.page][block] += time;
-	}
-}
-
 int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	uint64_t time_end = tc_tstates(&lpCalc->timer_c) + tstates - lpCalc->time_error;
 
@@ -505,12 +490,6 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 			calc_set_running(lpCalc, FALSE);
 			lpCalc->breakpoint_callback(lpCalc);
 			return 0;
-		}
-		uint64_t oldTStates = 0;
-		uint16_t oldPC = 0;
-		if (lpCalc->profiler.running) {
-			oldTStates = tc_tstates(&lpCalc->timer_c);
-			oldPC = lpCalc->cpu.pc % PAGE_SIZE;
 		}
 
 		if (link_hub_count > 1) {
@@ -523,9 +502,6 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 		} else {
 			CPU_step(&lpCalc->cpu);
 		}
-
-		handle_profiling(lpCalc, oldTStates, oldPC);
-
 
 		if (tc_tstates((&lpCalc->timer_c)) >= time_end) {
 			lpCalc->time_error = (time_t)(tc_tstates((&lpCalc->timer_c)) - time_end);
@@ -681,6 +657,14 @@ int calc_run_all(void) {
 				} /*else {
 					calcs[j].cpu.linking_time += time;
 				}*/
+
+				if (!calc_waiting_link && calcs[j].cpu.timer_c != NULL &&
+					calcs[j].cpu.pio.lcd != NULL &&
+					(tc_elapsed(calcs[j].cpu.timer_c) - calcs[j].cpu.pio.lcd->lastaviframe) >= (1.0 / AVI_FPS))
+				{
+					notify_event(&calcs[j], AVI_VIDEO_FRAME_EVENT);
+					calcs[j].cpu.pio.lcd->lastaviframe += 1.0 / AVI_FPS;
+				}
 			}
 		}
 
@@ -695,10 +679,11 @@ int calc_run_all(void) {
 		}
 
 		//this code handles screenshotting if were actually taking screenshots right now
-		if (active_calc >= 0 && !calc_waiting_link && calcs[active_calc].cpu.timer_c != NULL && calcs[active_calc].cpu.pio.lcd != NULL &&
-				((tc_elapsed(calcs[active_calc].cpu.timer_c) - calcs[active_calc].cpu.pio.lcd->lastgifframe) >= 0.01)) {
-			handle_screenshot();
-			calcs[active_calc].cpu.pio.lcd->lastgifframe += 0.01;
+		if (active_calc >= 0 && !calc_waiting_link && calcs[active_calc].cpu.timer_c != NULL && calcs[active_calc].cpu.pio.lcd != NULL) {
+			if ((tc_elapsed(calcs[active_calc].cpu.timer_c) - calcs[active_calc].cpu.pio.lcd->lastgifframe) >= 0.01) {
+				notify_event(&calcs[active_calc], GIF_FRAME_EVENT);
+				calcs[active_calc].cpu.pio.lcd->lastgifframe += 0.01;
+			}
 		}
 	}
 
@@ -758,6 +743,15 @@ void lcd_enqueue_callback(CPU_t *cpu) {
 	}
 
 	notify_event(lpCalc, LCD_ENQUEUE_EVENT);
+}
+
+void audio_frame_callback(CPU_t *cpu) {
+	LPCALC lpCalc = calc_from_cpu(cpu);
+	if (lpCalc == NULL) {
+		return;
+	}
+
+	notify_event(lpCalc, AVI_AUDIO_FRAME_EVENT);
 }
 
 int calc_run_seconds(LPCALC lpCalc, double seconds) {

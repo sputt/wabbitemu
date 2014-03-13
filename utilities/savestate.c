@@ -811,7 +811,7 @@ void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 		val->skip_count = (unsigned char)ReadInt(chunk);
 	}
 	
-	if (save->version_build >= CPU_MODEL_BITS) {
+	if (save->version_build >= CPU_MODEL_BITS_BUILD) {
 		cpu->model_bits = ReadInt(chunk);
 	} else {
 		cpu->model_bits = save->model == TI_84P ? 0 : 1;
@@ -967,7 +967,13 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	lcd->base.z = ReadInt(chunk);
 	lcd->base.cursor_mode = (LCD_CURSOR_MODE)ReadInt(chunk);
 	lcd->base.contrast = ReadInt(chunk);
-	lcd->base_level	= ReadInt(chunk);
+	int base_level	= ReadInt(chunk);
+	if (save->version_build >= NEW_CONTRAST_MODEL_BUILD) {
+		lcd->base_level = base_level;
+	} else {
+		set_model_baselevel(lcd, save->model);
+		lcd->base.contrast -= lcd->base_level;
+	}
 
 	ReadBlock(chunk, lcd->display, DISPLAY_SIZE);
 	lcd->front		= ReadInt(chunk);
@@ -1119,7 +1125,8 @@ void LoadSE_AUX(SAVESTATE_t* save, CPU_t *cpu, SE_AUX_t *se_aux) {
 		se_aux->xtal.timers[i].count		= ReadChar(chunk);
 		se_aux->xtal.timers[i].max			= ReadChar(chunk);
 	}
-	if (save->version_minor >= 1 && save->version_build <= SEAUX_MODEL_BITS) {
+
+	if (save->version_minor >= 1 && save->version_build <= SEAUX_MODEL_BITS_BUILD) {
 		// originally this was part of the SE_AUX struct
 		// now its contained in the core, and as such this minor hack
 		cpu->model_bits = ReadInt(chunk);

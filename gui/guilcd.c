@@ -179,111 +179,6 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 	return hdc;
 }
 
-HANDLE DDBToDIB(HBITMAP bitmap, DWORD dwCompression) 
-{
-	BITMAP			bm;
-	BITMAPINFOHEADER	bi;
-	LPBITMAPINFOHEADER 	lpbi;
-	DWORD			dwLen;
-	HANDLE			hDIB;
-	HANDLE			handle;
-	HDC 			hDC;
-
-
-	// The function has no arg for bitfields
-	if(dwCompression == BI_BITFIELDS)
-		return NULL;
-
-	// Get bitmap information
-	GetObject(bitmap, sizeof(bm), (LPSTR) &bm);
-
-	// Initialize the bitmapinfoheader
-	bi.biSize		= sizeof(BITMAPINFOHEADER);
-	bi.biWidth		= bm.bmWidth;
-	bi.biHeight 		= bm.bmHeight;
-	bi.biPlanes 		= 1;
-	bi.biBitCount		= bm.bmPlanes * bm.bmBitsPixel;
-	bi.biCompression	= dwCompression;
-	bi.biSizeImage		= 0;
-	bi.biXPelsPerMeter	= 0;
-	bi.biYPelsPerMeter	= 0;
-	bi.biClrUsed		= 0;
-	bi.biClrImportant	= 0;
-
-	// Compute the size of the  infoheader and the color table
-	int nColors = (1 << bi.biBitCount);
-	if( nColors > 256 ) 
-		nColors = 0;
-	dwLen  = bi.biSize + nColors * sizeof(RGBQUAD);
-
-	// We need a device context to get the DIB from
-	hDC = GetDC(NULL);
-
-	// Allocate enough memory to hold bitmapinfoheader and color table
-	hDIB = GlobalAlloc(GMEM_FIXED, dwLen);
-
-	if (!hDIB){
-		ReleaseDC(NULL,hDC);
-		return NULL;
-	}
-
-	lpbi = (LPBITMAPINFOHEADER) hDIB;
-
-	*lpbi = bi;
-
-	// Call GetDIBits with a NULL lpBits param, so the device driver 
-	// will calculate the biSizeImage field 
-	GetDIBits(hDC, bitmap, 0L, (DWORD) bi.biHeight,
-			(LPBYTE) NULL, (LPBITMAPINFO) lpbi, (DWORD) DIB_RGB_COLORS);
-
-	bi = *lpbi;
-
-	// If the driver did not fill in the biSizeImage field, then compute it
-	// Each scan line of the image is aligned on a DWORD (32bit) boundary
-	if (bi.biSizeImage == 0) {
-		bi.biSizeImage = ((((bi.biWidth * bi.biBitCount) + 31) & ~31) / 8) 
-						* bi.biHeight;
-
-		// If a compression scheme is used the result may in fact be larger
-		// Increase the size to account for this.
-		if (dwCompression != BI_RGB)
-			bi.biSizeImage = (bi.biSizeImage * 3) / 2;
-	}
-
-	// Realloc the buffer so that it can hold all the bits
-	dwLen += bi.biSizeImage;
-	if (handle = GlobalReAlloc(hDIB, dwLen, GMEM_MOVEABLE))
-		hDIB = handle;
-	else{
-		GlobalFree(hDIB);
-		ReleaseDC(NULL,hDC);
-		return NULL;
-	}
-
-	// Get the bitmap bits
-	lpbi = (LPBITMAPINFOHEADER)hDIB;
-
-	// FINALLY get the DIB
-	BOOL bGotBits = GetDIBits( hDC, bitmap,
-				0L,				// Start scan line
-				(DWORD)bi.biHeight,		// # of scan lines
-				/*(LPBYTE)lpbi 			// address for bitmap bits
-				+ (bi.biSize + nColors * sizeof(RGBQUAD))*/ (LPBYTE) hDIB,
-				(LPBITMAPINFO)lpbi,		// address of bitmapinfo
-				(DWORD)DIB_RGB_COLORS);		// Use RGB for color table
-
-	if( !bGotBits )
-	{
-		GlobalFree(hDIB);
-		
-		ReleaseDC(NULL,hDC);
-		return NULL;
-	}
-
-	ReleaseDC(NULL, hDC);
-	return hDIB;
-}
-
 void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 	if (lpMainWindow == NULL) {
 		return;
@@ -322,53 +217,39 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 	BOOL lcd_scaled = (rc.right - rc.left) % lcd->display_width;
 	screen = lcd->image(lcd);
 
-	if (lcd_scaled) {
-		LONG clientWidth = rc.right - rc.left;
-		LONG clientHeight = rc.bottom - rc.top;
-		LONG widthScale = 1;
-		LONG heightScale = 1;
-		while (clientWidth > lcd->display_width * widthScale) {
-			widthScale++;
-		}
-
-		while (clientHeight > lcd->height * heightScale) {
-			heightScale++;
-		}
-
-		LONG clientScaleWidth = widthScale * lcd->display_width;
-		LONG clientScaleHeight = heightScale * lcd->height;
-
-		Bitmap lcdBitmap(info, screen);
-		Bitmap scaledBitmap((INT)clientScaleWidth, (INT)clientScaleHeight, &graphics);
-		Bitmap *bitmap = &lcdBitmap;
-		if (clientScaleWidth != lcd->display_width && clientScaleHeight != lcd->height) {
-			Graphics scaledGraphics(&scaledBitmap);
-			scaledGraphics.SetInterpolationMode(InterpolationModeNearestNeighbor);
-			// +1 because otherwise there is a black line at max width and max height
-			Rect scaleRect(rc.left, rc.top, clientScaleWidth + 1, clientScaleHeight + 1);
-			scaledGraphics.DrawImage(&lcdBitmap, scaleRect, 0, 0, lcd->display_width, lcd->height, UnitPixel);
-			bitmap = &scaledBitmap;
-		}
-
-		graphics.SetInterpolationMode(InterpolationModeLowQuality);
-		Rect rect(rc.left, rc.top, clientWidth + 1, clientHeight + 1);
-		graphics.DrawImage(bitmap, rect, 0, 0, clientScaleWidth, clientScaleHeight, UnitPixel);
-		rect.Width--;
-		rect.Height--;
-		graphics.SetClip(rect);
-	} else {
-		SetStretchBltMode(hdc, BLACKONWHITE);
-		if (StretchDIBits(hdc,
-						rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
-						0, 0, lcd->display_width, lcd->height,
-						screen,
-						info,
-						DIB_RGB_COLORS,
-						SRCCOPY) == 0)
-		{
-			_tprintf_s(_T("error in SetDIBitsToDevice\n"));
-		}
+	LONG clientWidth = rc.right - rc.left;
+	LONG clientHeight = rc.bottom - rc.top;
+	LONG widthScale = 1;
+	LONG heightScale = 1;
+	while (clientWidth > lcd->display_width * widthScale) {
+		widthScale++;
 	}
+
+	while (clientHeight > lcd->height * heightScale) {
+		heightScale++;
+	}
+
+	LONG clientScaleWidth = widthScale * lcd->display_width;
+	LONG clientScaleHeight = heightScale * lcd->height;
+
+	Bitmap lcdBitmap(info, screen);
+	Bitmap scaledBitmap((INT)clientScaleWidth, (INT)clientScaleHeight, &graphics);
+	Bitmap *bitmap = &lcdBitmap;
+	if (clientScaleWidth != lcd->display_width && clientScaleHeight != lcd->height) {
+		Graphics scaledGraphics(&scaledBitmap);
+		scaledGraphics.SetPixelOffsetMode(PixelOffsetModeHalf);
+		scaledGraphics.SetInterpolationMode(InterpolationModeNearestNeighbor);
+		Rect scaleRect(rc.left, rc.top, clientScaleWidth, clientScaleHeight);
+		scaledGraphics.DrawImage(&lcdBitmap, scaleRect, 0, 0, lcd->display_width, lcd->height, UnitPixel);
+		bitmap = &scaledBitmap;
+	}
+
+	InterpolationMode mode = lcd_scaled ? InterpolationModeLowQuality : InterpolationModeNearestNeighbor;
+	graphics.SetInterpolationMode(mode);
+	graphics.SetPixelOffsetMode(PixelOffsetModeHalf);
+	Rect rect(rc.left, rc.top, clientWidth, clientHeight);
+	graphics.DrawImage(bitmap, rect, 0, 0, clientScaleWidth, clientScaleHeight, UnitPixel);
+	graphics.SetClip(rect);
 
 	BLENDFUNCTION bf;
 	bf.BlendOp = AC_SRC_OVER;
@@ -413,37 +294,6 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 			UnitPixel, &attr);
 	}
 
-#ifdef WITH_AVI
-#include "avi_utils.h"
-	HBITMAP hbm;
-	if (is_recording) {
-		BYTE *pBitsDest;
-		hbm = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
-		HDC newhdc = CreateCompatibleDC(hdc);
-		SelectObject(newhdc, hbm);
-		BitBlt(newhdc, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top, hdc, 0, 0, SRCCOPY);
-		HANDLE ptr = DDBToDIB(hbm, BI_RGB);
-		BITMAPINFO *nbi = (BITMAPINFO *) malloc(sizeof(BITMAPINFOHEADER));
-		nbi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-		nbi->bmiHeader.biWidth = rc.right - rc.left;
-		nbi->bmiHeader.biHeight = rc.bottom - rc.top;
-		nbi->bmiHeader.biPlanes = 1;
-		nbi->bmiHeader.biBitCount = 32;
-		nbi->bmiHeader.biCompression = BI_RGB;
-		nbi->bmiHeader.biSizeImage = 0;
-		nbi->bmiHeader.biXPelsPerMeter = 0;
-		nbi->bmiHeader.biYPelsPerMeter = 0;
-		nbi->bmiHeader.biClrUsed = MAX_SHADES+1;
-		nbi->bmiHeader.biClrImportant = MAX_SHADES+1;
-		DWORD dwBmpSize = ((nbi->bmiHeader.biWidth * nbi->bmiHeader.biBitCount + 31) / 32) * 4 * nbi->bmiHeader.biHeight;
-		HBITMAP newhbm = CreateDIBSection(newhdc, nbi, DIB_RGB_COLORS, (void **) &pBitsDest, NULL, NULL);
-		memcpy(pBitsDest, ptr, dwBmpSize);
-		currentAvi->AppendNewFrame(newhbm);
-		DeleteObject(hbm);
-		DeleteObject(newhbm);
-		free(nbi);
-	}
-#endif
 	if (BitBlt(	hdcDest, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
 		hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("Bit blit failed\n"));
 

@@ -5,8 +5,6 @@
 #include "guiskin.h"
 #include "guicutout.h"
 
-extern BOOL silent_mode;
-
 #define SKIN_SCALE_SNAP .025
 
 unsigned int GetDefaultKeymapScale(int model) {
@@ -43,12 +41,10 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPMAINWINDOW lpMainWindow, LP
 	}
 
 	u_int width;
-	HMENU hMenu = GetMenu(hwnd);
 	RECT clientRect;
 
 	UINT default_scale = GetDefaultKeymapScale(lpCalc->model);
 	UINT scale = isSkinEnabled ? default_scale : max(lpMainWindow->scale, default_scale);
-	int silentMode = silent_mode ? SWP_HIDEWINDOW : 0;
 	LONG lcdWidth, lcdHeight;
 	if (isSkinEnabled) {
 		lcdWidth = lpMainWindow->m_RectLCD.Width / default_scale;
@@ -75,7 +71,7 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPMAINWINDOW lpMainWindow, LP
 	if (!isSkinEnabled) {
 		lcdPoint.x = 0;
 		lcdPoint.y = 0;
-		if (width > lcdWidth) {
+		if (width > (u_int) lcdWidth) {
 			// if the lcd is less than client, center the lcd
 			lcdPoint.x += (width - lcdWidth) / 2;
 		}
@@ -332,7 +328,6 @@ LRESULT GetMinMaxInfo(HWND hwnd, LPMAINWINDOW lpMainWindow, MINMAXINFO *info) {
 	RECT maxRc = { 0, 0, MAX_SKIN_WIDTH, MAX_SKIN_HEIGHT };
 
 	int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-	int maxWidth = maxRc.right - maxRc.left;
 	int maxHeight = maxRc.bottom - maxRc.top;
 	if (screenHeight < maxHeight) {
 		maxRc.bottom = screenHeight;

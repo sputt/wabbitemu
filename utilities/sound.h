@@ -60,7 +60,10 @@ typedef struct {
 	double HighLengRight;
 	
 	double volume;
+
+	CPU_t *cpu;
 	timerc *timer_c;
+	void(*audio_frame_callback)(struct CPU *);
 
 } AUDIO_t;
 

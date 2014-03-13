@@ -932,10 +932,23 @@ int CPU_connected_step(CPU_t *cpu) {
 	return 0;
 }
 
+void handle_profiling(CPU_t *cpu, uint64_t oldTStates, uint16_t oldPC) {
+	uint64_t time = tc_tstates(cpu->timer_c) - oldTStates;
+	cpu->profiler.totalTime += time;
+	bank_t bank = cpu->mem_c->banks[mc_bank(oldPC)];
+	int block = (oldPC % PAGE_SIZE) / cpu->profiler.blockSize;
+	if (bank.ram) {
+		cpu->profiler.ram_data[bank.page][block] += time;
+	} else {
+		cpu->profiler.flash_data[bank.page][block] += time;
+	}
+}
+
 int CPU_step(CPU_t* cpu) {
 	cpu->interrupt = 0;
 	cpu->ei_block = FALSE;
-	cpu->old_pc = cpu->pc;
+	unsigned short old_pc = cpu->old_pc = cpu->pc;
+	unsigned long long old_tstates = tc_tstates(cpu->timer_c);
 
 #ifdef WITH_REVERSE
 	CPU_add_prev_instr(cpu);
@@ -968,6 +981,11 @@ int CPU_step(CPU_t* cpu) {
 		}
 		handle_interrupt(cpu);
 	}
+
+	if (cpu->profiler.running) {
+		handle_profiling(cpu, old_tstates, old_pc);
+	}
+
 	return 0;
 }
 

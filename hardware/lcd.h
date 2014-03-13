@@ -80,6 +80,7 @@ typedef struct LCDBase {
 	double time;							// Last lcd update in seconds
 	long long last_tstate;					// timer_c->tstate of the last write
 	double lastgifframe;
+	double lastaviframe;
 	int bytes_per_pixel;
 } LCDBase_t;
 
@@ -101,5 +102,6 @@ typedef struct LCD {
 
 /* Device functions */
 LCD_t* LCD_init(CPU_t *, int);
+void set_model_baselevel(LCD_t *lcd, int model);
 
 #endif /* #ifndef LCD_H */
