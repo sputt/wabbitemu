@@ -52,7 +52,7 @@ void export_png(LPCALC lpCalc, TCHAR *filename) {
 	GetEncoderClsid(L"image/png", &pngClsid);
 	WCHAR still_name[MAX_PATH];
 #ifdef UNICODE
-	StringCbCopy(stillName, sizeof(stillName), gif_file_name);
+	StringCbCopy(still_name, sizeof(still_name), filename);
 #else
 	size_t converted;
 	mbstowcs_s(&converted, still_name, filename, MAX_PATH);

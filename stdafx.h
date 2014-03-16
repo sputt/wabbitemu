@@ -57,6 +57,7 @@ using namespace Gdiplus;
 #include <atlsafe.h>
 using namespace ATL;
 
+#include <algorithm>
 #include <map>
 #include <list>
 #include <vector>

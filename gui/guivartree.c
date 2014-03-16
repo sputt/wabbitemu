@@ -21,6 +21,10 @@ static RECT VTrc = {-1, -1, -1, -1};
 static VARTREEVIEW_t Tree[MAX_CALCS];
 static BOOL Tree_init = FALSE;
 
+void *FillFileBuffer(HTREEITEM hSelect, char *buffer);
+FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect, FILEDESCRIPTOR *fd);
+int SetVarName(TCHAR *fileName, int model);
+
 BOOL VarTreeOpen() {
 	HWND vardialog = FindWindow(NULL, _T("Calculator Variables"));
 	if (vardialog) {
@@ -30,7 +34,7 @@ BOOL VarTreeOpen() {
 	return FALSE;
 }
 
-HWND CreateVarTreeList(HWND hwndParent, LPCALC lpCalc) {
+HWND CreateVarTreeList(HWND hwndParent, LPMAINWINDOW lpMainWindow) {
 	INITCOMMONCONTROLSEX icc ;
 	if (!VarTreeOpen()) {
 		icc.dwSize = sizeof(icc);
@@ -38,56 +42,66 @@ HWND CreateVarTreeList(HWND hwndParent, LPCALC lpCalc) {
 		if (!InitCommonControlsEx(&icc)) {
 			return NULL;
 		}
-		HWND hwndDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARLIST), hwndParent, DlgVarlist, (LPARAM) lpCalc);
+		HWND hwndDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARLIST),
+			hwndParent, DlgVarlist, (LPARAM) lpMainWindow);
 		return hwndDialog;
 	}
 	return NULL;
 }
 
-//TODO: well this code is a mess. We need to refactor this, so that the HTREEITEM is somehow
-//mapped to the to either the symlist_t or applist_t item. Ideally this would be the LPARAM 
-//of the LPTREEVIEW, but a dictionary mapping would be fine as well
-apphdr_t *GetAppVariable(HTREEITEM hTreeItem, int *slot) {
+apphdr_t *GetAppVariable(HTREEITEM hTreeItem, int *slot = NULL) {
 	for (int temp = 0; temp < MAX_CALCS; temp++) {
 		if (Tree[temp].model) {
-			for(u_int i = 0; i < Tree[temp].applist.count; i++) {
-				if (Tree[temp].hApps[i] == hTreeItem) {
-					*slot = temp;
-					return &Tree[temp].applist.apps[i];
-				}
+			if (slot != NULL) {
+				*slot = temp;
 			}
+
+			auto it = Tree[temp].apps->find(hTreeItem);
+			if (it == Tree[temp].apps->end()) {
+				return NULL;
+			}
+
+			return it->second;
 		}
 	}
 	return NULL;
 }
 
-symbol83P_t *GetSymbolVariable(HTREEITEM hTreeItem, int *slot) {
+symbol83P_t *GetSymbolVariable(HTREEITEM hTreeItem, int *slot = NULL) {
 	for (int temp = 0; temp < MAX_CALCS; temp++) {
 		if (Tree[temp].model) {
 			if (Tree[temp].sym.last == NULL || Tree[temp].sym.symbols == NULL) {
 				continue;
 			}
+
 			int numSymbols = (Tree[temp].sym.last - Tree[temp].sym.symbols + 1);
 			if (numSymbols < 0) {
 				continue;
 			}
-			for(int i = 0; i < numSymbols; i++) {
-				if (Tree[temp].hVars[i] == hTreeItem) {
-					*slot = temp;
-					return &Tree[temp].sym.symbols[i];
-				}
+			
+			if (slot != NULL) {
+				*slot = temp;
 			}
+
+			auto it = Tree[temp].symbols->find(hTreeItem);
+			if (it == Tree[temp].symbols->end()) {
+				return NULL;
+			}
+
+			return it->second;
 		}
 	}
 	return NULL;
 }
 
 INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static LPCALC lpCalc;
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	switch (Message) {
 		case WM_INITDIALOG:
 		{
-			lpCalc = (LPCALC) lParam;
+			lpMainWindow = (LPMAINWINDOW) lParam;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpMainWindow);
+
 			g_hwndVarTree = GetDlgItem(hwnd, IDC_TRV1);
 			HIMAGELIST hIL = ImageList_LoadImage(g_hInst, _T("TIvarIcons"), 
 													16, 0, RGB(0,255,0),
@@ -96,7 +110,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)	hIcon);
 			DeleteObject(hIcon);
 			if (!hIL) {
-				_tprintf_s(_T("Image list not loaded"));
+				MessageBox(hwnd, _T("Image list not loaded"), _T("Error"), MB_OK | MB_ICONERROR);
 			} else {
 				TreeView_SetImageList(g_hwndVarTree, hIL, TVSIL_NORMAL);
 			}
@@ -133,48 +147,56 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					HTREEITEM hTreeItem = TreeView_GetSelection(g_hwndVarTree);
 					waddr_t waddr;
 					symbol83P_t *symbol = NULL;
-					int slot;
-					apphdr_t *app = GetAppVariable(hTreeItem, &slot);
+					apphdr_t *app = GetAppVariable(hTreeItem);
 					if (app) {
-						waddr.page = app->page;
+						waddr.page = (uint8_t) app->page;
 						waddr.addr = 0x4080;
 						waddr.is_ram = FALSE;
 					} else {
-						symbol = GetSymbolVariable(hTreeItem, &slot);
-						if (symbol) {
-							waddr.page = symbol->page;
-							waddr.addr = symbol->address;
+						symbol = GetSymbolVariable(hTreeItem);
+						if (symbol != NULL) {
 							waddr.is_ram = symbol->page == 0;
+							if (waddr.is_ram == TRUE) {
+								waddr = addr16_to_waddr(&lpMainWindow->lpCalc->mem_c, symbol->address);
+							} else {
+								waddr.page = symbol->page;
+								waddr.addr = symbol->address;
+							}
 						}
 					}
 					
-					if (app || symbol) {
-						// TODO: fix
-						/*LPMAINWINDOW lpMainWindow
+					if (app != NULL || symbol != NULL) {
 						HWND hwndDebug = gui_debug_hwnd(lpMainWindow);
-						SendMessage(hwndDebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);*/
+						SendMessage(hwndDebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);
 					}
 					break;
 				}
 				case IDM_VARTREEEXPORT:
 				case IDC_EXPORT_VAR: {
+					if (lpMainWindow == NULL) {
+						break;
+					}
+
+					LPCALC lpCalc = lpMainWindow->lpCalc;
 					char *buf;
 					FILE *file;
 					HTREEITEM item = TreeView_GetSelection(g_hwndVarTree);
-					//HACK: yes i know FILEDESCRIPTOR is not meant for this.
-					//but i don't want to rework the routines to return the attributes differently
 					FILEDESCRIPTOR *fd;
 					fd = (FILEDESCRIPTOR *) malloc(sizeof(FILEDESCRIPTOR));
 					if (fd == NULL) {
-						MessageBox(NULL, _T("BAD"), _T("FUCK"), MB_OK);
+						exit(1);
+						break;
 					}
+
 					if (!FillDesc(item, fd)) {
 						free (fd);
 						break;
 					}
-					buf =  (char *) malloc(fd->nFileSizeLow);
+
+					buf =  (char *) malloc(fd->nFileSizeLow + 1);
+					ZeroMemory(buf, fd->nFileSizeLow + 1);
 					FillFileBuffer(item, buf);
-					if (SetVarName(fd, lpCalc->model)) {
+					if (SetVarName(fd->cFileName, lpCalc->model)) {
 						free(buf);
 						free(fd);
 						break;
@@ -195,40 +217,43 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			NMTREEVIEW *nmtv = (LPNMTREEVIEW) lParam;
 			switch (((NMHDR*) lParam)->code) {
 				case TVN_SELCHANGED: {
-					TCHAR string[MAX_PATH];
-					apphdr_t *app;
-					symbol83P_t *symbol;
 					int slot;
-					if (app = GetAppVariable(nmtv->itemNew.hItem, &slot)) {
+					TCHAR string[MAX_PATH] = { 0 };
+					apphdr_t *app = GetAppVariable(nmtv->itemNew.hItem, &slot);
+					if (app != NULL) {
 						if (App_Name_to_String(app, string)) {
 							SetDlgItemText(hwnd, IDC_VAR_NAME, string);
 							StringCbPrintf(string, sizeof(string), _T("%02X"), app->page);
 							SetDlgItemText(hwnd, IDC_VAR_PAGE, string);
 						}
-					} else if (symbol = GetSymbolVariable(nmtv->itemNew.hItem, &slot)) {
-						if (Symbol_Name_to_String(Tree[slot].model, symbol, string)) {
-							SetDlgItemText(hwnd, IDC_VAR_NAME, string);
-							StringCbPrintf(string, sizeof(string), _T("%04X"), symbol->address);
-							SetDlgItemText(hwnd, IDC_VAR_ADDRESS, string);
-							StringCbPrintf(string, sizeof(string), _T("%02X"), symbol->page);
-							SetDlgItemText(hwnd, IDC_VAR_PAGE, string);
-							SetDlgItemText(hwnd, IDC_VAR_RAM, symbol->page == 0 || Tree[slot].model == TI_86 ?
-															_T("True") : _T("False"));
+					} else {
+						symbol83P_t *symbol = GetSymbolVariable(nmtv->itemNew.hItem, &slot);
+						if (symbol != NULL) {
+							if (Symbol_Name_to_String(Tree[slot].model, symbol, string)) {
+								SetDlgItemText(hwnd, IDC_VAR_NAME, string);
+								StringCbPrintf(string, sizeof(string), _T("%04X"), symbol->address);
+								SetDlgItemText(hwnd, IDC_VAR_ADDRESS, string);
+								StringCbPrintf(string, sizeof(string), _T("%02X"), symbol->page);
+								SetDlgItemText(hwnd, IDC_VAR_PAGE, string);
+								SetDlgItemText(hwnd, IDC_VAR_RAM, symbol->page == 0 || Tree[slot].model == TI_86 ?
+									_T("True") : _T("False"));
+							}
 						}
 					}
 					break;
 				}
 				case NM_RCLICK: {
-					HMENU hmenu;
-					hmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_VARTREE_MENU));
-					
+					HMENU hmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_VARTREE_MENU));
 					hmenu = GetSubMenu(hmenu, 0); 
 
 					POINT p, pt = {0};
 					GetCursorPos(&p);
 					pt.x = p.x;
 					pt.y = p.y;
-					int error = ScreenToClient(g_hwndVarTree, &p);
+					BOOL success = ScreenToClient(g_hwndVarTree, &p);
+					if (success == FALSE) {
+						break;
+					}
 
 					TVHITTESTINFO tvht;
 					tvht.pt = p;
@@ -239,12 +264,13 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						DestroyMenu(hmenu);
 						return TRUE;
 					}
+
 					TreeView_SelectItem(g_hwndVarTree, hTreeItem);
 
 					int slot;
 					apphdr_t *app = GetAppVariable(hTreeItem, &slot);
 					symbol83P_t *symbol = GetSymbolVariable(hTreeItem, &slot);
-					if (app || symbol) {
+					if (app != NULL || symbol != NULL) {
 						OnContextMenu(hwnd, pt.x, pt.y, hmenu);
 					}
 
@@ -254,8 +280,8 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case TVN_BEGINDRAG:	{
 					TreeView_SelectItem(g_hwndVarTree, nmtv->itemNew.hItem);
 					FORMATETC fmtetc[2] = {
-						{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
-						{RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL }};
+						{(CLIPFORMAT)RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
+						{(CLIPFORMAT)RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL } };
 					STGMEDIUM stgmed[2] = {
 						{ TYMED_HGLOBAL, { 0 }, 0 },
 						{ TYMED_HGLOBAL, { 0 }, 0 }};
@@ -295,7 +321,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					//
 					pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource->m_pDataobject);
 					//SetDropSourceDataObject(pDropSource, pDataObject);
-					HRESULT hr = DoDragDrop((IDataObject *) pDataObject, (IDropSource *) pDropSource, DROPEFFECT_COPY, &dwEffect);
+					DoDragDrop((IDataObject *) pDataObject, (IDropSource *) pDropSource, DROPEFFECT_COPY, &dwEffect);
 					return TRUE;
 				}
 			}
@@ -316,55 +342,57 @@ TCHAR *GetFilterString(int model) {
 	switch (model) {
 	case TI_73:
 		return _T("Programs  (*.73p)\0*.73p\0\
-				  Applications (*.73k)\0*.73k\0\
-				  App Vars (*.73v)\0*.73v\0\
-				  Lists  (*.73l)\0*.73l\0\
-				  Real/Complex Variables  (*.73n)\0*.73n\0\
-				  Pictures  (*.73i)\0*.73i\0\
-				  GDBs  (*.73d)\0*.73d\0\
-				  Matrices  (*.73m)\0*.73m\0\
-				  Strings  (*.73s)\0*.73s\0\
-				  Groups  (*.73g)\0*.73g\0\
-				  All Files (*.*)\0*.*\0\0");
+Applications (*.73k)\0*.73k\0\
+App Vars (*.73v)\0*.73v\0\
+Lists  (*.73l)\0*.73l\0\
+Real/Complex Variables  (*.73n)\0*.73n\0\
+Pictures  (*.73i)\0*.73i\0\
+GDBs  (*.73d)\0*.73d\0\
+Matrices  (*.73m)\0*.73m\0\
+Strings  (*.73s)\0*.73s\0\
+Groups  (*.73g)\0*.73g\0\
+All Files (*.*)\0*.*\0\0");
 	case TI_84PCSE:
 		return _T("Programs  (*.8xp)\0*.8xp\0\
-				  Applications (*.8ck)\0*.8ck\0\
-				  App Vars (*.8xv)\0*.8xv\0\
-				  Lists  (*.8xl)\0*.8xl\0\
-				  Real/Complex Variables  (*.8xn)\0*.8xn\0\
-				  Pictures  (*.8xi)\0*.8xi\0\
-				  GDBs  (*.8xd)\0*.8xd\0\
-				  Matrices  (*.8xm)\0*.8xm\0\
-				  Strings  (*.8xs)\0*.8xs\0\
-				  Groups  (*.8xg)\0*.8xg\0\
-				  All Files (*.*)\0*.*\0\0");
+Applications (*.8ck)\0*.8ck\0\
+App Vars (*.8xv)\0*.8xv\0\
+Lists  (*.8xl)\0*.8xl\0\
+Real/Complex Variables  (*.8xn)\0*.8xn\0\
+Pictures  (*.8xi)\0*.8xi\0\
+GDBs  (*.8xd)\0*.8xd\0\
+Matrices  (*.8xm)\0*.8xm\0\
+Strings  (*.8xs)\0*.8xs\0\
+Groups  (*.8xg)\0*.8xg\0\
+All Files (*.*)\0*.*\0\0");
 	default:
 		return _T("Programs  (*.8xp)\0*.8xp\0\
-				  Applications (*.8xk)\0*.8xk\0\
-				  App Vars (*.8xv)\0*.8xv\0\
-				  Lists  (*.8xl)\0*.8xl\0\
-				  Real/Complex Variables  (*.8xn)\0*.8xn\0\
-				  Pictures  (*.8xi)\0*.8xi\0\
-				  GDBs  (*.8xd)\0*.8xd\0\
-				  Matrices  (*.8xm)\0*.8xm\0\
-				  Strings  (*.8xs)\0*.8xs\0\
-				  Groups  (*.8xg)\0*.8xg\0\
-				  All Files (*.*)\0*.*\0\0");
+Applications (*.8xk)\0*.8xk\0\
+App Vars (*.8xv)\0*.8xv\0\
+Lists  (*.8xl)\0*.8xl\0\
+Real/Complex Variables  (*.8xn)\0*.8xn\0\
+Pictures  (*.8xi)\0*.8xi\0\
+GDBs  (*.8xd)\0*.8xd\0\
+Matrices  (*.8xm)\0*.8xm\0\
+Strings  (*.8xs)\0*.8xs\0\
+Groups  (*.8xg)\0*.8xg\0\
+All Files (*.*)\0*.*\0\0");
 	}
 }
 
-int SetVarName(FILEDESCRIPTOR *fd, int model) {
+int SetVarName(TCHAR *fileName, int model) {
 	TCHAR *defExt;
 	int filterIndex;
 	const TCHAR *lpstrFilter = GetFilterString(model);
 	const TCHAR lpstrTitle[] = _T("Wabbitemu Export");
 	TCHAR lpstrFile[MAX_PATH];
-	StringCbCopy(lpstrFile, sizeof(lpstrFile), fd->cFileName);
+	StringCbCopy(lpstrFile, sizeof(lpstrFile), fileName);
 	size_t i = _tcslen(lpstrFile);
 	lpstrFile[i] = '\0';
 	defExt = &lpstrFile[i];
-	while (*defExt != '.')
+	while (*defExt != '.') {
 		defExt--;
+	}
+
 	switch (defExt[3]) {
 		case 'p':
 			filterIndex = 1;
@@ -401,18 +429,21 @@ int SetVarName(FILEDESCRIPTOR *fd, int model) {
 			break;
 	}
 
-	if (SaveFile(lpstrFile, lpstrFilter, lpstrTitle, defExt, OFN_PATHMUSTEXIST, filterIndex))
+	if (SaveFile(lpstrFile, lpstrFilter, lpstrTitle, defExt, OFN_PATHMUSTEXIST, filterIndex)) {
 		return 1;
+	}
+
 	StringCbCopy(export_file_name, sizeof(export_file_name), lpstrFile);
 	return 0;
 }
 
 
-/* deletes parent's children, not parent*/
+/* deletes parent's children, not parent */
 void DeleteChildren(HWND hwnd, HTREEITEM parent) {
-	HTREEITEM Child;
-	while(Child = TreeView_GetChild(hwnd,parent)) {
+	HTREEITEM Child = TreeView_GetChild(hwnd, parent);
+	while(Child != NULL) {
 		TreeView_DeleteItem(hwnd, Child);
+		Child = TreeView_GetChild(hwnd, parent);
 	}
 }
 
@@ -429,6 +460,10 @@ HTREEITEM InsertVar(HTREEITEM parent, TCHAR *Name, int icon) {
 	return TreeView_InsertItem(g_hwndVarTree, &tvs);
 }
 
+#define SetupNode(hTreeItem, ItemName, Icon)  if (!hTreeItem || tree->model == 0)\
+	hTreeItem = InsertVar(tree->hRoot, ItemName, Icon);\
+	else DeleteChildren(g_hwndVarTree, hTreeItem)
+
 /* updates the tree view */
 void RefreshTreeView(BOOL New) {
 	u_int i;
@@ -443,196 +478,186 @@ void RefreshTreeView(BOOL New) {
 
 	/* run through all active calcs */
 	for(slot = 0; slot < MAX_CALCS; slot++) {
-		if (!calcs[slot].active && Tree[slot].model != 0) {
-			TreeView_DeleteItem(g_hwndVarTree, Tree[slot].hRoot);
-			Tree[slot].model = 0;
+		VARTREEVIEW_t *tree = &Tree[slot];
+		if (!calcs[slot].active && tree->model != 0) {
+			TreeView_DeleteItem(g_hwndVarTree, tree->hRoot);
+			tree->model = 0;
 		}
 
-		if (calcs[slot].active && Tree[slot].model != calcs[slot].model && Tree[slot].model != 0) {
-			TreeView_DeleteItem(g_hwndVarTree, Tree[slot].hRoot);
-			Tree[slot].model = 0;
+		if (calcs[slot].active && tree->model != calcs[slot].model && tree->model != 0) {
+			TreeView_DeleteItem(g_hwndVarTree, tree->hRoot);
+			tree->model = 0;
 		}
 		
 		
-		/*It's an 83+ compatible with a known rom(hopefully)*/
+		/* It's an 83+ compatible with a known rom(hopefully) */
 		if (calcs[slot].active && (calcs[slot].model >= TI_83P || calcs[slot].model == TI_86) &&
 			sscanf_s(calcs[slot].rom_version, "%f", &ver) == 1) {
-
 			/* This slot has not yet been initialized. */
 			/* so set up the Root */
-			if (Tree[slot].model == 0) {
-				tvs.hParent				= TVI_ROOT;
-				tvs.hInsertAfter		= TVI_ROOT;
-				tvs.item.mask			= TVIF_IMAGE | TVIF_SELECTEDIMAGE |TVIF_TEXT;
-				tvs.item.pszText		= (LPTSTR)calc_get_model_string(calcs[slot].model);
-				tvs.item.cchTextMax		= (int) _tcslen(tvs.item.pszText) + 1;
-				tvs.item.iImage			= TI_ICON_84PSE;
-				tvs.item.iSelectedImage	= tvs.item.iImage;
-				Tree[slot].hRoot		= TreeView_InsertItem(g_hwndVarTree, &tvs);
+			if (tree->model == 0) {
+				tvs.hParent = TVI_ROOT;
+				tvs.hInsertAfter = TVI_ROOT;
+				tvs.item.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT;
+				tvs.item.pszText = (LPTSTR)calc_get_model_string(calcs[slot].model);
+				tvs.item.cchTextMax = (int)_tcslen(tvs.item.pszText) + 1;
+				tvs.item.iImage = TI_ICON_84PSE;
+				tvs.item.iSelectedImage = tvs.item.iImage;
+				tree->hRoot = TreeView_InsertItem(g_hwndVarTree, &tvs);
 			}
 
 			/* If nodes haven't been init or the model is reset, create nodes */
 			/* otherwise delete children so the vars can be appended */
-			if (!Tree[slot].hApplication || Tree[slot].model == 0) {
-				Tree[slot].hApplication = InsertVar(Tree[slot].hRoot, _T("Application"), TI_ICON_APP);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hApplication);
+			SetupNode(tree->hApplication, _T("Application"), TI_ICON_APP);
+			SetupNode(tree->hProgram, _T("Program"), TI_ICON_PROGRAM);
+			SetupNode(tree->hAppVar, _T("Application Variable"), TI_ICON_APPVAR);
+			SetupNode(tree->hPic, _T("Picture"), TI_ICON_PIC);
+			SetupNode(tree->hGDB, _T("Graph Database"), TI_ICON_GDB);
+			SetupNode(tree->hString, _T("String"), TI_ICON_STRING);
+			SetupNode(tree->hNumber, _T("Number"), TI_ICON_NUMBER);
+			SetupNode(tree->hList, _T("List"), TI_ICON_LIST);
+			SetupNode(tree->hMatrix, _T("Matrix"), TI_ICON_MATRIX);
+			SetupNode(tree->hGroup, _T("Group"), TI_ICON_GROUP);
+			SetupNode(tree->hEquation, _T("Equation"), TI_ICON_EQUATIONS);
 
-			if (!Tree[slot].hProgram || Tree[slot].model == 0) {
-				Tree[slot].hProgram = InsertVar(Tree[slot].hRoot, _T("Program"), TI_ICON_PROGRAM);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hProgram);
-
-			if (!Tree[slot].hAppVar || Tree[slot].model == 0) {
-				Tree[slot].hAppVar = InsertVar(Tree[slot].hRoot, _T("Application Variable"), TI_ICON_APPVAR);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hAppVar);
-
-			if (!Tree[slot].hPic || Tree[slot].model == 0) {
-				Tree[slot].hPic = InsertVar(Tree[slot].hRoot, _T("Picture"), TI_ICON_PIC);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hPic);
-
-			if (!Tree[slot].hGDB || Tree[slot].model == 0) {
-				Tree[slot].hGDB = InsertVar(Tree[slot].hRoot, _T("Graph Database"), TI_ICON_GDB);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hGDB);
-
-			if (!Tree[slot].hString || Tree[slot].model == 0) {
-				Tree[slot].hString = InsertVar(Tree[slot].hRoot, _T("String"), TI_ICON_STRING);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hString);
-
-			if (!Tree[slot].hNumber || Tree[slot].model == 0) {
-				Tree[slot].hNumber = InsertVar(Tree[slot].hRoot, _T("Number"), TI_ICON_NUMBER);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hNumber);
-
-			if (!Tree[slot].hList || Tree[slot].model == 0) {
-				Tree[slot].hList = InsertVar(Tree[slot].hRoot, _T("List"), TI_ICON_LIST);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hList);
-
-			if (!Tree[slot].hMatrix || Tree[slot].model == 0) {
-				Tree[slot].hMatrix = InsertVar(Tree[slot].hRoot, _T("Matrix"), TI_ICON_MATRIX);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hMatrix);
-
-			if (!Tree[slot].hGroup || Tree[slot].model == 0) {
-				Tree[slot].hGroup = InsertVar(Tree[slot].hRoot, _T("Group"), TI_ICON_GROUP);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hGroup);
-
-			if (!Tree[slot].hEquation || Tree[slot].model == 0) {
-				Tree[slot].hEquation = InsertVar(Tree[slot].hRoot, _T("Equation"), TI_ICON_EQUATIONS);
-			} else DeleteChildren(g_hwndVarTree, Tree[slot].hEquation);
-
-			Tree[slot].model		= calcs[slot].cpu.pio.model;
+			tree->model		= calcs[slot].cpu.pio.model;
 			
-			/* Apps are handled outside of the symbol table*/
-			state_build_applist(&calcs[slot].cpu, &Tree[slot].applist);
-			for(i = 0; i < Tree[slot].applist.count; i++) {
-				Tree[slot].hApps[i] = InsertVar(Tree[slot].hApplication, Tree[slot].applist.apps[i].name, TI_ICON_FILE_ARC);
+			if (tree->apps != NULL) {
+				delete tree->apps;
 			}
+
+			if (tree->symbols != NULL) {
+				delete tree->symbols;
+			}
+
+			tree->apps = new map<HTREEITEM, apphdr_t *>;
+			tree->symbols = new map<HTREEITEM, symbol83P_t *>;
+
+			/* Apps are handled outside of the symbol table*/
+			state_build_applist(&calcs[slot].cpu, &tree->applist);
+			for(i = 0; i < tree->applist.count; i++) {
+				apphdr_t *app = &tree->applist.apps[i];
+				HTREEITEM hTreeItem = InsertVar(tree->hApplication, app->name, TI_ICON_FILE_ARC);
+				if (hTreeItem == NULL) {
+					continue;
+				}
+				tree->apps->insert(pair<HTREEITEM, apphdr_t *>(hTreeItem, app));
+			}
+
 			symlist_t* sym;
 			if (calcs[slot].model == TI_86) {
-				sym = state_build_symlist_86(&calcs[slot].cpu, &Tree[slot].sym);
+				sym = state_build_symlist_86(&calcs[slot].cpu, &tree->sym);
 			} else {
-				sym = state_build_symlist_83P(&calcs[slot].cpu, &Tree[slot].sym);
+				sym = state_build_symlist_83P(&calcs[slot].cpu, &tree->sym);
 			}
-			if (sym) {
-				// FIXME
+			if (sym != NULL) {
 				for(i = 0; (&sym->symbols[i]) <= sym->last; i++) {
 					TCHAR tmpstring[64];
 					int icon;
-					
+
 					/* whether its archived or not */
 					/* depends on the page its stored */
-					if (sym->symbols[i].page && Tree[slot].model != TI_86) {
-						icon = TI_ICON_FILE_ARC;  //red
+					if (sym->symbols[i].page && tree->model != TI_86) {
+						icon = TI_ICON_FILE_ARC;  // red
 					} else {
-						icon = TI_ICON_FILE_RAM;  //green
+						icon = TI_ICON_FILE_RAM;  // green
+					}
+
+					if (Symbol_Name_to_String(tree->model, &sym->symbols[i], tmpstring) == NULL) {
+						continue;
 					}
 					
-					if (Symbol_Name_to_String(Tree[slot].model, &sym->symbols[i], tmpstring)) {
-						if (Tree[slot].model == TI_86) {
-							switch(sym->symbols[i].type_ID) {
-								case ProgObj86:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hProgram, tmpstring, icon);
-									break;
-								case PictObj86:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hPic, tmpstring, icon);
-									break;
-								case FuncGDBObj86:
-								case DiffEquGDBObj86:
-								case ParamGDBObj86:
-								case PolarGDBObj86:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hGDB, tmpstring, icon);
-									break;
-								case StrngObj86:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hString, tmpstring, icon);
-									break;
-								case ConstObj86:
-								case RealObj86:
-								case CplxObj86:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hNumber, tmpstring, icon);
-									break;
-								case ListObj86:
-								case CListObj86:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hList, tmpstring, icon);
-									break;
-								case MatObj86:
-								case CMatObj86:
-								case VectObj86:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hMatrix, tmpstring, icon);
-									break;
-								case EquObj86:
-								case EquObj_286:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hEquation, tmpstring, icon);
-									break;
-							}
-						} else {
-							switch(sym->symbols[i].type_ID) {
-								case ProgObj:
-								case ProtProgObj:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hProgram, tmpstring, icon);
-									break;
-								case AppVarObj:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hAppVar, tmpstring, icon);
-									break;
-								case GroupObj:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hGroup, tmpstring, icon);
-									break;
-								case PictObj:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hPic, tmpstring, icon);
-									break;
-								case GDBObj:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hGDB, tmpstring, icon);
-									break;
-								case StrngObj:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hString, tmpstring, icon);
-									break;
-								case RealObj:
-								case CplxObj:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hNumber, tmpstring, icon);
-									break;
-								case ListObj:
-								case CListObj:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hList, tmpstring, icon);
-									break;
-								case MatObj:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hMatrix, tmpstring, icon);
-									break;
-	//							case EquObj:
-								case EquObj_2:
-									Tree[slot].hVars[i] = InsertVar(Tree[slot].hEquation, tmpstring, icon);
-									break;
-							}
+					HTREEITEM item = NULL;
+					if (tree->model == TI_86) {
+						switch(sym->symbols[i].type_ID) {
+							case ProgObj86:
+								item = InsertVar(tree->hProgram, tmpstring, icon);
+								break;
+							case PictObj86:
+								item = InsertVar(tree->hPic, tmpstring, icon);
+								break;
+							case FuncGDBObj86:
+							case DiffEquGDBObj86:
+							case ParamGDBObj86:
+							case PolarGDBObj86:
+								item = InsertVar(tree->hGDB, tmpstring, icon);
+								break;
+							case StrngObj86:
+								item = InsertVar(tree->hString, tmpstring, icon);
+								break;
+							case ConstObj86:
+							case RealObj86:
+							case CplxObj86:
+								item = InsertVar(tree->hNumber, tmpstring, icon);
+								break;
+							case ListObj86:
+							case CListObj86:
+								item = InsertVar(tree->hList, tmpstring, icon);
+								break;
+							case MatObj86:
+							case CMatObj86:
+							case VectObj86:
+								item = InsertVar(tree->hMatrix, tmpstring, icon);
+								break;
+							case EquObj86:
+							case EquObj_286:
+								item = InsertVar(tree->hEquation, tmpstring, icon);
+								break;
+						}
+					} else {
+						switch(sym->symbols[i].type_ID) {
+							case ProgObj:
+							case ProtProgObj:
+								item = InsertVar(tree->hProgram, tmpstring, icon);
+								break;
+							case AppVarObj:
+								item = InsertVar(tree->hAppVar, tmpstring, icon);
+								break;
+							case GroupObj:
+								item = InsertVar(tree->hGroup, tmpstring, icon);
+								break;
+							case PictObj:
+								item = InsertVar(tree->hPic, tmpstring, icon);
+								break;
+							case GDBObj:
+								item = InsertVar(tree->hGDB, tmpstring, icon);
+								break;
+							case StrngObj:
+								item = InsertVar(tree->hString, tmpstring, icon);
+								break;
+							case RealObj:
+							case CplxObj:
+								item = InsertVar(tree->hNumber, tmpstring, icon);
+								break;
+							case ListObj:
+							case CListObj:
+								item = InsertVar(tree->hList, tmpstring, icon);
+								break;
+							case MatObj:
+								item = InsertVar(tree->hMatrix, tmpstring, icon);
+								break;
+//							case EquObj:
+							case EquObj_2:
+								item = InsertVar(tree->hEquation, tmpstring, icon);
+								break;
 						}
 					}
+
+					if (item != NULL) {
+						tree->symbols->insert(pair<HTREEITEM, symbol83P_t*>(item, &sym->symbols[i]));
+					}
 				}
-				//free(sym);
 			}
 			// If no children are found kill parent.
 			for(i = 0; i < 11; i++) {
-				if (Tree[slot].hTypes[i]) {
-					if (TreeView_GetChild(g_hwndVarTree, Tree[slot].hTypes[i]) == NULL) {
-						TreeView_DeleteItem(g_hwndVarTree, Tree[slot].hTypes[i]);
-						Tree[slot].hTypes[i] = NULL;
+				if (tree->hTypes[i]) {
+					if (TreeView_GetChild(g_hwndVarTree, tree->hTypes[i]) == NULL) {
+						TreeView_DeleteItem(g_hwndVarTree, tree->hTypes[i]);
+						tree->hTypes[i] = NULL;
 					}
 				}
 			}
-			TreeView_Expand(g_hwndVarTree, Tree[slot].hRoot, TVE_EXPAND);
+			TreeView_Expand(g_hwndVarTree, tree->hRoot, TVE_EXPAND);
 		}
 	}
 }
@@ -640,90 +665,65 @@ void RefreshTreeView(BOOL New) {
 	
 FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 	int slot;
-	u_int i;
-	TCHAR string[MAX_PATH];
-	memset(string, 0, sizeof(string));
-	for(slot = 0; slot < MAX_CALCS; slot++) {
-		if (Tree[slot].model) {
-			for(i = 0; i < Tree[slot].applist.count; i++) {
-				if (Tree[slot].hApps[i] == hSelect) {
-					if (App_Name_to_String(&Tree[slot].applist.apps[i], string)) {
-						StringCbCat(string, sizeof(string), _T(".8xk"));
-						MFILE *outfile = ExportApp(&calcs[slot], NULL, &Tree[slot].applist.apps[i]);
-						fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
-						fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-						fd->nFileSizeLow = msize(outfile);
-						StringCbCopy(fd->cFileName, sizeof(fd->cFileName), string);
-						mclose(outfile);
-						return fd;
-					}
-					_tprintf_s(_T("%s\n"), Tree[slot].applist.apps[i].name);
-					return NULL;
-				}
-			}
-			if (Tree[slot].sym.last == NULL) {
-				continue;
-			}
-			for(i = 0; i < (u_int) (Tree[slot].sym.last - Tree[slot].sym.symbols + 1); i++) {
-				if (Tree[slot].hVars[i] == hSelect) {
-					if (Symbol_Name_to_String(Tree[slot].model, &Tree[slot].sym.symbols[i], string)) {
-						StringCbCat(string, sizeof(string), _T("."));
-						StringCbCat(string, sizeof(string), (const TCHAR *) type_ext[Tree[slot].sym.symbols[i].type_ID]);
-						MFILE *outfile = ExportVar(&calcs[slot], NULL, &Tree[slot].sym.symbols[i]);
-						fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
-						fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-						fd->nFileSizeLow = msize(outfile);
-						StringCbCopy(fd->cFileName, sizeof(fd->cFileName), string);
-						mclose(outfile);
-						return fd;
-					}
-				}
-			}
+	TCHAR string[MAX_PATH] = { 0 };
+
+	apphdr_t *app = GetAppVariable(hSelect, &slot);
+	if (app != NULL) {
+		if (App_Name_to_String(app, string)) {
+			StringCbCat(string, sizeof(string), _T(".8xk"));
+			MFILE *outfile = ExportApp(&calcs[slot], NULL, app);
+			fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
+			fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+			fd->nFileSizeLow = msize(outfile);
+			StringCbCopy(fd->cFileName, sizeof(fd->cFileName), string);
+			mclose(outfile);
+			return fd;
+		}
+	} else {
+		symbol83P_t *symbol = GetSymbolVariable(hSelect, &slot);
+		if (Symbol_Name_to_String(Tree[slot].model, symbol, string)) {
+			StringCbCat(string, sizeof(string), _T("."));
+			StringCbCat(string, sizeof(string), (const TCHAR *)type_ext[symbol->type_ID]);
+			MFILE *outfile = ExportVar(&calcs[slot], NULL, symbol);
+			fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
+			fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+			fd->nFileSizeLow = msize(outfile);
+			StringCbCopy(fd->cFileName, sizeof(fd->cFileName), string);
+			mclose(outfile);
+			return fd;
 		}
 	}
+
+	MessageBox(NULL, _T("Unable to export variable"), _T("Error"), MB_OK | MB_ICONERROR);
 	return NULL;
 }
 	
-void *FillFileBuffer(HTREEITEM hSelect, void *buf) {
-	u_int slot, i, b;
-	_TUCHAR *buffer = (_TUCHAR *) buf;
-	TCHAR string[64];
-	memset(string, 0, sizeof(string));
-	_tprintf_s(_T("Fill file buffer\n"));
-	for(slot = 0; slot < MAX_CALCS; slot++) {
-		if (Tree[slot].model) {
-			_tprintf_s(_T("model found\n"));
-			for(i = 0; i < Tree[slot].applist.count; i++) {
-				if (Tree[slot].hApps[i] == hSelect) {
-					MFILE *outfile = ExportApp(&calcs[slot], NULL, &Tree[slot].applist.apps[i]);
-					if(!outfile) _putts(_T("MFile not found"));
-					_tprintf_s(_T("size: %d\n"), outfile->size);
-					for(b = 0; b < outfile->size; b++) {
-						_tprintf_s(_T("%02X"), outfile->data[b]);
-						buffer[b] = outfile->data[b];
-					}
-					_tprintf_s(_T("\n"));
-					mclose(outfile);
-					return buffer;
-				}
-			}
-			for(i = 0; i < (u_int) (Tree[slot].sym.last - Tree[slot].sym.symbols + 1); i++) {
-				if (Tree[slot].hVars[i] == hSelect) {
-					if (Symbol_Name_to_String(Tree[slot].model, &Tree[slot].sym.symbols[i], string)) {
-						MFILE *outfile = ExportVar(&calcs[slot], NULL, &Tree[slot].sym.symbols[i]);
-						if(!outfile) _putts(_T("MFile not found"));
-						_tprintf_s(_T("size: %d\n"), outfile->size);
-						for(b = 0; b < outfile->size; b++) {
-							_tprintf_s(_T("%02X"), outfile->data[b]);
-							buffer[b] = outfile->data[b];
-						}
-						_tprintf_s(_T("\n"));
-						mclose(outfile);
-						return buffer;
-					}
-				}
+void *FillFileBuffer(HTREEITEM hSelect, char *buf) {
+	int slot;
+	TCHAR string[64] = { 0 };
+	MFILE *outfile;
+
+	apphdr_t *app = GetAppVariable(hSelect, &slot);
+	if (app != NULL) {
+		outfile = ExportApp(&calcs[slot], NULL, app);
+		if (outfile == NULL) {
+			return NULL;
+		}
+	} else {
+		symbol83P_t *symbol = GetSymbolVariable(hSelect, &slot);
+		if (Symbol_Name_to_String(Tree[slot].model, symbol, string)) {
+			outfile = ExportVar(&calcs[slot], NULL, symbol);
+			if (outfile == NULL) {
+				return NULL;
 			}
 		}
 	}
-	return NULL;
+
+	for (unsigned int b = 0; b < outfile->size; b++) {
+		buf[b] = outfile->data[b];
+	}
+
+	mclose(outfile);
+	return buf;
+
 }

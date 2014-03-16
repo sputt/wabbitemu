@@ -739,64 +739,16 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				LPCALC lpCalc = lpDebugInfo->lpCalc;
 				profiler_t *profiler = &lpCalc->cpu.profiler;
 				profiler->running = !profiler->running;
+				int flash_pages = lpCalc->cpu.mem_c->flash_pages;
+				int ram_pages = lpCalc->cpu.mem_c->ram_pages;
 				HMENU hmenu = GetMenu(hwnd);
 				if (profiler->running) {
-					int result = (int) DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGPROFILE), hwnd, (DLGPROC) ProfileDialogProc, (LPARAM) lpCalc);
-					if (result == IDCANCEL) {
-						profiler->running = !profiler->running;
-					} else {
-						ZeroMemory(profiler->flash_data, sizeof(profiler->flash_data));
-						ZeroMemory(profiler->ram_data, sizeof(profiler->ram_data));
-						profiler->totalTime = 0;
+					profiler->running = GetProfileOptions(hwnd, profiler, flash_pages, ram_pages);
+					if (profiler->running) {
 						CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
 					}
 				} else {
-					FILE* file;
-					double data;
-					TCHAR buffer[MAX_PATH];
-					if (BrowseFile(buffer, _T("	Text file  (*.txt)\0*.txt\0	All Files (*.*)\0*.*\0\0"),
-						_T("Wabbitemu Save Profile"), _T("txt"), 0, 1)) {
-						//make the profiler running again
-						profiler->running = TRUE;
-						break;
-					}
-					_tfopen_s(&file, buffer, _T("wb"));
-					_ftprintf_s(file, _T("Total Tstates: %i\r\n"), profiler->totalTime);
-					_ftprintf_s(file, _T("Flash Memory:\r\n"));
-					for (int j = 0; j < lpCalc->cpu.mem_c->flash_pages; j++)
-					{
-						for (int i = 0; i < PAGE_SIZE / profiler->blockSize; i++) 
-						{
-							data = (double) profiler->flash_data[j][i] / (double) profiler->totalTime;
-							if ((data - 0.0) < DBL_EPSILON)
-							{
-								_ftprintf_s(file, _T("%02X: $%04X - $%04X:\t%f%%\t%d tstates\r\n"), 
-												j,
-												i * profiler->blockSize, 
-												((i + 1) * profiler->blockSize) - 1,
-												data * 100,
-												profiler->flash_data[j][i]);
-							}
-						}
-					}
-					_ftprintf_s(file, _T("\r\nRAM:\r\n"));
-					for (int j = 0; j < lpCalc->cpu.mem_c->ram_pages; j++)
-					{
-						for (int i = 0; i < PAGE_SIZE / profiler->blockSize; i++) 
-						{
-							data = (double) profiler->ram_data[j][i] / (double) profiler->totalTime;
-							if (data != 0.0) 
-							{
-								_ftprintf_s(file, _T("$%02X: $%04X - $%04X:\t%f%%\t%d tstates\r\n"), 
-												j,
-												i * profiler->blockSize, 
-												((i + 1) * profiler->blockSize) - 1,
-												data,
-												profiler->ram_data[j][i]);
-							}
-						}
-					}
-					fclose(file);
+					ExportProfile(lpCalc, profiler);
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_UNCHECKED);
 				}
 				break;
@@ -1006,7 +958,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 			case DB_DISASM_GOTO_ADDR: {
 				waddr_t *waddr = (waddr_t *) lParam;
-				//whose dumbass idea was this? you need to manually send the SELCHANGE notify :|
+				// who's dumbass idea was this? you need to manually send the SELCHANGE notify :|
 				LPNMHDR pnmhdr = (LPNMHDR) malloc(sizeof(NMHDR));
 				pnmhdr->code = TCN_SELCHANGE;
 				pnmhdr->hwndFrom = lpDebugInfo->hdisasm;

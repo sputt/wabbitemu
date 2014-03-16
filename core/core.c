@@ -937,10 +937,15 @@ void handle_profiling(CPU_t *cpu, uint64_t oldTStates, uint16_t oldPC) {
 	cpu->profiler.totalTime += time;
 	bank_t bank = cpu->mem_c->banks[mc_bank(oldPC)];
 	int block = (oldPC % PAGE_SIZE) / cpu->profiler.blockSize;
+
 	if (bank.ram) {
-		cpu->profiler.ram_data[bank.page][block] += time;
+		uint64_t(*ram_data)[PROFILER_NUM_BLOCKS] = 
+			(uint64_t(*)[PROFILER_NUM_BLOCKS]) cpu->profiler.ram_data;
+		ram_data[bank.page][block] += time;
 	} else {
-		cpu->profiler.flash_data[bank.page][block] += time;
+		uint64_t(*flash_data)[PROFILER_NUM_BLOCKS] = 
+			(uint64_t(*)[PROFILER_NUM_BLOCKS]) cpu->profiler.flash_data;
+		flash_data[bank.page][block] += time;
 	}
 }
 

@@ -854,8 +854,9 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	if (mem->boot_mapped) {
 		update_bootmap_pages(mem);
 		mem->banks = mem->bootmap_banks;
-	} else
+	} else {
 		mem->banks = mem->normal_banks;
+	}
 	
 	mem->read_OP_flash_tstates	= ReadInt(chunk);
 	mem->read_NOP_flash_tstates	= ReadInt(chunk);

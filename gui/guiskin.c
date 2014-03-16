@@ -142,7 +142,7 @@ Bitmap *DrawSkin(Bitmap *pBitmapSkin, Bitmap *pBitmapKeymap, Color faceplateColo
 	Graphics g(renderedSkin);
 
 	if (!isCutout) {
-		SolidBrush grayBrush(Color::Gray);
+		SolidBrush grayBrush((Gdiplus::ARGB)Color::Gray);
 		g.FillRectangle(&grayBrush, skinRect);
 	}
 
@@ -184,8 +184,8 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 	Bitmap *pBitmapKeymap = NULL;
 	if (lpMainWindow->bCustomSkin) {
 #ifdef _UNICODE
-		m_pBitmapSkin = new Bitmap(lpCalc->skin_path);
-		m_pBitmapKeymap = new Bitmap(lpCalc->keymap_path);
+		pBitmapSkin = new Bitmap(lpMainWindow->skin_path);
+		pBitmapKeymap = new Bitmap(lpMainWindow->keymap_path);
 #else
 		wchar_t widePath[MAX_PATH];
 		size_t converted;
@@ -207,7 +207,6 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 			lpMainWindow->bCustomSkin = FALSE;
 		}
 
-		LPCALC lpCalc = lpMainWindow->lpCalc;
 		hbmSkin.Load(calc_get_model_string(model), _T("PNG"), g_hInst);
 		switch(model) {
 			case TI_81:
@@ -343,10 +342,10 @@ static POINT ptRgnEdge[] = {{75,675},
 							{SKIN_WIDTH-75,675}};
 
 HRGN GetFaceplateRegion(double default_skin_scale) {
-	unsigned int nPoints = sizeof(ptRgnEdge) / sizeof(POINT);
+	UINT nPoints = sizeof(ptRgnEdge) / sizeof(POINT);
 	POINT *points = (POINT *) malloc(sizeof(ptRgnEdge));
 	UINT scale = (UINT)(1.0 / default_skin_scale);
-	for (int i = 0; i < nPoints; i++) {
+	for (UINT i = 0; i < nPoints; i++) {
 		points[i].x = ptRgnEdge[i].x * scale;
 		points[i].y = ptRgnEdge[i].y * scale;
 	}

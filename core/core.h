@@ -268,15 +268,16 @@ typedef struct reverse_time {
 } reverse_time_t;
 
 #define MIN_BLOCK_SIZE 16
-#define MAX_FLASH_PAGE_SIZE 0xFF
-#define MAX_RAM_PAGE_SIZE 0x08
+#define PROFILER_NUM_BLOCKS (PAGE_SIZE / MIN_BLOCK_SIZE)
 
 typedef struct profiler {
 	BOOL running;
 	int blockSize;
 	uint64_t totalTime;
-	uint64_t flash_data[MAX_FLASH_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
-	uint64_t ram_data[MAX_RAM_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
+	uint64_t **flash_data;
+	uint64_t **ram_data;
+	BOOL show_disassembly;
+	BOOL sort_output;
 } profiler_t;
 
 typedef struct CPU {

@@ -308,7 +308,7 @@ HRESULT LoadRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCal
 	lpMainWindow->bAlphaBlendLCD = (BOOL)QueryWabbitKey(_T("alphablend_lcd"));
 	lpMainWindow->scale = (int)QueryWabbitKey(_T("screen_scale"));
 	StringCbCopy(skinScale, sizeof(skinScale), (TCHAR *) QueryWabbitKey(_T("skin_scale")));
-	lpMainWindow->skin_scale = atof(skinScale);
+	lpMainWindow->skin_scale = _ttof(skinScale);
 	lpMainWindow->m_FaceplateColor = (COLORREF)QueryWabbitKey(_T("faceplate_color"));
 	exit_save_state = (BOOL) QueryWabbitKey(_T("exit_save_state"));
 	new_calc_on_load_files = (BOOL) QueryWabbitKey(_T("load_files_first"));

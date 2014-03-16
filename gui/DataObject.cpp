@@ -241,22 +241,22 @@ HRESULT __stdcall CDataObject::DAdvise(FORMATETC *, DWORD, IAdviseSink *, DWORD 
 }
 
 
-HRESULT __stdcall CDataObject::DUnadvise(DWORD dwConnection) {
+HRESULT __stdcall CDataObject::DUnadvise(DWORD) {
 	return OLE_E_ADVISENOTSUPPORTED;
 }
 
 
-HRESULT __stdcall CDataObject::EnumDAdvise(IEnumSTATDATA **ppEnumAdvise) {
+HRESULT __stdcall CDataObject::EnumDAdvise(IEnumSTATDATA **) {
 	return OLE_E_ADVISENOTSUPPORTED;
 }
 
 
-HRESULT __stdcall CDataObject::GetDataHere (FORMATETC *pFormatEtc, STGMEDIUM *pStgMedium) {
+HRESULT __stdcall CDataObject::GetDataHere (FORMATETC *, STGMEDIUM *) {
 	return DATA_E_FORMATETC;
 }
 
 
-HRESULT CDataObject::GetCanonicalFormatEtc (FORMATETC *pFormatEct, FORMATETC *pFormatEtcOut) {
+HRESULT CDataObject::GetCanonicalFormatEtc (FORMATETC *, FORMATETC *pFormatEtcOut) {
 	pFormatEtcOut->ptd = NULL;
 
 	return E_NOTIMPL;

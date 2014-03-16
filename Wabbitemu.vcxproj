@@ -511,7 +511,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <UseOfAtl>Static</UseOfAtl>
     <PlatformToolset>v120_xp</PlatformToolset>
   </PropertyGroup>
@@ -747,7 +747,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;ZLIB_WINAPI;STRSAFE_NO_DEPRECATE;STRFILEVER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;ZLIB_WINAPI;STRFILEVER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>

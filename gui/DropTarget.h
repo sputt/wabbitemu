@@ -35,7 +35,7 @@ private:
 	
 	FORMATETC *m_pRequired;
 	UINT m_nRequired;
-	list<string> tempFiles;
+	list<tstring> tempFiles;
 
 	FORMATETC *m_pAccepted;
 	UINT m_nAccepted;
