@@ -168,7 +168,7 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 							watch->is_bitmap = TRUE;
 						} else {
 							watch->is_bitmap = FALSE;
-							watch->size = value;
+							watch->size = (u_char)value;
 						}
 						watch->size_is_valid = TRUE;
 						break;
@@ -334,7 +334,8 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					ptr++;
 
 					//i dont know why i need this temp
-					int addr, size;
+					uint16_t addr;
+					int size;
 					_stscanf_s(ptr, _T("%x,%x,%d,%d,%d|"), &addr, &watch->waddr.page, &watch->waddr.is_ram, &size, &watch->val);
 					watch->waddr.addr = addr;
 					watch->waddr_is_valid.addr = TRUE;
@@ -347,7 +348,7 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 						watch->height = LOBYTE(size);
 					} else {
 						watch->is_bitmap = FALSE;
-						watch->size = size;
+						watch->size = (u_char) size;
 					}
 					while(*ptr++ != '|');
 
@@ -584,20 +585,25 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			return TRUE;
 		}
 		case WM_DESTROY: {
-			calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, lpDebugInfo->hwndListView);
+			if (lpDebugInfo == NULL) {
+				return FALSE;
+			}
 
 			TCHAR buf[512] = _T("");
 			TCHAR watchString[256];
 			for (int i = 0; i < lpDebugInfo->num_watch; i++)
 			{
 				watchpoint_t *watch = &lpDebugInfo->watchpoints[i];
-				if (watch->size_is_valid && watch->waddr_is_valid.addr && watch->waddr_is_valid.is_ram && watch->waddr_is_valid.page) {
+				if (watch->size_is_valid && watch->waddr_is_valid.addr && 
+					watch->waddr_is_valid.is_ram && watch->waddr_is_valid.page)
+				{
 					int size;
 					if (watch->is_bitmap) {
 						size = MAKEWORD(watch->width, watch->height);
 					} else {
 						size = watch->size;
 					}
+
 					StringCbPrintf(watchString, sizeof(watchString), _T("%s,%x,%x,%d,%d,%d|"), watch->label,
 										watch->waddr.addr, watch->waddr.page, watch->waddr.is_ram, size, watch->val);
 					StringCbCat(buf, sizeof(buf), watchString);
@@ -605,6 +611,11 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					lpDebugInfo->num_watch--;
 				}
 			}
+
+			if (lpCalc != NULL) {
+				calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, lpDebugInfo->hwndListView);
+			}
+
 			SaveDebugKey((TCHAR *) watchKey, REG_SZ, buf);
 			SaveDebugKey((TCHAR *) numWatchKey, REG_DWORD, &lpDebugInfo->num_watch);
 			return FALSE;

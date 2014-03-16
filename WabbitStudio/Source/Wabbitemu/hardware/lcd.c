@@ -441,11 +441,17 @@ u_char *LCD_update_image(LCD_t *lcd) {
 		n >>= 1;
 	}
 
-	int alpha = ((lcd->base.contrast % LCD_MID_CONTRAST) * 100 / LCD_MID_CONTRAST);
+	int alpha;
 	int contrast_color = 0xFF;
 	if (lcd->base.contrast < LCD_MID_CONTRAST) {
-		alpha = 100 - alpha;
+		alpha = 98 - ((lcd->base.contrast % LCD_MID_CONTRAST) * 100 / LCD_MID_CONTRAST);
 		contrast_color = 0x00;
+	} else {
+		alpha = (lcd->base.contrast % LCD_MID_CONTRAST);
+		alpha = alpha * alpha / 3;
+		if (alpha > 100) {
+			alpha = 100;
+		}
 	}
 
 	int alpha_overlay = (alpha * contrast_color / 100);
@@ -470,7 +476,7 @@ u_char *LCD_update_image(LCD_t *lcd) {
 			}
 			
 			u_char *scol = &screen[row * LCD_WIDTH + col * 8];
-			scol[0] = (u_char) (alpha_overlay + TRUCOLOR(p0, bits) * inverse_alpha / 100);
+			scol[0] = (u_char)(alpha_overlay + TRUCOLOR(p0, bits) * inverse_alpha / 100);
 			scol[1] = (u_char)(alpha_overlay + TRUCOLOR(p1, bits) * inverse_alpha / 100);
 			scol[2] = (u_char)(alpha_overlay + TRUCOLOR(p2, bits) * inverse_alpha / 100);
 			scol[3] = (u_char)(alpha_overlay + TRUCOLOR(p3, bits) * inverse_alpha / 100);

@@ -45,7 +45,7 @@ void sprint_addr(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 				break;
 		}
 	}
-	_stprintf_s(s, _T("%02X %04X"), page, zinf->waddr.addr);
+	StringCbPrintf(s, sizeof(s), _T("%02X %04X"), page, zinf->waddr.addr);
 
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -223,7 +223,8 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 	int i;
 	CPU_t *cpu = &lpCalc->cpu;
 	double time = tc_elapsed(cpu->timer_c);
-	Z80_info_t zinflocal;
+	Z80_info_t zinfarray[4];
+	Z80_info_t *zinflocal = zinfarray;
 
 	had_exe_violation = FALSE;
 	BOOL backup_exe_violation = break_on_exe_violation;
@@ -231,7 +232,7 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 	void (*backupFunction)(CPU_t *) = cpu->exe_violation_callback;
 	cpu->exe_violation_callback = stepoverout_exe_callback;
 
-	disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, cpu->pc), 1, bTIOSDebug, &zinflocal);
+	disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, cpu->pc), 1, bTIOSDebug, zinflocal);
 
 	const double five_seconds = 5.0;
 	if (cpu->halt) {
@@ -244,7 +245,7 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 		} else {
 			cpu->halt = FALSE;
 		}
-	} else if (zinflocal.index == DA_CALL_X || zinflocal.index == DA_CALL_CC_X) {
+	} else if (zinflocal->index == DA_CALL_X || zinflocal->index == DA_CALL_CC_X) {
 		uint16_t old_stack = cpu->sp;
 		uint16_t return_pc = cpu->pc + 3;
 		CPU_step(cpu);
@@ -258,13 +259,12 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 				CPU_step(cpu);
 
 				if ((cpu->sp >= old_sp || (old_sp - cpu->sp) >= 0xFF00) && (cpu->pc >= return_pc && (cpu->pc <= return_pc + 2))) {
-					Z80_info_t zinflocal;
-					disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, old_pc), 1, bTIOSDebug, &zinflocal);
+					disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, old_pc), 1, bTIOSDebug, zinflocal);
 
-					if (zinflocal.index == DA_RET 		||
-						zinflocal.index == DA_RET_CC 	||
-						zinflocal.index == DA_RETI		||
-						zinflocal.index == DA_RETN) {
+					if (zinflocal->index == DA_RET 		||
+						zinflocal->index == DA_RET_CC 	||
+						zinflocal->index == DA_RETI		||
+						zinflocal->index == DA_RETN) {
 				
 						return;
 					}
@@ -274,9 +274,9 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 		}
 	} else {
 		for (i = 0; i < ARRAYSIZE(usable_commands); i++) {
-			if (zinflocal.index == usable_commands[i]) {
+			if (zinflocal->index == usable_commands[i]) {
 				while ((tc_elapsed(cpu->timer_c) - time) < five_seconds &&
-					cpu->pc != (zinflocal.waddr.addr + zinflocal.size))
+					cpu->pc != (zinflocal->waddr.addr + zinflocal->size))
 				{
 					CPU_step(cpu);
 				}

@@ -74,7 +74,7 @@ static void sprite(int x,int y,int w,int h,unsigned char * img) {
 	}
 }
 //BW shades = 2
-static void gradient(int shades,double framerate,double time) {
+static void gradient(int shades, double, double time) {
 	int frame = (int) (time*70.0f);
 	int x,y,c;
 	for(y=0;y<64;y++) {
@@ -146,24 +146,26 @@ static void map() {
 		case 0x03:
 			i = (dir<<1)+((px/8)&0x01);
 			break;
+		default:
+			return;
 
 	}
 	sprite(40,24,16,16,linksprite[i]);
 	
 }
 
-u_char *displayoptionstest_draw_scroll(int shades,double framerate,double time) {
+u_char *displayoptionstest_draw_scroll(int, double, double) {
 	map();
 	return (u_char*) display_test;
 }
 
-u_char *displayoptionstest_draw_bounce(int shades,double framerate,double time) {
+u_char *displayoptionstest_draw_bounce(int, double, double time) {
 	clearscreen();
 	bounce(time);
 	return (u_char*) display_test;
 }
 
-u_char *displayoptionstest_draw_gradient(int shades,double framerate,double time) {
-	gradient(shades,framerate,time);
+u_char *displayoptionstest_draw_gradient(int shades, double framerate, double time) {
+	gradient(shades, framerate, time);
 	return (u_char *) display_test;
 }

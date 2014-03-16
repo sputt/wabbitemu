@@ -10,7 +10,7 @@ typedef struct apphdr {
 
 typedef struct applist {
 	u_int count;
-	apphdr_t apps[96];
+	apphdr_t apps[255];
 } applist_t;
 
 typedef struct {
@@ -27,7 +27,7 @@ typedef struct {
 typedef struct symlist {
 	symbol83P_t *programs;
 	symbol83P_t *last;
-	symbol83P_t symbols[512];
+	symbol83P_t symbols[2048];
 } symlist_t;
 
 // 83p

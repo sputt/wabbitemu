@@ -25,7 +25,7 @@ CDropTarget::CDropTarget(HWND hwnd) {
 CDropTarget::~CDropTarget() {
 	free(m_pRequired);
 	free(m_pAccepted);
-	list<string>::iterator it;
+	list<tstring>::iterator it;
 	for (it = tempFiles.begin(); it != tempFiles.end(); it++) {
 		_tremove((*it).c_str());
 	}
@@ -240,7 +240,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 	}
 
 	lpMainWindow->is_archive_only = TRUE;
-	lpMainWindow->is_calc_file = TRUE;
+	lpMainWindow->is_calc_file = FALSE;
 
 	for (UINT i = 0; i < m_nAccepted && !valid; i++) {
 		if (SUCCEEDED(pDataObject->GetData(&m_pAccepted[i], &stgmed))) {
@@ -251,24 +251,36 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 					while (count--) {
 						DragQueryFile((HDROP) pData, count, path, ARRAYSIZE(path));
 						TIFILE_t *tifile = importvar(path, TRUE);
-						//check if we can go in either ram or archive
-						if (tifile && tifile->flash == NULL) {
-							lpMainWindow->is_archive_only = FALSE;
-						}
-						//check if were a file that doesn't go in ram or archive
-						if (tifile && (tifile->type == ROM_TYPE || tifile->type == SAV_TYPE ||
-							tifile->type == LABEL_TYPE || tifile->type == BREAKPOINT_TYPE))
-						{
-							lpMainWindow->is_calc_file = FALSE;
-							valid = TRUE;
+						if (tifile == NULL) {
+							continue;
 						}
 
-						if (tifile != NULL) {
+						switch (tifile->type) {
+						case FLASH_TYPE:
+							if (lpCalc->model >= TI_73) {
+								valid = TRUE;
+								lpMainWindow->is_calc_file = TRUE;
+							}
+							break;
+						case ROM_TYPE:
+						case LABEL_TYPE:
+						case SAV_TYPE:
+						case BREAKPOINT_TYPE:
+							valid = TRUE;
+							break;
+						case BACKUP_TYPE:
 							if (tifile->backup != NULL && (lpCalc->model == TI_82 &&
-								lpCalc->model == TI_73 && lpCalc->model == TI_85))
-							{
+								lpCalc->model == TI_73 && lpCalc->model == TI_85)) {
 								valid = TRUE;
 							}
+							break;
+						case VAR_TYPE:
+						case GROUP_TYPE:
+						case ZIP_TYPE:
+							lpMainWindow->is_archive_only = FALSE;
+							lpMainWindow->is_calc_file = TRUE;
+							valid = TRUE;
+							break;
 						}
 
 						FreeTiFile(tifile);

@@ -75,6 +75,18 @@ typedef struct TIVAR {
 	unsigned char *data;			// pointer to data
 } TIVAR_t;
 
+typedef enum {
+	ROM_TYPE = 1,			// Rom
+	FLASH_TYPE = 2,			// Flash application or OS
+	VAR_TYPE = 3,			// most varibles can be supported under an umbrella type
+	SAV_TYPE = 4,			// Wabbit specific saves.
+	BACKUP_TYPE = 5,		// Wabbit specific saves.
+	LABEL_TYPE = 6,			// Lab file
+	BREAKPOINT_TYPE = 7,	// breakpoint file
+	GROUP_TYPE = 8,			// groups are stored weirdly so they get a weird type
+	ZIP_TYPE = 9,			// zip/tig file
+} TifileVarType_t;
+
 typedef struct TIFILE {
 	unsigned char sig[8];
 	unsigned char subsig[3];
@@ -84,7 +96,7 @@ typedef struct TIFILE {
 	TIVAR_t *vars[256];
 	unsigned char chksum;
 	int model;
-	int type;
+	TifileVarType_t type;
 	ROM_t *rom;
 	TIFLASH_t *flash;
 	SAVESTATE_t *save;
@@ -97,17 +109,6 @@ typedef struct TIFILE {
 #define TI_FLASH_HEADER_SIZE 8+2+1+1+4+1+8+23+1+1+24+4
 #define TI_FILE_HEADER_SIZE 8+3+42/*+2*/
 #define TI_VAR_HEADER_SIZE 2+2+1+8
-
-
-#define ROM_TYPE	1		//Rom
-#define FLASH_TYPE	2		//Flash application or OS
-#define VAR_TYPE	3		//most varibles can be supported under an umbrella type
-#define SAV_TYPE	4		//Wabbit specific saves.
-#define BACKUP_TYPE	5		//Wabbit specific saves.
-#define LABEL_TYPE	6		//Lab file
-#define BREAKPOINT_TYPE 7	//breakpoint file
-#define GROUP_TYPE 	8		//groups are stored weirdly so they get a weird type
-#define ZIP_TYPE 	9		//zip/tig file
 
 #define FLASH_TYPE_OS 0x23
 #define FLASH_TYPE_APP 0x24

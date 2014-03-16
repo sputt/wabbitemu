@@ -2,8 +2,10 @@
 #define GUIVARTREE_H
 
 #include "link.h"
+#include "gui.h"
 
-typedef struct{
+
+typedef struct {
 	int model;
 	HTREEITEM hRoot;
 	union {
@@ -23,9 +25,10 @@ typedef struct{
 		HTREEITEM hTypes[11];
 	};
 	int count;
-	HTREEITEM hApps[96];
+	map<HTREEITEM, apphdr_t *> *apps;
+	map<HTREEITEM, symbol83P_t *> *symbols;
+
 	applist_t applist;
-	HTREEITEM hVars[512];
 	symlist_t sym;
 } VARTREEVIEW_t;
 
@@ -53,11 +56,9 @@ enum {
 
 
 BOOL VarTreeOpen(BOOL refresh);
-HWND CreateVarTreeList(HWND hwndParent, LPCALC lpCalc);
-int SetVarName(FILEDESCRIPTOR *fd, int model);
+HWND CreateVarTreeList(HWND hwndParent, LPMAINWINDOW lpMainWindow);
 void DeleteChildren(HWND hwnd, HTREEITEM parent);
 void RefreshTreeView(BOOL New);
 INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-void *FillFileBuffer(HTREEITEM hSelect, void *buffer);
-FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd);
+
 #endif

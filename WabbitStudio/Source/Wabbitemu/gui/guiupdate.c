@@ -152,7 +152,9 @@ TCHAR *GetWhatsNewText() {
 	// same as above, ANSI for backwards compatibility
 #define WHATSNEWBUFFERSIZE 32768
 
-	TCHAR *buffer = (TCHAR *)malloc(WHATSNEWBUFFERSIZE * sizeof(TCHAR));
+	size_t bufferSize = WHATSNEWBUFFERSIZE * sizeof(TCHAR);
+	TCHAR *buffer = (TCHAR *)malloc(bufferSize);
+	ZeroMemory(buffer, bufferSize);
 	char whatsNewText[WHATSNEWBUFFERSIZE] = {0};
 	HINTERNET hInternet = InternetOpenA("Wabbitemu", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 	if (hInternet == NULL) {
@@ -171,12 +173,12 @@ TCHAR *GetWhatsNewText() {
 
 #ifdef _UNICODE
 	size_t len;
-	mbstowcs_s(&len, buffer, whatsNewText, WHATSNEWBUFFERSIZE - 1);
-	return wideWhatsNewText;
+	mbstowcs_s(&len, buffer, bufferSize, whatsNewText, WHATSNEWBUFFERSIZE - 1);
 #else
 	StringCchCopy(buffer, WHATSNEWBUFFERSIZE, whatsNewText);
-	return buffer;
 #endif
+
+	return buffer;
 }
 
 void ShowWhatsNew(BOOL forceShow) {

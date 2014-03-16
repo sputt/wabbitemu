@@ -247,7 +247,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			DupLCDConfig(lcd, current_lcd, TRUE);
 			lcd->base.active = TRUE;
 			lcd->word_len = 1;
-			lcd->base.contrast = 52;
+			lcd->base.contrast = LCD_MID_CONTRAST;
 			lcd->base.time = 0.0;
 
 			cpu.pio.devices[0x11].active = TRUE;

@@ -330,7 +330,7 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 		for (i = 0; i < 4; i++)
 		{
 			TCHAR bank[16];
-			sprintf_s(bank, _T("Bank %d"), i);
+			StringCbPrintf(bank, sizeof(bank), _T("Bank %d"), i);
 			DrawText(hdc, bank, -1, &rc, DT_LEFT);
 			OffsetRect(&rc, 0, lpDebugInfo->kRegRow);
 		}

@@ -201,7 +201,12 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 	}
 	
 	if (model == TI_86) {
-		StringCbCopy(buffer, 10, (TCHAR *) sym->name);
+#ifdef UNICODE
+		size_t size;
+		mbstowcs_s(&size, buffer, 10, sym->name, sizeof(buffer));
+#else
+		StringCbCopy(buffer, 10, sym->name);
+#endif
 		return buffer;
 	} else {
 		switch(sym->type_ID) {

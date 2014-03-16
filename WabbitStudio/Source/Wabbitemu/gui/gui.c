@@ -876,10 +876,6 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 	InitCommonControls();
 	OleInitialize(NULL);
 
-
-	//DWORD dwReg;
-	//::CoRegisterClassObject(CLSID_Wabbitemu, NULL, CLSCTX_LOCAL_SERVER, REGCLS_MULTIPLEUSE, &dwReg);
-
 	// Initialize GDI+.
 	GdiplusStartupInput gdiplusStartupInput;
 	Gdiplus::Status gdiStatus = GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
@@ -937,6 +933,8 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 		if (m_parsedArgs.force_focus) {
 			SwitchToThisWindow(alreadyRunningHwnd, TRUE);
 		}
+
+		exit(0);
 		return S_OK;
 	}
 
@@ -1182,9 +1180,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		gui_frame_update(lpMainWindow);
 		break;
 	}
-	case WM_AVI_AUDIO_FRAME:
+	case WM_AVI_AUDIO_FRAME: {
 		avi_audio_frame(lpMainWindow);
 		break;
+	}
 	case WM_PAINT: {
 		if (gif_anim_advance) {
 			switch (lpMainWindow->gif_disp_state) {
@@ -1450,25 +1449,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			ans = (HLOCAL) GetRealAns(&lpCalc->cpu, buffer);
 			BOOL success = OpenClipboard(hwnd);
 			if (!success) {
-				MessageBox(hwnd, "Unable to open clipboard", "Error", MB_OK);
+				MessageBox(hwnd, _T("Unable to open clipboard"), _T("Error"), MB_OK);
 				break;
 			}
 
 			success = EmptyClipboard();
 			if (!success) {
-				MessageBox(hwnd, "Unable to empty clipboard", "Error", MB_OK);
+				MessageBox(hwnd, _T("Unable to empty clipboard"), _T("Error"), MB_OK);
 				break;
 			}
 
 			HANDLE hData = SetClipboardData(CF_TEXT, ans);
 			if (hData == NULL) {
-				MessageBox(hwnd, "Unable to set clipboard data", "Error", MB_OK);
+				MessageBox(hwnd, _T("Unable to set clipboard data"), _T("Error"), MB_OK);
 				break;
 			}
 
 			success = CloseClipboard();
 			if (!success) {
-				MessageBox(hwnd, "Unable to open clipboard", "Error", MB_OK);
+				MessageBox(hwnd, _T("Unable to open clipboard"), _T("Error"), MB_OK);
 				break;
 			}
 			break;
@@ -1482,7 +1481,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			char *charData = (char *) GlobalLock(hClipboardData);
 
-			for (u_int i = 0; i < _tcslen(charData); i++) {
+			for (u_int i = 0; i < strlen(charData); i++) {
 				char num = charData[i];
 
 #define CALC_FLAGS 0x89F0
@@ -1692,7 +1691,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 							 }
 		case IDM_VIEW_VARIABLES:
-			CreateVarTreeList(hwnd, lpCalc);
+			CreateVarTreeList(hwnd, lpMainWindow);
 			break;
 		case IDM_VIEW_KEYSPRESSED:
 			if (IsWindow(lpMainWindow->hwndKeyListDialog)) {
