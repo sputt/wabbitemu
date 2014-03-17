@@ -7,30 +7,6 @@
 #include "label.h"
 
 extern HINSTANCE g_hInst;
-static WNDPROC wpOrigEditProc;
-
-static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	switch (uMsg) {
-	case WM_KEYUP:
-		if (wParam == VK_RETURN) {
-			SendMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
-			return FALSE;
-		} else if (wParam == VK_ESCAPE) {
-			SendMessage(GetParent(hwnd), WM_COMMAND, IDCANCEL, 0);
-			return FALSE;
-		}
-	case WM_KEYDOWN:
-		return FALSE;
-	case WM_CHAR:
-		if (wParam == VK_RETURN || wParam == VK_ESCAPE) {
-			return FALSE;
-		}
-		break;
-	}
-
-	return CallWindowProc(wpOrigEditProc, hwnd, uMsg,
-		wParam, lParam);
-}
 
 void position_goto_dialog(HWND hGotoDialog) {
 	if (hGotoDialog == NULL) {
@@ -49,19 +25,9 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 	switch (Message) {
 	case WM_INITDIALOG: {
 		HWND hEditAddr = GetDlgItem(hwndDlg, IDC_EDTGOTOADDR);
-		wpOrigEditProc = (WNDPROC)SetWindowLongPtr(hEditAddr, GWLP_WNDPROC, (LONG_PTR)EditSubclassProc);
 		LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)lParam;
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lpDebugInfo);
 		return TRUE;
-	}
-	case WM_ACTIVATE: {
-		if (0 == wParam) {
-			hwndCurrentDlg = NULL;
-		} else {
-			hwndCurrentDlg = hwndDlg;
-		}
-
-		return FALSE;
 	}
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
@@ -101,15 +67,20 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 			return TRUE;
 		}
 		case IDCANCEL:
-			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_EDTGOTOADDR), GWLP_WNDPROC,
-				(LONG)wpOrigEditProc);
-
 			SendMessage(GetParent(hwndDlg), WM_USER, DB_GOTO_RESULT, -1);
 			EndDialog(hwndDlg, IDCANCEL);
 			DestroyWindow(hwndDlg);
 			return TRUE;
 		}
 		switch (HIWORD(wParam)) {
+		case BN_SETFOCUS:
+		case EN_SETFOCUS:
+			hwndCurrentDlg = hwndDlg;
+			break;
+		case BN_KILLFOCUS:
+		case EN_KILLFOCUS:
+			hwndCurrentDlg = NULL;
+			break;
 		case BN_CLICKED: {
 			switch (LOWORD(wParam)) {
 			case IDC_GOTOCLOSE:

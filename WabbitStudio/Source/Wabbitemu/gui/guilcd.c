@@ -29,7 +29,8 @@ extern HINSTANCE g_hInst;
 extern HDC hdcSkin;
 extern BOOL is_exiting;
 
-BITMAPINFO *bi = NULL; 
+BITMAPINFO *bi = NULL;
+BITMAPINFO *contrastbi = NULL;
 BITMAPINFO *colorbi = NULL;
 
 HDC DrawDragPanes(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
@@ -213,6 +214,11 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 
 	Graphics graphics(hdc);
 	BITMAPINFO *info = lpCalc->model >= TI_84PCSE ? colorbi : bi;
+	if (lpCalc->model <= TI_84PSE && lcd->active &&
+		lcd->contrast > LCD_MAX_CONTRAST - 4)
+	{
+		info = contrastbi;
+	}
 	
 	BOOL lcd_scaled = (rc.right - rc.left) % lcd->display_width;
 	screen = lcd->image(lcd);
@@ -276,8 +282,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 	ClientToScreen(hwnd, &pt);
 	ScreenToClient(GetParent(hwnd), &pt);
 
-	if (lpMainWindow->bAlphaBlendLCD && lcd->active != FALSE &&
-		!lcd_scaled && lpCalc->model < TI_84PCSE) 
+	if (lpMainWindow->bAlphaBlendLCD && lpCalc->model < TI_84PCSE) 
 	{
 		ImageAttributes attr;
 		const ColorMatrix colorMatrix = {
@@ -346,13 +351,32 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				bi->bmiHeader.biClrUsed = MAX_SHADES+1;
 				bi->bmiHeader.biClrImportant = MAX_SHADES+1;
 
-				//#define LCD_LOW (RGB(0x9E, 0xAB, 0x88))
-				int i;
 #define LCD_HIGH	255
-				for (i = 0; i <= MAX_SHADES; i++) {
+				for (int i = 0; i <= MAX_SHADES; i++) {
 					bi->bmiColors[i].rgbRed = (0x9E*(256-(LCD_HIGH/MAX_SHADES)*i))/255;
 					bi->bmiColors[i].rgbGreen = (0xAB*(256-(LCD_HIGH/MAX_SHADES)*i))/255;
 					bi->bmiColors[i].rgbBlue = (0x88*(256-(LCD_HIGH/MAX_SHADES)*i))/255;
+				}
+			}
+
+			if (contrastbi == NULL) {
+				contrastbi = (BITMAPINFO *)malloc(sizeof(BITMAPINFOHEADER)+(MAX_SHADES + 1)*sizeof(RGBQUAD));
+				contrastbi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+				contrastbi->bmiHeader.biWidth = 128;
+				contrastbi->bmiHeader.biHeight = -64;
+				contrastbi->bmiHeader.biPlanes = 1;
+				contrastbi->bmiHeader.biBitCount = 8;
+				contrastbi->bmiHeader.biCompression = BI_RGB;
+				contrastbi->bmiHeader.biSizeImage = 0;
+				contrastbi->bmiHeader.biXPelsPerMeter = 0;
+				contrastbi->bmiHeader.biYPelsPerMeter = 0;
+				contrastbi->bmiHeader.biClrUsed = MAX_SHADES + 1;
+				contrastbi->bmiHeader.biClrImportant = MAX_SHADES + 1;
+
+				for (int i = 0; i <= MAX_SHADES; i++) {
+					contrastbi->bmiColors[i].rgbRed = (0x9E * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255;
+					contrastbi->bmiColors[i].rgbGreen = (0xAB * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255;
+					contrastbi->bmiColors[i].rgbBlue = 0x20 - ((0x88 * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255);
 				}
 			}
 
@@ -637,6 +661,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_DESTROY: {
 			if (calc_count() == 1 && is_exiting) {
 				free(bi);
+				free(contrastbi);
 				free(colorbi);
 			}
 
