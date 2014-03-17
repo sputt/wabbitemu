@@ -31,9 +31,10 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 #endif
 			char secondChar = (char) toupper(tmpstring[1]);
 			if (*tmpstring != '-' && *tmpstring != '/') {
-				TCHAR *temp = (TCHAR *) malloc(_tcslen(tmpstring) + 1);
-				StringCbCopy(temp, _tcslen(tmpstring) + 1, tmpstring);
-				temp[_tcslen(tmpstring) + 1] = '\0';
+				size_t strLen = _tcslen(tmpstring) + 1;
+				TCHAR *temp = (TCHAR *) malloc(strLen * sizeof(TCHAR));
+				StringCchCopy(temp, strLen, tmpstring);
+				temp[strLen] = '\0';
 				TCHAR extension[5] = _T("");
 				const TCHAR *pext = _tcsrchr(tmpstring, _T('.'));
 				if (pext != NULL) {

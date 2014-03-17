@@ -987,15 +987,16 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 			if (!loadedRom) {
 				calc_slot_free(lpCalc);
 
+				// if we lost our ROM we don't know what the default skin scale was
+				// so we need to clear our old skin scale
+				lpMainWindow->skin_scale = 0.0;
 				lpMainWindow = DoWizardSheet(NULL);
-				//save wizard show
+				// save wizard show
 				SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
 				if (lpMainWindow == NULL) {
 					// this is likely caused by a user cancel
 					return E_ABORT;
 				}
-
-				LoadRegistrySettings(lpMainWindow, lpCalc);
 			}
 		}
 	}
@@ -1224,12 +1225,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			int grayred = (int)(((double)lpMainWindow->GIFGradientWidth / GIFGRAD_PEAK) * 50);
 			HDC hWindow = GetDC(hwnd);
-			Graphics g(lpMainWindow->m_lpBitmapRenderedSkin);
-			DrawGlow(g.GetHDC(), hWindow, &screen, RGB(127 - grayred, 127 - grayred, 127 + grayred),
+			HDC hdcSkin = CreateCompatibleDC(hWindow);
+			HBITMAP hbm = CreateCompatibleBitmap(hWindow, 
+				lpMainWindow->m_RectSkin.Width, lpMainWindow->m_RectSkin.Height);
+			SelectObject(hdcSkin, hbm);
+			Graphics g(hdcSkin);
+			g.DrawImage(lpMainWindow->m_lpBitmapRenderedSkin, lpMainWindow->m_RectSkin);
+			DrawGlow(hdcSkin, hWindow, &screen, RGB(127 - grayred, 127 - grayred, 127 + grayred),
 				lpMainWindow->GIFGradientWidth, lpMainWindow->bSkinEnabled, 1.0 / lpMainWindow->skin_scale);
 			ReleaseDC(hwnd, hWindow);
 			InflateRect(&screen, lpMainWindow->GIFGradientWidth, lpMainWindow->GIFGradientWidth);
 			ValidateRect(hwnd, &screen);
+
+			DeleteObject(hbm);
+			DeleteDC(hdcSkin);
+			ReleaseDC(hwnd, hWindow);
 		}
 
 		PAINTSTRUCT ps;

@@ -189,7 +189,7 @@ BOOL SendFileToCalc(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, 
 		}
 
 		LPSENDINFO lpsi;
-		if (g_SendInfo.find(lpCalc) == g_SendInfo.end())
+		if (g_SendInfo.find(lpCalc) == g_SendInfo.end() || g_SendInfo[lpCalc] == NULL)
 		{
 			lpsi = new SENDINFO;
 			ZeroMemory(lpsi, sizeof(SENDINFO));
