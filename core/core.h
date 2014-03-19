@@ -2,18 +2,7 @@
 #define CORE_H
 
 #include "coretypes.h"
-
-#define TI_81		0
-#define TI_82		1
-#define TI_83		2
-#define TI_85		3
-#define TI_86		4
-#define TI_73		5
-#define TI_83P		6
-#define TI_83PSE	7
-#define TI_84P		8
-#define TI_84PSE	9
-#define TI_84PCSE	10
+#include "modeltypes.h"
 
 /*defines the start of the app page*/
 /*this page starts in HIGH mem and grows to LOW */
@@ -40,8 +29,6 @@
 #ifndef BIT
 #define BIT(bit) (1 << (bit))
 #endif
-
-#define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
 
 #ifdef MACVER
 #define FPS 30

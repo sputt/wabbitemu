@@ -3,13 +3,6 @@
 #include "core.h"
 #include "ti_stdint.h"
 
-#define PAGE_SIZE 16384
-
-
-#define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
-
-
-
 STDINT_t* INT83_init(timer_context_t *);
 int device_init_83(CPU_t*, BOOL);
 int memory_init_83(memc *);

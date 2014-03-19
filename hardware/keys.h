@@ -39,6 +39,4 @@ keyprog_t * keypad_keyprog_from_groupbit(CPU_t *cpu, int group, int bit);
 #define KEYGROUP_ON			0x05
 #define KEYBIT_ON			0x00
 
-#define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
-
 #endif /*#ifndef KEYS_H*/

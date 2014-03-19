@@ -973,7 +973,8 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 		lcd->base_level = base_level;
 	} else {
 		set_model_baselevel(lcd, save->model);
-		lcd->base.contrast -= lcd->base_level;
+		// we can't rely on the old contrast value, just reset it to the midpoint
+		lcd->base.contrast = LCD_MID_CONTRAST;
 	}
 
 	ReadBlock(chunk, lcd->display, DISPLAY_SIZE);

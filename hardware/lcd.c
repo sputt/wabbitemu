@@ -1,15 +1,13 @@
 #include "stdafx.h"
 
 #include "lcd.h"
-#include "83psehw.h"
-#include "screenshothandle.h"
 
 /* 
  * Differing interpretations of contrast require that
  * each model has its own base contrast level. 
  */
 #define BASE_LEVEL_83P		24
-#define BASE_LEVEL_83		30
+#define BASE_LEVEL_82		30
 #define TRUCOLOR(color, bits) ((color) * (0xFF / ((1 << (bits)) - 1)))
 
 /* 
@@ -74,9 +72,9 @@ static void LCD_data(CPU_t *cpu, device_t *dev);
 void set_model_baselevel(LCD_t *lcd, int model) {
 	switch (model) {
 	case TI_82:
-	case TI_83:
-		lcd->base_level = BASE_LEVEL_83;
+		lcd->base_level = BASE_LEVEL_82;
 		break;
+	case TI_83:
 	case TI_73:
 	case TI_83P:
 	case TI_83PSE:
@@ -182,21 +180,11 @@ static void LCD_free(CPU_t *cpu) {
 	free(cpu->pio.lcd);
 }
 
-// TODO: remove this
-static void Add_SE_Delay(CPU_t *cpu) {
-	DELAY_t *delay = (DELAY_t *) &cpu->pio.se_aux->delay;
-	int extra_time = delay->reg[GetCPUSpeed(cpu)] >> 2;
-	tc_add(cpu->timer_c, extra_time);
-}
-
 /* 
  * Device code for LCD commands 
  */
 static void LCD_command(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
-	if (cpu->pio.model > TI_83P) {
-		Add_SE_Delay(cpu);
-	}
 
 	if (cpu->pio.model >= TI_83P && lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->base.last_tstate)) {
 		cpu->output = FALSE;
@@ -253,9 +241,6 @@ static void LCD_command(CPU_t *cpu, device_t *dev) {
  */
 static void LCD_data(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
-
-	if (cpu->pio.model > TI_83P)
-		Add_SE_Delay(cpu);
 
 	//int min_wait = MICROSECONDS(lcd->lcd_delay);
 	if (cpu->pio.model >= TI_83P && 

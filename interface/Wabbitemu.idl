@@ -439,20 +439,7 @@ methods:
 ]
 interface IWabbitemu : IDispatch
 {
-	typedef enum Calc_Model
-	{
-		TI_81,
-		TI_82,
-		TI_83,
-		TI_85,
-		TI_86,
-		TI_73,
-		TI_83P,
-		TI_83PSE,
-		TI_84P,
-		TI_84PSE,
-		TI_84PCSE
-	} Calc_Model;
+#include "..\core\modeltypes.h";
 
 	[propget, helpstring("Whether or not the UI is visible.")]
 	HRESULT Visible([out, retval] VARIANT_BOOL *lpVisible); 
@@ -474,11 +461,17 @@ interface IWabbitemu : IDispatch
 	[propget, helpstring("Whether or not the calculator is running.")]
 	HRESULT Running([out, retval] VARIANT_BOOL *lpfRunning);
 
-	[helpstring("Execute a single instruction")]
+	[helpstring("Execute a single instruction.")]
 	HRESULT Step();
 	HRESULT StepOver();
 	HRESULT Run();
 	HRESULT Break();
+
+	[helpstring("Resets the calculator.")]
+	HRESULT Reset();
+
+	[helpstring("Presses the on key if the calculator LCD is off.")]
+	HRESULT TurnCalcOn();
 
 	[propget, helpstring("Collection of execution breakpoints")]
 	HRESULT Breakpoints([out, retval] IBreakpointCollection **Breakpoints);

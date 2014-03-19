@@ -100,7 +100,9 @@ static void setup_callbacks(LPCALC lpCalc) {
 	lpCalc->cpu.lcd_enqueue_callback = lcd_enqueue_callback;
 	lpCalc->cpu.pio.breakpoint_callback = port_debug_callback;
 	lpCalc->cpu.mem_c->breakpoint_manager_callback = check_break_callback;
-	lpCalc->audio->audio_frame_callback = audio_frame_callback;
+	if (lpCalc->audio != NULL) {
+		lpCalc->audio->audio_frame_callback = audio_frame_callback;
+	}
 }
 
 /* 81 */
@@ -518,6 +520,7 @@ void calc_turn_on(LPCALC lpCalc) {
 	}
 
 	BOOL running = lpCalc->running;
+	while (lpCalc->fake_running) {}
 	lpCalc->fake_running = TRUE;
 	lpCalc->running = TRUE;
 	int time = lpCalc->cpu.timer_c->freq;
@@ -529,6 +532,7 @@ void calc_turn_on(LPCALC lpCalc) {
 	keypad_press(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
 	calc_run_tstates(lpCalc, time / 2);
 	keypad_release(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
+	calc_run_tstates(lpCalc, time / 2);
 	lpCalc->running = running;
 	lpCalc->fake_running = FALSE;
 }

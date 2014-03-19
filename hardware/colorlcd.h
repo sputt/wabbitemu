@@ -9,6 +9,8 @@
 #define COLOR_LCD_DEPTH 3
 #define COLOR_LCD_BUFFERS 3
 #define COLOR_LCD_DISPLAY_SIZE COLOR_LCD_WIDTH * COLOR_LCD_HEIGHT * COLOR_LCD_DEPTH
+#define MAX_BACKLIGHT_LEVEL 32
+#define BACKLIGHT_OFF_DELAY 0.002
 
 typedef struct ColorLCD {
 	LCDBase_t base;
@@ -39,6 +41,9 @@ typedef struct ColorLCD {
 	int display_lines;
 	int clocks_per_line;
 	int clock_divider;
+
+	BOOL backlight_active;
+	double backlight_off_elapsed;
 } ColorLCD_t;
 
 ColorLCD_t *ColorLCD_init(CPU_t *cpu, int model);

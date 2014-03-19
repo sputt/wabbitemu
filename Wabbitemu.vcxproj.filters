@@ -723,6 +723,9 @@
     <ClInclude Include="debugger\dbfinddialog.h">
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>
+    <ClInclude Include="core\modeltypes.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\small_close.bmp">
