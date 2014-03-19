@@ -59,6 +59,9 @@ public:
 	STDMETHOD(Run)();
 	STDMETHOD(Break)();
 
+	STDMETHODIMP Reset();
+	STDMETHODIMP TurnCalcOn();
+
 	STDMETHOD(get_Breakpoints)(IBreakpointCollection **pBC);
 
 	STDMETHODIMP LoadFile(BSTR bstrFileName);
@@ -105,10 +108,6 @@ public:
 	void Fire_OnClose();
 
 private:
-	DWORD m_dwThreadId;
-	static DWORD CALLBACK WabbitemuThread(LPVOID lpParam);
-
-	int m_iSlot;
 	VARIANT_BOOL m_fVisible;
 	struct MainWindow *m_lpMainWindow;
 	LPCALC m_lpCalc;
@@ -116,7 +115,6 @@ private:
 	CComPtr<IMemoryContext> m_pMem;
 	CComPtr<ILCD> m_pLCD;
 	CComPtr<IKeypad> m_pKeypad;
-	HWND m_hwnd;
 	UINT_PTR m_idTimer;
 
 	CComObject<CBreakpointCollection> *m_pBreakpointCollObj;

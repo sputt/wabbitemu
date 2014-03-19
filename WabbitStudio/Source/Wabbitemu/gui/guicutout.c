@@ -330,8 +330,13 @@ int DisableCutout(LPMAINWINDOW lpMainWindow) {
 
 	int scale = lpMainWindow->bSkinEnabled ? DEFAULT_SKIN_SCALE : lpMainWindow->scale;
 	if (lpMainWindow->hwndLCD == NULL || GetParent(lpMainWindow->hwndLCD) == NULL) {
-		int lcd_width = lpCalc->cpu.pio.lcd->display_width;
-		int lcd_height = lpCalc->cpu.pio.lcd->height;
+		LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
+		if (lcd == NULL) {
+			return 2;
+		}
+
+		int lcd_width = lcd->display_width;
+		int lcd_height = lcd->height;
 		DestroyWindow(lpMainWindow->hwndLCD);
 		lpMainWindow->hwndLCD = NULL;
 		lpMainWindow->hwndLCD = CreateWindowEx(

@@ -18,16 +18,15 @@
 
 HRESULT CWabbitemu::FinalConstruct()
 {
-	LPMAINWINDOW lpMainWindow = create_calc_frame_register_events();
-	if (lpMainWindow == NULL || lpMainWindow->lpCalc) {
+	m_lpMainWindow = create_calc_frame_register_events();
+	if (m_lpMainWindow == NULL || m_lpMainWindow->lpCalc == NULL) {
 		MessageBox(NULL, _T("Unable to create main window"), _T("Error"), MB_OK | MB_ICONERROR);
 		return E_UNEXPECTED;
 	}
 	
-	lpMainWindow->pWabbitemu = this;
-	m_lpCalc = lpMainWindow->lpCalc;
+	m_lpMainWindow->pWabbitemu = this;
+	m_lpCalc = m_lpMainWindow->lpCalc;
 	LoadRegistrySettings(m_lpMainWindow, m_lpCalc);
-	m_iSlot = m_lpCalc->slot;
 
 	m_fVisible = VARIANT_FALSE;
 
@@ -53,7 +52,12 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 	}
 	if (fVisible == VARIANT_TRUE)
 	{
-		gui_frame_update(m_lpMainWindow);
+		int success = gui_frame_update(m_lpMainWindow);
+		if (success == FALSE) {
+			DestroyWindow(m_lpMainWindow->hwndFrame);
+			return E_FAIL;
+		}
+
 		SetProp(m_lpMainWindow->hwndFrame, _T("COMObjectFrame"), (HANDLE) TRUE);
 		
 		//HMENU hMenu = GetSystemMenu(m_lpCalc->hwndFrame, FALSE);
@@ -154,19 +158,30 @@ STDMETHODIMP CWabbitemu::get_CPU(IZ80 **ppZ80)
 {
 	if (m_pZ80 == NULL)
 	{
-		return S_FALSE;
+		return E_POINTER;
 	}
+
 	return m_pZ80->QueryInterface(IID_IZ80,(LPVOID *) ppZ80);
 }
 
 STDMETHODIMP CWabbitemu::get_Memory(IMemoryContext **ppContext)
 {
+	if (m_pMem == NULL)
+	{
+		return E_POINTER;
+	}
+
 	return m_pMem->QueryInterface(ppContext);
 }
 
 
 STDMETHODIMP CWabbitemu::get_LCD(ILCD **ppLCD)
 {
+	if (m_pLCD == NULL)
+	{
+		return E_POINTER;
+	}
+
 	return m_pLCD->QueryInterface(IID_ILCD,(LPVOID *) ppLCD);
 }
 
@@ -190,8 +205,18 @@ STDMETHODIMP CWabbitemu::Step()
 
 STDMETHODIMP CWabbitemu::StepOver()
 {
-	// TODO: figure out what to do here for TIOS debug
-	CPU_stepover(m_lpCalc, TRUE);
+	CPU_stepover(m_lpCalc, m_lpMainWindow->bTIOSDebug);
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::Reset()
+{
+	calc_reset(m_lpCalc);
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::TurnCalcOn() {
+	calc_turn_on(m_lpCalc);
 	return S_OK;
 }
 
@@ -203,8 +228,17 @@ STDMETHODIMP CWabbitemu::get_Breakpoints(IBreakpointCollection **ppBC)
 STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 {
 	TIFILE *file = importvar(_bstr_t(bstrFileName), TRUE);
+	if (file == NULL)
+	{
+		return E_INVALIDARG;
+	}
 	
-	SendFileToCalc(m_lpMainWindow->hwndFrame, m_lpCalc, _bstr_t(bstrFileName), FALSE);
+	BOOL result = SendFileToCalc(m_lpMainWindow->hwndFrame, m_lpCalc, _bstr_t(bstrFileName), FALSE);
+	if (result == FALSE)
+	{
+		return E_INVALIDARG;
+	}
+
 	if (file->type == ROM_TYPE || file->type == SAV_TYPE)
 	{
 		CComObject<CLCD> *pLCD = NULL;
@@ -357,6 +391,10 @@ STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 
 STDMETHODIMP CWabbitemu::get_Keypad(IKeypad **ppKeypad)
 {
+	if (m_pKeypad == NULL) {
+		return E_POINTER;
+	}
+
 	return m_pKeypad->QueryInterface(IID_IKeypad, (LPVOID *) ppKeypad);
 }
 

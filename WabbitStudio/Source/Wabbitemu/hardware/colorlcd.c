@@ -3,7 +3,7 @@
 #include "colorlcd.h"
 
 #define PIXEL_OFFSET(x, y) ((y) * COLOR_LCD_WIDTH + (x)) * COLOR_LCD_DEPTH 
-#define TRUCOLOR(color, bits) (color) * (0xFF / ((1 << (bits)) - 1))
+#define TRUCOLOR(color, bits) ((color) * (0xFF / ((1 << (bits)) - 1)))
 #define LCD_REG(reg) (lcd->registers[reg])
 #define LCD_REG_MASK(reg, mask) (LCD_REG(reg) & (mask))
 
@@ -624,7 +624,7 @@ static void write_pixel16(ColorLCD_t *lcd, timerc *timerc) {
 	int red_significant_bit = pixel_val & BIT(15) ? 1 : 0;
 	int blue_significant_bit = pixel_val & BIT(4) ? 1 : 0;
 
-	int red = (pixel_val >> 10) | red_significant_bit;
+	int red = ((pixel_val >> 10) | red_significant_bit) & 0x3F;
 	int green = (pixel_val >> 5) & 0x3F;
 	int blue = ((pixel_val << 1) | blue_significant_bit) & 0x3F;
 
@@ -691,6 +691,7 @@ void ColorLCD_LCDreset(ColorLCD_t *lcd) {
 	lcd->base.width = COLOR_LCD_WIDTH;
 	lcd->base.display_width = COLOR_LCD_WIDTH;
 	lcd->base.height = COLOR_LCD_HEIGHT;
+	lcd->base.contrast = 0;
 
 	lcd->display_lines = COLOR_LCD_WIDTH;
 	lcd->frame_rate = 69;
@@ -698,6 +699,7 @@ void ColorLCD_LCDreset(ColorLCD_t *lcd) {
 	lcd->front_porch = 2;
 	lcd->clocks_per_line = 16;
 	lcd->clock_divider = 1;
+	lcd->backlight_active = TRUE;
 
 	set_line_time(lcd);
 
@@ -718,17 +720,27 @@ void ColorLCD_reset(CPU_t *cpu) {
 }
 
 static void draw_row_floating(uint8_t *dest, int size) {
-	for (int i = 0; i < size; i++) {
-		if (dest[i] < 0xFF) {
-			dest[i] += 0xFF / 0x3F;
-		}
-	}
+	// this should fade to in reality white
+	memset(dest, 0xFF, size);
 }
-
 static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int size) {
 	uint8_t *red, *green, *blue;
 	BOOL level_invert = !LCD_REG_MASK(BASE_IMAGE_DISPLAY_CONTROL_REG, LEVEL_INVERT_MASK);
 	BOOL color8bit = LCD_REG_MASK(DISPLAY_CONTROL1_REG, COLOR8_MASK);
+
+	int contrast = MAX_BACKLIGHT_LEVEL - lcd->base.contrast;
+	int alpha = (contrast  * 100 / MAX_BACKLIGHT_LEVEL) + 0x1F;
+	if (alpha > 100) {
+		alpha = 100;
+	}
+
+	int contrast_color = 0x00;
+	if (lcd->base.contrast == MAX_BACKLIGHT_LEVEL - 1) {
+		alpha = 0;
+	}
+	
+	int alpha_overlay = ((100 - alpha) * contrast_color / 100);
+	int inverse_alpha = alpha;
 
 	if (level_invert) {
 		red = src;
@@ -742,20 +754,20 @@ static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int siz
 			green += size - 3;
 			blue += size - 3;
 			for (int i = 0; i < size; i += 3) {
-				dest[i] = TRUCOLOR(red[-i] ^ 0x3f, 6);
-				dest[i + 1] = TRUCOLOR(green[-i] ^ 0x3f, 6);
-				dest[i + 2] = TRUCOLOR(blue[-i] ^ 0x3f, 6);
+				dest[i] = alpha_overlay + TRUCOLOR(red[-i] ^ 0x3f, 6) * inverse_alpha / 100;
+				dest[i + 1] = alpha_overlay + TRUCOLOR(green[-i] ^ 0x3f, 6) * inverse_alpha / 100;
+				dest[i + 2] = alpha_overlay + TRUCOLOR(blue[-i] ^ 0x3f, 6) * inverse_alpha / 100;
 			}
 		} else {
 			for (int i = 0; i < size; i += 3) {
-				dest[i] = TRUCOLOR(red[i] ^ 0x3f, 6);
-				dest[i + 1] = TRUCOLOR(green[i] ^ 0x3f, 6);
-				dest[i + 2] = TRUCOLOR(blue[i] ^ 0x3f, 6);
+				dest[i] = alpha_overlay + TRUCOLOR(red[i] ^ 0x3f, 6) * inverse_alpha / 100;
+				dest[i + 1] = alpha_overlay + TRUCOLOR(green[i] ^ 0x3f, 6) * inverse_alpha / 100;
+				dest[i + 2] = alpha_overlay + TRUCOLOR(blue[i] ^ 0x3f, 6) * inverse_alpha / 100;
 			}
 		}
 	} else {
 		for (int i = 0; i < size; i++) {
-			dest[i] = TRUCOLOR(src[i], 6);
+			dest[i] = alpha_overlay + TRUCOLOR(src[i], 6) * inverse_alpha / 100;
 		}
 	}
 
@@ -801,7 +813,8 @@ static void draw_row(ColorLCD_t *lcd, uint8_t *dest, uint8_t* src,
 {
 	uint8_t interlace_buf[COLOR_LCD_WIDTH * COLOR_LCD_DEPTH];
 
-	int non_display_area_color = LCD_REG_MASK(BASE_IMAGE_DISPLAY_CONTROL_REG, NDL_MASK) ? TRUCOLOR(0x00, 6) : TRUCOLOR(0x3F, 6);
+	int non_display_area_color = LCD_REG_MASK(BASE_IMAGE_DISPLAY_CONTROL_REG, NDL_MASK) ? 
+		TRUCOLOR(0x00, 6) : TRUCOLOR(0x3F, 6);
 	BOOL interlace_cols = LCD_REG_MASK(DRIVER_OUTPUT_CONTROL1_REG, INTERLACED_MASK) ? TRUE : FALSE;
 
 	uint8_t *optr = interlace_cols ? interlace_buf : dest;
@@ -859,7 +872,7 @@ uint8_t *ColorLCD_Image(LCDBase_t *lcdBase) {
 
 	int p1pos, p1start, p1end, p1width, p2pos, p2start, p2end, p2width;
 
-	if (!lcdBase->active) {
+	if (!lcdBase->active || !lcd->backlight_active) {
 		return buffer;
 	}
 

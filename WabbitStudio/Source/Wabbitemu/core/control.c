@@ -301,7 +301,7 @@ void out_reg(CPU_t *cpu) {
 			   cpu->bus=cpu->l; 
 			   break; 
 		  case 0x06: 
-			   cpu->bus=0; 
+			   cpu->bus=0xFF; 
 			   break; 
 		  case 0x07: 
 			   cpu->bus=cpu->a; 

@@ -149,7 +149,8 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			HDC hdc = CreateCompatibleDC(NULL);
 			HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmPreview);
 
-			if (lcdBase) {
+			if (lcdBase != NULL) {
+				SetStretchBltMode(hdc, HALFTONE);
 				StretchDIBits(hdc, 0, 0, 192, 128,
 					0, 0, lcdBase->display_width, lcdBase->height,
 					lcdBase->image(lcdBase),

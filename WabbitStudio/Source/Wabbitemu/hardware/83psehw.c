@@ -46,20 +46,42 @@ void port0_83pse(CPU_t *cpu, device_t *dev) {
 	}
 }
 
+static BOOL IsLCDBusy(CPU_t *cpu) {
+	int lcd_wait_tstates;
+	switch (GetCPUSpeed(cpu)) {
+	case 0:
+		return FALSE;
+	case 1:
+		lcd_wait_tstates = cpu->pio.se_aux->delay.lcdwait & 3;
+		break;
+	case 2:
+		lcd_wait_tstates = (cpu->pio.se_aux->delay.lcdwait >> 2) & 7;
+		break;
+	case 3:
+		lcd_wait_tstates = (cpu->pio.se_aux->delay.lcdwait >> 5) & 7;
+		break;
+	}
+
+	lcd_wait_tstates = lcd_wait_tstates * 64 + 48;
+	return !((tc_tstates(cpu->timer_c) - cpu->pio.lcd->last_tstate) > lcd_wait_tstates);
+}
+
 //------------------------
 // bit 0 - battery test (not implemented)
-// Bit 1 - LCD wait (not implemented)
+// Bit 1 - LCD wait
 // bit 2 - flash lock
 // bit 3 - not used
 // bit 4 - not used
-// bit 5 - 83+se or 84+
-// bit 6 - not used
+// bit 5 - Set if USB hardware is present
+// bit 6 - Indicates if Link Assist is available
 // bit 7 - SE or Basic
 void port2_83pse(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) cpu->pio.lcd;
 	if (cpu->input) {
-		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE1 : 0xC1) | (cpu->mem_c->flash_locked ? 0 : 4) 
-			| (((tc_tstates(cpu->timer_c) - cpu->pio.lcd->last_tstate) > lcd->lcd_delay) ? 2 : 0);
+		BOOL lcd_busy = IsLCDBusy(cpu);
+		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE1 : 0xC1) |
+			(cpu->mem_c->flash_locked ? 0 : 4) |
+			(lcd_busy ? 0 : 2);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
@@ -466,6 +488,32 @@ void port9_83pse(CPU_t *cpu, device_t *dev) {
 	}
 }
 
+static void Add_SE_Delay(CPU_t *cpu, SE_AUX_t *se_aux) {
+	DELAY_t *delay = (DELAY_t *)&se_aux->delay;
+	int extra_time = delay->reg[GetCPUSpeed(cpu)] >> 2;
+	tc_add(cpu->timer_c, extra_time);
+}
+
+void port10_83pse(CPU_t *cpu, device_t *dev) {
+	if (cpu->input) {
+		Add_SE_Delay(cpu, cpu->pio.se_aux);
+	} else if (cpu->output) {
+		Add_SE_Delay(cpu, cpu->pio.se_aux);
+	}
+
+	cpu->pio.lcd->command(cpu, dev);
+}
+
+void port11_83pse(CPU_t *cpu, device_t *dev) {
+	if (cpu->input) {
+		Add_SE_Delay(cpu, cpu->pio.se_aux);
+	} else if (cpu->output) {
+		Add_SE_Delay(cpu, cpu->pio.se_aux);
+	}
+
+	cpu->pio.lcd->data(cpu, dev);
+}
+
 void port0A_83pse(CPU_t *cpu, device_t *dev) {
 	LINKASSIST_t *assist = (LINKASSIST_t *) dev->aux;
 	if (cpu->input) {
@@ -608,7 +656,11 @@ void port20_83pse(CPU_t *cpu, device_t *dev) {
 		cpu->bus = GetCPUSpeed(cpu);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		int val = cpu->timer_c->timer_version > 0 ? cpu->bus & 3 : cpu->bus & 1;
+		int val = cpu->bus & 3;
+		if (cpu->timer_c->timer_version == 0 && val > 1) {
+			val = 1;
+		}
+
 		switch (val) {
 			case 1:
 				cpu->timer_c->freq = MHZ_15;
@@ -988,18 +1040,43 @@ void GenerateUSBEvent(CPU_t *cpu, USB_t *usb, int bit, BOOL lowToHigh) {
 }
 
 void port3A_83pse(CPU_t *cpu, device_t *dev) {
+	SE_AUX_t *aux = (SE_AUX_t *)dev->aux;
+	ColorLCD_t *lcd = (ColorLCD_t *)cpu->pio.lcd;
 	if (cpu->input) {
-		// if bit 7 is reset, calc thinks its charging
-		if (cpu->pio.model == TI_84PCSE) {
-			cpu->bus = BIT(7) | BIT(5);
-		} else {
-			cpu->bus = BIT(2);
-		}
-
+		cpu->bus = aux->gpio;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		
+		if (cpu->pio.model == TI_84PCSE) {
+			// check if bit 5 flipped
+			if ((cpu->bus & 0x20) != (aux->gpio & 0x20)) {
+				if (cpu->bus & 0x20) {
+					if (lcd->backlight_active == FALSE) {
+						lcd->backlight_active = TRUE;
+						// brightest backlight
+						lcd->base.contrast = 0;
+					} else {
+						lcd->base.contrast++;
+						lcd->base.contrast %= MAX_BACKLIGHT_LEVEL;
+					}
+
+					lcd->backlight_off_elapsed = 0.0;
+				} else {
+					lcd->backlight_off_elapsed = cpu->timer_c->elapsed;
+				}
+			}
+		}
+
+		aux->gpio = cpu->bus;
+
 		cpu->output = FALSE;
+	}
+
+	if (cpu->pio.model == TI_84PCSE) {
+		if (lcd->backlight_active && lcd->backlight_off_elapsed > DBL_EPSILON &&
+			((cpu->timer_c->elapsed - lcd->backlight_off_elapsed - BACKLIGHT_OFF_DELAY) > DBL_EPSILON))
+		{
+			lcd->backlight_active = FALSE;
+		}
 	}
 }
 
@@ -1239,6 +1316,7 @@ SE_AUX_t* SE_AUX_init() {
 	se_aux->usb.USBLineState = 0xA5;
 	se_aux->usb.LineInterrupt = FALSE;
 	se_aux->usb.ProtocolInterrupt = FALSE;
+	se_aux->gpio = 0;
 	return se_aux;
 }
 
@@ -1322,11 +1400,11 @@ int device_init_83pse(CPU_t *cpu, int model) {
 
 	cpu->pio.devices[0x10].active = TRUE;
 	cpu->pio.devices[0x10].aux = lcd;
-	cpu->pio.devices[0x10].code = (devp)lcd->command;
+	cpu->pio.devices[0x10].code = (devp)port10_83pse;
 
 	cpu->pio.devices[0x11].active = TRUE;
 	cpu->pio.devices[0x11].aux = lcd;
-	cpu->pio.devices[0x11].code = (devp)lcd->data;
+	cpu->pio.devices[0x11].code = (devp)port11_83pse;
 
 /* Flash locking */
 	cpu->pio.devices[0x14].active = TRUE;
@@ -1435,6 +1513,7 @@ int device_init_83pse(CPU_t *cpu, int model) {
 
 	cpu->pio.devices[0x3A].active = TRUE;
 	cpu->pio.devices[0x3A].code = (devp)&port3A_83pse;
+	cpu->pio.devices[0x3A].aux = se_aux;
 
 // Clock 
 	cpu->pio.devices[0x40].active = TRUE;

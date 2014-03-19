@@ -297,6 +297,7 @@
     <ClInclude Include="core\device.h" />
     <ClInclude Include="core\indexcb.h" />
     <ClInclude Include="core\indexcb_reverse.h" />
+    <ClInclude Include="core\modeltypes.h" />
     <ClInclude Include="core\optable.h" />
     <ClInclude Include="core\optable_reverse.h" />
     <ClInclude Include="core\reverse_info.h" />

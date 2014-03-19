@@ -935,7 +935,6 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 		}
 
 		exit(0);
-		return S_OK;
 	}
 
 	silent_mode = m_parsedArgs.silent_mode;
@@ -1073,10 +1072,6 @@ void CWabbitemuModule::SetGIFState(gif_disp_state state) {
 
 void CWabbitemuModule::RunMessageLoop()
 {
-	if (m_parsedArgs.no_create_calc) {
-		return __super::RunMessageLoop();
-	}
-
 	MSG Msg;
 	while (GetMessage(&Msg, NULL, 0, 0)) {
 		HACCEL haccel = haccelmain;

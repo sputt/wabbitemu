@@ -231,8 +231,8 @@ BOOL SendFileToCalc(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, 
 		ReleaseMutex(hSendInfoMutex);
 		return TRUE;
 	} else {
-		SendFile(lpCalc, lpszFileName, destination);
-		return TRUE;
+		LINK_ERR err = SendFile(lpCalc, lpszFileName, destination);
+		return err == LERR_SUCCESS;
 	}
 }
 
@@ -259,6 +259,8 @@ static LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG De
 				lpCalc->cpu.pio.link->vlink_size = var->length;
 				lpCalc->cpu.pio.link->vlink_send = 0;
 				BOOL running_backup = lpCalc->running;
+				// if we just started running, calc_turn_on may be running
+				while (lpCalc->fake_running) { }
 				lpCalc->fake_running = TRUE;
 
 				result = link_send_var(&lpCalc->cpu, var, (SEND_FLAG) Destination);

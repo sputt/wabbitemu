@@ -7,7 +7,6 @@
 #define LINK_READ
 #define LinkRead (((cpu->pio.link->host & 0x03) | (cpu->pio.link->client[0] & 0x03))^3)
 #endif
-#define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
 
 typedef struct TIMER {
 	/* determines which clock if any is used for time */
@@ -117,6 +116,9 @@ typedef struct SE_AUX {
 	MD5_t md5;
 	LINKASSIST_t linka;
 	XTAL_t xtal;
+	unsigned char gpio;
+	unsigned long long gpio_write_tstates;
+	double gpio_write_elapsed;
 	USB_t usb;
 } SE_AUX_t;
 
