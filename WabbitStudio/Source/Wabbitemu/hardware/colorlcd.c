@@ -729,7 +729,7 @@ static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int siz
 	BOOL color8bit = LCD_REG_MASK(DISPLAY_CONTROL1_REG, COLOR8_MASK);
 
 	int contrast = MAX_BACKLIGHT_LEVEL - lcd->base.contrast;
-	int alpha = (contrast  * 100 / MAX_BACKLIGHT_LEVEL) + 0x1F;
+	int alpha = (contrast * 100 / MAX_BACKLIGHT_LEVEL) +0x1F;
 	if (alpha > 100) {
 		alpha = 100;
 	}
@@ -741,6 +741,8 @@ static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int siz
 	
 	int alpha_overlay = ((100 - alpha) * contrast_color / 100);
 	int inverse_alpha = alpha;
+	uint8_t r, g, b;
+	int bits = color8bit ? 1 : 6;
 
 	if (level_invert) {
 		red = src;
@@ -754,26 +756,39 @@ static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int siz
 			green += size - 3;
 			blue += size - 3;
 			for (int i = 0; i < size; i += 3) {
-				dest[i] = alpha_overlay + TRUCOLOR(red[-i] ^ 0x3f, 6) * inverse_alpha / 100;
-				dest[i + 1] = alpha_overlay + TRUCOLOR(green[-i] ^ 0x3f, 6) * inverse_alpha / 100;
-				dest[i + 2] = alpha_overlay + TRUCOLOR(blue[-i] ^ 0x3f, 6) * inverse_alpha / 100;
+				r = red[-i] ^ 0x3f;
+				g = green[-i] ^ 0x3f;
+				b = blue[-i] ^ 0x3f;
+				if (color8bit) {
+					r >>= 5;
+					g >>= 5;
+					b >>= 5;
+				}
+
+				dest[i] = alpha_overlay + TRUCOLOR(r, bits) * inverse_alpha / 100;
+				dest[i + 1] = alpha_overlay + TRUCOLOR(g, bits) * inverse_alpha / 100;
+				dest[i + 2] = alpha_overlay + TRUCOLOR(b, bits) * inverse_alpha / 100;
 			}
 		} else {
 			for (int i = 0; i < size; i += 3) {
-				dest[i] = alpha_overlay + TRUCOLOR(red[i] ^ 0x3f, 6) * inverse_alpha / 100;
-				dest[i + 1] = alpha_overlay + TRUCOLOR(green[i] ^ 0x3f, 6) * inverse_alpha / 100;
-				dest[i + 2] = alpha_overlay + TRUCOLOR(blue[i] ^ 0x3f, 6) * inverse_alpha / 100;
+				r = src[i] ^ 0x3f;
+				g = green[i] ^ 0x3f;
+				b = blue[i] ^ 0x3f;
+				if (color8bit) {
+					r >>= 5;
+					g >>= 5;
+					b >>= 5;
+				}
+
+				dest[i] = alpha_overlay + TRUCOLOR(r, bits) * inverse_alpha / 100;
+				dest[i + 1] = alpha_overlay + TRUCOLOR(g, bits) * inverse_alpha / 100;
+				dest[i + 2] = alpha_overlay + TRUCOLOR(b, bits) * inverse_alpha / 100;
 			}
 		}
 	} else {
 		for (int i = 0; i < size; i++) {
-			dest[i] = alpha_overlay + TRUCOLOR(src[i], 6) * inverse_alpha / 100;
-		}
-	}
-
-	if (color8bit) {
-		for (int i = 0; i < size; i++) {
-			dest[i] = TRUCOLOR(dest[i] >> 5, 3);
+			uint8_t val = color8bit ? src[i] >> 5 : src[i];
+			dest[i] = alpha_overlay + TRUCOLOR(val, bits) * inverse_alpha / 100;
 		}
 	}
 }

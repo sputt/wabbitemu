@@ -28,6 +28,7 @@ typedef struct symlist {
 	symbol83P_t *programs;
 	symbol83P_t *last;
 	symbol83P_t symbols[2048];
+	u_int count;
 } symlist_t;
 
 // 83p

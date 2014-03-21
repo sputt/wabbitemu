@@ -94,6 +94,7 @@ symlist_t *state_build_symlist_86(CPU_t *cpu, symlist_t *symlist) {
 	stp.is_ram = TRUE;
 	stp.page = 7;
 
+	symlist->count = 0;
 
 	symbol83P_t *sym;
 	// Loop through while stp is still in the symbol table
@@ -122,6 +123,7 @@ symlist_t *state_build_symlist_86(CPU_t *cpu, symlist_t *symlist) {
 			stp.addr--;
 		}
 		sym->name[i] = '\0';
+		symlist->count++;
 		symlist->last = sym;
 	}
 	
@@ -139,6 +141,7 @@ symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 	prog = mem_read16(mem, progPtr),
 	// stp (symbol table pointer) marks the start
 	stp = symTable;
+	symlist->count = 0;
 	
 	// Verify VAT integrity
 	if (cpu->pio.model < TI_83P) return NULL;
@@ -171,6 +174,8 @@ symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 			sym->name[i] = '\0';
 			symlist->last = sym;
 		}
+
+		symlist->count++;
 	}
 	
 	return symlist;

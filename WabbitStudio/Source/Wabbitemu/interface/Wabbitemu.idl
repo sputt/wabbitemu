@@ -13,7 +13,7 @@ struct TIApplication
 	int PageCount;
 };
 
-enum SYMBOLTYPE
+typedef enum 
 {
 	SYM_REAL = 0x00,
 	SYM_LIST = 0x01,
@@ -42,20 +42,26 @@ enum SYMBOLTYPE
 	SYM_EQUOB = 0x23,
 
 	SYM_NONE = -1,
+} SymbolType;
+
+[
+	object,
+	uuid(010A714D-CADA-400f-90F9-FC34B2A20752),
+	dual,
+]
+interface ITISymbol : IDispatch {
+	[propget, helpstring("The type of the symbol.")]
+	HRESULT Type([out, retval] SymbolType *lpSymbolType);
+	[propget, helpstring("Version of the symbol.")]
+	HRESULT Version([out, retval] BYTE *lpVersion);
+	[propget, helpstring("Page the symbol exists on.")]
+	HRESULT Page([out, retval] IPage **lpPage);
+	[propget, helpstring("Address of the symbol on the page.")]
+	HRESULT Address([out, retval] WORD *lpAddr);
+	[propget, helpstring("Name of the symbol")]
+	HRESULT Name([out, retval] BSTR *lpName);
 };
 
-/*
-[
-	uuid(010A714D-CADA-400f-90F9-FC34B2A20752)
-]
-struct TISymbol {
-	enum SYMBOLTYPE Type;
-	BYTE Version;
-	WORD Address;
-	BYTE Page;
-	BSTR Name;
-};
-*/
 
 [
 	uuid(023D1C58-C323-43a7-860B-95FB9C204F91),
@@ -481,8 +487,8 @@ interface IWabbitemu : IDispatch
 	[propget, helpstring("List of applications on the calculator.")]
 	HRESULT Apps([out, retval] SAFEARRAY(struct TIApplication) *AppList);
 
-	//[propget, helpstring("List of symbols (programs, lists, etc) on the calculator.")]
-	//HRESULT Symbols([out, retval] SAFEARRAY(struct TISymbol) *SymList);
+	[propget, helpstring("List of symbols (programs, lists, etc) on the calculator.")]
+	HRESULT Symbols([out, retval] SAFEARRAY(ITISymbol *) *SymList);
 
 	[propget, helpstring("Gets the keypad device on the calculator.")]
 	HRESULT Keypad([out, retval] IKeypad **Keypad);

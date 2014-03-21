@@ -140,6 +140,7 @@
     <ClCompile Include="interface\CPage.cpp" />
     <ClCompile Include="interface\CPageCollection.cpp" />
     <ClCompile Include="interface\CPio.cpp" />
+    <ClCompile Include="interface\CTISymbol.cpp" />
     <ClCompile Include="interface\CWabbitemu.cpp" />
     <ClCompile Include="interface\CZ80.cpp" />
     <ClCompile Include="interface\state.c" />
@@ -373,6 +374,7 @@
     <ClInclude Include="interface\CPage.h" />
     <ClInclude Include="interface\CPageCollection.h" />
     <ClInclude Include="interface\CPio.h" />
+    <ClInclude Include="interface\CTISymbol.h" />
     <ClInclude Include="interface\CWabbitemu.h" />
     <ClInclude Include="interface\CZ80.h" />
     <ClInclude Include="interface\state.h" />
