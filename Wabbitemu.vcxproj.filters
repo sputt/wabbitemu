@@ -376,6 +376,9 @@
     <ClCompile Include="debugger\dbfinddialog.c">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="interface\CTISymbol.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -725,6 +728,9 @@
     </ClInclude>
     <ClInclude Include="core\modeltypes.h">
       <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CTISymbol.h">
+      <Filter>Header Files\Interface\COM</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

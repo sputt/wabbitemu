@@ -67,6 +67,7 @@ public:
 	STDMETHODIMP LoadFile(BSTR bstrFileName);
 
 	STDMETHODIMP get_Apps(SAFEARRAY **ppAppList);
+	STDMETHODIMP get_Symbols(SAFEARRAY **ppSymList);
 	STDMETHOD(get_Keypad)(IKeypad **ppKeypad);
 	STDMETHODIMP get_Labels(ILabelServer **ppLabelServer);
 
@@ -120,6 +121,7 @@ private:
 	CComObject<CBreakpointCollection> *m_pBreakpointCollObj;
 
 	//CComObject<CLabelServer> m_LabelServer;
+	static void CreateObjects(LPCALC lpCalc, LPVOID lParam);
 };
 
 OBJECT_ENTRY_AUTO(CLSID_Wabbitemu, CWabbitemu)
