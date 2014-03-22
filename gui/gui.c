@@ -1140,8 +1140,6 @@ HRESULT CWabbitemuModule::PostMessageLoop() {
 	// Shutdown GDI+
 	GdiplusShutdown(m_gdiplusToken);
 
-	OleUninitialize();
-
 	return __super::PostMessageLoop();
 }
 

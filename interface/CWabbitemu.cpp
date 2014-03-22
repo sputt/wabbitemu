@@ -273,7 +273,9 @@ STDMETHODIMP CWabbitemu::get_Apps(ITIApplicationCollection **ppAppList)
 	pApplicationCollObj->AddRef();
 	pApplicationCollObj->Initialize(m_pMem, m_lpCalc);
 
-	return pApplicationCollObj->QueryInterface(ppAppList);
+	HRESULT hr = pApplicationCollObj->QueryInterface(ppAppList);
+	pApplicationCollObj->Release();
+	return hr;
 }
 
 
@@ -284,7 +286,9 @@ STDMETHODIMP CWabbitemu::get_Symbols(ITISymbolCollection **ppSymList)
 	pSymbolCollObj->AddRef();
 	pSymbolCollObj->Initialize((CalcModel) m_lpCalc->model, m_pMem, m_lpCalc);
 
-	return pSymbolCollObj->QueryInterface(ppSymList);
+	HRESULT hr = pSymbolCollObj->QueryInterface(ppSymList);
+	pSymbolCollObj->Release();
+	return hr;
 }
 
 
