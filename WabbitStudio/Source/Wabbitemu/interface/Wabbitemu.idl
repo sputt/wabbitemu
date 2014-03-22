@@ -3,16 +3,6 @@ import "ocidl.idl";
 
 interface IPage;
 
-[
-	uuid(36AE85E8-FE2A-41bc-85B5-105B32D8E181)
-]
-struct TIApplication
-{
-	BSTR Name;
-	IPage *Page;
-	int PageCount;
-};
-
 typedef enum 
 {
 	SYM_REAL = 0x00,
@@ -49,7 +39,8 @@ typedef enum
 	uuid(010A714D-CADA-400f-90F9-FC34B2A20752),
 	dual,
 ]
-interface ITISymbol : IDispatch {
+interface ITISymbol : IDispatch
+{
 	[propget, helpstring("The type of the symbol.")]
 	HRESULT Type([out, retval] SymbolType *lpSymbolType);
 	[propget, helpstring("Version of the symbol.")]
@@ -61,6 +52,67 @@ interface ITISymbol : IDispatch {
 	[propget, helpstring("Name of the symbol")]
 	HRESULT Name([out, retval] BSTR *lpName);
 };
+
+[
+	object,
+	uuid(59A2033F-69E7-4678-B32A-962A262FE053),
+	odl,
+	dual,
+	oleautomation,
+	nonextensible,
+	pointer_default(unique)
+]
+interface ITISymbolCollection : IDispatch
+{
+	[propget]
+	HRESULT Count([out, retval] LONG *Count);
+
+	[propget, id(DISPID_VALUE)]
+	HRESULT Item([in] LONG Index, [out, retval] ITISymbol **Item);
+
+	[propput]
+	HRESULT Item([in] LONG Index, [in] ITISymbol *Item);
+
+	[propget, restricted, hidden, id(DISPID_NEWENUM)]
+	HRESULT _NewEnum([out, retval] IUnknown** ppEnum);
+}
+
+[
+	object,
+	uuid(36AE85E8-FE2A-41bc-85B5-105B32D8E181),
+	dual,
+]
+interface ITIApplication : IDispatch {
+	[propget, helpstring("Number of pages the application uses.")]
+	HRESULT PageCount([out, retval] int *lpPageCount);
+	[propget, helpstring("First page the app exists on.")]
+	HRESULT Page([out, retval] IPage **lpPage);
+	[propget, helpstring("Name of the symbol")]
+	HRESULT Name([out, retval] BSTR *lpName);
+};
+
+[
+	object,
+	uuid(C475C584-E8AD-4E7F-9EAD-445BB40BAE2C),
+	odl,
+	dual,
+	oleautomation,
+	nonextensible,
+	pointer_default(unique)
+]
+interface ITIApplicationCollection : IDispatch {
+	[propget]
+	HRESULT Count([out, retval] LONG *Count);
+
+	[propget, id(DISPID_VALUE)]
+	HRESULT Item([in] LONG Index, [out, retval] ITIApplication **Item);
+
+	[propput]
+	HRESULT Item([in] LONG Index, [in] ITIApplication *Item);
+
+	[propget, restricted, hidden, id(DISPID_NEWENUM)]
+	HRESULT _NewEnum([out, retval] IUnknown** ppEnum);
+}
 
 
 [
@@ -453,7 +505,7 @@ interface IWabbitemu : IDispatch
 	HRESULT Visible([in] VARIANT_BOOL fVisible); 
 
 	[propget, helpstring("The current model of the calculator.")]
-	HRESULT Model([out, retval] Calc_Model *lpModel); 
+	HRESULT Model([out, retval] CalcModel *lpModel); 
 
 	[propget, helpstring("The Z80 CPU of the calculator.")] 
 	HRESULT CPU([out, retval] IZ80 **ppZ80);
@@ -469,8 +521,11 @@ interface IWabbitemu : IDispatch
 
 	[helpstring("Execute a single instruction.")]
 	HRESULT Step();
+	[helpstring("Executes a single a single line of code.")]
 	HRESULT StepOver();
+	[helpstring("Resumes execution of the emulator core.")]
 	HRESULT Run();
+	[helpstring("Stops execution of the emulator core.")]
 	HRESULT Break();
 
 	[helpstring("Resets the calculator.")]
@@ -482,13 +537,14 @@ interface IWabbitemu : IDispatch
 	[propget, helpstring("Collection of execution breakpoints")]
 	HRESULT Breakpoints([out, retval] IBreakpointCollection **Breakpoints);
 
+	[helpstring("Opens the file given and if recognized, sends it to the calculator.")]
 	HRESULT LoadFile([in] BSTR FileName);
 
 	[propget, helpstring("List of applications on the calculator.")]
-	HRESULT Apps([out, retval] SAFEARRAY(struct TIApplication) *AppList);
+	HRESULT Apps([out, retval] ITIApplicationCollection **AppList);
 
 	[propget, helpstring("List of symbols (programs, lists, etc) on the calculator.")]
-	HRESULT Symbols([out, retval] SAFEARRAY(ITISymbol *) *SymList);
+	HRESULT Symbols([out, retval] ITISymbolCollection **SymList);
 
 	[propget, helpstring("Gets the keypad device on the calculator.")]
 	HRESULT Keypad([out, retval] IKeypad **Keypad);

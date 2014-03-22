@@ -379,6 +379,15 @@
     <ClCompile Include="interface\CTISymbol.cpp">
       <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
+    <ClCompile Include="Interface\CTISymbolCollection.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="Interface\CTIApplication.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="Interface\CTIApplicationCollection.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -730,6 +739,15 @@
       <Filter>Source Files\Core</Filter>
     </ClInclude>
     <ClInclude Include="interface\CTISymbol.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\CTISymbolCollection.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\CTIApplicationCollection.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\CTIApplication.h">
       <Filter>Header Files\Interface\COM</Filter>
     </ClInclude>
   </ItemGroup>

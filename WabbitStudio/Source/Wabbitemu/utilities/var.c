@@ -25,9 +25,10 @@ int CmpStringCase(const char *str1, unsigned char *str2) {
 	return _strnicmp(str1, (char *) str2, strlen(str1));
 }
 
-int FindRomVersion(char *string, unsigned char *rom, u_int size) {
+CalcModel FindRomVersion(char *string, unsigned char *rom, u_int size) {
 	u_int i;
-	int b, calc;
+	int b;
+	CalcModel calc;
 	if (size == (32 * 1024)) {
 		calc = TI_81;
 	} else if (size == (128 * 1024)) {
@@ -44,7 +45,7 @@ int FindRomVersion(char *string, unsigned char *rom, u_int size) {
 		calc = TI_84PCSE;
 	} else {
 		_putts(_T("not a known rom"));
-		return -1;
+		return INVALID_MODEL;
 	}
 	switch (calc) {
 		case TI_81:
@@ -315,7 +316,8 @@ TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
 
 TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 	size_t size;
-	int calc, tmp;
+	CalcModel calc;
+	int tmp;
 	u_int i;
 
 	fseek(infile, 0, SEEK_END);

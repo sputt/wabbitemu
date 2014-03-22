@@ -465,7 +465,6 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 		return NULL;
 	}
 
-	lpCalc->running = TRUE;
 	lpCalc->speed = 100;
 	HMENU hmenu = GetMenu(lpMainWindow->hwndFrame);
 	CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
@@ -499,6 +498,7 @@ void load_settings(LPCALC lpCalc, LPVOID lParam) {
 	}
 
 	SendMessage(lpMainWindow->hwndFrame, WM_FRAME_UPDATE, 0, 0);
+	lpCalc->running = TRUE;
 }
 
 void sync_calc_clock(LPCALC lpCalc, LPVOID) {

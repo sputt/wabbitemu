@@ -73,7 +73,15 @@ void state_build_applist(CPU_t *cpu, applist_t *applist) {
 		u_int i;
 		u_char *appName;
 		int nameLen = find_field(flash[page], 0x80, 0x40, &appName);
+#ifdef _UNICODE
+		char nameBuffer[12] = { 0 };
+		StringCbCopyNA(nameBuffer, sizeof(nameBuffer), (char *) appName, nameLen);
+		size_t size;
+		ZeroMemory(ah->name, sizeof(ah->name));
+		mbstowcs_s(&size, ah->name, 9, nameBuffer, sizeof(ah->name));
+#else
 		memcpy(ah->name, appName, nameLen);
+#endif
 		ah->name[8] = '\0';
 		ah->page = page;
 		ah->page_count = page_size;
@@ -173,6 +181,13 @@ symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 			for (i = 0; i < sym->name_len; i++) sym->name[i] = mem_read(mem, stp--);
 			sym->name[i] = '\0';
 			symlist->last = sym;
+		}
+
+		TCHAR buffer[255];
+		// check if the symbol is valid
+		if (Symbol_Name_to_String(cpu->pio.model, sym, buffer) == NULL) {
+			sym--;
+			continue;
 		}
 
 		symlist->count++;

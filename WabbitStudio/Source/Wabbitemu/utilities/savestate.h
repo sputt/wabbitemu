@@ -19,7 +19,7 @@ typedef struct {
 	int version_major;
 	int version_minor;
 	int version_build;
-	int model;
+	CalcModel model;
 	int chunk_count;
 	char author[32];
 	char comment[64];	

@@ -19,12 +19,14 @@ public:
 	STDMETHOD(get_Address)(WORD *lpAddr);
 	STDMETHOD(get_Name)(BSTR *lpName);
 
-	void Initialize(IMemoryContext *pMem, symbol83P_t symbol) {
+	void Initialize(CalcModel model, IMemoryContext *pMem, symbol83P_t symbol) {
+		m_Model = model;
 		m_pMem = pMem;
 		m_Symbol = symbol;
 	}
 
 private:
+	CalcModel m_Model;
 	CComPtr<IMemoryContext> m_pMem;
 	symbol83P_t m_Symbol;
 };

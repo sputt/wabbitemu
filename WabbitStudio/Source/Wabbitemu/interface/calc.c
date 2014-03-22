@@ -303,6 +303,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	if (lpCalc->active) {
 		calc_slot_free(lpCalc);
 	}
+
 	lpCalc->model = tifile->model;
 
 	int error = 0;
