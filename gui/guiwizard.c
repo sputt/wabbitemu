@@ -24,7 +24,7 @@ static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version);
 extern HINSTANCE g_hInst;
 static HWND hwndWiz = NULL;
 static BOOL use_bootfree = FALSE;
-static int model = -1;
+static CalcModel model = INVALID_MODEL;
 TCHAR osPath[MAX_PATH];
 TCHAR dumperPath[MAX_PATH];
 static TCHAR TIConnectPath[MAX_PATH];

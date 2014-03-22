@@ -34,11 +34,13 @@ STDMETHODIMP CTISymbol::get_Address(WORD *lpAddr) {
 }
 
 STDMETHODIMP CTISymbol::get_Name(BSTR *lpName) {
+	TCHAR real_name[256] = { 0 };
+	Symbol_Name_to_String(m_Model, &m_Symbol, real_name);
 #ifdef _UNICODE
-	*lpName = SysAllocString((OLECHAR *)m_Symbol.name);
+	*lpName = SysAllocString((OLECHAR *)real_name);
 #else
 	WCHAR wszSymName[32];
-	MultiByteToWideChar(CP_ACP, 0, m_Symbol.name, -1, wszSymName, ARRAYSIZE(wszSymName));
+	MultiByteToWideChar(CP_ACP, 0, real_name, -1, wszSymName, ARRAYSIZE(wszSymName));
 	*lpName = SysAllocString((OLECHAR *)wszSymName);
 #endif
 	return S_OK;

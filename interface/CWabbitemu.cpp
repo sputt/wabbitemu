@@ -6,7 +6,6 @@
 #include "SendFileswindows.h"
 #include "CWabbitemu.h"
 #include "CPage.h"
-#include "CTISymbol.h"
 #include "dbdisasm.h"
 #include "calc.h"
 #include "registry.h"
@@ -267,76 +266,25 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 	return S_OK;
 }
 
-STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
+STDMETHODIMP CWabbitemu::get_Apps(ITIApplicationCollection **ppAppList)
 {
-	CComPtr<ITypeLib> pTypeLib;
-	HRESULT hr = LoadRegTypeLib(LIBID_WabbitemuLib, 1, 0, GetUserDefaultLCID(), &pTypeLib);
-	ATLENSURE_SUCCEEDED(hr);
+	CComObject<CTIApplicationCollection> *pApplicationCollObj;
+	CComObject<CTIApplicationCollection>::CreateInstance(&pApplicationCollObj);
+	pApplicationCollObj->AddRef();
+	pApplicationCollObj->Initialize(m_pMem, m_lpCalc);
 
-	CComPtr<ITypeInfo> pTypeInfo;
-	hr = pTypeLib->GetTypeInfoOfGuid(__uuidof(TIApplication), &pTypeInfo);
-	ATLENSURE_SUCCEEDED(hr);
-
-	CComPtr<IRecordInfo> pRecordInfo;
-	hr = GetRecordInfoFromTypeInfo(pTypeInfo, &pRecordInfo);
-	ATLENSURE_SUCCEEDED(hr);
-
-	applist_t applist;
-	ZeroMemory(&applist, sizeof(applist_t));
-	state_build_applist(&m_lpCalc->cpu, &applist);
-
-	SAFEARRAYBOUND sab = {0};
-	sab.lLbound = 0;
-	sab.cElements = applist.count;
-	LPSAFEARRAY lpsa = SafeArrayCreateEx(VT_RECORD, 1, &sab, pRecordInfo);
-
-	TIApplication *pvData = NULL;
-	if (SUCCEEDED(SafeArrayAccessData(lpsa, (LPVOID *) &pvData)))
-	{
-		for (u_int i = 0; i < sab.cElements; i++)
-		{
-#ifdef _UNICODE
-			pvData[i].Name = SysAllocString((OLECHAR *) applist.apps[i].name);
-#else
-			WCHAR wszAppName[ARRAYSIZE(applist.apps[i].name)];
-			MultiByteToWideChar(CP_ACP, 0, applist.apps[i].name, -1, wszAppName, ARRAYSIZE(wszAppName));
-			pvData[i].Name = SysAllocString((OLECHAR *) wszAppName);
-#endif
-			CComPtr<IPageCollection> pPageColl;
-			m_pMem->get_Flash(&pPageColl);
-
-			pPageColl->get_Item(applist.apps[i].page, &pvData[i].Page);
-
-			pvData[i].PageCount = applist.apps[i].page_count;
-		}
-
-		SafeArrayUnaccessData(lpsa);
-	}
-
-	*ppAppList = lpsa;
-	return S_OK;
+	return pApplicationCollObj->QueryInterface(ppAppList);
 }
 
 
-STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppSymList)
+STDMETHODIMP CWabbitemu::get_Symbols(ITISymbolCollection **ppSymList)
 {
-	symlist_t symlist;
-	ZeroMemory(&symlist, sizeof(symlist_t));
-	state_build_symlist_83P(&m_lpCalc->cpu, &symlist);
+	CComObject<CTISymbolCollection> *pSymbolCollObj;
+	CComObject<CTISymbolCollection>::CreateInstance(&pSymbolCollObj);
+	pSymbolCollObj->AddRef();
+	pSymbolCollObj->Initialize((CalcModel) m_lpCalc->model, m_pMem, m_lpCalc);
 
-	CComSafeArray<IDispatch *> sa((ULONG) symlist.count);
-
-	for (u_int i = 0; i < symlist.count; i++) {
-		CComObject<CTISymbol> *pSymbol;
-		HRESULT hr = CComObject<CTISymbol>::CreateInstance(&pSymbol);
-		ATLENSURE_SUCCEEDED(hr);
-
-		pSymbol->Initialize(m_pMem, symlist.symbols[i]);
-		sa.SetAt(i, pSymbol);
-	}
-
-	*ppSymList = sa.Detach();
-	return S_OK;
+	return pSymbolCollObj->QueryInterface(ppSymList);
 }
 
 
@@ -349,7 +297,7 @@ STDMETHODIMP CWabbitemu::get_Keypad(IKeypad **ppKeypad)
 	return m_pKeypad->QueryInterface(IID_IKeypad, (LPVOID *) ppKeypad);
 }
 
-STDMETHODIMP CWabbitemu::get_Labels(ILabelServer **ppLabelServer)
+STDMETHODIMP CWabbitemu::get_Labels(ILabelServer **)
 {
 	return E_NOTIMPL;
 	//return m_LabelServer.QueryInterface(IID_ILabelServer, (LPVOID *) ppLabelServer);

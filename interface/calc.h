@@ -60,7 +60,7 @@ typedef struct tagCALC {
 	int slot;
 	TCHAR rom_path[MAX_PATH];
 	char rom_version[32];
-	int model;
+	CalcModel model;
 
 	time_t time_error;
 

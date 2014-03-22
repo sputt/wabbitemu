@@ -131,6 +131,7 @@
     <ClCompile Include="hardware\lcd.c" />
     <ClCompile Include="hardware\link.c" />
     <ClCompile Include="interface\calc.c" />
+    <ClCompile Include="Interface\CTIApplication.cpp" />
     <ClCompile Include="interface\CBreakpointCollection.cpp" />
     <ClCompile Include="interface\CCalcAddress.cpp" />
     <ClCompile Include="interface\CKeypad.cpp" />
@@ -140,10 +141,12 @@
     <ClCompile Include="interface\CPage.cpp" />
     <ClCompile Include="interface\CPageCollection.cpp" />
     <ClCompile Include="interface\CPio.cpp" />
+    <ClCompile Include="Interface\CTIApplicationCollection.cpp" />
     <ClCompile Include="interface\CTISymbol.cpp" />
     <ClCompile Include="interface\CWabbitemu.cpp" />
     <ClCompile Include="interface\CZ80.cpp" />
     <ClCompile Include="interface\state.c" />
+    <ClCompile Include="Interface\CTISymbolCollection.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug DLL|Win32'">Create</PrecompiledHeader>
@@ -374,10 +377,13 @@
     <ClInclude Include="interface\CPage.h" />
     <ClInclude Include="interface\CPageCollection.h" />
     <ClInclude Include="interface\CPio.h" />
+    <ClInclude Include="Interface\CTIApplication.h" />
+    <ClInclude Include="Interface\CTIApplicationCollection.h" />
     <ClInclude Include="interface\CTISymbol.h" />
     <ClInclude Include="interface\CWabbitemu.h" />
     <ClInclude Include="interface\CZ80.h" />
     <ClInclude Include="interface\state.h" />
+    <ClInclude Include="Interface\CTISymbolCollection.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="utilities\avifile.h" />
     <ClInclude Include="utilities\bcalls.h" />

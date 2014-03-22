@@ -3,7 +3,8 @@
 
 #ifndef _WINDOWS
 typedef enum {
-	TI_81,
+	INVALID_MODEL = -1,
+	TI_81 = 0,
 	TI_82,
 	TI_83,
 	TI_85,
@@ -14,7 +15,7 @@ typedef enum {
 	TI_84P,
 	TI_84PSE,
 	TI_84PCSE
-} Calc_Model;
+} CalcModel;
 #endif
 
 #endif

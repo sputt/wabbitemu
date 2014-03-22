@@ -95,7 +95,7 @@ typedef struct TIFILE {
 	TIVAR_t *var;
 	TIVAR_t *vars[256];
 	unsigned char chksum;
-	int model;
+	CalcModel model;
 	TifileVarType_t type;
 	ROM_t *rom;
 	TIFLASH_t *flash;
@@ -113,7 +113,7 @@ typedef struct TIFILE {
 #define FLASH_TYPE_OS 0x23
 #define FLASH_TYPE_APP 0x24
 
-int FindRomVersion(char*, unsigned char*, u_int);
+CalcModel FindRomVersion(char*, unsigned char*, u_int);
 int ReadIntelHex(FILE *ifile, INTELHEX_t *ihex);
 TIFILE_t* importvar(LPCTSTR FilePath, BOOL only_check_header);
 TIFILE_t* FreeTiFile(TIFILE_t *);

@@ -9,9 +9,11 @@
 #include "savestate.h"
 
 struct MainWindow;
-typedef Calc_Model CALC_MODEL;
+typedef CalcModel CALC_MODEL;
 
 #include "CBreakpointCollection.h"
+#include "CTISymbolCollection.h"
+#include "CTIApplicationCollection.h"
 
 class ATL_NO_VTABLE CWabbitemu :
 	public CComObjectRootEx<CComObjectThreadModel>,
@@ -43,64 +45,63 @@ public:
 	void FinalRelease();
 
 	// IWabbitemu methods
-	STDMETHODIMP put_Visible(VARIANT_BOOL fVisible);
-	STDMETHODIMP get_Visible(VARIANT_BOOL *lpVisible);
+	STDMETHOD(put_Visible)(VARIANT_BOOL fVisible);
+	STDMETHOD(get_Visible)(VARIANT_BOOL *lpVisible);
 
-	STDMETHODIMP get_CPU(IZ80 **ppZ80);
-	STDMETHODIMP get_LCD(ILCD **ppLCD);
+	STDMETHOD(get_CPU)(IZ80 **ppZ80);
+	STDMETHOD(get_LCD)(ILCD **ppLCD);
 
 	STDMETHOD(get_Memory)(IMemoryContext **ppMemC);
 
 	STDMETHOD(get_Running)(VARIANT_BOOL *lpfRunning);
 	STDMETHOD(get_Model)(CALC_MODEL *lpCalcModel);
 
-	STDMETHODIMP Step();
-	STDMETHODIMP StepOver();
+	STDMETHOD(Step)();
+	STDMETHOD(StepOver)();
 	STDMETHOD(Run)();
 	STDMETHOD(Break)();
 
-	STDMETHODIMP Reset();
-	STDMETHODIMP TurnCalcOn();
+	STDMETHOD(Reset)();
+	STDMETHOD(TurnCalcOn)();
 
 	STDMETHOD(get_Breakpoints)(IBreakpointCollection **pBC);
 
-	STDMETHODIMP LoadFile(BSTR bstrFileName);
+	STDMETHOD(LoadFile)(BSTR bstrFileName);
 
-	STDMETHODIMP get_Apps(SAFEARRAY **ppAppList);
-	STDMETHODIMP get_Symbols(SAFEARRAY **ppSymList);
+	STDMETHOD(get_Apps)(ITIApplicationCollection **ppAppList);
+	STDMETHOD(get_Symbols)(ITISymbolCollection **ppSymList);
 	STDMETHOD(get_Keypad)(IKeypad **ppKeypad);
-	STDMETHODIMP get_Labels(ILabelServer **ppLabelServer);
+	STDMETHOD(get_Labels)(ILabelServer **ppLabelServer);
 
-	//IPersistStreamInit
-	STDMETHOD(GetClassID)(CLSID *pclsid)
+	// IPersistStreamInit
+	STDMETHODIMP GetClassID(CLSID *pclsid)
 	{
 		*pclsid = CLSID_Wabbitemu;
 		return S_OK;
 	}
 
-	STDMETHOD(IsDirty)()
+	STDMETHODIMP IsDirty()
 	{
 		return S_FALSE;
 	}
 
-	STDMETHOD(Load)(LPSTREAM pStm)
+	STDMETHODIMP Load(LPSTREAM)
 	{
-		SAVESTATE_t *sav;
-		//load_save
+		// load_save
 		return E_NOTIMPL;
 	}
 
-	STDMETHOD(Save)(LPSTREAM, BOOL)
-	{
-		return E_NOTIMPL;
-	}
-
-	STDMETHOD(GetSizeMax)(ULARGE_INTEGER *)
+	STDMETHODIMP Save(LPSTREAM, BOOL)
 	{
 		return E_NOTIMPL;
 	}
 
-	STDMETHOD(InitNew)()
+	STDMETHODIMP GetSizeMax(ULARGE_INTEGER *)
+	{
+		return E_NOTIMPL;
+	}
+
+	STDMETHODIMP InitNew()
 	{
 		return E_NOTIMPL;
 	}

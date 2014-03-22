@@ -42,7 +42,7 @@ int fgeti(FILE* stream) {
 	return r;
 }
 
-SAVESTATE_t* CreateSave(TCHAR *author, TCHAR *comment , int model) {
+SAVESTATE_t* CreateSave(TCHAR *author, TCHAR *comment , CalcModel model) {
 	SAVESTATE_t* save = (SAVESTATE_t*) malloc(sizeof(SAVESTATE_t));
 	if (!save) return NULL;
 
@@ -1051,8 +1051,8 @@ void LoadSTDINT(SAVESTATE_t* save, STDINT_t* stdint) {
 	for(i = 0; i < 4; i++) {
 		stdint->freq[i]	= ReadDouble(chunk);
 	}
-	stdint->mem			= ReadInt(chunk);
-	stdint->xy			= ReadInt(chunk);
+	stdint->mem			= (unsigned char) ReadInt(chunk);
+	stdint->xy			= (unsigned char) ReadInt(chunk);
 }
 
 // CPU needed for compatibility, see below
@@ -1346,7 +1346,7 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 		return NULL;
 	}
 
-	save->model = fgeti(ifile);
+	save->model = (CalcModel) fgeti(ifile);
 
 	chunk_count = fgeti(ifile);
 	fread(save->author, 1, MAX_SAVESTATE_AUTHOR_LENGTH, ifile);
