@@ -51,6 +51,9 @@ interface ITISymbol : IDispatch
 	HRESULT Address([out, retval] WORD *lpAddr);
 	[propget, helpstring("Name of the symbol")]
 	HRESULT Name([out, retval] BSTR *lpName);
+
+	[helpstring("Exports the symbol to the given filename")]
+	HRESULT Export(BSTR lpFileName);
 };
 
 [
@@ -89,6 +92,9 @@ interface ITIApplication : IDispatch {
 	HRESULT Page([out, retval] IPage **lpPage);
 	[propget, helpstring("Name of the symbol")]
 	HRESULT Name([out, retval] BSTR *lpName);
+
+	[helpstring("Exports the application to the given filename")]
+	HRESULT Export(BSTR lpFileName);
 };
 
 [

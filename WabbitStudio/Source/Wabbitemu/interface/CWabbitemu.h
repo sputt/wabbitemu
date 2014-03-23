@@ -9,7 +9,6 @@
 #include "savestate.h"
 
 struct MainWindow;
-typedef CalcModel CALC_MODEL;
 
 #include "CBreakpointCollection.h"
 #include "CTISymbolCollection.h"
@@ -54,7 +53,7 @@ public:
 	STDMETHOD(get_Memory)(IMemoryContext **ppMemC);
 
 	STDMETHOD(get_Running)(VARIANT_BOOL *lpfRunning);
-	STDMETHOD(get_Model)(CALC_MODEL *lpCalcModel);
+	STDMETHOD(get_Model)(CalcModel *lpCalcModel);
 
 	STDMETHOD(Step)();
 	STDMETHOD(StepOver)();

@@ -3,7 +3,7 @@
 #include "CTISymbolCollection.h"
 #include "CTISymbol.h"
 
-HRESULT CTISymbolCollection::Initialize(CalcModel model, IMemoryContext *pMem, LPCALC lpCalc) 
+HRESULT CTISymbolCollection::Initialize(LPCALC lpCalc, IMemoryContext *pMem) 
 {
 	symlist_t symlist;
 	ZeroMemory(&symlist, sizeof(symlist_t));
@@ -13,7 +13,7 @@ HRESULT CTISymbolCollection::Initialize(CalcModel model, IMemoryContext *pMem, L
 	for (u_int i = 0; i < symlist.count; i++) {
 		CComObject<CTISymbol> *pSymbolObj;
 		HRESULT hr = CComObject<CTISymbol>::CreateInstance(&pSymbolObj);
-		pSymbolObj->Initialize(model, pMem, symlist.symbols[i]);
+		pSymbolObj->Initialize(lpCalc, pMem, symlist.symbols[i]);
 
 		CAdapt< CComPtr<ITISymbol> > pSymbol = pSymbolObj;
 		symbols.push_back(pSymbol);

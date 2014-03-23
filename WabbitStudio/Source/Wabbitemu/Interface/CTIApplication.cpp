@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "CTIApplication.h"
+#include "exportvar.h"
 
 STDMETHODIMP CTIApplication::get_PageCount(int *lpVersion) {
 	*lpVersion = m_App.page_count;
@@ -25,5 +26,15 @@ STDMETHODIMP CTIApplication::get_Name(BSTR *lpName) {
 	MultiByteToWideChar(CP_ACP, 0, m_App.name, -1, wszSymName, ARRAYSIZE(wszSymName));
 	*lpName = SysAllocString((OLECHAR *)wszSymName);
 #endif
+	return S_OK;
+}
+
+STDMETHODIMP CTIApplication::Export(BSTR bstrFileName) {
+	MFILE *file = ExportApp(m_lpCalc, _bstr_t(bstrFileName), &m_App);
+	if (file == NULL) {
+		return E_FAIL;
+	}
+
+	mclose(file);
 	return S_OK;
 }

@@ -26,6 +26,6 @@ class ATL_NO_VTABLE CTISymbolCollection :
 		return E_NOTIMPL;
 	}
 
-	HRESULT Initialize(CalcModel model, IMemoryContext *pMem, LPCALC lpCalc);
+	HRESULT Initialize(LPCALC lpCalc, IMemoryContext *pMem);
 
 };

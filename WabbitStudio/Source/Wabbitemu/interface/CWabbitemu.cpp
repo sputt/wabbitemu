@@ -284,7 +284,7 @@ STDMETHODIMP CWabbitemu::get_Symbols(ITISymbolCollection **ppSymList)
 	CComObject<CTISymbolCollection> *pSymbolCollObj;
 	CComObject<CTISymbolCollection>::CreateInstance(&pSymbolCollObj);
 	pSymbolCollObj->AddRef();
-	pSymbolCollObj->Initialize((CalcModel) m_lpCalc->model, m_pMem, m_lpCalc);
+	pSymbolCollObj->Initialize(m_lpCalc, m_pMem);
 
 	HRESULT hr = pSymbolCollObj->QueryInterface(ppSymList);
 	pSymbolCollObj->Release();
@@ -294,7 +294,8 @@ STDMETHODIMP CWabbitemu::get_Symbols(ITISymbolCollection **ppSymList)
 
 STDMETHODIMP CWabbitemu::get_Keypad(IKeypad **ppKeypad)
 {
-	if (m_pKeypad == NULL) {
+	if (m_pKeypad == NULL)
+	{
 		return E_POINTER;
 	}
 
@@ -313,8 +314,8 @@ STDMETHODIMP CWabbitemu::get_Running(VARIANT_BOOL *lpfRunning)
 	return S_OK;
 }
 
-STDMETHODIMP CWabbitemu::get_Model(CALC_MODEL *lpCalcModel)
+STDMETHODIMP CWabbitemu::get_Model(CalcModel *lpCalcModel)
 {
-	*lpCalcModel = (CALC_MODEL) (m_lpCalc->model);
+	*lpCalcModel = m_lpCalc->model;
 	return S_OK;
 }
