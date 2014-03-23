@@ -2,6 +2,7 @@
 
 #include "core.h"
 #include "state.h"
+#include "calc.h"
 
 class ATL_NO_VTABLE CTISymbol :
 	public CComObjectRootEx<CComMultiThreadModel>,
@@ -18,15 +19,17 @@ public:
 	STDMETHOD(get_Page)(IPage **lppPage);
 	STDMETHOD(get_Address)(WORD *lpAddr);
 	STDMETHOD(get_Name)(BSTR *lpName);
+	
+	STDMETHOD(Export)(BSTR lpFileName);
 
-	void Initialize(CalcModel model, IMemoryContext *pMem, symbol83P_t symbol) {
-		m_Model = model;
+	void Initialize(LPCALC lpCalc, IMemoryContext *pMem, symbol83P_t symbol) {
+		m_lpCalc = lpCalc;
 		m_pMem = pMem;
 		m_Symbol = symbol;
 	}
 
 private:
-	CalcModel m_Model;
+	LPCALC m_lpCalc;
 	CComPtr<IMemoryContext> m_pMem;
 	symbol83P_t m_Symbol;
 };

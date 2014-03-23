@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "CTISymbol.h"
+#include "exportvar.h"
 
 STDMETHODIMP CTISymbol::get_Type(SymbolType *lpSymbolType) {
 	*lpSymbolType = (SymbolType) m_Symbol.type_ID;
@@ -35,7 +36,7 @@ STDMETHODIMP CTISymbol::get_Address(WORD *lpAddr) {
 
 STDMETHODIMP CTISymbol::get_Name(BSTR *lpName) {
 	TCHAR real_name[256] = { 0 };
-	Symbol_Name_to_String(m_Model, &m_Symbol, real_name);
+	Symbol_Name_to_String(m_lpCalc->model , &m_Symbol, real_name);
 #ifdef _UNICODE
 	*lpName = SysAllocString((OLECHAR *)real_name);
 #else
@@ -43,5 +44,15 @@ STDMETHODIMP CTISymbol::get_Name(BSTR *lpName) {
 	MultiByteToWideChar(CP_ACP, 0, real_name, -1, wszSymName, ARRAYSIZE(wszSymName));
 	*lpName = SysAllocString((OLECHAR *)wszSymName);
 #endif
+	return S_OK;
+}
+
+STDMETHODIMP CTISymbol::Export(BSTR bstrFileName) {
+	MFILE *file = ExportVar(m_lpCalc, bstr_t(bstrFileName), &m_Symbol);
+	if (file == NULL) {
+		return E_FAIL;
+	}
+
+	mclose(file);
 	return S_OK;
 }
