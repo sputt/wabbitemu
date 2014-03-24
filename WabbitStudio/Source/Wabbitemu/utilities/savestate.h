@@ -68,6 +68,7 @@ typedef struct {
 #define MAX_SAVESTATE_AUTHOR_LENGTH 32
 #define MAX_SAVESTATE_COMMENT_LENGTH 64
 
+LPCALC DuplicateCalc(LPCALC lpCalc);
 void WriteSave(const TCHAR *, SAVESTATE_t *, int);
 void LoadSlot(SAVESTATE_t* , LPCALC);
 SAVESTATE_t* SaveSlot(LPCALC, TCHAR *author, TCHAR *comment);

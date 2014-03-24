@@ -1,12 +1,12 @@
 #include "stdafx.h"
 
 #include "guifilepreview.h"
+#include "gui.h"
 #include "lcd.h"
 #include "colorlcd.h"
 #include "savestate.h"
 
 extern HINSTANCE g_hInst;
-extern BITMAPINFO *bi, *colorbi;
 
 static HWND grpSettings;
 static OFNHookOptions *HookOptions;
@@ -154,7 +154,7 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 				StretchDIBits(hdc, 0, 0, 192, 128,
 					0, 0, lcdBase->display_width, lcdBase->height,
 					lcdBase->image(lcdBase),
-					save->model >= TI_84PCSE ? colorbi : bi,
+					GetLCDColorPalette(save->model, lcdBase),
 					DIB_RGB_COLORS,
 					SRCCOPY);
 			}

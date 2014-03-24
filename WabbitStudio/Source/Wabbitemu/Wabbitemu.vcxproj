@@ -121,6 +121,7 @@
     <ClCompile Include="gui\guiwizard.c" />
     <ClCompile Include="GUI\pngexport.c" />
     <ClCompile Include="gui\registry.c" />
+    <ClCompile Include="GUI\guiteacherview.c" />
     <ClCompile Include="hardware\81hw.c" />
     <ClCompile Include="hardware\83hw.c" />
     <ClCompile Include="hardware\83phw.c" />
@@ -345,6 +346,7 @@
     <ClInclude Include="GUI\guisize.h" />
     <ClInclude Include="GUI\guiskin.h" />
     <ClInclude Include="gui\guispeed.h" />
+    <ClInclude Include="GUI\guiteacherview.h" />
     <ClInclude Include="GUI\guiupdate.h" />
     <ClInclude Include="gui\guivartree.h" />
     <ClInclude Include="gui\guiwizard.h" />

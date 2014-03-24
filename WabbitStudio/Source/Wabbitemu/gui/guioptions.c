@@ -17,7 +17,6 @@
 #include "exportvar.h"
 
 extern HINSTANCE g_hInst;
-extern BITMAPINFO *bi;
 
 RECT PropRect = {0, 0, 0, 0};
 HWND hwndProp = NULL;
@@ -181,7 +180,7 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 		StretchDIBits(hdc, 0, 0, 192, 128,
 			0, 0, 96, 64,
 			screenImage,
-			bi,
+			GetLCDColorPalette(TI_83P, lcd),
 			DIB_RGB_COLORS,
 			SRCCOPY);
 

@@ -3,6 +3,7 @@
 
 #include "calc.h"
 #include "guicommandline.h"
+#include "guiteacherview.h"
 #include "DropTarget.h"
 #include "avifile.h"
 
@@ -43,6 +44,7 @@ class CWabbitemu;
 #define g_szSubbar		_T("wabsub")
 #define g_szDetachedName 	_T("wabbitdetached")
 #define g_szDetachedLCDName _T("wabbitdetachedlcd")
+#define g_szTeacherViewName 	_T("teacherview")
 #define g_szSmallButtonsName _T("wabbitsmallbutton")
 
 #define ID_STATUSBAR	50
@@ -84,6 +86,7 @@ typedef struct MainWindow {
 	HWND hwndLCD;
 	HWND hwndDetachedFrame;
 	HWND hwndDetachedLCD;
+	HWND hwndTeacherView;
 	HWND hwndStatusBar;
 	HWND hwndSmallClose;
 	HWND hwndSmallMinimize;
@@ -106,6 +109,8 @@ typedef struct MainWindow {
 
 	list<key_string_t> *keys_pressed;
 
+	TeacherViewScreen_t teacher_views[TEACHER_VIEW_ROWS][TEACHER_VIEW_COLS];
+
 	DWORD scale;
 	double default_skin_scale;
 	double skin_scale;
@@ -118,8 +123,8 @@ typedef struct MainWindow {
 	BOOL bAlphaBlendLCD;
 
 	gif_disp_state gif_disp_state;
-	int GIFGradientWidth = 1;
-	int GIFAdd = 1;
+	int GIFGradientWidth;
+	int GIFAdd;
 
 	CAviFile *m_CurrentAvi;
 	BOOL m_IsRecording;
@@ -143,6 +148,9 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc);
 void GetFileCurrentVersionString(TCHAR *buf, size_t len);
 LPMAINWINDOW create_calc_frame_register_events();
 void destroy_calc_frame(LPMAINWINDOW lpMainWindow);
+LPBITMAPINFO GetLCDColorPalette(CalcModel model, LCDBase_t *lcd);
+void press_key(LPCALC lpCalc, int group, int bit);
+
 extern HACCEL haccelmain;
 
 void RegisterWindowClasses(void);

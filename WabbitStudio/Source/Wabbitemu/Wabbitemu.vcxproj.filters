@@ -77,6 +77,15 @@
     <Filter Include="Header Files\Interface\COM">
       <UniqueIdentifier>{fad4119a-ceef-421e-9760-e0df9501d0d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GUI\Windows">
+      <UniqueIdentifier>{4dd40efb-72bf-4637-a52e-97f1456c30c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\Windows">
+      <UniqueIdentifier>{b884625d-222f-4147-80ba-d337f5e37429}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\Drag and Drop">
+      <UniqueIdentifier>{dcb74292-fd68-4f18-aea6-e7951d26167d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\alu.c">
@@ -109,9 +118,6 @@
     <ClCompile Include="gui\guicutout.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="gui\guidebug.c">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="gui\guifilepreview.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
@@ -125,9 +131,6 @@
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="gui\guisavestate.c">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="gui\guivartree.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="gui\registry.c">
@@ -152,9 +155,6 @@
       <Filter>Source Files\Hardware</Filter>
     </ClCompile>
     <ClCompile Include="gui\guiglow.c">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="gui\guispeed.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="utilities\exportvar.c">
@@ -205,9 +205,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gui\guiwizard.c">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="utilities\fileutilities.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -240,9 +237,6 @@
     </ClCompile>
     <ClCompile Include="hardware\81hw.c">
       <Filter>Source Files\Hardware</Filter>
-    </ClCompile>
-    <ClCompile Include="gui\guikeylist.c">
-      <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="utilities\ioapi.c">
       <Filter>Source Files\Utilities\Compression</Filter>
@@ -289,9 +283,6 @@
     <ClCompile Include="interface\state.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="gui\guidialog.c">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="utilities\ftp.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -300,9 +291,6 @@
     </ClCompile>
     <ClCompile Include="utilities\zip.c">
       <Filter>Source Files\Utilities\Compression</Filter>
-    </ClCompile>
-    <ClCompile Include="gui\guidetached.c">
-      <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="core\reverse_info.c">
       <Filter>Source Files\Core</Filter>
@@ -388,6 +376,30 @@
     <ClCompile Include="Interface\CTIApplicationCollection.cpp">
       <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
+    <ClCompile Include="gui\guidialog.c">
+      <Filter>Source Files\GUI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\guikeylist.c">
+      <Filter>Source Files\GUI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\guivartree.c">
+      <Filter>Source Files\GUI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\guiwizard.c">
+      <Filter>Source Files\GUI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\guidetached.c">
+      <Filter>Source Files\GUI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\guidebug.c">
+      <Filter>Source Files\GUI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\guispeed.c">
+      <Filter>Source Files\GUI\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\guiteacherview.c">
+      <Filter>Source Files\GUI\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -414,16 +426,7 @@
     <ClInclude Include="core\optable.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="gui\DataObject.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="gui\displayoptionstest.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\DropSource.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\DropTarget.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="gui\gui.h">
@@ -438,9 +441,6 @@
     <ClInclude Include="gui\guicutout.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="gui\guidebug.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="gui\guifilepreview.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -450,19 +450,10 @@
     <ClInclude Include="gui\guilcd.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="gui\guiopenfile.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="gui\guioptions.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="gui\guisavestate.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\guispeed.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\guivartree.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="gui\linksprites.h">
@@ -555,9 +546,6 @@
     <ClInclude Include="utilities\sound.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="gui\guiwizard.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="gui\CGdiPlusBitmap.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -572,9 +560,6 @@
     </ClInclude>
     <ClInclude Include="Hardware\81hw.h">
       <Filter>Header Files\Hardware</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\guikeylist.h">
-      <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="utilities\ioapi.h">
       <Filter>Header Files\Utilities\Compression</Filter>
@@ -621,9 +606,6 @@
     <ClInclude Include="DBPaneContainer.h">
       <Filter>Source Files\Debugger</Filter>
     </ClInclude>
-    <ClInclude Include="gui\guidialog.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="utilities\ftp.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
@@ -640,9 +622,6 @@
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="GUI\guiupdate.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\guidetached.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="GUI\guiresource.h">
@@ -749,6 +728,42 @@
     </ClInclude>
     <ClInclude Include="Interface\CTIApplication.h">
       <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\DataObject.h">
+      <Filter>Header Files\GUI\Drag and Drop</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\DropSource.h">
+      <Filter>Header Files\GUI\Drag and Drop</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\DropTarget.h">
+      <Filter>Header Files\GUI\Drag and Drop</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\guiwizard.h">
+      <Filter>Header Files\GUI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\guivartree.h">
+      <Filter>Header Files\GUI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\guispeed.h">
+      <Filter>Header Files\GUI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\guidebug.h">
+      <Filter>Header Files\GUI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\guidetached.h">
+      <Filter>Header Files\GUI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\guidialog.h">
+      <Filter>Header Files\GUI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\guiopenfile.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\guikeylist.h">
+      <Filter>Header Files\GUI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\guiteacherview.h">
+      <Filter>Header Files\GUI\Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

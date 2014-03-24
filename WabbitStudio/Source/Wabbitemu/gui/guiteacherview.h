@@ -1,0 +1,19 @@
+#ifndef GUITEACHERVIEW_H
+#define GUITEACHERVIEW_H
+
+LRESULT CALLBACK TeacherViewProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+#define TEACHER_VIEW_SCALE 4
+#define TEACHER_VIEW_ROWS 2
+#define TEACHER_VIEW_COLS 2
+
+typedef enum {
+	YEQU_SCREEN,
+	STATPLOT_SCREEN,
+	WINDOW_SCREEN,
+	GRAPH_SCREEN,
+	TABLE_SCREEN,
+	LIST_SCREEN
+} TeacherViewScreen_t;
+
+#endif
