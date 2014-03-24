@@ -27,6 +27,7 @@
 #include "dbbreakpoints.h"
 
 #include "guibuttons.h"
+#include "guicommandline.h"
 #include "guicontext.h"
 #include "guicutout.h"
 #include "guidebug.h"
@@ -41,9 +42,9 @@
 #include "guisize.h"
 #include "guiskin.h"
 #include "guispeed.h"
+#include "guiteacherview.h"
 #include "guivartree.h"
 #include "guiwizard.h"
-#include "guicommandline.h"
 #include "guiupdate.h"
 
 #include "guidebug.h"
@@ -136,6 +137,16 @@ void gui_draw(LPCALC, LPVOID lParam) {
 
 		skip = (skip + 1) % 4;
 	}
+}
+
+extern BITMAPINFO *bi, *colorbi, *contrastbi;
+LPBITMAPINFO GetLCDColorPalette(CalcModel model, LCDBase_t *lcd) {
+	BITMAPINFO *info = model >= TI_84PCSE ? colorbi : bi;
+	if (model <= TI_84PSE && lcd->active && lcd->contrast > LCD_MAX_CONTRAST - 4) {
+		info = contrastbi;
+	}
+
+	return info;
 }
 
 HANDLE DDBToDIB(HBITMAP bitmap, DWORD dwCompression) {
@@ -453,6 +464,8 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 
 	lpMainWindow->lpCalc = lpCalc;
 	lpMainWindow->silent_mode = silent_mode;
+	lpMainWindow->GIFAdd = 1;
+	lpMainWindow->GIFGradientWidth = 1;
 	lpMainWindow->hwndFrame = CreateWindowEx(
 		WS_EX_APPWINDOW | (lpMainWindow->bCutout ? WS_EX_LAYERED : 0),
 		g_szAppName,
@@ -739,6 +752,13 @@ void RegisterWindowClasses(void) {
 	wc.style = CS_DBLCLKS;
 	wc.lpfnWndProc = DetachedProc;
 	wc.lpszClassName = g_szDetachedName;
+	wc.hbrBackground = NULL;
+	RegisterClassEx(&wc);
+
+	// Teacher View
+	wc.style = CS_DBLCLKS;
+	wc.lpfnWndProc = TeacherViewProc;
+	wc.lpszClassName = g_szTeacherViewName;
 	wc.hbrBackground = NULL;
 	RegisterClassEx(&wc);
 
@@ -1413,9 +1433,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (!SaveFile(lpszFile, _T("AVIs (*.avi)\0*.avi\0All Files (*.*)\0*.*\0\0"),
 					_T("Wabbitemu Export AVI"), _T("avi"), OFN_PATHMUSTEXIST, 0)) {
 
-					extern BITMAPINFO *bi, *colorbi;
-					LPBITMAPINFO info = lpMainWindow->lpCalc->model >= TI_84PCSE ? colorbi : bi;
-
+					LPBITMAPINFO info = GetLCDColorPalette(lpCalc->model, lpCalc->cpu.pio.lcd);
 					COMPVARS compVar = { 0 };
 					compVar.cbSize = sizeof(COMPVARS);
 
@@ -1649,19 +1667,45 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			lpMainWindow->hwndDetachedFrame  = CreateWindowEx(
 				0,
 				g_szDetachedName,
-				_T("Z80"),
+				_T("LCD"),
 				(WS_TILEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX),
 				startPoint.x, startPoint.y, r.right - r.left, r.bottom - r.top,
 				NULL, 0, g_hInst, (LPVOID) lpMainWindow);
-
-			SetWindowText(lpMainWindow->hwndDetachedFrame, _T("LCD"));
 
 			if (lpMainWindow->hwndDetachedFrame == NULL) {
 				return -1;
 			}
 
 			break;
-						   }
+		 }
+		case IDM_VIEW_TEACHERVIEW: {
+			if (lpMainWindow->hwndTeacherView != NULL) {
+				break;
+			}
+
+			lpMainWindow->teacher_views[0][1] = WINDOW_SCREEN;
+			lpMainWindow->teacher_views[1][0] = GRAPH_SCREEN;
+			lpMainWindow->teacher_views[1][1] = TABLE_SCREEN;
+
+			RECT r;
+			int lcdWidth = lpCalc->cpu.pio.lcd->display_width;
+			int lcdHeight = lpCalc->cpu.pio.lcd->height;
+			SetRect(&r, 0, 0, 
+				lcdWidth * TEACHER_VIEW_SCALE * TEACHER_VIEW_COLS, 
+				lcdHeight * TEACHER_VIEW_SCALE * TEACHER_VIEW_ROWS);
+			AdjustWindowRect(&r, WS_CAPTION, FALSE);
+
+			POINT startPoint = GetStartPoint();
+			lpMainWindow->hwndTeacherView = CreateWindowEx(
+				0,
+				g_szTeacherViewName,
+				_T("Teacher View"),
+				(WS_CAPTION | WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX),
+				startPoint.x, startPoint.y, r.right - r.left, r.bottom - r.top,
+				NULL, 0, g_hInst, (LPVOID)lpMainWindow);
+
+			break;
+		}
 		case IDM_CALC_SOUND: {
 			togglesound(lpCalc->audio);
 			CheckMenuItem(GetSubMenu(GetMenu(hwnd), 2), IDM_CALC_SOUND, MF_BYCOMMAND | (lpCalc->audio->enabled ? MF_CHECKED : MF_UNCHECKED));

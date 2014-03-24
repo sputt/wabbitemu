@@ -13,6 +13,22 @@ static jmp_buf errorJumpBuf;
 extern int def(FILE *, FILE *, int);
 extern int inf(FILE *, FILE *);
 
+LPCALC DuplicateCalc(LPCALC lpCalc) {
+	SAVESTATE_t *save = SaveSlot(lpCalc, _T(""), _T(""));
+
+	LPCALC duplicate_calc = (LPCALC)malloc(sizeof(calc_t));
+	ZeroMemory(duplicate_calc, sizeof(calc_t));
+	duplicate_calc->active = TRUE;
+	duplicate_calc->speed = 100;
+	//calcs[i].breakpoint_callback = calc_debug_callback;
+
+	calc_init_model(duplicate_calc, save->model, lpCalc->rom_version);
+	LoadSlot(save, duplicate_calc);
+	FreeSave(save);
+
+	return duplicate_calc;
+}
+
 BOOL cmpTags(char *str1, char *str2) {
 	int i;
 	for(i = 0; i < 4; i++) {

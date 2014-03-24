@@ -2,8 +2,7 @@
 
 #include "pngexport.h"
 #include "gif.h"
-
-extern BITMAPINFO *bi, *colorbi;
+#include "gui.h"
 
 int GetEncoderClsid(const WCHAR *format, CLSID *pClsid) {
 	UINT  num = 0;          // number of image encoders
@@ -44,7 +43,7 @@ void export_png(LPCALC lpCalc, TCHAR *filename) {
 		format = PixelFormat8bppIndexed;
 	}
 
-	BITMAPINFO *info = lpCalc->model >= TI_84PCSE ? colorbi : bi;
+	BITMAPINFO *info = GetLCDColorPalette(lpCalc->model, lcd);
 	uint8_t *image_ptr = lcd->image(lcd);
 	Bitmap *image = new Bitmap(info, image_ptr);
 	

@@ -2,9 +2,9 @@
 
 #include "calc.h"
 #include "guisavestate.h"
+#include "gui.h"
 
 extern HINSTANCE g_hInst;
-extern BITMAPINFO *bi, *colorbi;
 
 static TCHAR save_filename[MAX_PATH];
 
@@ -54,7 +54,7 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 			StretchDIBits(hdc, 0, 0, lcd->display_width, lcd->height,
 				0, 0, lcd->display_width, lcd->height,
 				image,
-				lpCalc->model >= TI_84PCSE ? colorbi : bi,
+				GetLCDColorPalette(lpCalc->model, lcd),
 				DIB_RGB_COLORS,
 				SRCCOPY);
 

@@ -79,24 +79,6 @@ static BOOL InsertListViewItems(HWND hWndListView, int cItems)
 	return TRUE;
 }
 
-static void DuplicateCalc(LPCALC lpCalc) {
-	SAVESTATE_t *save = SaveSlot(lpCalc, _T(""), _T(""));
-	if (duplicate_calc) {
-		calc_slot_free(duplicate_calc);
-		free(duplicate_calc);
-	}
-
-	duplicate_calc = (LPCALC) malloc(sizeof(calc_t));
-	ZeroMemory(duplicate_calc, sizeof(calc_t));
-	duplicate_calc->active = TRUE;
-	duplicate_calc->speed = 100;
-	//calcs[i].breakpoint_callback = calc_debug_callback;
-	
-	calc_init_model(duplicate_calc, save->model, lpCalc->rom_version);
-	LoadSlot(save, duplicate_calc);
-	FreeSave(save);
-}
-
 static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 	if (hwndEditControl) {
 		TCHAR buf[10];

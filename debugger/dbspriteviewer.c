@@ -25,7 +25,6 @@ void DrawGrayImage(HDC hdc, LPCALC lpCalc, watchpoint_t *watchpoint) {
 	}
 }
 
-extern BITMAPINFO *colorbi;
 #define TRUCOLOR(color, bits) (color) * (0xFF / ((1 << (bits)) - 1))
 void DrawColorImage(HDC hdc, LPCALC lpCalc) {
 	ColorLCD_t *lcd = (ColorLCD_t *)lpCalc->cpu.pio.lcd;
@@ -36,7 +35,7 @@ void DrawColorImage(HDC hdc, LPCALC lpCalc) {
 	StretchDIBits(hdc, 0, 0, COLOR_LCD_WIDTH, COLOR_LCD_HEIGHT,
 		0, 0, COLOR_LCD_WIDTH, COLOR_LCD_HEIGHT,
 		buf,
-		colorbi,
+		GetLCDColorPalette(lpCalc->model, &lcd->base),
 		DIB_RGB_COLORS,
 		SRCCOPY);
 }

@@ -213,12 +213,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest, LPMAINWINDOW lpMainWindow) {
 	}
 
 	Graphics graphics(hdc);
-	BITMAPINFO *info = lpCalc->model >= TI_84PCSE ? colorbi : bi;
-	if (lpCalc->model <= TI_84PSE && lcd->active &&
-		lcd->contrast > LCD_MAX_CONTRAST - 4)
-	{
-		info = contrastbi;
-	}
+	BITMAPINFO *info = GetLCDColorPalette(lpCalc->model, lcd);
 	
 	BOOL lcd_scaled = (rc.right - rc.left) % lcd->display_width;
 	screen = lcd->image(lcd);
