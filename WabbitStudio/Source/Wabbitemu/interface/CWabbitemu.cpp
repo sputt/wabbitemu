@@ -251,7 +251,7 @@ void CWabbitemu::CreateObjects(LPCALC lpCalc, LPVOID lParam) {
 
 	CComObject<CKeypad> *m_pKeypadObject = NULL;
 	CComObject<CKeypad>::CreateInstance(&m_pKeypadObject);
-	m_pKeypadObject->Initialize(&lpCalc->cpu);
+	m_pKeypadObject->Initialize(lpCalc);
 	me->m_pKeypad = m_pKeypadObject;
 
 	CComObject<CMemoryContext> *m_pMemObj = NULL;

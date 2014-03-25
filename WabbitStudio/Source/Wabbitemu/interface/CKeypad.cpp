@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "CKeypad.h"
+#include "gui.h"
 
 static const struct { CalcKey Key; int group; int bit; } g_KeyMaps[] =
 {
@@ -82,7 +83,7 @@ STDMETHODIMP CKeypad::PressKey(CalcKey Key)
 		return E_INVALIDARG;
 	}
 
-	keypad_press(m_cpu, prog.group, prog.bit);
+	keypad_press(&m_lpCalc->cpu, prog.group, prog.bit);
 	return S_OK;
 }
 
@@ -95,19 +96,20 @@ STDMETHODIMP CKeypad::ReleaseKey(CalcKey Key)
 		return E_INVALIDARG;
 	}
 
-	keypad_release(m_cpu, prog.group, prog.bit);
+	keypad_release(&m_lpCalc->cpu, prog.group, prog.bit);
 	return S_OK;
 }
 
-STDMETHODIMP CKeypad::PressVirtKey(int Key)
+STDMETHODIMP CKeypad::PressReleaseKey(CalcKey Key)
 {
-	keypad_key_press(m_cpu, Key, NULL);
-	return S_OK;
-}
+	keyprog_t prog;
+	BOOL found = LookupKeyprog(Key, &prog);
 
-STDMETHODIMP CKeypad::ReleaseVirtKey(int Key)
-{
-	keypad_key_release(m_cpu, Key);
+	if (found == FALSE) {
+		return E_INVALIDARG;
+	}
+
+	press_key(m_lpCalc, prog.group, prog.bit);
 	return S_OK;
 }
 
@@ -120,7 +122,7 @@ STDMETHODIMP CKeypad::IsKeyPressed(CalcKey Key, VARIANT_BOOL *lpfIsPressed)
 		return E_INVALIDARG;
 	}
 
-	keypad_t *keypad = m_cpu->pio.keypad;
+	keypad_t *keypad = m_lpCalc->cpu.pio.keypad;
 	*lpfIsPressed = keypad->keys[prog.group][prog.bit] ? VARIANT_TRUE : VARIANT_FALSE;
 	return S_OK;
 }
