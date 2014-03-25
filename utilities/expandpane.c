@@ -19,8 +19,8 @@ static int IDArray[MAX_CALCS] = {
 	EXPAND_PANE_BASE_ID
 };
 
-#define MAX_SLIDE_SPEED 	20
-#define SLIDE_ACCEL 		1.3
+#define MAX_SLIDE_SPEED 	40
+#define SLIDE_ACCEL 		3.5
 
 #define MAX_FADE (600/20)
 
@@ -483,7 +483,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			int index = GetWindowLongPtr(hwnd, GWLP_ID) - EXPAND_PANE_BASE_ID;
 
 			// Add in all the previous windows
-			int cy = eps->lpDebugInfo->regPanesYScroll;
+			int cy = eps->lpDebugInfo->reg_panes_yoffset;
 			int i;
 			for (i = 0; i < index; i++) {
 				RECT rc;
@@ -519,7 +519,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 				}
 
 				SetWindowPos(eps->contents, HWND_BOTTOM, 16, tm.tmHeight*3 + (int) eps->VisibleHeight - eps->dwHeight, 0, 0, SWP_NOSIZE);
-				InvalidateRect(eps->contents, NULL, TRUE);
+				InvalidateRect(eps->contents, NULL, FALSE);
 				UpdateWindow(eps->contents);
 			}
 
