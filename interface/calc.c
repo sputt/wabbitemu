@@ -654,8 +654,7 @@ int calc_run_all(void) {
 					CPU_step(&calcs[j].cpu);
 				}
 				active_calc = j;
-				// TODO: figure out how to do this
-				int speed = calcs[j].speed == MAX_SPEED ? 2400 : calcs[j].speed;
+				int speed = calcs[j].speed;
 				int time = (int)((int64_t) speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
 				if (!calcs[j].cpu.is_link_instruction || !calc_waiting || calcs[j].cpu.pio.link->hasChanged == TRUE) {
 					calc_run_tstates(&calcs[j], time);

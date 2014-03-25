@@ -59,7 +59,6 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 		m_lpMainWindow->silent_mode = FALSE;
 		int success = gui_frame_update(m_lpMainWindow);
 		if (success == FALSE) {
-			DestroyWindow(m_lpMainWindow->hwndFrame);
 			return E_FAIL;
 		}
 
@@ -68,7 +67,10 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 	else
 	{
 		m_lpMainWindow->silent_mode = TRUE;
-		DestroyWindow(m_lpMainWindow->hwndFrame);
+		int success = gui_frame_update(m_lpMainWindow);
+		if (success == FALSE) {
+			return E_FAIL;
+		}
 	}
 	
 	m_fVisible = fVisible;
@@ -149,6 +151,18 @@ void CWabbitemu::Fire_OnBreakpoint(waddr *pwaddr)
 STDMETHODIMP CWabbitemu::get_Visible(VARIANT_BOOL *lpVisible)
 {
 	*lpVisible = m_fVisible;
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::put_Speed(int speed)
+{
+	m_lpCalc->speed = speed;
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::get_Speed(int *lpSpeed)
+{
+	*lpSpeed = m_lpCalc->speed;
 	return S_OK;
 }
 

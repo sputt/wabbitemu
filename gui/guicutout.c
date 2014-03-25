@@ -246,7 +246,6 @@ int EnableCutout(LPMAINWINDOW lpMainWindow) {
 	SetWindowTheme(lpMainWindow->hwndLCD, L" ", L" ");
 
 	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
-	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, WS_VISIBLE);
 
 	UpdateWabbitemuLayeredWindow(lpMainWindow);
 	UpdateWindow(lpMainWindow->hwndLCD);
@@ -350,7 +349,7 @@ int DisableCutout(LPMAINWINDOW lpMainWindow) {
 
 
 	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_EXSTYLE, 0);
-	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, (WS_TILEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN));
+	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, (WS_TILEDWINDOW | WS_CLIPCHILDREN));
 
 	if (lpMainWindow->hwndSmallClose != NULL) {
 		DestroyWindow(lpMainWindow->hwndSmallClose);

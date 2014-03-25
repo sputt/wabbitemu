@@ -273,7 +273,7 @@ interface IPage : IReadWrite
 ]
 interface IKeypad : IDispatch
 {
-	typedef enum Calc_Key
+	typedef enum CalcKey
 	{
 		KEY_UP,
 		KEY_LEFT,
@@ -281,9 +281,9 @@ interface IKeypad : IDispatch
 		KEY_DOWN,
 
 		KEY_2ND,
-		KEY_ALPHA,
 		KEY_MODE,
 		KEY_DEL,
+		KEY_ALPHA,
 		KEY_XTON,
 		KEY_STAT,
 
@@ -299,14 +299,46 @@ interface IKeypad : IDispatch
 		KEY_VARS,
 		KEY_CLEAR,
 
+		KEY_INVERSE,
+		KEY_SIN,
+		KEY_COS,
+		KEY_TAN,
+		KEY_EXP,
+
+		KEY_SQUARE,
+		KEY_COMMA,
+		KEY_LPAREN,
+		KEY_RPAREN,
+		KEY_DIV,
+
+		KEY_LOG,
+		KEY_7,
+		KEY_8,
+		KEY_9,
+		KEY_MULT,
+
+		KEY_LN,
+		KEY_4,
+		KEY_5,
+		KEY_6,
+		KEY_SUB,
+		
+		KEY_STO,
+		KEY_1,
+		KEY_2,
+		KEY_3,
+		KEY_ADD,
+
 		KEY_ON,
+		KEY_0,
+		KEY_PERIOD,
+		KEY_NEGATE,
+		KEY_ENTER
+	} CalcKey;
 
-
-	} Calc_Key;
-
-	HRESULT PressKey([in] enum Calc_Key Key);
-	HRESULT ReleaseKey([in] enum Calc_Key Key);
-	HRESULT IsKeyPressed([in] enum Calc_Key Key, [out, retval] VARIANT_BOOL *IsPressed);
+	HRESULT PressKey([in] enum CalcKey Key);
+	HRESULT ReleaseKey([in] enum CalcKey Key);
+	HRESULT IsKeyPressed([in] enum CalcKey Key, [out, retval] VARIANT_BOOL *IsPressed);
 	HRESULT PressVirtKey([in] int Key);
 	HRESULT ReleaseVirtKey([in] int Key);
 }
@@ -524,6 +556,12 @@ interface IWabbitemu : IDispatch
 
 	[propget, helpstring("Whether or not the calculator is running.")]
 	HRESULT Running([out, retval] VARIANT_BOOL *lpfRunning);
+
+	[propput, helpstring("The current speed of the running calculator. 100 is normal speed.")]
+	HRESULT Speed([in] int speed);
+
+	[propget, helpstring("The current speed of the running calculator. 100 is normal speed.")]
+	HRESULT Speed([out, retval] int *lpSpeed);
 
 	[helpstring("Execute a single instruction.")]
 	HRESULT Step();

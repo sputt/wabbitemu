@@ -80,6 +80,7 @@ typedef struct tagCALC {
 		breakpoint_t **cond_breakpoints[2];
 	};
 
+	BOOL max_speed;
 	int speed;
 	BYTE breakpoints[0x10000];
 	label_struct labels[10000];
@@ -94,7 +95,7 @@ typedef struct tagCALC {
 #else
 #define MAX_CALCS	8
 #endif
-#define MAX_SPEED 100*50
+#define MAX_SPEED 100*100
 
 void calc_turn_on(LPCALC);
 void calc_set_running(LPCALC lpCalc, BOOL running);
