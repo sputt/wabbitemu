@@ -1,7 +1,7 @@
 #pragma once
 
 #include "keys.h"
-
+#include "calc.h"
 
 class ATL_NO_VTABLE CKeypad : 
 	public CComObjectRootEx<CComObjectThreadModel>,
@@ -15,15 +15,14 @@ public:
 
 	STDMETHOD(PressKey)(CalcKey Key);
 	STDMETHOD(ReleaseKey)(CalcKey Key);
+	STDMETHOD(PressReleaseKey)(CalcKey Key);
 	STDMETHOD(IsKeyPressed)(CalcKey Key, VARIANT_BOOL *lpfIsPressed);
-	STDMETHOD(PressVirtKey)(int Key);
-	STDMETHOD(ReleaseVirtKey)(int Key);
 
-	void Initialize(CPU_t *cpu)
+	void Initialize(LPCALC lpCalc)
 	{
-		m_cpu = cpu;
+		m_lpCalc = lpCalc;
 	}
 
 private:
-	CPU_t *m_cpu;
+	LPCALC m_lpCalc;
 };
