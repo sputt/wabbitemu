@@ -45,7 +45,10 @@ typedef struct tagDEBUGWINDOWINFO
 	unsigned int cyGripper;
 	unsigned int cyDisasm, cyMem;
 	
-	int regPanesYScroll;
+	// how much the regs pane has been scrolled down
+	int reg_panes_yoffset;
+	// if the height has changed, this is the old height value
+	unsigned int reg_pane_old_height;
 	HWND ExpandPanes[16];
 	int TotalPanes;
 	int PanesHeight;

@@ -164,7 +164,7 @@ LONG_PTR GetSettingsData(LPCTSTR lpszName, BOOL isDebugKey) {
 	reg_default_t *defValue = GetDefaultData(lpszName);
 	const TCHAR *name = isDebugKey ? debugName : appName;
 
-	key_value_t result;
+	key_value_t result = { 0 };
 	if (defValue->dwType == REG_DWORD) {
 		return GetPrivateProfileInt(name, lpszName, (DWORD)defValue->Value, portSettingsPath);
 	} else {

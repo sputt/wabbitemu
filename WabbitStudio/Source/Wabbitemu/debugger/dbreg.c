@@ -1327,18 +1327,21 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			lpCalc = lpDebugInfo->lpCalc;
 
+			lpDebugInfo->reg_pane_old_height = si.nMax;
 			ArrangeExpandPanes(lpDebugInfo);
 			int height = GetExpandPanesHeight(lpDebugInfo) + 7;
-			//positive diff we opened a pane, negative diff we closed
+			// positive diff we opened a pane, negative diff we closed
 			int diff = height - si.nMax;
 
 			si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 			si.nMin = 0;
 			si.nMax = height;
 			si.nPage = rc.bottom;
-			lpDebugInfo->regPanesYScroll = min(0, max(0, si.nPos + diff));
-			if (diff < 0)
+			lpDebugInfo->reg_panes_yoffset = min(0, max(0, si.nPos + diff));
+			if (diff < 0) {
 				si.nPos = max(0, si.nPos + diff);
+			}
+
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 			/*if (si.nPos != 0)
@@ -1404,17 +1407,20 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				default:
 					break;
 			}
+
+			int height_diff = si.nMax - lpDebugInfo->reg_pane_old_height;
 			// Set the position and then retrieve it.  Due to adjustments
 			//   by Windows it may not be the same as the value set.
 			si.fMask = SIF_POS;
 			SetScrollInfo (hwnd, SB_VERT, &si, TRUE);
 			GetScrollInfo (hwnd, SB_VERT, &si);
 			// If the position has changed, scroll window and update it
-			lpDebugInfo->regPanesYScroll = -si.nPos;
+			lpDebugInfo->reg_panes_yoffset = -si.nPos;
 			if (si.nPos != yPos) {
 				ScrollWindow(hwnd, 0, yPos - si.nPos, NULL, NULL);
 			}
 			DrawExpandPanes(lpDebugInfo);
+			InvalidateRect(hwnd, NULL, FALSE);
 			UpdateWindow(hwnd);
 			return 0;
 		}

@@ -325,7 +325,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 		case DB_UPDATE:
 			switch (vfs->format) {
 			case HEX2:
-				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%02X"), *((_TUCHAR *) vfs->data));
+				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%02X"), *((unsigned char *) vfs->data));
 				break;
 			case HEX4:
 				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%04X"), *((unsigned short *) vfs->data));
@@ -346,7 +346,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%*d"), vfs->max_digits, *((unsigned int *) vfs->data));
 				break;
 			case CHAR1:
-				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%c"), *((_TUCHAR *) vfs->data));
+				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%c"), *((unsigned char *) vfs->data));
 				break;
 			case BIN8:
 				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), byte_to_binary(*((unsigned int *) vfs->data)));
