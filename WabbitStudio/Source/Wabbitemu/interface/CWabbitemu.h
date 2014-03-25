@@ -55,6 +55,9 @@ public:
 	STDMETHOD(get_Running)(VARIANT_BOOL *lpfRunning);
 	STDMETHOD(get_Model)(CalcModel *lpCalcModel);
 
+	STDMETHOD(put_Speed)(int speed);
+	STDMETHOD(get_Speed)(int *lpSpeed);
+
 	STDMETHOD(Step)();
 	STDMETHOD(StepOver)();
 	STDMETHOD(Run)();

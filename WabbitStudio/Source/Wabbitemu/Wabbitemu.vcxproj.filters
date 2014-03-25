@@ -199,9 +199,6 @@
     <ClCompile Include="debugger\dbvalue.c">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="debugger\disassemble.c">
-      <Filter>Source Files\Debugger</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -400,6 +397,9 @@
     <ClCompile Include="GUI\guiteacherview.c">
       <Filter>Source Files\GUI\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="debugger\disassemble.c">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -514,9 +514,6 @@
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>
     <ClInclude Include="debugger\dbvalue.h">
-      <Filter>Header Files\Debugger</Filter>
-    </ClInclude>
-    <ClInclude Include="debugger\disassemble.h">
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>
     <ClInclude Include="utilities\bcalls.h">
@@ -764,6 +761,9 @@
     </ClInclude>
     <ClInclude Include="GUI\guiteacherview.h">
       <Filter>Header Files\GUI\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="debugger\disassemble.h">
+      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

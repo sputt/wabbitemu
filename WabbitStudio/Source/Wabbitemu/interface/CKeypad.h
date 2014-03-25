@@ -2,7 +2,6 @@
 
 #include "keys.h"
 
-typedef Calc_Key KEYS;
 
 class ATL_NO_VTABLE CKeypad : 
 	public CComObjectRootEx<CComObjectThreadModel>,
@@ -14,9 +13,9 @@ public:
 		COM_INTERFACE_ENTRY(IDispatch)
 	END_COM_MAP()
 
-	STDMETHOD(PressKey)(KEYS Key);
-	STDMETHOD(ReleaseKey)(KEYS Key);
-	STDMETHOD(IsKeyPressed)(KEYS Key, VARIANT_BOOL *lpfIsPressed);
+	STDMETHOD(PressKey)(CalcKey Key);
+	STDMETHOD(ReleaseKey)(CalcKey Key);
+	STDMETHOD(IsKeyPressed)(CalcKey Key, VARIANT_BOOL *lpfIsPressed);
 	STDMETHOD(PressVirtKey)(int Key);
 	STDMETHOD(ReleaseVirtKey)(int Key);
 
