@@ -501,6 +501,9 @@
     <Image Include="gui\ti-84+cse.png" />
     <Image Include="gui\ti-84+csekeymap.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="gui\WhatsNew.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

@@ -464,22 +464,14 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			SendMessage(lpMainWindow->hwndFrame, Message, wParam, lParam);
 			return 0;
 		}
-		case WM_LBUTTONDOWN:
-			//WriteRIFFHeader();
-			break;
-		case WM_LBUTTONUP: {
-			static DWORD dwDragCountdown = 0;
-				dwDragCountdown = 0;
-			break;
-		}
-
-		case WM_MOUSEMOVE: {
-			static DWORD dwDragCountdown = 0;
+		case WM_MOUSEMOVE: {		
 			if (wParam != MK_LBUTTON) {
-				dwDragCountdown = 0;
+				lpMainWindow->dwDragCountdown = 0;
 			} else if (gif_write_state == GIF_IDLE) {
 				// TODO: make this not ugly and work
-				if (++dwDragCountdown < (u_int) GetSystemMetrics(SM_CXDRAG)) return 0;
+				if (++lpMainWindow->dwDragCountdown < (u_int)GetSystemMetrics(SM_CXDRAG)) {
+					return 0;
+				}
 
 				CDataObject *pDataObject;
 				CDropSource *pDropSource;
@@ -497,11 +489,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.png"));
 
 				if (lpCalc == NULL) {
-					break;
-				}
-
-				LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
-				if (lcd == NULL) {
 					break;
 				}
 					

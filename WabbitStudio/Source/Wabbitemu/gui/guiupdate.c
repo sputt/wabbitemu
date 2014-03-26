@@ -148,37 +148,23 @@ BOOL IsJustUpgraded() {
 	return isUpgrade;
 }
 
-TCHAR *GetWhatsNewText() {
-	// same as above, ANSI for backwards compatibility
-#define WHATSNEWBUFFERSIZE 32768
-
-	size_t bufferSize = WHATSNEWBUFFERSIZE * sizeof(TCHAR);
-	TCHAR *buffer = (TCHAR *)malloc(bufferSize);
-	ZeroMemory(buffer, bufferSize);
-	char whatsNewText[WHATSNEWBUFFERSIZE] = {0};
-	HINTERNET hInternet = InternetOpenA("Wabbitemu", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
-	if (hInternet == NULL) {
-		return NULL;
+BOOL GetWhatsNewText(TCHAR *whatsNewText, size_t sizeInChar) {
+	char buffer[32768] = { 0 };
+	HMODULE hModule = GetModuleHandle(NULL);
+	HRSRC resource = FindResource(hModule, MAKEINTRESOURCE(WHATSNEW), _T("TEXT"));
+	BOOL error = ExtractResourceText(buffer, sizeof(buffer), resource);
+	if (error) {
+		return FALSE;
 	}
-	HINTERNET hOpenUrl = InternetOpenUrlA(hInternet, g_szWhatsNewFile, NULL, 0, INTERNET_FLAG_RELOAD, NULL);
-	if (hOpenUrl == NULL) {
-		return NULL;
-	}
-	DWORD bytesRead;
-	BOOL succeeded = InternetReadFile(hOpenUrl, whatsNewText, WHATSNEWBUFFERSIZE, &bytesRead);
-	if (!succeeded) {
-		return NULL;
-	}
-	InternetCloseHandle(hInternet);
-
+	
 #ifdef _UNICODE
-	size_t len;
-	mbstowcs_s(&len, buffer, bufferSize, whatsNewText, WHATSNEWBUFFERSIZE - 1);
+	MultiByteToWideChar(CP_ACP, 0, buffer, -1, whatsNewText, sizeInChar);
 #else
-	StringCchCopy(buffer, WHATSNEWBUFFERSIZE, whatsNewText);
+	StringCbCopy(whatsNewText, size, buffer);
 #endif
 
-	return buffer;
+
+	return TRUE;
 }
 
 void ShowWhatsNew(BOOL forceShow) {

@@ -3,8 +3,6 @@
 #include "lcd.h"
 #include "colorlcd.h"
 
-// TODO: support color lcd
-
 class CLCD :
 	public CComObjectRootEx<CComObjectThreadModel>,
 	public IDispatchImpl<ILCD>

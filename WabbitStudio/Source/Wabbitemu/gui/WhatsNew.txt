@@ -1,0 +1,107 @@
+1.8.2.26:
+Added support for TI-84PCSE
+Support for exporting PNG files
+Extra debugger tabs
+Improved debugger reponsiveness
+Improved hardware support
+Added skin scaling
+Numerous bugfixes
+
+1.7.2.11:
+Added some error checking to loading skin files
+Fixed so the urls of OS downloads are correct
+Added error checking for using real rom option
+Fixed some crashes in keypress history
+Fixed a crash loading a large app then loading a smaller version of the same app
+Fixed a bug with lcd decrement not wrapping
+Fixed a bug with wizard crashing when loading an invalid OS during copying option
+Fixed labels on emulator key remapping
+Sanity checks on resource extraction
+Fixed a crash in debugger header on wine
+Fixed so command line files do not default to archived
+
+1.6.11.28:
+Fixed so invalid characters don't show up in browse dialog on wizard
+Fixed so rerunning the setup wizard again doesn't leave buttons in improper states
+Added progress bar when downloading os in the wizard
+Fixed crash loading label files
+Changed so that execution violations during stepover/out are caught and stop stepping
+Added reset command to the debugger
+Minor code refactoring/improvements
+
+1.6.11.19:
+Minor code updates
+Changed to use ATL to register
+Temporarily disabled flash write delay emulation
+Fixed keys not working on first run
+
+1.6.11.1:
+Fixed compile issues with unicode
+Fixed a crash in port monitor on XP
+Fixed a crash in updater with unicode paths
+Changed ImportVarData to fix version if it seems invalid
+Fixes to better compile for Mac
+Fixed a crash trying to copy last answer
+Fixed so custom emulator keys are restored properly
+Added missing accelerator
+Added bits 3 and 4 to port 0 for 83p and above
+Fixed so gif frame rate is saved between sessions
+Fixed so that opening the save screenshot dialog causes emulation to pause
+Fixed so bootfree is version 11.246 again
+Added what's new dialog
+Added modified BootFree source
+
+1.6.10.29:
+Fixed a bug with loading apps
+Fixed bug with ix/iy offsets
+Changed alu instructions to use hex values instead of decimals
+
+1.6.10.27:
+Cleaned up some warnings
+Fixed an issue with step over when sp was 0
+Fixed a bug with goto dialog box
+Renamed newimportvar to importvar
+Fixed reading bad data on 86 hw init
+Fixed a bug loading 8xg files
+Fixed a bug in the symbol83p_t struct
+Fixed exporting groups
+Fixed bug with exporting non 83p files
+Fixed issue with timings on certain commands
+
+1.6.2.21:
+Fixed a bug in updating bootfree
+Refactored the debugger to allow multiple instances
+Added option to disable automatic check for updates
+Fixed some files in the solution
+Added ability to view sprites in watch tab
+
+1.6.2.16:
+Added some error checking to dragging the screen. No more crashes in wine
+Fixed a bug closing wabbit when minimized
+Fixed a crash doing file->exit with cutout mode enabled
+
+1.6.2.15:
+Fixed a major bug in Forceload OS that overwrote the bootpage
+Expanded dump section to include global vars and gzipped it
+Added code for making a zip file
+Worked on AVI compression
+Fixed a memory leak for SENDINFO
+Fixed a bug loading files from the commandline
+Fixed a bug in WM_COPYDATA
+Added support fot the TI-81
+Updated skin for the 81
+
+1.6.1.23:
+Fixed some issues loading from zip files
+Reworked Find
+Removed error dialog in CheckForUpdates. Moved to WndProc IDM_HELP_UPDATES
+Fixed some crashes with setup wizard
+
+1.6.1.12:
+Fixed some issues with flash writing
+Merged all the flash writing functions
+Added check for updates on startup
+Fixed some crashes in the debugger
+Refactored getting appdata path to a common function
+Added code to dump and upload crashes
+Added dialog to submit bugs

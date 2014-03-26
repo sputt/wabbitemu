@@ -122,6 +122,7 @@ typedef struct MainWindow {
 	BOOL bAlwaysOnTop;
 	BOOL bAlphaBlendLCD;
 
+	DWORD dwDragCountdown;
 	gif_disp_state gif_disp_state;
 	int GIFGradientWidth;
 	int GIFAdd;

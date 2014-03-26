@@ -533,7 +533,10 @@ void calc_turn_on(LPCALC lpCalc) {
 	keypad_press(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
 	calc_run_tstates(lpCalc, time / 2);
 	keypad_release(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
-	calc_run_tstates(lpCalc, time / 2);
+	do {
+		calc_run_tstates(lpCalc, time / 2);
+	} while (lpCalc->cpu.halt == FALSE);
+
 	lpCalc->running = running;
 	lpCalc->fake_running = FALSE;
 }

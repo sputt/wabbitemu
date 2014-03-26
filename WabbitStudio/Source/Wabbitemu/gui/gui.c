@@ -466,6 +466,7 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 	lpMainWindow->silent_mode = silent_mode;
 	lpMainWindow->GIFAdd = 1;
 	lpMainWindow->GIFGradientWidth = 1;
+	lpMainWindow->dwDragCountdown = 0;
 	lpMainWindow->hwndFrame = CreateWindowEx(
 		WS_EX_APPWINDOW | (lpMainWindow->bCutout ? WS_EX_LAYERED : 0),
 		g_szAppName,

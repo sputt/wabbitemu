@@ -36,6 +36,10 @@ int GetEncoderClsid(const WCHAR *format, CLSID *pClsid) {
 
 void export_png(LPCALC lpCalc, TCHAR *filename) {
 	LCDBase_t *lcd = lpCalc->cpu.pio.lcd;
+	if (lcd == NULL) {
+		return;
+	}
+
 	PixelFormat format;
 	if (lcd->bytes_per_pixel == 3) {
 		format = PixelFormat24bppRGB;
@@ -59,11 +63,13 @@ void export_png(LPCALC lpCalc, TCHAR *filename) {
 	image->Save(still_name, &pngClsid, NULL);
 
 	if (lcd->display_width != lcd->width) {
+		LONG scale = lpCalc->model >= TI_84PCSE ? screenshot_color_size : screenshot_size;
 		delete image;
 		image = new Bitmap(still_name);
-		Bitmap *newBitmap = new Gdiplus::Bitmap(lcd->display_width, lcd->height);
+		Bitmap *newBitmap = new Bitmap(lcd->display_width * scale, lcd->height * scale);
 		Graphics graphics(newBitmap);
-		graphics.DrawImage(image, 0, 0, lcd->width, lcd->height);
+		graphics.SetInterpolationMode(InterpolationModeNearestNeighbor);
+		graphics.DrawImage(image, 0, 0, lcd->width * scale, lcd->height * scale);
 		// delete so we close the output file
 		delete image;
 

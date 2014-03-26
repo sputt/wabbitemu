@@ -339,6 +339,7 @@ interface IKeypad : IDispatch
 	HRESULT PressKey([in] enum CalcKey Key);
 	HRESULT ReleaseKey([in] enum CalcKey Key);
 	HRESULT PressReleaseKey([in] enum CalcKey Key);
+	HRESULT PressReleaseKeys([in] SAFEARRAY(enum CalcKey) Keys);
 	HRESULT IsKeyPressed([in] enum CalcKey Key, [out, retval] VARIANT_BOOL *IsPressed);
 }
 

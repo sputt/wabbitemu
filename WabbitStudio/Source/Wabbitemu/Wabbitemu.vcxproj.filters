@@ -984,4 +984,9 @@
       <Filter>Resource Files\Skins</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="gui\WhatsNew.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
