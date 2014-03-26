@@ -17,6 +17,9 @@
 
 #include "ioapi.h"
 
+#pragma warning(push)
+#pragma warning( disable : 4100 )
+
 voidpf call_zopen64 (const zlib_filefunc64_32_def* pfilefunc,const void*filename,int mode)
 {
     if (pfilefunc->zfile_func64.zopen64_file != NULL)
@@ -233,3 +236,5 @@ void fill_fopen64_filefunc (zlib_filefunc64_def *pzlib_filefunc_def)
     pzlib_filefunc_def->zerror_file = ferror_file_func;
     pzlib_filefunc_def->opaque = NULL;
 }
+
+#pragma warning(pop)

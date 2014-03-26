@@ -17,6 +17,9 @@
 #include "colorlcd.h"
 #include "savestate.h"
 
+#pragma warning(push)
+#pragma warning( disable : 4100 )
+
 #define FRAME_SUBDIVISIONS 1024
 
 const TCHAR *CalcModelTxt[] = {
@@ -533,9 +536,11 @@ void calc_turn_on(LPCALC lpCalc) {
 	keypad_press(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
 	calc_run_tstates(lpCalc, time / 2);
 	keypad_release(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
+	int tries = 0;
 	do {
+		tries++;
 		calc_run_tstates(lpCalc, time / 2);
-	} while (lpCalc->cpu.halt == FALSE);
+	} while (lpCalc->cpu.halt == FALSE && tries < 3);
 
 	lpCalc->running = running;
 	lpCalc->fake_running = FALSE;
@@ -807,3 +812,5 @@ LPCALC calc_from_memc(memc *memc) {
 	}
 	return NULL;
 }
+
+#pragma warning(pop)

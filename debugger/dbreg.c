@@ -1408,7 +1408,6 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 			}
 
-			int height_diff = si.nMax - lpDebugInfo->reg_pane_old_height;
 			// Set the position and then retrieve it.  Due to adjustments
 			//   by Windows it may not be the same as the value set.
 			si.fMask = SIF_POS;

@@ -94,6 +94,9 @@ const char zip_copyright[] =
 
 #define SIZECENTRALHEADER (0x2e) /* 46 */
 
+#pragma warning(push)
+#pragma warning( disable : 4100 )
+
 typedef struct linkedlist_datablock_internal_s
 {
   struct linkedlist_datablock_internal_s* next_datablock;
@@ -1165,3 +1168,5 @@ extern int ZEXPORT zipClose (zipFile file, const char *global_comment)
 
 	return err;
 }
+
+#pragma warning(pop)

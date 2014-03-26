@@ -31,13 +31,13 @@ class CAviFile
 	HRESULT	AppendDummy(HBITMAP);
 	HRESULT	(CAviFile::*pAppendFrame[3])(HBITMAP hBitmap);
 
-	HRESULT	AppendFrameFirstTime(int, int, LPVOID,int );
-	HRESULT	AppendFrameUsual(int, int, LPVOID,int );
-	HRESULT	AppendDummy(int, int, LPVOID,int );
-	HRESULT	(CAviFile::*pAppendFrameBits[3])(int, int, LPVOID, int);
+	HRESULT	AppendFrameFirstTime(int, int, LPVOID,WORD);
+	HRESULT	AppendFrameUsual(int, int, LPVOID, WORD);
+	HRESULT	AppendDummy(int, int, LPVOID, WORD);
+	HRESULT(CAviFile::*pAppendFrameBits[3])(int, int, LPVOID, WORD);
 
 	/// Takes care of creating the memory, streams, compression options etc. required for the movie
-	HRESULT InitMovieCreation(int nFrameWidth, int nFrameHeight, int nBitsPerPixel);
+	HRESULT InitMovieCreation(int nFrameWidth, int nFrameHeight, WORD nBitsPerPixel);
 
 	/// Takes care of releasing the memory and movie related handles
 	void ReleaseMemory();
@@ -87,7 +87,7 @@ public:
 	/// The width, height and nBitsPerPixel are the width, height and bits per pixel
 	/// of the bitmap pointed to by the input pBits.
 	/// </Summary>
-	HRESULT	AppendNewFrame(int nWidth, int nHeight, LPVOID pBits,int nBitsPerPixel);
+	HRESULT	AppendNewFrame(int nWidth, int nHeight, LPVOID pBits, WORD nBitsPerPixel);
 
 	HRESULT AppendAudioData(WAVEFORMATEX *wfx, void *dat, unsigned long numbytes);
 

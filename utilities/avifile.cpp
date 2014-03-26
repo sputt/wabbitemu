@@ -94,7 +94,7 @@ void CAviFile::SetErrorMessage(LPCTSTR lpszErrorMessage)
 	_tcsncpy_s(m_szErrMsg, lpszErrorMessage, __countof(m_szErrMsg)-1);
 }
 	
-HRESULT CAviFile::InitMovieCreation(int nFrameWidth, int nFrameHeight, int nBitsPerPixel)
+HRESULT CAviFile::InitMovieCreation(int nFrameWidth, int nFrameHeight, WORD nBitsPerPixel)
 {
 	int	nMaxWidth=GetSystemMetrics(SM_CXSCREEN),nMaxHeight=GetSystemMetrics(SM_CYSCREEN);
 
@@ -242,12 +242,12 @@ HRESULT CAviFile::AppendNewFrame(HBITMAP hBitmap)
 	return (this->*pAppendFrame[m_nAppendFuncSelector])((HBITMAP)hBitmap);
 }
 
-HRESULT	CAviFile::AppendNewFrame(int nWidth, int nHeight, LPVOID pBits,int nBitsPerPixel)
+HRESULT	CAviFile::AppendNewFrame(int nWidth, int nHeight, LPVOID pBits, WORD nBitsPerPixel)
 {
 	return (this->*pAppendFrameBits[m_nAppendFuncSelector])(nWidth,nHeight,pBits,nBitsPerPixel);
 }
 
-HRESULT	CAviFile::AppendFrameFirstTime(int nWidth, int nHeight, LPVOID pBits,int nBitsPerPixel)
+HRESULT	CAviFile::AppendFrameFirstTime(int nWidth, int nHeight, LPVOID pBits, WORD nBitsPerPixel)
 {
 	if(SUCCEEDED(InitMovieCreation(nWidth, nHeight, nBitsPerPixel)))
 	{
@@ -261,7 +261,7 @@ HRESULT	CAviFile::AppendFrameFirstTime(int nWidth, int nHeight, LPVOID pBits,int
 	return E_FAIL;
 }
 
-HRESULT	CAviFile::AppendFrameUsual(int nWidth, int nHeight, LPVOID pBits,int nBitsPerPixel)
+HRESULT	CAviFile::AppendFrameUsual(int nWidth, int nHeight, LPVOID pBits, WORD nBitsPerPixel)
 {
 	DWORD dwSize = nWidth * nHeight * nBitsPerPixel / 8;
 
@@ -277,7 +277,7 @@ HRESULT	CAviFile::AppendFrameUsual(int nWidth, int nHeight, LPVOID pBits,int nBi
 	return S_OK;
 }
 
-HRESULT	CAviFile::AppendDummy(int nWidth, int nHeight, LPVOID pBits,int nBitsPerPixel)
+HRESULT	CAviFile::AppendDummy(int, int, LPVOID, WORD)
 {
 	return E_FAIL;
 }

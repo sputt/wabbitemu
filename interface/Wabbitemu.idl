@@ -535,7 +535,7 @@ methods:
 ]
 interface IWabbitemu : IDispatch
 {
-#include "..\core\modeltypes.h";
+#include "..\core\modeltypes.h"
 
 	[propget, helpstring("Whether or not the UI is visible.")]
 	HRESULT Visible([out, retval] VARIANT_BOOL *lpVisible); 

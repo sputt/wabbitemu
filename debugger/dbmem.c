@@ -836,7 +836,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							next_page += PAGE_SIZE;
 						}
 						
-						waddr.addr = next_addr;
+						waddr.addr = (uint16_t)next_addr;
 
 						value += wmem_read(mps->lpCalc->cpu.mem_c, waddr) << shift;
 					}

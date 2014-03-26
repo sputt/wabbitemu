@@ -476,7 +476,7 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 			page = i;
 		}
 
-		if (i >= cpu->mem_c->flash_pages) {
+		if (i >= (u_int)cpu->mem_c->flash_pages) {
 			break;
 		}
 
@@ -503,7 +503,7 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 			page = i;
 		}
 
-		if (i >= cpu->mem_c->flash_pages) {
+		if (i >= (u_int)cpu->mem_c->flash_pages) {
 			break;
 		}
 
@@ -518,7 +518,7 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 }
 
 static LINK_ERR replace_app(CPU_t *cpu, TIFILE_t *tifile, upages_t upages, u_char(*dest)[PAGE_SIZE], int page) {
-	int pageDiff = tifile->flash->pages - get_page_size(dest[page]);
+	unsigned short pageDiff = (unsigned short)(tifile->flash->pages - get_page_size(dest[page]));
 	u_int currentPage = page - tifile->flash->pages;
 	u_int end_page = pageDiff > 0 ? currentPage : currentPage + pageDiff;
 	while (!check_flashpage_empty(dest, end_page, 1) && end_page >= upages.end) {
@@ -572,7 +572,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 
 	upages_t upages;
 	state_userpages(cpu, &upages);
-	if (upages.start == -1) {
+	if (upages.start == 0) {
 		return LERR_MODEL;
 	}
 
@@ -643,7 +643,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 	}
 
-	cpu->mem_c->flash_upper = page;
+	cpu->mem_c->flash_upper = (unsigned short)page;
 	for (i = page - 7; i <= page + tifile->flash->pages - 8; i++) {
 		// -8 is for the start of user mem
 		cpu->mem_c->protected_page[i / 8] &= ~(1 << (i % 8));

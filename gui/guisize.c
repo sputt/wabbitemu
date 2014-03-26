@@ -34,7 +34,7 @@ LRESULT HandleMoveMessage(HWND hwnd, LPMAINWINDOW lpMainWindow) {
 }
 
 LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPMAINWINDOW lpMainWindow, LPCALC lpCalc,
-	BOOL isSkinEnabled, BOOL isCutout, RECT *newClientRect)
+	BOOL isSkinEnabled, BOOL isCutout)
 {
 	if (lpCalc == NULL) {
 		return 0;

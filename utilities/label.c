@@ -92,11 +92,8 @@ BOOL label_search_tios(TCHAR *label, int equate, int model) {
 int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 	FILE *labelFile = NULL;
 	int i, length;
-#ifdef _UNICODE
-	char readBuf[1024];
-#endif
-	TCHAR buffer[1024];
-	TCHAR name[256];
+	TCHAR buffer[1024] = { 0 };
+	TCHAR name[256] = { 0 };
 	TCHAR *fileName = ((TCHAR *) lpszFileName) + _tcslen(lpszFileName);
 	while (*--fileName != '\\');
 	fileName++;
@@ -116,6 +113,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 
 	while (!feof(labelFile)) {
 #ifdef _UNICODE
+		char readBuf[1024];
 		fgets(readBuf, 256, labelFile);
 		MultiByteToWideChar(CP_ACP, 0, readBuf, -1, buffer, ARRAYSIZE(buffer));
 #else
@@ -131,7 +129,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 
 		i = 0;
 		if (buffer[0] != ';')
-			i = _stscanf(buffer, _T("%s = $%X"), name, &equate);
+			i = _stscanf_s(buffer, _T("%s = $%X"), name, ARRAYSIZE(name) - 1, &equate);
 		if (i == 2) {
 			length = (int) _tcslen(name);
 			if (!label_search_tios(name, equate, lpCalc->model)) {
@@ -141,24 +139,24 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 
 				label->addr = equate & 0xFFFF;
 
-				if ( (equate & 0x0000FFFF) >= 0x4000 && (equate & 0x0000FFFF) < 0x8000) {
-					int page_offset = (equate >> 16) & 0xFF;
-					
+				if ( (equate & 0x0000FFFF) >= 0x4000 && (equate & 0x0000FFFF) < 0x8000) {					
 					label->IsRAM = FALSE;
 					if (lpCalc->last_transferred_app.page_count == 0) {
 						upages_t upage;
 						state_userpages(&lpCalc->cpu, &upage);
-						label->page = upage.start;
+						label->page = (uint8_t)upage.start;
 					} else {
 						applist_t applist;
 						state_build_applist(&lpCalc->cpu, &applist);
 						for (u_int i = 0; i < applist.count; i++) {
 							int len = 8;
 							TCHAR *ptr = applist.apps[i].name + len - 1;
-							while (isspace(*ptr--))
+							while (isspace(*ptr--)) {
 								len--;
+							}
+
 							if (!_tcsnicmp(fileName, applist.apps[i].name, len)) {
-								label->page = applist.apps[i].page;
+								label->page = (uint8_t)applist.apps[i].page;
 								break;
 							}
 						}

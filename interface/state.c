@@ -29,8 +29,8 @@ u_char find_field(u_char *dest, u_char id1, u_char id2, u_char **output) {
 * Finds the page size identifier and returns the number of pages specified.
 * If the identifiers cannot be found, 0 is returned.
 */
-int get_page_size(u_char *dest) {
-	u_char size = find_field(dest, 0x80, 0x80, &dest);
+u_int get_page_size(u_char *dest) {
+	find_field(dest, 0x80, 0x80, &dest);
 	if (dest == NULL) {
 		return 0;
 	}
@@ -54,7 +54,9 @@ void state_build_applist(CPU_t *cpu, applist_t *applist) {
 	// fetch the userpages for this model
 	upages_t upages;
 	state_userpages(cpu, &upages);
-	if (upages.start == -1) return;
+	if (upages.start == 0) {
+		return;
+	}
 	
 	// Starting at the first userpage, search for all the apps
 	// As soon as page doesn't have one, you're done
@@ -70,7 +72,6 @@ void state_build_applist(CPU_t *cpu, applist_t *applist) {
 	{
 		
 		apphdr_t *ah = &applist->apps[applist->count];
-		u_int i;
 		u_char *appName;
 		int nameLen = find_field(flash[page], 0x80, 0x40, &appName);
 #ifdef _UNICODE
@@ -117,7 +118,7 @@ symlist_t *state_build_symlist_86(CPU_t *cpu, symlist_t *symlist) {
 		stp.addr--;
 		if (sym->page > 0) {
 			int total = (sym->page << 16) + sym->address;
-			sym->page = (total - 0x10000) / PAGE_SIZE + 1;
+			sym->page = (uint8_t)((total - 0x10000) / PAGE_SIZE + 1);
 			sym->address %= PAGE_SIZE;
 		}
 		sym->type_ID2		= wmem_read(mem, stp);
@@ -140,9 +141,9 @@ symlist_t *state_build_symlist_86(CPU_t *cpu, symlist_t *symlist) {
 
 symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 	memc *mem = cpu->mem_c;
-	int pTemp = cpu->pio.model >= TI_84PCSE ? PTEMP_84PCSE : PTEMP_83P;
-	int progPtr = cpu->pio.model >= TI_84PCSE ? PROGPTR_84PCSE : PROGPTR_83P;
-	int symTable = cpu->pio.model >= TI_84PCSE ? SYMTABLE_84PCSE : SYMTABLE_83P;
+	uint16_t pTemp = cpu->pio.model >= TI_84PCSE ? PTEMP_84PCSE : PTEMP_83P;
+	uint16_t progPtr = cpu->pio.model >= TI_84PCSE ? PROGPTR_84PCSE : PROGPTR_83P;
+	uint16_t symTable = cpu->pio.model >= TI_84PCSE ? SYMTABLE_84PCSE : SYMTABLE_83P;
 	// end marks the end of the symbol table
 	uint16_t 	end = mem_read16(mem, pTemp),
 	// prog denotes where programs start
@@ -502,7 +503,7 @@ void state_userpages(CPU_t *cpu, upages_t *upages) {
 			upages->end = upages->start - TI_84PCSE_USERPAGES;
 			break;
 		default:
-			upages->start	= -1;
+			upages->start	= 0;
 			upages->end		= 0;
 			break;
 	}	

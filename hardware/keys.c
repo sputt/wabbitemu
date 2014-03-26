@@ -336,7 +336,6 @@ keyprog_t defaultkeysti83[MAX_KEY_MAPPINGS] = {
 	{ VK_F12, KEYGROUP_ON, KEYBIT_ON},
 #endif
 #endif
-	{ -1, -1, -1},
 };
 keyprog_t defaultkeysti86[MAX_KEY_MAPPINGS] = {
 #ifdef _WINDOWS
@@ -428,7 +427,6 @@ keyprog_t defaultkeysti86[MAX_KEY_MAPPINGS] = {
 	{ VK_F12, KEYGROUP_ON, KEYBIT_ON},
 #endif
 #endif
-	{ -1, -1, -1},
 };
 keyprog_t keysti83[MAX_KEY_MAPPINGS];
 keyprog_t keysti86[MAX_KEY_MAPPINGS];

@@ -153,7 +153,7 @@ static u_char link_target_ID(const CPU_t *cpu) {
 	case TI_84PCSE:
 		return 0x23;
 	default:
-		return ~0;
+		return 0xFF;
 	}
 }
 

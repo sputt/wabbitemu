@@ -8,11 +8,11 @@
 
 
 #ifdef _WINDOWS
-static void CALLBACK FillSoundBuffer(HWAVEOUT hWaveOut,
+static void CALLBACK FillSoundBuffer(HWAVEOUT,
 									 UINT uMsg,
 									 DWORD_PTR dwInstance,
 									 DWORD_PTR dwParam1,
-									 DWORD_PTR dwParam2 ) {
+									 DWORD_PTR) {
 
 	WAVEHDR* waveheader = (WAVEHDR*) dwParam1;
 	AUDIO_t *audio = (AUDIO_t *) dwInstance;

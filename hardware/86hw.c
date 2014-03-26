@@ -6,6 +6,9 @@
 #include "link.h"
 #include "device.h"
 
+#pragma warning(push)
+#pragma warning( disable : 4100 )
+
 static double timer_freq[4] = { 1.0 / 800.0, 1.0 / 400.0, 3.0 / 800.0, 1.0 / 200.0 };
 
 static void port10(CPU_t *, device_t *);
@@ -113,7 +116,7 @@ static void port4(CPU_t *cpu, device_t *dev) {
 // ROM port
 static void port5(CPU_t *cpu, device_t *dev) {
 	if ( cpu->input ) {
-		cpu->bus = (cpu->mem_c->banks[1].ram << 6) + cpu->mem_c->banks[1].page;
+		cpu->bus = (unsigned char)((cpu->mem_c->banks[1].ram << 6) + cpu->mem_c->banks[1].page);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->mem_c->banks[1].ram = (cpu->bus >> 6) & 1;
@@ -136,7 +139,7 @@ static void port5(CPU_t *cpu, device_t *dev) {
 // RAM port
 static void port6(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
-		cpu->bus = (cpu->mem_c->banks[2].ram << 6) + cpu->mem_c->banks[2].page;
+		cpu->bus = (unsigned char)((cpu->mem_c->banks[2].ram << 6) + cpu->mem_c->banks[2].page);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->mem_c->banks[2].ram = (cpu->bus >> 6) & 1;
@@ -324,5 +327,4 @@ int memory_init_86(memc *mc) {
 	return 0;
 }
 
-
-
+#pragma warning(pop)

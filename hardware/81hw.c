@@ -5,6 +5,9 @@
 #include "keys.h"
 #include "device.h"
 
+#pragma warning(push)
+#pragma warning( disable : 4100 )
+
 static double timer_freq81[4] = { 1.0 / 800.0, 1.0 / 400.0, 3.0 / 800.0, 1.0 / 200.0 };
 
 // 81 screen offset
@@ -258,3 +261,5 @@ int device_init_81(CPU_t *cpu) {
 	//Append_interrupt_device(cpu, 0x11, 128);
 	return 0;
 }
+
+#pragma warning(pop)

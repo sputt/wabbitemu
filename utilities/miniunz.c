@@ -70,7 +70,6 @@ int do_extract_currentfile(unzFile uf, TCHAR *dirToExtractTo)
 	TCHAR write_filename[MAX_PATH];
 
 	unz_file_info64 file_info;
-	uLong ratio = 0;
 	err = unzGetCurrentFileInfo64(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
 
 	if (err != UNZ_OK)
@@ -163,10 +162,7 @@ int extract_zip(unzFile uf, TCHAR *dirToExtractTo)
 {
 	uLong i;
 	unz_global_info64 gi;
-	int err;
-	FILE* fout = NULL;
-
-	err = unzGetGlobalInfo64(uf, &gi);
+	int err = unzGetGlobalInfo64(uf, &gi);
 	if (err != UNZ_OK)
 		_tprintf(_T("error %d with zipfile in unzGetGlobalInfo \n"), err);
 

@@ -10,7 +10,7 @@ LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destinati
 {
 	TIFILE_t *var = importvar(lpszFileName, FALSE);
 
-	LINK_ERR result;
+	LINK_ERR result = LERR_FILE;
 	if (var != NULL)
 	{
 		switch(var->type)

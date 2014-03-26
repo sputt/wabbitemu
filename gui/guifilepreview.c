@@ -12,7 +12,7 @@ static HWND grpSettings;
 static OFNHookOptions *HookOptions;
 
 
-static LRESULT CALLBACK TargetMemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+static LRESULT CALLBACK TargetMemProc(HWND hwnd, UINT Message, WPARAM, LPARAM) {
 	static HWND rbnRAM, rbnArchive, rbnFileSettings;
 	
 	static int nIDDefault = IDC_RBNFILESETTINGS;

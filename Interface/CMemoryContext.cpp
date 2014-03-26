@@ -133,7 +133,7 @@ STDMETHODIMP CMemoryContext::Write(WORD wAddr, SAFEARRAY *psaValue)
 
 	for (int i = 0; i < UBound - LBound + 1; i++)
 	{
-		WriteByte(wAddr + i, lpData[i]);
+		WriteByte((WORD)(wAddr + i), lpData[i]);
 	}
 	SafeArrayUnaccessData(psaValue);
 	return S_OK;

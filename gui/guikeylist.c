@@ -33,7 +33,6 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 #define KEYLIST_BUTTON_WIDTH 60
 #define KEYLIST_BUTTON_HEIGHT 60
-			POINT pt;
 			hImageList = ImageList_Create(KEYLIST_BUTTON_WIDTH, KEYLIST_BUTTON_HEIGHT, ILC_COLOR32 | ILC_MASK, 8 * 7, 0);
 
 			RECT r = { 0, 0, KEYLIST_BUTTON_WIDTH, KEYLIST_BUTTON_HEIGHT };
@@ -69,7 +68,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 					Rect destRect((r.right - scaleWidth) / 2, (r.bottom - scaleHeight) / 2, scaleWidth, scaleHeight);
 					g.DrawImage(&bitmapButton, destRect, 0, 0, rectWidth, rectHeight, UnitPixel);
 					HBITMAP hbm;
-					scaledButton.GetHBITMAP(Color::Lime, &hbm);
+					scaledButton.GetHBITMAP((ARGB)Color::Lime, &hbm);
 
 					ImageList_AddMasked(hImageList, hbm, RGB(0, 255, 0));
 

@@ -283,7 +283,7 @@ static LRESULT CALLBACK ExpandButtonProc(HWND hwnd, UINT Message, WPARAM wParam,
 			}
 
 			HDC hdcDest, hdc;
-			HBITMAP hbm;
+			HBITMAP hbm = NULL;
 			PAINTSTRUCT ps;
 
 			RECT rc;
@@ -326,7 +326,10 @@ static LRESULT CALLBACK ExpandButtonProc(HWND hwnd, UINT Message, WPARAM wParam,
 						hdcDest, 	0, 0, rc.right - rc.left, rc.bottom - rc.top,
 						hdc, 		0, 0, rc.right - rc.left, rc.bottom - rc.top, bf);
 
-				DeleteObject(hbm);
+				if (hbm != NULL) {
+					DeleteObject(hbm);
+				}
+
 				DeleteDC(hdc);
 
 			}

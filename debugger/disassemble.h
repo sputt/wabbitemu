@@ -136,12 +136,8 @@ typedef struct Z80_info {
 
 typedef struct Z80_command {
 	TCHAR format[32];			/* printf formatted string */
-	TCHAR clocks;				/* clocks to complete */
-	TCHAR clocks_cond;			/* Conditional clocks to complete */
-#ifdef da_ready
-	TCHAR flag_effects[8];		/* Flag effects for all 8 bits */
-	TCHAR *flag_description;		/* optional description of flag effects */
-#endif
+	int clocks;					/* clocks to complete */
+	int clocks_cond;			/* Conditional clocks to complete */
 } Z80_com_t;
 
 int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, BOOL bTIOSDebug, Z80_info_t *result);

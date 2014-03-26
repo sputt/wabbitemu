@@ -14,11 +14,21 @@
 
 #define COLUMN_X_OFFSET 7
 
-#define COLOR_PC				(RGB(180, 180, 180))
-#define COLOR_BREAKPOINT		(RGB(230, 160, 180))
-#define COLOR_MEMPOINT_WRITE	(RGB(255, 177, 100))
-#define COLOR_MEMPOINT_READ		(RGB(255, 250, 145))
-#define COLOR_HALT				(RGB(200, 200, 100))
+#define COLOR_PC_R				180
+#define COLOR_PC_G				180
+#define COLOR_PC_B				180
+#define COLOR_BREAKPOINT_R		230
+#define COLOR_BREAKPOINT_G		160
+#define COLOR_BREAKPOINT_B		180
+#define COLOR_MEMPOINT_WRITE_R	255
+#define COLOR_MEMPOINT_WRITE_G	177
+#define COLOR_MEMPOINT_WRITE_B	100
+#define COLOR_MEMPOINT_READ_R	255
+#define COLOR_MEMPOINT_READ_B	250
+#define COLOR_MEMPOINT_READ_G	145
+#define COLOR_HALT_R			200
+#define COLOR_HALT_G			200
+#define COLOR_HALT_B			100
 
 #define DISASM_LINE_MAX_LEN 2048
 
@@ -389,7 +399,7 @@ void invalidate_pcs(HWND hwnd, dp_settings *dps) {
 }
 
 void db_step_finish(HWND hwnd, dp_settings *dps, BOOL step_back = FALSE) {
-	short past_last = dps->lpCalc->cpu.pc - dps->zinf[dps->nRows-1].waddr.addr + dps->zinf[dps->nRows-1].size;
+	short past_last = (short) (dps->lpCalc->cpu.pc - dps->zinf[dps->nRows-1].waddr.addr + dps->zinf[dps->nRows-1].size);
 	short before_first = dps->zinf[0].waddr.addr - dps->lpCalc->cpu.pc;
 	InvalidateSel(hwnd, dps->iSel);
 	BOOL changeScrollbar = TRUE;
@@ -604,7 +614,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			waddr_t waddr;
 			if (dps->type == REGULAR) {
 				do {
-					waddr = addr16_to_waddr(dps->lpCalc->cpu.mem_c, ++last_top_page_addr);
+					waddr = addr16_to_waddr(dps->lpCalc->cpu.mem_c, (uint16_t) ++last_top_page_addr);
 					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, lpTabInfo->lpDebugInfo->bTIOSDebug, zup);
 				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= 0xFFFF);
 			} else {
@@ -839,7 +849,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 				int pc_i;
 				for (pc_i = 0; pc_i < PC_TRAILS && !do_gradient; pc_i++) {
-					waddr_t pc_waddr = addr16_to_waddr(calc_mem, dps->nPCs[pc_i]);
+					waddr_t pc_waddr = addr16_to_waddr(calc_mem, (uint16_t) dps->nPCs[pc_i]);
 					if ((pc_waddr.addr % PAGE_SIZE == dps->zinf[i].waddr.addr % PAGE_SIZE) && pc_waddr.page == dps->zinf[i].waddr.page
 						&& pc_waddr.is_ram == dps->zinf[i].waddr.is_ram && (dps->zinf[i].index != DA_LABEL)) 
 					{
@@ -849,13 +859,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						vert[0].Blue = 0xFF00;
 
 						if (dps->lpCalc->cpu.halt && pc_i == 0) {
-							vert [1] .Red    = GetRValue(COLOR_HALT) << 8;
-							vert [1] .Green  = GetGValue(COLOR_HALT) << 8;
-							vert [1] .Blue   = GetBValue(COLOR_HALT) << 8;
+							vert[1].Red = COLOR_HALT_R << 8;
+							vert[1].Green = COLOR_HALT_G << 8;
+							vert[1].Blue = COLOR_HALT_B << 8;
 						} else {
-							vert [1] .Red    = (GetRValue(COLOR_PC)+(((255-GetRValue(COLOR_PC))/(PC_TRAILS))*(pc_i))) << 8;
-							vert [1] .Green  = (GetGValue(COLOR_PC)+(((255-GetGValue(COLOR_PC))/(PC_TRAILS))*(pc_i))) << 8;
-							vert [1] .Blue   = (GetBValue(COLOR_PC)+(((255-GetBValue(COLOR_PC))/(PC_TRAILS))*(pc_i))) << 8;
+							vert[1].Red = (COLOR16)((COLOR_PC_R + (((255 - COLOR_PC_R) / (PC_TRAILS))*(pc_i))) << 8);
+							vert[1].Green = (COLOR16)((COLOR_PC_G + (((255 - COLOR_PC_G) / (PC_TRAILS))*(pc_i))) << 8);
+							vert[1].Blue = (COLOR16)((COLOR_PC_B + (((255 - COLOR_PC_B) / (PC_TRAILS))*(pc_i))) << 8);
 						}
 						do_gradient = TRUE;
 					} else {
@@ -866,34 +876,34 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				BOOL breakpoint = FALSE;
 				if (check_break(calc_mem, dps->zinf[i].waddr)) {
-					vert [0] .Red    = GetRValue(COLOR_BREAKPOINT) << 8;
-					vert [0] .Green  = GetGValue(COLOR_BREAKPOINT) << 8;
-					vert [0] .Blue   = GetBValue(COLOR_BREAKPOINT) << 8;
+					vert [0] .Red    = COLOR_BREAKPOINT_R << 8;
+					vert [0] .Green  = COLOR_BREAKPOINT_G << 8;
+					vert [0] .Blue   = COLOR_BREAKPOINT_B << 8;
 					breakpoint = TRUE;
 					do_gradient = TRUE;
 				}
 				if (check_mem_write_break(calc_mem, dps->zinf[i].waddr)) {
 					if (breakpoint) {
-						vert [0] .Red    |= GetRValue(COLOR_MEMPOINT_WRITE) << 8;
-						vert [0] .Green  |= GetGValue(COLOR_MEMPOINT_WRITE) << 8;
-						vert [0] .Blue   = GetBValue(COLOR_MEMPOINT_WRITE) << 8;
+						vert [0] .Red    |= COLOR_MEMPOINT_WRITE_R << 8;
+						vert [0] .Green  |= COLOR_MEMPOINT_WRITE_G << 8;
+						vert [0] .Blue   = COLOR_MEMPOINT_WRITE_B << 8;
 					} else {
-						vert [0] .Red    = GetRValue(COLOR_MEMPOINT_WRITE) << 8;
-						vert [0] .Green  = GetGValue(COLOR_MEMPOINT_WRITE) << 8;
-						vert [0] .Blue   = GetBValue(COLOR_MEMPOINT_WRITE) << 8;
+						vert [0] .Red    = COLOR_MEMPOINT_WRITE_R << 8;
+						vert [0] .Green  = COLOR_MEMPOINT_WRITE_G << 8;
+						vert [0] .Blue   = COLOR_MEMPOINT_WRITE_B << 8;
 					}
 					breakpoint = TRUE;
 					do_gradient = TRUE;
 				}
 				if (check_mem_read_break(calc_mem, dps->zinf[i].waddr)) {
 					if (breakpoint) {
-						vert [0] .Red    |= GetRValue(COLOR_MEMPOINT_READ) << 8;
-						vert [0] .Green  |= GetGValue(COLOR_MEMPOINT_READ) << 8;
-						vert [0] .Blue   = GetBValue(COLOR_MEMPOINT_READ) << 8;
+						vert [0] .Red    |= COLOR_MEMPOINT_READ_R << 8;
+						vert [0] .Green  |= COLOR_MEMPOINT_READ_G << 8;
+						vert [0] .Blue   = COLOR_MEMPOINT_READ_B << 8;
 					} else {
-						vert [0] .Red    = GetRValue(COLOR_MEMPOINT_READ) << 8;
-						vert [0] .Green  = GetGValue(COLOR_MEMPOINT_READ) << 8;
-						vert [0] .Blue   = GetBValue(COLOR_MEMPOINT_READ) << 8;
+						vert [0] .Red    = COLOR_MEMPOINT_READ_R << 8;
+						vert [0] .Green  = COLOR_MEMPOINT_READ_G << 8;
+						vert [0] .Blue   = COLOR_MEMPOINT_READ_B << 8;
 					}
 					do_gradient = TRUE;
 				}

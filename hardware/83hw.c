@@ -6,6 +6,8 @@
 #include "link.h"
 #include "device.h"
 
+#pragma warning(push)
+#pragma warning( disable : 4100 )
 static double timer_freq83[4] = {1.0f / 600.0f, 1.0f / 257.14f, 1.0f / 163.63f, 1.0f / 120.0f};
 
 #define SWAP_BANK	0xFF
@@ -463,5 +465,4 @@ int memory_init_83(memc *mc) {
 	return 0;
 }
 
-
-
+#pragma warning(pop)

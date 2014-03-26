@@ -17,9 +17,6 @@ void RecurseAddItems(HMENU, TCHAR *);
 BOOL IsValidCmdRange(WORD);
 void DoPropertySheet(HWND, LPMAINWINDOW);
 
-void AddNormalKeys(TCHAR *, key_string_t keystrings[KEY_STRING_SIZE]);
-
-
 #define TBRTICS 4
 #define TBRSTEP 5
 

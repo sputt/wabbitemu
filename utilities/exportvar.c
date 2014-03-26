@@ -117,7 +117,7 @@ int mputc(int c, MFILE* mf) {
 			mf->size++;
 			mf->data = temp;
 		}
-		return mf->data[mf->pnt++] = c;
+		return mf->data[mf->pnt++] = (unsigned char)c;
 	}
 }
 
@@ -361,12 +361,12 @@ void intelhex (MFILE* outfile, const unsigned char* buffer, int size, int page, 
 		page++;
 		address = start_address;   
 		for (i = 0; bpnt < size && i < 512; i++) {
-			 chksum = (address >> 8) + (address & 0xFF);
+			 chksum = (uint8_t)((address >> 8) + (address & 0xFF));
 			 for(ci = 0; (ci < 64) && (bpnt < size); ci++) {
 				temp = buffer[bpnt++];
 				outbuf[ci++] = hexstr[temp >> 4];
 				outbuf[ci] = hexstr[temp & 0x0F];
-				chksum += temp;
+				chksum += (unsigned char)temp;
 			}
 			outbuf[ci] = 0;
 			ci >>= 1;
@@ -436,7 +436,7 @@ MFILE *ExportGroup(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 	waddr.addr = sym->address;
 	waddr.is_ram = sym->page == 0;
 	if (waddr.is_ram) {
-		waddr.page = lpCalc->mem_c.banks[mc_bank(sym->address)].page;
+		waddr.page = (uint8_t)lpCalc->mem_c.banks[mc_bank(sym->address)].page;
 	} else {
 		waddr.page = sym->page;
 	}
@@ -467,7 +467,7 @@ MFILE *ExportGroup(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 		exportData[index++] = 0x0D;
 		exportData[index++] = 0x00;
 
-		int size = groupEntry.length;
+		uint16_t size = groupEntry.length;
 		switch(groupEntry.type_ID) {
 			case RealObj:
 				size = 9;
@@ -544,7 +544,7 @@ MFILE *ExportGroup(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 
 	// Actual program data!
 	for(i = 0; i < index; i++) {
-		chksum += mputc(exportData[i], outfile);
+		chksum += (uint8_t)mputc(exportData[i], outfile);
 	}
 
 	mputc(chksum & 0xFF, outfile);
@@ -570,7 +570,7 @@ MFILE *ExportVar(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 	//to make reading easier I'm gonna copy all the max file size 
 	//into mem.
 	for(i = 0; i < 0x10020 && (b = VarRead(lpCalc, page, a)) != -1; i++) {
-		mem[i] = b;
+		mem[i] = (unsigned char)b;
 		AddrOffset(&page, &a, 1);
 	}
 
@@ -633,30 +633,35 @@ MFILE *ExportVar(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 	mputc((size+17) >> 0x08, outfile);
 	
 
-	chksum  = mputc(0x0D, outfile);
-	chksum += mputc(0x00, outfile);
+	chksum  = (unsigned char)mputc(0x0D, outfile);
+	chksum += (unsigned char)mputc(0x00, outfile);
 
-	chksum += mputc(size & 0xFF, outfile);
-	chksum += mputc(size >> 8, outfile);
-	chksum += mputc(sym->type_ID, outfile);
+	chksum += (unsigned char)mputc(size & 0xFF, outfile);
+	chksum += (unsigned char)mputc(size >> 8, outfile);
+	chksum += (unsigned char)mputc(sym->type_ID, outfile);
 	
-	for(i = 0; i < 8 && sym->name[i]; i++) chksum += mputc(sym->name[i], outfile);
-	for(;i < 8; i++) mputc(0, outfile);
+	for (i = 0; i < 8 && sym->name[i]; i++) {
+		chksum += (unsigned char)mputc(sym->name[i], outfile);
+	}
+
+	for (; i < 8; i++) {
+		mputc(0, outfile);
+	}
 
 
-	chksum += mputc(0x00, outfile); // sym->Resevered[1]
+	chksum += (unsigned char)mputc(0x00, outfile); // sym->Resevered[1]
 
 	if (sym->page)
-		chksum += mputc(0x80, outfile); // archived
+		chksum += (unsigned char)mputc(0x80, outfile); // archived
 	else
-		chksum += mputc(0x00, outfile);
+		chksum += (unsigned char)mputc(0x00, outfile);
 
-	chksum += mputc(size & 0xFF, outfile);
-	chksum += mputc(size >> 8, outfile);
+	chksum += (unsigned char)mputc(size & 0xFF, outfile);
+	chksum += (unsigned char)mputc(size >> 8, outfile);
 
 	// Actual program data!
 	for(i = 0; i < size; i++) {
-		chksum += mputc(mem[a++], outfile);
+		chksum += (unsigned char)mputc(mem[a++], outfile);
 	}
 
 	mputc(chksum & 0xFF, outfile);

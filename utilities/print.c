@@ -149,7 +149,7 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR 
 				case 'a': //address
 					{
 						TCHAR *name;
-						int val = (int) va_arg(argp, INT_PTR);
+						uint16_t val = (uint16_t)va_arg(argp, INT_PTR);
 
 						name = FindAddressLabel(lpCalc, addr16_to_waddr(lpCalc->cpu.mem_c, val));
 						
@@ -260,10 +260,8 @@ void mysprintf(LPCALC lpCalc, TCHAR *output, int outputLength, Z80_info_t* zinf,
 				}
 				case 'a': //address
 					{
-						unsigned short addr = zinf->waddr.addr + 2;
 						TCHAR *name;
-						int val;
-						val = (int) va_arg(argp, INT_PTR);
+						uint16_t val = (uint16_t)va_arg(argp, INT_PTR);
 
 						name = FindAddressLabel(lpCalc, addr16_to_waddr(lpCalc->cpu.mem_c, val));
 						
