@@ -23,5 +23,24 @@ DWORD ExtractResource(TCHAR *path, HRSRC resource) {
 	}
 
 	CloseHandle(hFile);
+	UnlockResource(resource);
+	FreeResource(resource);
+	return 0;
+}
+
+DWORD ExtractResourceText(char *buffer, size_t bufferSize, HRSRC resource) {
+	HMODULE hModule = GetModuleHandle(NULL);
+	if (!resource) {
+		return 1;
+	}
+
+	HGLOBAL hGlobal = LoadResource(hModule, resource);
+	DWORD size = SizeofResource(hModule, resource);
+	void *data = LockResource(hGlobal);
+
+	memcpy(buffer, data, min(size, bufferSize));
+
+	UnlockResource(resource);
+	FreeResource(resource);
 	return 0;
 }

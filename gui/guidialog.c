@@ -234,7 +234,8 @@ INT_PTR CALLBACK ExportOSDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 INT_PTR CALLBACK WhatsNewDialogProc(HWND hwndDlg, UINT Message, WPARAM, LPARAM) {
 	switch (Message) {
 		case WM_INITDIALOG: {
-			TCHAR *newText = GetWhatsNewText();
+			TCHAR newText[32768] = { 0 };
+			GetWhatsNewText(newText, ARRAYSIZE(newText));
 			if (newText == NULL) {
 				EndDialog(hwndDlg, -1);
 				MessageBox(NULL, _T("Failed to retrieve text"), _T("Error"), MB_OK);
@@ -242,8 +243,6 @@ INT_PTR CALLBACK WhatsNewDialogProc(HWND hwndDlg, UINT Message, WPARAM, LPARAM) 
 			}
 			HWND hwndText = GetDlgItem(hwndDlg, IDC_EDIT_WHATSNEW);
 			Edit_SetText(hwndText, newText);
-
-			free(newText);
 			return TRUE;
 		}
 		case WM_COMMAND: {

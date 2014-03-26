@@ -16,6 +16,7 @@ public:
 	STDMETHOD(PressKey)(CalcKey Key);
 	STDMETHOD(ReleaseKey)(CalcKey Key);
 	STDMETHOD(PressReleaseKey)(CalcKey Key);
+	STDMETHOD(PressReleaseKeys)(SAFEARRAY *psaValue);
 	STDMETHOD(IsKeyPressed)(CalcKey Key, VARIANT_BOOL *lpfIsPressed);
 
 	void Initialize(LPCALC lpCalc)

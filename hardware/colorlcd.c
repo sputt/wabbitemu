@@ -481,6 +481,30 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 	ColorLCD_t *lcd = (ColorLCD_t *)device->aux;
 	uint16_t reg_index = lcd->current_register & 0xFF;
 	if (cpu->output) {
+		// Run some sanity checks on the write vars
+		if (lcd->base.write_last > tc_elapsed(cpu->timer_c))
+			lcd->base.write_last = tc_elapsed(cpu->timer_c);
+
+		double write_delay = tc_elapsed(cpu->timer_c) - lcd->base.write_last;
+		if (lcd->base.write_avg == 0.0) lcd->base.write_avg = write_delay;
+		lcd->base.write_last = tc_elapsed(cpu->timer_c);
+		lcd->base.last_tstate = tc_tstates(cpu->timer_c);
+
+		// If there is a delay that is significantly longer than the
+		// average write delay, we can assume a frame has just terminated
+		// and you can push this complete frame towards generating the
+		// final image.
+
+		// If you are in steady mode, then this simply serves as a
+		// FPS calculator
+		if (write_delay < lcd->base.write_avg * 100.0) {
+			lcd->base.write_avg = (lcd->base.write_avg * 0.90) + (write_delay * 0.10);
+		} else {
+			double ufps_length = tc_elapsed(cpu->timer_c) - lcd->base.ufps_last;
+			lcd->base.ufps = 1.0 / ufps_length;
+			lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
+		}
+
 		lcd->write_buffer = lcd->write_buffer << 8 | cpu->bus;
 		if (reg_index == GRAM_REG) {
 			int mode = LCD_REG_MASK(ENTRY_MODE_REG, TRI_MASK);

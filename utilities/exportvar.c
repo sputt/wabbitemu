@@ -203,48 +203,58 @@ MFILE *ExportApp(LPCALC lpCalc, TCHAR *fn, apphdr_t *app) {
 		memcpy(temp_point, &dest[tempnum], PAGE_SIZE);
 		temp_point += PAGE_SIZE;
 	}
+
 	outfile = mopen(fn, _T("wb"));
 	// Lots of pointless header crap 
 	for(i = 0; i < 8; i++) mputc(flashheader[i], outfile);
-	//version, major.minor
+	// version, major.minor
 	mputc(0x01, outfile);
 	mputc(0x01, outfile);
-	//flags
+	// flags
 	mputc(0x01, outfile);
-	//object type
+	// object type
 	mputc(0x88, outfile);
-	//date
+	// date
 	mputc(0x01, outfile);
 	mputc(0x01, outfile);
 	mputc(0x19, outfile);
 	mputc(0x97, outfile);
-	//name length...wtf? its always 8
+	// name length...wtf? its always 8
 	mputc(0x08, outfile);
-	//name
-	for (i = 0; i < 8; i++) mputc(app->name[i], outfile);
-	//filler
-	for (i = 0; i < 23; i++) mputc(0x00, outfile);
-	//device
+	// name
+	for (i = 0; i < 8; i++) {
+		mputc(app->name[i], outfile);
+	}
+
+	// filler
+	for (i = 0; i < 23; i++) {
+		mputc(0x00, outfile);
+	}
+
+	// device
 	mputc(0x73, outfile);
-	//its an app not an OS/cert/license
+	// its an app not an OS/cert/license
 	mputc(0x24, outfile);
-	//filler
-	for (i = 0; i < 24; i++) mputc(0x00, outfile);
-	//size of Intel hex
+	// filler
+	for (i = 0; i < 24; i++) {
+		mputc(0x00, outfile);
+	}
+
+	// size of Intel hex
 	tempnum =  77 * (data_size >> 5) + app->page_count * 17 + 11;
 	int size = data_size & 0x1F;
-	if (size) tempnum += (size << 1) + 13;
-	mputc(tempnum & 0xFF, outfile);	//little endian
+	if (size) {
+		tempnum += (size << 1) + 13;
+	}
+
+	mputc(tempnum & 0xFF, outfile);	// little endian
 	mputc((tempnum >> 8) & 0xFF, outfile);
 	mputc((tempnum >> 16) & 0xFF, outfile);
 	mputc(tempnum >> 24, outfile);
-	//data
+	// data
 	intelhex(outfile, buffer, data_size, 0, 0x4000);
 	mprintf(outfile,":00000001FF");
-	//checksum
-	//TODO: this is the best checksum code I've ever seen...
 
-	//DONE :D
 	return outfile;
 }
 
@@ -258,48 +268,60 @@ MFILE * ExportOS(TCHAR *lpszFile, unsigned char *buffer, int size) {
 	int i;
 	// Lots of pointless header crap 
 	for(i = 0; i < 8; i++) mputc(flashheader[i], file);
-	//version, major.minor
+	// version, major.minor
 	mputc(0x01, file);
 	mputc(0x01, file);
-	//flags
+	// flags
 	mputc(0x01, file);
-	//object type
+	// object type
 	mputc(0x88, file);
-	//date
+	// date
 	mputc(0x01, file);
 	mputc(0x01, file);
 	mputc(0x19, file);
 	mputc(0x97, file);
-	//name length...wtf? its always 8
+	// name length...wtf? its always 8
 	mputc(0x08, file);
-	//name
+	// name
 	char name[9] = "basecode";
-	for (i = 0; i < 8; i++) mputc(name[i], file);
-	//filler
-	for (i = 0; i < 23; i++) mputc(0x00, file);
-	//device
+	for (i = 0; i < 8; i++) {
+		mputc(name[i], file);
+	}
+
+	// filler
+	for (i = 0; i < 23; i++) {
+		mputc(0x00, file);
+	}
+
+	// device
 	mputc(0x73, file);
-	//its an app not an OS/cert/license
+	// its an app not an OS/cert/license
 	mputc(0x23, file);
-	//filler
-	for (i = 0; i < 24; i++) mputc(0x00, file);
-	//size of Intel hex
+	// filler
+	for (i = 0; i < 24; i++) {
+		mputc(0x00, file);
+	}
+
+	// size of Intel hex
 	int tempnum =  77 * (size >> 5) + (size / PAGE_SIZE) * 17 + 11;
 	size = size & 0x1F;
-	if (size) tempnum += (size << 1) + 13;
-	mputc(tempnum & 0xFF, file);	//little endian
+	if (size) {
+		tempnum += (size << 1) + 13;
+	}
+
+	mputc(tempnum & 0xFF, file);	// little endian
 	mputc((tempnum >> 8) & 0xFF, file);
 	mputc((tempnum >> 16) & 0xFF, file);
 	mputc(tempnum >> 24, file);
 	*(buffer + 0x56) = 0xFF;
 	mprintf(file, "\r\n");
-	//page 0 needs to start at 0x0000
+	// page 0 needs to start at 0x0000
 	intelhex(file, (const unsigned char *) buffer, PAGE_SIZE, 0, 0x0000);
 	if (size - PAGE_SIZE > 0) {
 		intelhex(file, (const unsigned char *) buffer + PAGE_SIZE, size - PAGE_SIZE, 1,  0x4000);
 	}
+
 	mprintf(file, ":00000001FF");
-	//TODO: checksum
 	return file;
 }
 

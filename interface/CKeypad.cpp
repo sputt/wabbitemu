@@ -104,12 +104,29 @@ STDMETHODIMP CKeypad::PressReleaseKey(CalcKey Key)
 {
 	keyprog_t prog;
 	BOOL found = LookupKeyprog(Key, &prog);
-
 	if (found == FALSE) {
 		return E_INVALIDARG;
 	}
 
 	press_key(m_lpCalc, prog.group, prog.bit);
+
+	return S_OK;
+}
+
+STDMETHODIMP CKeypad::PressReleaseKeys(SAFEARRAY *psaValue)
+{
+	LONG LBound, UBound;
+	SafeArrayGetLBound(psaValue, 1, &LBound);
+	SafeArrayGetUBound(psaValue, 1, &UBound);
+
+	for (LONG i = LBound; i <= UBound; i++) {
+		CalcKey key;
+		HRESULT hr = SafeArrayGetElement(psaValue, &i, &key);
+		ATLENSURE_RETURN_HR(SUCCEEDED(hr), hr);
+
+		PressReleaseKey(key);
+	}
+
 	return S_OK;
 }
 
