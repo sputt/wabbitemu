@@ -101,7 +101,7 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		lpCalc->cpu.output = output_backup;
 		lpCalc->cpu.bus = bus_backup;
 
-		DuplicateCalc(lpCalc);
+		duplicate_calc = DuplicateCalc(lpCalc);
 
 		DestroyWindow(hwndEditControl);
 	}
@@ -146,6 +146,8 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			lpDebugInfo = (LPDEBUGWINDOWINFO)((LPCREATESTRUCT)lParam)->lpCreateParams;
 			lpCalc = (LPCALC) lpDebugInfo->lpCalc;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpDebugInfo);
+
+			duplicate_calc = DuplicateCalc(lpCalc);
 
 			hwndListView = CreateListView(hwnd);
 			int count = 0;

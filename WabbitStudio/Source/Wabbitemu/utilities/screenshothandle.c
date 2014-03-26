@@ -98,7 +98,7 @@ uint8_t* generate_gif_image(LCDBase_t *lcd, int gif_size) {
 			else {
 				int part = 255 / gif_colors;
 				color = image[(row / gif_size) * lcd->width * lcd->bytes_per_pixel + (col / gif_size) * lcd->bytes_per_pixel];
-				color = (color + (part / 2)) / part;
+				color = (uint8_t)((color + (part / 2)) / part);
 			}
 
 			gif[row * gif_width + col] = color;
@@ -160,7 +160,7 @@ void handle_screenshot(LPCALC lpCalc, LPVOID lParam) {
 				lcd = calcs[calc_num].cpu.pio.lcd;
 
 				gif_indiv_xs = lcd->display_width * size;
-				gif_base_delay = gif_base_delay_start;
+				gif_base_delay = (WORD)gif_base_delay_start;
 				gif_time = 0;
 				gif_newframe = 1;
 				gif_colors = shades + 1;

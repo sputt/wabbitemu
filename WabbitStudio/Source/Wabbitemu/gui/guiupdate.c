@@ -160,7 +160,7 @@ BOOL GetWhatsNewText(TCHAR *whatsNewText, size_t sizeInChar) {
 #ifdef _UNICODE
 	MultiByteToWideChar(CP_ACP, 0, buffer, -1, whatsNewText, sizeInChar);
 #else
-	StringCbCopy(whatsNewText, size, buffer);
+	StringCchCopy(whatsNewText, sizeInChar, buffer);
 #endif
 
 

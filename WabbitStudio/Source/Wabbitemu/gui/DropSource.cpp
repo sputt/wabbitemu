@@ -59,6 +59,6 @@ HRESULT __stdcall CDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfK
 }
 
 
-HRESULT __stdcall CDropSource::GiveFeedback(DWORD dwEffect) {
+HRESULT __stdcall CDropSource::GiveFeedback(DWORD) {
 	return DRAGDROP_S_USEDEFAULTCURSORS;
 }

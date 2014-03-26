@@ -120,8 +120,8 @@ typedef enum {
 #define P2_END_MASK 0x1FF
 
 static int read_pixel(ColorLCD_t *lcd);
-static void write_pixel18(ColorLCD_t *lcd, timerc *timerc);
-static void write_pixel16(ColorLCD_t *lcd, timerc *timerc);
+static void write_pixel18(ColorLCD_t *lcd);
+static void write_pixel16(ColorLCD_t *lcd);
 static void update_x(ColorLCD_t *lcd, BOOL should_update_row);
 static void update_y(ColorLCD_t *lcd, BOOL should_update_col);
 
@@ -135,7 +135,7 @@ uint8_t *ColorLCD_Image(LCDBase_t *);
 
 ColorLCD_t *ColorLCD_init(CPU_t *cpu, int model) {
 	ColorLCD_t* lcd = (ColorLCD_t *)malloc(sizeof(ColorLCD_t));
-	if (!lcd) {
+	if (lcd == NULL) {
 		printf("Couldn't allocate memory for LCD\n");
 		exit(1);
 	}
@@ -170,7 +170,7 @@ static void reset_x(ColorLCD_t *lcd, uint16_t mode) {
 }
 
 void ColorLCD_set_register(CPU_t *cpu, ColorLCD_t *lcd, uint16_t reg, uint16_t value) {
-	int mode = LCD_REG(ENTRY_MODE_REG);
+	uint16_t mode = LCD_REG(ENTRY_MODE_REG);
 
 	switch (reg) {
 	case DRIVER_CODE_REG:
@@ -512,18 +512,18 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 				lcd->write_step++;
 				if (lcd->write_step >= 3) {
 					lcd->write_step = 0;
-					write_pixel18(lcd, cpu->timer_c);
+					write_pixel18(lcd);
 				}
 			} else {
 				lcd->write_step = !lcd->write_step;
 				if (!lcd->write_step) {
-					write_pixel16(lcd, cpu->timer_c);
+					write_pixel16(lcd);
 				}
 			}
 		} else {
 			lcd->write_step = !lcd->write_step;
 			if (!lcd->write_step) {
-				ColorLCD_set_register(cpu, lcd, reg_index, lcd->write_buffer);
+				ColorLCD_set_register(cpu, lcd, reg_index, (uint16_t)lcd->write_buffer);
 			}
 		}
 
@@ -537,7 +537,7 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 		if (reg_index == GRAM_REG) {
 			// read from LCD mem
 			int pixel = lcd->read_buffer;
-			cpu->bus = pixel >> 16;
+			cpu->bus = (unsigned char)(pixel >> 16);
 			lcd->read_step = !lcd->read_step;
 			if (!lcd->read_step) {
 				pixel = read_pixel(lcd);
@@ -550,7 +550,7 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 
 			lcd->read_buffer = pixel;
 		} else {
-			int val = LCD_REG(reg_index);
+			uint16_t val = LCD_REG(reg_index);
 			lcd->read_step = !lcd->read_step;
 			if (lcd->read_step) {
 				cpu->bus = val >> 8;
@@ -599,7 +599,7 @@ static int read_pixel(ColorLCD_t *lcd) {
 	return pixel;
 }
 
-static void write_pixel(ColorLCD_t *lcd, timerc *timer_c, int red, int green, int blue) {
+static void write_pixel(ColorLCD_t *lcd, uint8_t red, uint8_t green, uint8_t blue) {
 	int x = lcd->base.x;
 	int y = lcd->base.y;
 
@@ -625,9 +625,9 @@ static void write_pixel(ColorLCD_t *lcd, timerc *timer_c, int red, int green, in
 	}
 }
 
-static void write_pixel18(ColorLCD_t *lcd, timerc *timerc) {
+static void write_pixel18(ColorLCD_t *lcd) {
 	int pixel_val;
-	int red, green, blue;
+	uint8_t red, green, blue;
 	if (LCD_REG_MASK(ENTRY_MODE_REG, UNPACKED_MASK)) {
 		pixel_val = lcd->write_buffer & 0xfcfcfc;
 		red = (pixel_val >> 18) & 0x3F;
@@ -640,19 +640,19 @@ static void write_pixel18(ColorLCD_t *lcd, timerc *timerc) {
 		blue = pixel_val & 0x3F;
 	}
 
-	write_pixel(lcd, timerc, red, green, blue);
+	write_pixel(lcd, red, green, blue);
 }
 
-static void write_pixel16(ColorLCD_t *lcd, timerc *timerc) {
+static void write_pixel16(ColorLCD_t *lcd) {
 	int pixel_val = lcd->write_buffer;
 	int red_significant_bit = pixel_val & BIT(15) ? 1 : 0;
 	int blue_significant_bit = pixel_val & BIT(4) ? 1 : 0;
 
-	int red = ((pixel_val >> 10) | red_significant_bit) & 0x3F;
-	int green = (pixel_val >> 5) & 0x3F;
-	int blue = ((pixel_val << 1) | blue_significant_bit) & 0x3F;
+	uint8_t red = ((pixel_val >> 10) | red_significant_bit) & 0x3F;
+	uint8_t green = (pixel_val >> 5) & 0x3F;
+	uint8_t blue = ((pixel_val << 1) | blue_significant_bit) & 0x3F;
 
-	write_pixel(lcd, timerc, red, green, blue);
+	write_pixel(lcd, red, green, blue);
 }
 
 static void update_y(ColorLCD_t *lcd, BOOL should_update) {
@@ -789,9 +789,9 @@ static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int siz
 					b >>= 5;
 				}
 
-				dest[i] = alpha_overlay + TRUCOLOR(r, bits) * inverse_alpha / 100;
-				dest[i + 1] = alpha_overlay + TRUCOLOR(g, bits) * inverse_alpha / 100;
-				dest[i + 2] = alpha_overlay + TRUCOLOR(b, bits) * inverse_alpha / 100;
+				dest[i] = (uint8_t)(alpha_overlay + TRUCOLOR(r, bits) * inverse_alpha / 100);
+				dest[i + 1] = (uint8_t)(alpha_overlay + TRUCOLOR(g, bits) * inverse_alpha / 100);
+				dest[i + 2] = (uint8_t)(alpha_overlay + TRUCOLOR(b, bits) * inverse_alpha / 100);
 			}
 		} else {
 			for (int i = 0; i < size; i += 3) {
@@ -804,15 +804,15 @@ static void draw_row_image(ColorLCD_t *lcd, uint8_t *dest, uint8_t *src, int siz
 					b >>= 5;
 				}
 
-				dest[i] = alpha_overlay + TRUCOLOR(r, bits) * inverse_alpha / 100;
-				dest[i + 1] = alpha_overlay + TRUCOLOR(g, bits) * inverse_alpha / 100;
-				dest[i + 2] = alpha_overlay + TRUCOLOR(b, bits) * inverse_alpha / 100;
+				dest[i] = (uint8_t)(alpha_overlay + TRUCOLOR(r, bits) * inverse_alpha / 100);
+				dest[i + 1] = (uint8_t)(alpha_overlay + TRUCOLOR(g, bits) * inverse_alpha / 100);
+				dest[i + 2] = (uint8_t)(alpha_overlay + TRUCOLOR(b, bits) * inverse_alpha / 100);
 			}
 		}
 	} else {
 		for (int i = 0; i < size; i++) {
 			uint8_t val = color8bit ? src[i] >> 5 : src[i];
-			dest[i] = alpha_overlay + TRUCOLOR(val, bits) * inverse_alpha / 100;
+			dest[i] = (uint8_t)(alpha_overlay + TRUCOLOR(val, bits) * inverse_alpha / 100);
 		}
 	}
 }

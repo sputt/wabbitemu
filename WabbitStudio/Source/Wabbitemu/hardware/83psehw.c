@@ -7,6 +7,9 @@
 #include "link.h"
 #include "device.h"
 
+#pragma warning(push)
+#pragma warning( disable : 4100 )
+
 /*
 	NOTE ABOUT 83+SE AND 84+SE:
 		There is no difference in hardware code between the 83+SE
@@ -60,6 +63,8 @@ static BOOL IsLCDBusy(CPU_t *cpu) {
 	case 3:
 		lcd_wait_tstates = (cpu->pio.se_aux->delay.lcdwait >> 5) & 7;
 		break;
+	default:
+		return FALSE;
 	}
 
 	lcd_wait_tstates = lcd_wait_tstates * 64 + 48;
@@ -76,7 +81,6 @@ static BOOL IsLCDBusy(CPU_t *cpu) {
 // bit 6 - Indicates if Link Assist is available
 // bit 7 - SE or Basic
 void port2_83pse(CPU_t *cpu, device_t *dev) {
-	LCD_t *lcd = (LCD_t *) cpu->pio.lcd;
 	if (cpu->input) {
 		BOOL lcd_busy = IsLCDBusy(cpu);
 		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE1 : 0xC1) |
@@ -1758,3 +1762,5 @@ int memory_init_84pcse(memc *mc) {
 	mc->banks					= mc->normal_banks;
 	return 0;
 }
+
+#pragma warning(pop)

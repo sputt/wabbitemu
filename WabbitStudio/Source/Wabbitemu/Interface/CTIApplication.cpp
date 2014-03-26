@@ -10,7 +10,7 @@ STDMETHODIMP CTIApplication::get_PageCount(int *lpVersion) {
 
 STDMETHODIMP CTIApplication::get_Page(IPage **lppPage) {
 	CComPtr<IPageCollection> pPageColl;
-	uint8_t page = m_App.page;
+	u_int page = m_App.page;
 	m_pMem->get_Flash(&pPageColl);
 
 	pPageColl->get_Item(page, lppPage);
@@ -18,7 +18,6 @@ STDMETHODIMP CTIApplication::get_Page(IPage **lppPage) {
 }
 
 STDMETHODIMP CTIApplication::get_Name(BSTR *lpName) {
-	TCHAR real_name[256] = { 0 };
 #ifdef _UNICODE
 	*lpName = SysAllocString((OLECHAR *)m_App.name);
 #else

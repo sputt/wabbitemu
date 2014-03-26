@@ -17,8 +17,8 @@ void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADW
 	if (bSkinEnabled) {
 		SetStretchBltMode(hdcBuf, HALFTONE);
 		StretchBlt(hdcBuf, 0, 0, lcdWidth + (2*GIFGRADWIDTH), lcdHeight + (2*GIFGRADWIDTH),
-			hdcSkin, (r->left - GIFGRADWIDTH) * skinScale, (r->top - GIFGRADWIDTH) * skinScale, 
-			(lcdWidth + (2 * GIFGRADWIDTH))* skinScale, (lcdHeight + (2 * GIFGRADWIDTH)) * skinScale, SRCCOPY);
+			hdcSkin, (int)((r->left - GIFGRADWIDTH) * skinScale), (int)((r->top - GIFGRADWIDTH) * skinScale),
+			(int)((lcdWidth + (2 * GIFGRADWIDTH))* skinScale), (int)((lcdHeight + (2 * GIFGRADWIDTH)) * skinScale), SRCCOPY);
 	} else {
 		RECT rc = {0, 0, lcdWidth + (2*GIFGRADWIDTH), lcdHeight + (2*GIFGRADWIDTH)};
 		FillRect(hdcBuf, &rc, GetStockBrush(GRAY_BRUSH));
@@ -67,7 +67,7 @@ void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADW
 	BYTE * pPixel = pBits;
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
-			pPixel[3] = 255*(x+1)/width;
+			pPixel[3] = (BYTE)(255 * (x + 1) / width);
 			
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 			pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
@@ -86,7 +86,7 @@ void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADW
 	pPixel = pBits;
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
-			pPixel[3] = 255*(width - x)/width;
+			pPixel[3] = (BYTE)(255 * (width - x) / width);
 			
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 			pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
@@ -111,7 +111,7 @@ void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADW
 
 	for (pPixel = pBits, y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
-			pPixel[3] = 255*(height - y)/height;
+			pPixel[3] = (BYTE)(255 * (height - y) / height);
 			
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 			pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
@@ -127,7 +127,7 @@ void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADW
 	
 	for (pPixel = pBits, y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
-			pPixel[3] = 255*(y+1)/height;
+			pPixel[3] = (BYTE)(255 * (y + 1) / height);
 
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 			pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
@@ -153,8 +153,11 @@ void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADW
 	for (pPixel = pBits, y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
 			int res = (int) (255*sqrt((double) ((x*x) + (y*y))) / height);
-			if (res > 255) res = 255;
-			pPixel[3] = 255 - res;
+			if (res > 255) {
+				res = 255;
+			}
+
+			pPixel[3] = (BYTE)(255 - res);
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 			pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
 			pPixel[2] = pPixel[2] * pPixel[3] / 0xFF;
@@ -171,8 +174,11 @@ void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADW
 	for (pPixel = pBits, y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
 			int res = (int) (256*sqrt((double) ((width - x - 1)*(width - x - 1)) + (y*y)) / height);
-			if (res > 255) res = 255;
-			pPixel[3] = 255 - res;
+			if (res > 255) {
+				res = 255;
+			}
+
+			pPixel[3] = (BYTE)(255 - res);
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 			pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
 			pPixel[2] = pPixel[2] * pPixel[3] / 0xFF;
@@ -189,8 +195,11 @@ void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADW
 	for (pPixel = pBits, y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
 			int res = (int) (255*sqrt((double) (x*x) + ((height-y - 1)*(height-y - 1))) / height);
-			if (res > 255) res = 255;
-			pPixel[3] = 255 - res;
+			if (res > 255) {
+				res = 255;
+			}
+
+			pPixel[3] = (BYTE)(255 - res);
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 			pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
 			pPixel[2] = pPixel[2] * pPixel[3] / 0xFF;
@@ -208,7 +217,7 @@ void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADW
 		for (x = 0; x < width; x++, pPixel+=4) {
 			int res = (int) (255*sqrt((double) ((width - x - 1)*(width - x - 1)) + ((height-y -1)*(height-y-1))) / height);
 			if (res > 255) res = 255;
-			pPixel[3] = 255 - res;
+			pPixel[3] = (BYTE)(255 - res);
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 			pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
 			pPixel[2] = pPixel[2] * pPixel[3] / 0xFF;

@@ -41,7 +41,7 @@ static LRESULT CALLBACK OFNSubclassProc(HWND hwnd, UINT Message, WPARAM wParam, 
 	return CallWindowProc(wndProcOFN, hwnd, Message, wParam, lParam);
 }
 
-static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
+static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM, LPARAM lParam) {
 	static OFNHookOptions *HookOptions;
 	
 	switch (Message) {
@@ -129,7 +129,6 @@ void GetOpenSendFileName(HWND hwnd, LPCALC lpCalc) {
 	const TCHAR lpstrTitle[] = _T("Wabbitemu Open File");
 	TCHAR filepath[MAX_PATH+256];
 	TCHAR filestr[MAX_PATH+256];
-	TCHAR *FileNames = NULL;
 	TCHAR *filename;
 	TCHAR *filestroffset;
 	

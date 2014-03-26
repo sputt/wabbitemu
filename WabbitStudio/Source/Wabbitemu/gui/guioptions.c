@@ -890,7 +890,7 @@ TCHAR* NameFromVKey(UINT nVK);
 
 static TCHAR keyPressBuf[64];
 static UINT editKeyPressed;
-LRESULT CALLBACK EmuKeyHandleProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+LRESULT CALLBACK EmuKeyHandleProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR, DWORD_PTR) {
 	switch (uMsg) {
 		case WM_KEYDOWN: {
 			editKeyPressed = (int) wParam;
@@ -924,6 +924,7 @@ void AssignAccel(HWND);
 void RemoveAccel();
 void AssignEmuKey(HWND, keyprog_t *);
 void RemoveEmuKey(keyprog_t *);
+void AddNormalKeys(key_string_t keystrings[KEY_STRING_SIZE]);
 
 extern keyprog_t keygrps[256];
 extern keyprog_t keysti83[256];
@@ -1113,7 +1114,7 @@ void AssignEmuKey(HWND hwnd, keyprog_t *keys) {
 			keys[nEmuUsed].bit = LOWORD(newCmd);
 			keys[nEmuUsed].group = HIWORD(newCmd);
 			nEmuUsed++;
-			keys[nEmuUsed].vk = -1;
+			keys[nEmuUsed].vk = 0;
 		}
 		ChangeCommand(keys, 256); // reflect changes
 		// this key can only be clicked, and if it is default & disabled, the key navigation gets screwy
@@ -1139,11 +1140,14 @@ void RemoveEmuKey(keyprog_t *keys) {
 				if (sameKey) {
 					continue;
 				}
+
 				ListBox_DeleteString(hListKeys, idx);
 				int last = --nEmuUsed;
-				if (i < last)
+				if (i < last) {
 					keys[i] = keys[last];
-				keys[last].vk = -1;
+				}
+
+				keys[last].vk = 0;
 				EnableWindow(hRemoveButton, FALSE);
 				break;
 			}
@@ -1165,7 +1169,7 @@ void AssignAccel(HWND hwnd) {
 		lvi.iItem = active;
 		lvi.mask = LVIF_PARAM;
 		ListView_GetItem(hListMenu, &lvi);
-		int newCmd = (int) lvi.lParam;
+		WORD newCmd = (WORD) lvi.lParam;
 		for (i = 0; i < nAccelUsed; i++) {
 			if (hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == wVirtualKeyCode) {
 				break;
@@ -1254,7 +1258,7 @@ void ChangeMenuCommands(HWND hSender) {
 	memset(buffer, 0, ARRAYSIZE(buffer));
 	if (hSubMenu == NULL) {
 		//assume that if we cant find the menu, then its the emulator keys
-		AddNormalKeys((TCHAR *) &buffer, (lpCalc->cpu.pio.model == TI_86 || lpCalc->cpu.pio.model == TI_85) ? ti86keystrings : ti83pkeystrings);
+		AddNormalKeys((lpCalc->cpu.pio.model == TI_86 || lpCalc->cpu.pio.model == TI_85) ? ti86keystrings : ti83pkeystrings);
 		accelerators = false;
 	} else {
 		RecurseAddItems(hSubMenu, (TCHAR *) &buffer);
@@ -1365,7 +1369,7 @@ TCHAR* NameFromAccel(ACCEL key) {
 	return name;
 }
 
-void AddNormalKeys(TCHAR *base, key_string_t keystrings[KEY_STRING_SIZE]) {
+void AddNormalKeys(key_string_t keystrings[KEY_STRING_SIZE]) {
 	LVITEM li; // lparam is command ID
 	li.mask = LVIF_TEXT | LVIF_PARAM;
 	li.iSubItem = 0;	// browse this menu checking for submenus

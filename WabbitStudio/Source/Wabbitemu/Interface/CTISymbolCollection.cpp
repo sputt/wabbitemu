@@ -13,6 +13,7 @@ HRESULT CTISymbolCollection::Initialize(LPCALC lpCalc, IMemoryContext *pMem)
 	for (u_int i = 0; i < symlist.count; i++) {
 		CComObject<CTISymbol> *pSymbolObj;
 		HRESULT hr = CComObject<CTISymbol>::CreateInstance(&pSymbolObj);
+		ATLENSURE_SUCCEEDED(hr);
 		pSymbolObj->Initialize(lpCalc, pMem, symlist.symbols[i]);
 
 		CAdapt< CComPtr<ITISymbol> > pSymbol = pSymbolObj;

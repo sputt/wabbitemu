@@ -110,7 +110,7 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 	}
 
 	lpsi->Error = LERR_SUCCESS;
-	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)	{
+	for (lpsi->iCurrentFile = 0; (UINT)lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)	{
 		const TCHAR *filename = lpsi->FileList->at(lpsi->iCurrentFile).c_str();
 		TIFILE_t *var = importvar(filename, TRUE);
 		if (var != NULL && var->type != ROM_TYPE) {
@@ -509,7 +509,7 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			r.left += tm.tmAveCharWidth;
 			SetTextColor(hdc, RGB(90, 90, 90));
 
-			if (lpsi->iCurrentFile != -1 && lpsi->FileList->size() > lpsi->iCurrentFile)
+			if (lpsi->iCurrentFile != -1 && lpsi->FileList->size() > (UINT)lpsi->iCurrentFile)
 			{
 				DrawText(hdc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), -1, &r, DT_SINGLELINE | DT_PATH_ELLIPSIS);
 			}

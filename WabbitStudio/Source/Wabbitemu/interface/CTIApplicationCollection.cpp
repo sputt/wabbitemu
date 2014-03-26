@@ -12,6 +12,7 @@ HRESULT CTIApplicationCollection::Initialize(IMemoryContext *pMem, LPCALC lpCalc
 	for (u_int i = 0; i < applist.count; i++) {
 		CComObject<CTIApplication> *pAppObj;
 		HRESULT hr = CComObject<CTIApplication>::CreateInstance(&pAppObj);
+		ATLENSURE_SUCCEEDED(hr);
 		pAppObj->Initialize(pMem, lpCalc, applist.apps[i]);
 
 		CAdapt< CComPtr<ITIApplication> > pApp = pAppObj;

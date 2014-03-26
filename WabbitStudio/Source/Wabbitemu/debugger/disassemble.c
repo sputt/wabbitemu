@@ -184,7 +184,7 @@ waddr_t GetNextAddr(memory_context_t *memc, ViewType type, waddr_t waddr) {
 waddr_t OffsetWaddr(memory_context_t *memc, ViewType type, waddr_t waddr, int offset) {
 	switch (type) {
 		case REGULAR:
-			waddr = addr16_to_waddr(memc, waddr.addr + offset);
+			waddr = addr16_to_waddr(memc, (uint16_t)(waddr.addr + offset));
 			break;
 		case RAM:
 		case FLASH: {
@@ -230,7 +230,7 @@ int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, BOOL bTI
 			waddr = GetNextAddr(memc, type, waddr);
 		}
 		if (data == 0xCB) {
-			int offset;
+			int offset = 0;
 			data = wmem_read(memc, waddr);
 			waddr = GetNextAddr(memc, type, waddr);
 			if (prefix) {

@@ -2051,7 +2051,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		SetWindowPos(hwnd, NULL, 0, 0, newWidth, newHeight, SWP_NOMOVE | SWP_NOZORDER);
 
 		return HandleSizeMessage(hwnd, lpMainWindow->hwndLCD, lpMainWindow, lpCalc,
-			lpMainWindow->bSkinEnabled, lpMainWindow->bCutout, &rc);
+			lpMainWindow->bSkinEnabled, lpMainWindow->bCutout);
 	}
 	case WM_MOVE: {
 		if (lpCalc == NULL) {

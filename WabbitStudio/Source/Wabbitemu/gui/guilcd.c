@@ -323,7 +323,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			FORMATETC fmtetc[] = {
 				{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL},
-				{RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL}
+				{(CLIPFORMAT)RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL}
 			};
 
 			if (lpMainWindow->hwndLCD == NULL) {
@@ -348,9 +348,9 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 #define LCD_HIGH	255
 				for (int i = 0; i <= MAX_SHADES; i++) {
-					bi->bmiColors[i].rgbRed = (0x9E*(256-(LCD_HIGH/MAX_SHADES)*i))/255;
-					bi->bmiColors[i].rgbGreen = (0xAB*(256-(LCD_HIGH/MAX_SHADES)*i))/255;
-					bi->bmiColors[i].rgbBlue = (0x88*(256-(LCD_HIGH/MAX_SHADES)*i))/255;
+					bi->bmiColors[i].rgbRed = (BYTE)((0x9E * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255);
+					bi->bmiColors[i].rgbGreen = (BYTE)((0xAB * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255);
+					bi->bmiColors[i].rgbBlue = (BYTE)((0x88 * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255);
 				}
 			}
 
@@ -369,9 +369,9 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				contrastbi->bmiHeader.biClrImportant = MAX_SHADES + 1;
 
 				for (int i = 0; i <= MAX_SHADES; i++) {
-					contrastbi->bmiColors[i].rgbRed = (0x9E * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255;
-					contrastbi->bmiColors[i].rgbGreen = (0xAB * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255;
-					contrastbi->bmiColors[i].rgbBlue = 0x20 - ((0x88 * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255);
+					contrastbi->bmiColors[i].rgbRed = (BYTE)((0x9E * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255);
+					contrastbi->bmiColors[i].rgbGreen = (BYTE)((0xAB * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255);
+					contrastbi->bmiColors[i].rgbBlue = (BYTE)(0x20 - ((0x88 * (256 - (LCD_HIGH / MAX_SHADES)*i)) / 255));
 				}
 			}
 
@@ -447,7 +447,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				menuItemInfo.dwTypeData = menuStringBuffer;
 				success = GetMenuItemInfo(hmenuMain, i, TRUE, &menuItemInfo);
 				if (success) {
-					InsertMenu(hmenuContext, -1, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), menuItemInfo.dwTypeData);
+					InsertMenu(hmenuContext, i, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), menuItemInfo.dwTypeData);
 					i++;
 				}
 			}
@@ -504,9 +504,9 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 
 				FORMATETC fmtetc[] = {
-					{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
-					{RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL },
-					{RegisterClipboardFormat(_T("WabbitShot")), 0, DVASPECT_CONTENT, 0, TYMED_NULL},
+					{(CLIPFORMAT)RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
+					{(CLIPFORMAT)RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL },
+					{(CLIPFORMAT)RegisterClipboardFormat(_T("WabbitShot")), 0, DVASPECT_CONTENT, 0, TYMED_NULL},
 					{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
 				};
 
@@ -626,7 +626,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		case WM_DROPFILES: {
 			TCHAR fn[256];
-			int count = DragQueryFile((HDROP) wParam, ~0, fn, 256);
+			UINT count = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, fn, 256);
 
 			while (count--) {
 				DragQueryFile((HDROP) wParam, count, fn, 256);
@@ -702,7 +702,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				BYTE * pPixelTop = pBits + 96 * 96 * 4 - 16 * 96 * 4;
 				int i, j;
 				for (i = 16*96*4 - 4, j = 16; j > 0; i -= 4, pPixel -= 4, pPixelTop += 4) {
-					pPixel[3] = pPixelTop[3] = 42 - ((42 / 16) * (16 - j));
+					pPixel[3] = pPixelTop[3] = (BYTE)(42 - ((42 / 16) * (16 - j)));
 
 					pPixelTop[0] = pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 					pPixelTop[1] = pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;

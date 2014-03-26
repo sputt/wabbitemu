@@ -7,7 +7,8 @@
 #include "device.h"
 #include "83psehw.h"
 
-#define BIT(bit) (1 << (bit))
+#pragma warning(push)
+#pragma warning( disable : 4100 )
 
 static double timer_freq83p[4] = { 1.0f / 560.0f, 1.0f / 248.0f, 1.0f / 170.0f, 1.0f / 118.0f };
 
@@ -454,5 +455,4 @@ int memory_init_83p(memc *mc) {
 	return 0;
 }
 
-
-
+#pragma warning(pop)
