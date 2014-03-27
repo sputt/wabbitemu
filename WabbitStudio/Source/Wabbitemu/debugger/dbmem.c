@@ -8,7 +8,6 @@
 
 #define COLUMN_X_OFFSET (7 + (mps->type == REGULAR ? 0 : 3))
 
-extern HWND hwndLastFocus;
 extern HINSTANCE g_hInst;
 
 static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
@@ -152,7 +151,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 	switch (Message) {
 		case WM_SETFOCUS:
-			hwndLastFocus = hwnd;
+			lpTabInfo->lpDebugInfo->hwndLastFocus = hwnd;
 			return 0;
 		case WM_CREATE:
 		{
@@ -950,6 +949,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_DESTROY: {
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, NULL);
 			calc_unregister_event(mps->lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwnd);
 			free(lpTabInfo);
 			if (mps->memNum != -1) {

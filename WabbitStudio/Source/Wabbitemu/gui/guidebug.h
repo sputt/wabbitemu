@@ -76,6 +76,7 @@ typedef struct tagDEBUGWINDOWINFO
 	HWND hmemlist[MAX_MEM_TABS];
 	HWND hdisasmlist[MAX_DISASM_TABS];
 	HWND hdisasmextra[EXTRA_DISASM_PANES];
+	HWND hwndLastFocus;
 	double ratioDisasm;
 	LPCALC lpCalc;
 
@@ -94,6 +95,11 @@ typedef struct tagDEBUGWINDOWINFO
 	long long code_count_tstates;
 	volatile BOOL is_ready;
 	BOOL bTIOSDebug;
+
+	LPCALC duplicate_calc;
+	int port_map[0xFF];
+	WNDPROC wpOrigEditProc;
+
 } DEBUGWINDOWINFO, *LPDEBUGWINDOWINFO;
 
 typedef struct tagTABWINDOWINFO {

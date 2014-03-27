@@ -61,6 +61,9 @@ void SendBugReport(TCHAR *nameBuffer, TCHAR *emailBuffer, TCHAR *titleBuffer, TC
 	StringCbCat(bugReport, MAX_BUG_LEN, stepsBuffer);
 
 	HINTERNET hInternet = OpenFtpConnection();
+	if (hInternet == NULL) {
+		return;
+	}
 
 	if (_tcslen(attachFileBuffer)) {
 		TCHAR *filePtr = attachFileBuffer + _tcslen(attachFileBuffer) * sizeof(TCHAR);
@@ -81,21 +84,21 @@ void SendBugReport(TCHAR *nameBuffer, TCHAR *emailBuffer, TCHAR *titleBuffer, TC
 	GetStorageString(tempFile, sizeof(tempFile));
 	time_t timeUploaded;
 	time(&timeUploaded);
-	TCHAR timeString[256];
-	_tctime_s(timeString, sizeof(timeString), &timeUploaded);
+	TCHAR timeString[256] = { 0 };
+	_tctime_s(timeString, ARRAYSIZE(timeString), &timeUploaded);
 	for (int i = _tcslen(timeString); i >= 0; i--) {
 		if (timeString[i] == ':') {
 			timeString[i] = '_';
 		}
 	}
 	//get rid of newline
-	timeString[_tcslen((timeString)) - 1] = '\0';
+	timeString[_tcslen(timeString) - 1] = '\0';
 	StringCbCopy(timeStringText, sizeof(timeStringText), timeString);
 	if (_tcslen(nameBuffer)) {
 		StringCbCat(timeStringText, sizeof(timeStringText), nameBuffer);
 	}
 	StringCbCat(timeStringText, sizeof(timeStringText), _T(".txt"));
-	StringCbCat(tempFile, sizeof(tempFile), timeString);
+	StringCbCat(tempFile, sizeof(tempFile), timeStringText);
 	FILE *file;
 	_tfopen_s(&file, tempFile, _T("wb"));
 	_fputts(bugReport, file);
@@ -105,7 +108,6 @@ void SendBugReport(TCHAR *nameBuffer, TCHAR *emailBuffer, TCHAR *titleBuffer, TC
 
 	free(bugReport);
 	_tremove(tempFile);
-	return;
 }
 
 INT_PTR CALLBACK BugReportDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM) {

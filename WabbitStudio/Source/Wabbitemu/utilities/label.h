@@ -3,8 +3,13 @@
 
 #include "calc.h"
 
+typedef struct {
+	TCHAR name[32];
+	int address;
+} bcall_t;
+
 TCHAR* FindAddressLabel(LPCALC lpCalc, waddr_t waddr);
-//void ImportBcalls(char* fn);
+bcall_t *get_bcalls(int model);
 TCHAR* FindBcall(int address, int model);
 void FindFlags(int flag, int bit, TCHAR **flagstring, TCHAR **bitstring);
 

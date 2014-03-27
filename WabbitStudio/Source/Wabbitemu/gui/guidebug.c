@@ -17,7 +17,6 @@
 #include "fileutilities.h"
 
 extern HINSTANCE g_hInst;
-extern HWND hwndLastFocus;
 
 void WriteHumanReadableDump(LPCALC lpCalc, TCHAR *path);
 
@@ -1004,9 +1003,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				int disasmIndex = TabCtrl_GetCurSel(lpDebugInfo->hdisasm);
 				HWND hMemTab = GetMemPaneHWND(lpDebugInfo, memIndex);
 				HWND hDisasmTab = GetDisasmPaneHWND(lpDebugInfo, disasmIndex);
-				if (hMemTab == hwndLastFocus) {
+				if (hMemTab == lpDebugInfo->hwndLastFocus) {
 					SendMessage(hMemTab, Message, wParam, lParam);
-				} else if (hDisasmTab == hwndLastFocus) {
+				} else if (hDisasmTab == lpDebugInfo->hwndLastFocus) {
 					SendMessage(hDisasmTab, Message, wParam, lParam);
 				}
 				Debug_UpdateWindow(hwnd);
@@ -1176,7 +1175,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				EnumChildWindows(hwnd, EnumDebugResume, 0);
 				break;
 			case DB_GOTO_RESULT:
-				SendMessage(hwndLastFocus, WM_USER, DB_GOTO_RESULT, lParam);
+				SendMessage(lpDebugInfo->hwndLastFocus, WM_USER, DB_GOTO_RESULT, lParam);
 				break;
 			}
 			return 0;
@@ -1240,10 +1239,11 @@ void WriteHumanReadableDump(LPCALC lpCalc, TCHAR *path) {
 	if (lpCalc->model < TI_84PCSE) {
 		_fputts(_T("\nDisplay:\n"), file);
 		LCD_t *lcd = (LCD_t *)lpCalc->cpu.pio.lcd;
-		uint8_t(*lcdData)[LCD_WIDTH] = (uint8_t(*)[LCD_WIDTH]) lcd->base.image(&lcd->base);
+		uint8_t *lcdData = lcd->base.image(&lcd->base);
+		int disp_width = lpCalc->cpu.pio.lcd->display_width;
 		for (int i = 0; i < LCD_HEIGHT * 4; i += 4) {
-			for (int j = 0; j < lpCalc->cpu.pio.lcd->width * 2; j += 2) {
-				if (lcdData[i][j] < lcd->shades / 4) {
+			for (int j = 0; j < disp_width * 2; j += 2) {
+				if (lcdData[i * disp_width + j] < lcd->shades / 4) {
 					_fputtc(' ', file);
 				}
 				/*else if (lcd[i][j] < lpCalc->cpu.pio.lcd->shades / 2)

@@ -9,9 +9,6 @@ extern HINSTANCE g_hInst;
 
 static WNDPROC OldButtonProc;
 
-HWND hwndLastFocus;
-
-
 #define FADE_SOLID 10
 #define FADE_SPEED 20
 
@@ -228,12 +225,13 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		}
 		case WM_COMMAND:
 		{
+			TBBTN *tbb = (TBBTN *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			switch(wParam)
 			{
 				case DB_GOTO:
 				case DB_MEMPOINT_READ:
 				case DB_MEMPOINT_WRITE:
-					SendMessage(hwndLastFocus, WM_COMMAND, wParam, 0);
+					SendMessage(tbb->lpDebugInfo->hwndLastFocus, WM_COMMAND, wParam, 0);
 					break;
 			}
 			break;
@@ -744,7 +742,9 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 }
 
 static TBBTN *prevBtn = NULL;
-int CreateToolbarButton(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *szCaption, TCHAR *szTooltip, TCHAR *szIcon, int x, int y, int ID, BOOL splitButton, HMENU hMenu = NULL) {
+int CreateToolbarButton(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *szCaption, TCHAR *szTooltip, 
+	TCHAR *szIcon, int x, int y, int ID, BOOL splitButton = FALSE, HMENU hMenu = NULL)
+{
 	static HWND hwndTip = NULL;
 
 	TBBTN *tbb = (TBBTN *) malloc(sizeof(TBBTN));
@@ -859,29 +859,95 @@ void ChangeRunButtonIconAndText(LPCALC lpCalc, LPVOID lParam) {
 	InvalidateRect(tbb->hwnd, &rc, TRUE);
 }
 
+enum {
+	RUN_ID = 999,
+	BREAK_ID,
+	MEM_BREAK_ID,
+	STEP_ID,
+	STEP_OVER_ID,
+	STEP_BACK_ID,
+	GOTO_ID,
+	CHEVRON_ID
+};
+
 LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static LPCALC lpCalc;
+	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPCALC lpCalc = NULL;
+	if (lpDebugInfo != NULL) {
+		lpCalc = lpDebugInfo->lpCalc;
+	}
 
 	switch (Message) {
 		case WM_CREATE: {
-			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-			lpCalc = lpDebugInfo->lpCalc;
+			lpDebugInfo = (LPDEBUGWINDOWINFO) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			LPCALC lpCalc = lpDebugInfo->lpCalc;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)lpDebugInfo);
 
 			prevBtn = NULL;
 			SelectObject(GetDC(hwnd), lpDebugInfo->hfontSegoe);
 			int next = 4;
-			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Run"), _T("Run the calculator."), _T("DBRun"), next, 4, 999, FALSE);
-			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Toggle Breakpoint"), _T("Toggle the breakpoint on the current selection."), _T("DBBreak"), next, 4, 1000, FALSE);
+			next = CreateToolbarButton(hwnd,
+				lpDebugInfo,
+				_T("Run"),
+				_T("Run the calculator."),
+				_T("DBRun"),
+				next,
+				4,
+				RUN_ID);
+			next = CreateToolbarButton(hwnd,
+				lpDebugInfo,
+				_T("Toggle Breakpoint"),
+				_T("Toggle the breakpoint on the current selection."),
+				_T("DBBreak"),
+				next,
+				4,
+				BREAK_ID);
 			HMENU hmenu = LoadMenu(g_hInst, (LPCTSTR) IDR_DISASM_WATCH_MENU);
-			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Toggle Watchpoint"), _T("Toggle a memory breakpoint at the current selection."), _T("DBMemBreak"), next, 4, 1001, TRUE, hmenu);
-			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Step"), _T("Run a single command."), _T("DBStep"), next, 4, 1002, FALSE);
-			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Step Over"), _T("Run a single line."), _T("DBStepOver"), next, 4, 1003, FALSE);
+			next = CreateToolbarButton(hwnd,
+				lpDebugInfo,
+				_T("Toggle Watchpoint"),
+				_T("Toggle a memory breakpoint at the current selection."),
+				_T("DBMemBreak"),
+				next,
+				4,
+				MEM_BREAK_ID,
+				TRUE,
+				hmenu);
+			next = CreateToolbarButton(hwnd,
+				lpDebugInfo,
+				_T("Step"),
+				_T("Run a single command."),
+				_T("DBStep"),
+				next,
+				4,
+				STEP_ID);
+			next = CreateToolbarButton(hwnd,
+				lpDebugInfo,
+				_T("Step Over"),
+				_T("Run a single line."),
+				_T("DBStepOver"),
+				next,
+				4,
+				STEP_OVER_ID);
 #ifdef WITH_REVERSE
-			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Step Back"), _T("Reverses a single command."), _T("DBStepBack"), next, 4, 1005, FALSE);
+			next = CreateToolbarButton(hwnd,
+				lpDebugInfo,
+				_T("Step Back"),
+				_T("Reverses a single command."),
+				_T("DBStepBack"),
+				next,
+				4,
+				STEP_BACK_ID);
 #endif
-			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Goto"), _T("Goto an address in RAM or Flash."), _T("DBGoto"), next, 4, 1004, FALSE);
-			/*hmenu = CreateRewindMenu();
-			next = CreateToolbarButton(hwnd, _T("Rewind"), _T("Restores to a previous state."), NULL, next, 4, 1005, TRUE, hmenu);*/
+			next = CreateToolbarButton(hwnd,
+				lpDebugInfo,
+				_T("Goto"),
+				_T("Goto an address in RAM or Flash."),
+				_T("DBGoto"),
+				next,
+				4,
+				GOTO_ID);
+
 			TCHAR *szChevronBMP;
 			DWORD dwVersion = GetVersion();
 			DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
@@ -890,7 +956,14 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			} else {
 				szChevronBMP = _T("CHEVRON7");
 			}
-			next = CreateToolbarButton(hwnd, lpDebugInfo, _T(""), _T("Display additional commands."), szChevronBMP, next, 4, 1006, FALSE);
+			next = CreateToolbarButton(hwnd,
+				lpDebugInfo,
+				_T(""),
+				_T("Display additional commands."),
+				szChevronBMP,
+				next,
+				4,
+				CHEVRON_ID);
 
 			calc_register_event(lpCalc, ROM_RUNNING_EVENT, &ChangeRunButtonIconAndText, hwnd);
 
@@ -901,9 +974,9 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case DB_BREAKPOINT:
 				case DB_MEMPOINT_READ:
 				case DB_MEMPOINT_WRITE:
-					SendMessage(hwndLastFocus, WM_COMMAND, wParam, 0);
+					SendMessage(lpDebugInfo->hwndLastFocus, WM_COMMAND, wParam, 0);
 					break;
-				case 999: {
+				case RUN_ID: {
 					if (lpCalc->running) {
 						SendMessage(GetParent(hwnd), WM_COMMAND, DB_STOP, 0);
 					} else {
@@ -911,25 +984,25 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					}
 					break;
 				}
-				case 1000:
+				case BREAK_ID:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_BREAKPOINT, 0);
 					break;
-				case 1001:
+				case MEM_BREAK_ID:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_MEMPOINT_WRITE, 0);
 					break;
-				case 1002:
+				case STEP_ID:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEP, 0);
 					break;
-				case 1003:
+				case STEP_OVER_ID:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEPOVER, 0);
 					break;
-				case 1004:
+				case GOTO_ID:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_GOTO, 0);
 					break;
-				case 1005:
+				case STEP_BACK_ID:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEPBACK, 0);
 					break;
-				case 1006:
+				case CHEVRON_ID:
 				{
 					HMENU hmenu = CreatePopupMenu();
 					MENUITEMINFO mii;

@@ -31,8 +31,11 @@ TCHAR* FindAddressLabel(LPCALC lpCalc, waddr_t waddr) {
 	
 	for (int i = 0; lpCalc->labels[i].name != NULL; i++) {
 		label_struct *label = &lpCalc->labels[i];
-		if (label->IsRAM == waddr.is_ram && label->page == waddr.page && label->addr == waddr.addr)
+		if (label->IsRAM == waddr.is_ram && label->page == waddr.page &&
+			mc_base(label->addr) == mc_base(waddr.addr))
+		{
 			return label->name;
+		}
 	}
 	return NULL;
 }

@@ -65,7 +65,10 @@
 #define BOOTFREE_VER_MAJOR 11
 #define BOOTFREE_VER_MINOR 259
 #define WM_FRAME_UPDATE WM_USER
-#define WM_AVI_AUDIO_FRAME WM_USER+1
+#define WM_AVI_AUDIO_FRAME WM_FRAME_UPDATE+1
+#define WM_OPEN_DEBUGGER WM_AVI_AUDIO_FRAME+1
+#define WM_CLOSE_DEBUGGER WM_OPEN_DEBUGGER+1
+
 
 CWabbitemuModule _Module;
 
@@ -498,7 +501,7 @@ HWND find_existing_lcd(HWND hwndParent)
 
 void load_key_settings(LPCALC lpCalc, LPVOID) {
 	keyprog_t *keys = lpCalc->model == TI_86 || lpCalc->model == TI_85 ? keysti86 : keysti83;
-	memcpy(keygrps, keys, sizeof(keyprog_t)* 256);
+	memcpy(keygrps, keys, sizeof(keygrps));
 }
 
 void load_settings(LPCALC lpCalc, LPVOID lParam) {
@@ -512,7 +515,12 @@ void load_settings(LPCALC lpCalc, LPVOID lParam) {
 	}
 
 	SendMessage(lpMainWindow->hwndFrame, WM_FRAME_UPDATE, 0, 0);
-	lpCalc->running = TRUE;
+	if (lpMainWindow->hwndDebug != NULL) {
+		SendMessage(lpMainWindow->hwndFrame, WM_CLOSE_DEBUGGER, 0, 0);
+		SendMessage(lpMainWindow->hwndFrame, WM_OPEN_DEBUGGER, 0, 0);
+	} else {
+		lpCalc->running = TRUE;
+	}
 }
 
 void sync_calc_clock(LPCALC lpCalc, LPVOID) {
@@ -575,6 +583,66 @@ void check_bootfree_and_update(LPCALC lpCalc, LPVOID) {
 	}
 }
 
+void create_bcall_labels(LPCALC lpCalc, LPVOID lParam) {
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
+	if (lpCalc == NULL || lpCalc->model < TI_83P || 
+		lpMainWindow == NULL || !lpMainWindow->bTIOSDebug)
+	{
+		return;
+	}
+
+	VoidLabels(lpCalc);
+	bcall_t *bcalls = get_bcalls(lpCalc->model);
+	bcall_t *ptr = bcalls;
+	label_struct *label = lpCalc->labels;
+	while (label < (lpCalc->labels + sizeof(lpCalc->labels)) && label->name != NULL) {
+		label++;
+	}
+
+	while (ptr != NULL && ptr->address != -1) {
+		int page;
+		if (ptr->address & BIT(15)) {
+			// its on the boot page
+			page = lpCalc->mem_c.flash_pages - 1;
+		} else if (ptr->address & BIT(14)) {
+			// its on the bcall page
+			switch (lpCalc->model) {
+			case TI_84PCSE:
+				page = 5;
+				break;
+			default:
+				page = lpCalc->mem_c.flash_pages - 5;
+				break;
+			}
+		} else {
+			continue;
+		}
+
+		uint16_t bcall_address = ptr->address & 0x3FFF;
+		waddr_t waddr;
+		waddr.page = (uint8_t)page;
+		waddr.addr = bcall_address;
+		waddr.is_ram = FALSE;
+		
+		uint16_t real_address = wmem_read16(&lpCalc->mem_c, waddr);
+		waddr.addr += 2;
+		uint8_t real_page = wmem_read(&lpCalc->mem_c, waddr);
+
+		size_t buffer_size = (_tcslen(ptr->name) + 1) * sizeof(TCHAR);
+		TCHAR *name = (TCHAR *)malloc(buffer_size);
+		ZeroMemory(name, buffer_size);
+		// exclude the _
+		StringCbCopy(name, buffer_size, ptr->name + 1);
+		label->name = name;
+		label->addr = real_address;
+		label->page = real_page;
+		label->IsRAM = FALSE;
+
+		label++;
+		ptr++;
+	}
+}
+
 void update_calc_running(LPCALC lpCalc, LPVOID lParam) {
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
 	if (lpMainWindow == NULL) {
@@ -621,6 +689,7 @@ LPMAINWINDOW create_calc_frame_register_events() {
 	calc_register_event(lpCalc, ROM_LOAD_EVENT, &load_key_settings, NULL);
 	calc_register_event(lpCalc, ROM_LOAD_EVENT, &check_bootfree_and_update, NULL);
 	calc_register_event(lpCalc, ROM_LOAD_EVENT, &sync_calc_clock, NULL);
+	calc_register_event(lpCalc, ROM_LOAD_EVENT, &create_bcall_labels, lpMainWindow);
 	calc_register_event(lpCalc, ROM_RUNNING_EVENT, &update_calc_running, lpMainWindow);
 	calc_register_event(lpCalc, BREAKPOINT_EVENT, &fire_com_breakpoint, lpMainWindow);
 	calc_register_event(lpCalc, GIF_FRAME_EVENT, &handle_screenshot, NULL);
@@ -1029,8 +1098,6 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 		ShowWhatsNew(FALSE);
 	}
 
-	VoidLabels(lpCalc);
-
 	LoadCommandlineFiles(&m_parsedArgs, (LPARAM) lpMainWindow, LoadToLPCALC);
 
 	// Set the one global timer for all calcs
@@ -1197,6 +1264,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	}
 	case WM_AVI_AUDIO_FRAME: {
 		avi_audio_frame(lpMainWindow);
+		break;
+	}
+	case WM_OPEN_DEBUGGER: {
+		gui_debug(lpMainWindow->lpCalc, lpMainWindow);
+		break;
+	}
+	case WM_CLOSE_DEBUGGER: {
+		DestroyWindow(lpMainWindow->hwndDebug);
+		lpMainWindow->hwndDebug = NULL;
 		break;
 	}
 	case WM_PAINT: {

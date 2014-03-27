@@ -349,58 +349,58 @@ TIFILE_t* ImportBackup(FILE *infile, TIFILE_t *tifile) {
 	tifile->backup->data3 = NULL;
 
 	tmpread(infile);
-	tifile->backup->length2 = (u_char)tmp;
+	tifile->backup->length2 = (unsigned short)tmp;
 	tmpread(infile);
-	tifile->backup->length2 += (u_char)(tmp << 8);
+	tifile->backup->length2 += (unsigned short)(tmp << 8);
 
 	tmpread(infile);
-	tifile->backup->length3 = (u_char)tmp;
+	tifile->backup->length3 = (unsigned short)tmp;
 	tmpread(infile);
-	tifile->backup->length3 += (u_char)(tmp << 8);
+	tifile->backup->length3 += (unsigned short)(tmp << 8);
 
 	tmpread(infile);
-	tifile->backup->address = (u_char)tmp;
+	tifile->backup->address = (unsigned short)tmp;
 	tmpread(infile);
-	tifile->backup->address += (u_char)(tmp << 8);
+	tifile->backup->address += (unsigned short)(tmp << 8);
 
 	tmpread(infile);
-	tifile->backup->length1a = (u_char)tmp;
+	tifile->backup->length1a = (unsigned short)tmp;
 	tmpread(infile);
-	tifile->backup->length1a += (u_char)(tmp << 8);
+	tifile->backup->length1a += (unsigned short)(tmp << 8);
 
 	tifile->backup->data1 = (unsigned char *) malloc(tifile->backup->length1);
 	if (tifile->backup->data1 == NULL)
 		return FreeTiFile(tifile);
 	for(i = 0; i < tifile->backup->length1 && !feof(infile); i++) {
 		tmpread(infile);
-		tifile->backup->data1[i] = (u_char)tmp;
+		tifile->backup->data1[i] = (unsigned char)tmp;
 	}
 
 
 	tmpread(infile);
-	tifile->backup->length2a = (u_char)tmp;
+	tifile->backup->length2a = (unsigned short)tmp;
 	tmpread(infile);
-	tifile->backup->length2a += (u_char)(tmp << 8);
+	tifile->backup->length2a += (unsigned short)(tmp << 8);
 
 	tifile->backup->data2 = (unsigned char *) malloc(tifile->backup->length2);
 	if (tifile->backup->data2 == NULL)
 		return FreeTiFile(tifile);
 	for(i = 0; i < tifile->backup->length2 && !feof(infile); i++) {
 		tmpread(infile);
-		tifile->backup->data2[i] = (u_char)tmp;
+		tifile->backup->data2[i] = (unsigned char)tmp;
 	}
 
 	tmpread(infile);
-	tifile->backup->length3a = (u_char)tmp;
+	tifile->backup->length3a = (unsigned short)tmp;
 	tmpread(infile);
-	tifile->backup->length3a += (u_char)(tmp << 8);
+	tifile->backup->length3a += (unsigned short)(tmp << 8);
 
 	tifile->backup->data3 = (unsigned char *) malloc(tifile->backup->length3);
 	if (tifile->backup->data3 == NULL)
 		return FreeTiFile(tifile);
 	for(i=0; i<tifile->backup->length3 && !feof(infile); i++) {
 		tmpread(infile);
-		tifile->backup->data3[i] = (u_char)tmp;
+		tifile->backup->data3[i] = (unsigned char)tmp;
 	}
 
 	tifile->chksum = (fgetc(infile) & 0xFF) + ((fgetc(infile) & 0xFF) << 8);
@@ -453,7 +453,7 @@ void ReadTiFileHeader(FILE *infile, TIFILE_t *tifile) {
 				FreeTiFile(tifile);
 				return;
 			}
-			ptr[i] = (u_char)tmp;
+			ptr[i] = (unsigned char)tmp;
 		}
 		return;
 	}
@@ -477,7 +477,7 @@ void ReadTiFileHeader(FILE *infile, TIFILE_t *tifile) {
 			FreeTiFile(tifile);
 			return;
 		}
-		ptr[i] = (u_char)tmp;
+		ptr[i] = (unsigned char)tmp;
 	}
 
 	if (!_strnicmp((char *) tifile->sig, "**TI73**", 8)) tifile->model = TI_73;
@@ -493,7 +493,7 @@ void ReadTiFileHeader(FILE *infile, TIFILE_t *tifile) {
 	return;
 }
 
-static short length2 = 0;
+static unsigned short length2 = 0;
 TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	switch (tifile->type) {
 		case ROM_TYPE:
@@ -516,23 +516,23 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 
 	if (varNumber == 0) {
 		tmpread(infile);
-		length2 = (u_char)tmp;
+		length2 = (unsigned short)tmp;
 		tmpread(infile);
-		length2 += (u_char)(tmp << 8);
+		length2 += (unsigned short)(tmp << 8);
 	}
 
 	tmpread(infile);
-	headersize = (u_char)tmp;
+	headersize = (unsigned short)tmp;
 	tmpread(infile);
-	headersize += (u_char)(tmp << 8);
+	headersize += (unsigned short)(tmp << 8);
 
 	tmpread(infile);
-	length = (u_char)tmp;
+	length = (unsigned short)tmp;
 	tmpread(infile);
-	length += (u_char)(tmp << 8);
+	length += (unsigned short)(tmp << 8);
 
 	tmpread(infile);
-	vartype = (u_char)tmp;
+	vartype = (unsigned char)tmp;
 
 	if ((tifile->model == TI_73 && vartype == 0x13) ||
 		(tifile->model == TI_82 && vartype == 0x0F) ||
@@ -564,7 +564,7 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	if (tifile->model == TI_86 || tifile->model == TI_85) {
 		//skip name length
 		tmpread(infile);
-		name_length = (u_char)tmp;
+		name_length = (char)tmp;
 		if (tifile->model == TI_86) {
 			name_length = 8;
 		}
@@ -577,14 +577,14 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	ptr = tifile->var->name;
 	for(i = 0; i < name_length && !feof(infile); i++) {
 		tmpread(infile);
-		ptr[i] = (u_char)tmp;
+		ptr[i] = (unsigned char)tmp;
 	}
 
 	if (tifile->model == TI_83P) {
 		tmpread(infile);
-		ptr[i++] = (u_char)tmp;
+		ptr[i++] = (unsigned char)tmp;
 		tmpread(infile);
-		ptr[i++] = (u_char)tmp;
+		ptr[i++] = (unsigned char)tmp;
 	} else {
 		ptr[i++] = 0;
 		ptr[i++] = 0;
@@ -592,11 +592,11 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	tmp = fgetc(infile);
 	if (tmp == EOF)
 		return FreeTiFile(tifile);
-	ptr[i++] = (u_char)tmp;
+	ptr[i++] = (unsigned char)tmp;
 	tmp = fgetc(infile);
 	if (tmp == EOF)
 		return FreeTiFile(tifile);
-	ptr[i++] = (u_char)tmp;
+	ptr[i++] = (unsigned char)tmp;
 
 	tifile->var->data = (unsigned char *) malloc(tifile->var->length);
 	if (tifile->var->data == NULL) {
@@ -608,7 +608,7 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 		if (tmp == EOF) {
 			return FreeTiFile(tifile);
 		}
-		tifile->var->data[i] = (u_char)tmp;
+		tifile->var->data[i] = (unsigned char)tmp;
 	}
 
 	if (tifile->type == GROUP_TYPE) {

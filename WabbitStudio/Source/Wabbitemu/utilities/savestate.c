@@ -14,6 +14,8 @@ extern int def(FILE *, FILE *, int);
 extern int inf(FILE *, FILE *);
 
 LPCALC DuplicateCalc(LPCALC lpCalc) {
+	BOOL running_backup = lpCalc->running;
+	lpCalc->running = FALSE;
 	SAVESTATE_t *save = SaveSlot(lpCalc, _T(""), _T(""));
 
 	LPCALC duplicate_calc = (LPCALC)malloc(sizeof(calc_t));
@@ -25,6 +27,7 @@ LPCALC DuplicateCalc(LPCALC lpCalc) {
 	calc_init_model(duplicate_calc, save->model, lpCalc->rom_version);
 	LoadSlot(save, duplicate_calc);
 	FreeSave(save);
+	lpCalc->running = running_backup;
 
 	return duplicate_calc;
 }

@@ -16,7 +16,6 @@
 #include <Windows.h>
 #include <WindowsX.h>
 #include <tchar.h>
-#include <strsafe.h>
 #include <CommCtrl.h>
 #include <shlobj.h>
 #include <math.h>
@@ -68,6 +67,7 @@ using namespace ATL;
 
 #include "Wabbitemu_h.h"
 #include "resource.h"
+#include <strsafe.h>
 
 namespace std
 {
