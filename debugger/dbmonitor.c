@@ -12,10 +12,6 @@
 #define PORT_ROW_SIZE 15
 
 extern HINSTANCE g_hInst;
-static LPCALC duplicate_calc = NULL;
-static int port_map[0xFF];
-static HWND hwndEditControl;
-static WNDPROC wpOrigEditProc;
 #define COLOR_BREAKPOINT		(RGB(230, 160, 180))
 #define COLOR_SELECTION			(RGB(153, 222, 253))
 
@@ -79,11 +75,12 @@ static BOOL InsertListViewItems(HWND hWndListView, int cItems)
 	return TRUE;
 }
 
-static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
-	if (hwndEditControl) {
+static void CloseSaveEdit(LPDEBUGWINDOWINFO lpDebugInfo) {
+	LPCALC lpCalc = lpDebugInfo->lpCalc;
+	if (lpDebugInfo->hwndEditControl != NULL) {
 		TCHAR buf[10];
-		Edit_GetText(hwndEditControl, buf, ARRAYSIZE(buf));
-		int value = GetWindowLongPtr(hwndEditControl, GWLP_USERDATA);
+		Edit_GetText(lpDebugInfo->hwndEditControl, buf, ARRAYSIZE(buf));
+		int value = GetWindowLongPtr(lpDebugInfo->hwndEditControl, GWLP_USERDATA);
 		int row_num = LOWORD(value);
 		//handles getting the user input and converting it to an int
 		//can convert bin, hex, and dec
@@ -92,7 +89,7 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 			value = 0;
 		}
 		uint8_t byte_value = value & 0xFF;
-		int port_num = port_map[row_num];
+		int port_num = lpDebugInfo->port_map[row_num];
 		BOOL output_backup = lpCalc->cpu.output;
 		unsigned char bus_backup = lpCalc->cpu.bus;
 		lpCalc->cpu.bus = byte_value;
@@ -101,29 +98,29 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 		lpCalc->cpu.output = output_backup;
 		lpCalc->cpu.bus = bus_backup;
 
-		duplicate_calc = DuplicateCalc(lpCalc);
+		lpDebugInfo->duplicate_calc = DuplicateCalc(lpCalc);
 
-		DestroyWindow(hwndEditControl);
+		DestroyWindow(lpDebugInfo->hwndEditControl);
+		lpDebugInfo->hwndEditControl = NULL;
 	}
 }
 
 static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { 
+	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(GetParent(GetParent(hwnd)), GWLP_USERDATA);
 	switch (uMsg) {
-		case WM_KEYDOWN:
-			if (wParam == VK_RETURN) {
-				LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(GetParent(GetParent(hwnd)), GWLP_USERDATA);
-				LPCALC lpCalc = lpDebugInfo->lpCalc;
-				CloseSaveEdit(lpCalc, hwnd);
-				hwndEditControl = NULL;
-			} else if (wParam == VK_ESCAPE) {
-				hwndEditControl = NULL;
-				DestroyWindow(hwnd);
-			} else {
-				return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam);
-			}
-			return TRUE;
-		default:
-			return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam); 
+	case WM_KEYDOWN: {
+		if (wParam == VK_RETURN) {
+			CloseSaveEdit(lpDebugInfo);
+		} else if (wParam == VK_ESCAPE) {
+			DestroyWindow(hwnd);
+			lpDebugInfo->hwndEditControl = NULL;
+		} else {
+			return CallWindowProc(lpDebugInfo->wpOrigEditProc, hwnd, uMsg, wParam, lParam);
+		}
+		return TRUE;
+	}
+	default:
+		return CallWindowProc(lpDebugInfo->wpOrigEditProc, hwnd, uMsg, wParam, lParam);
 	}
 } 
 
@@ -147,13 +144,13 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			lpCalc = (LPCALC) lpDebugInfo->lpCalc;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpDebugInfo);
 
-			duplicate_calc = DuplicateCalc(lpCalc);
+			lpDebugInfo->duplicate_calc = DuplicateCalc(lpCalc);
 
 			hwndListView = CreateListView(hwnd);
 			int count = 0;
 			for (int i = 0; i < 0xFF; i++) {
 				if (lpCalc->cpu.pio.devices[i].active) {
-					port_map[count] = i;
+					lpDebugInfo->port_map[count] = i;
 					count++;
 				}
 			}
@@ -182,15 +179,14 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			Debug_CreateWindow(hwnd);
 			return TRUE;
 		}
-		extern HWND hwndLastFocus;
 		case WM_SETFOCUS: {
-			hwndLastFocus = hwnd;
+			lpDebugInfo->hwndLastFocus = hwnd;
 			return 0;
 		}
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
 				case DB_BREAKPOINT: {
-					int port = port_map[ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED)];
+					int port = lpDebugInfo->port_map[ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED)];
 					lpCalc->cpu.pio.devices[port].breakpoint = !lpCalc->cpu.pio.devices[port].breakpoint;
 					break;
 				}
@@ -205,23 +201,23 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			switch (((LPNMHDR) lParam)->code) 
 			{
 				case LVN_ITEMCHANGING:
-					CloseSaveEdit(lpCalc, hwndEditControl);
-					hwndEditControl = NULL;
+					CloseSaveEdit(lpDebugInfo);
+					lpDebugInfo->hwndEditControl = NULL;
 					break;
 				case LVN_KEYDOWN: {
 					LPNMLVKEYDOWN pnkd = (LPNMLVKEYDOWN) lParam;
-					if (hwndEditControl) {
+					if (lpDebugInfo->hwndEditControl != NULL) {
 						if (pnkd->wVKey == VK_ESCAPE) {
-							DestroyWindow(hwndEditControl);
-							hwndEditControl = NULL;
+							DestroyWindow(lpDebugInfo->hwndEditControl);
+							lpDebugInfo->hwndEditControl = NULL;
 						} else {
-							SendMessage(hwndEditControl, WM_KEYDOWN, pnkd->wVKey, 0);
+							SendMessage(lpDebugInfo->hwndEditControl, WM_KEYDOWN, pnkd->wVKey, 0);
 						}
 					}
 					break;
 				}
 				case NM_SETFOCUS:
-					hwndLastFocus = hwnd;
+					lpDebugInfo->hwndLastFocus = hwnd;
 					InvalidateRect(hwnd, NULL, TRUE);
 					break;
 				case NM_DBLCLK: {
@@ -241,15 +237,16 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					lvii.iGroup = 0;
 					ListView_GetItemIndexRect(hwndListView, &lvii, col_num, LVIR_BOUNDS, &rc);
 					//rc is now the rect we want to use for the edit control
-					hwndEditControl = CreateWindow(WC_EDIT, buf,
+					lpDebugInfo->hwndEditControl = CreateWindow(WC_EDIT, buf,
 						WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT| ES_MULTILINE,
 						rc.left,
 						rc.top,
 						rc.right - rc.left,
 						rc.bottom - rc.top,
 						hwndListView, 0, g_hInst, NULL);
+					HWND hwndEditControl = lpDebugInfo->hwndEditControl;
 					SetWindowFont(hwndEditControl, lpDebugInfo->hfontSegoe, TRUE);
-					wpOrigEditProc = (WNDPROC) SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG_PTR) EditSubclassProc); 
+					lpDebugInfo->wpOrigEditProc = (WNDPROC)SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG_PTR)EditSubclassProc);
 					Edit_LimitText(hwndEditControl, 9);
 					Edit_SetSel(hwndEditControl, 0, _tcslen(buf));
 					SetWindowLongPtr(hwndEditControl, GWLP_USERDATA, MAKELPARAM(row_num, col_num));
@@ -259,22 +256,24 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 				case LVN_GETDISPINFO: 
 				{
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
-					int port_num = port_map[plvdi->item.iItem];
-					duplicate_calc->cpu.input = TRUE;
-					duplicate_calc->cpu.pio.devices[port_num].code(&duplicate_calc->cpu, &(duplicate_calc->cpu.pio.devices[port_num]));
+					int port_num = lpDebugInfo->port_map[plvdi->item.iItem];
+					LPCALC lpDuplicateCalc = lpDebugInfo->duplicate_calc;
+					lpDuplicateCalc->cpu.input = TRUE;
+					lpDuplicateCalc->cpu.pio.devices[port_num].code(
+						&lpDuplicateCalc->cpu, &(lpDuplicateCalc->cpu.pio.devices[port_num]));
 					switch (plvdi->item.iSubItem)
 					{
 						case 0:
 							StringCchPrintf(plvdi->item.pszText, 10, _T("%02X"), port_num);
 							break;
 						case 1:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("$%02X"), duplicate_calc->cpu.bus);
+							StringCchPrintf(plvdi->item.pszText, 10, _T("$%02X"), lpDuplicateCalc->cpu.bus);
 							break;	
 						case 2:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("%d"), duplicate_calc->cpu.bus);
+							StringCchPrintf(plvdi->item.pszText, 10, _T("%d"), lpDuplicateCalc->cpu.bus);
 							break;
 						case 3:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("%%%s"), byte_to_binary(duplicate_calc->cpu.bus));
+							StringCchPrintf(plvdi->item.pszText, 10, _T("%%%s"), byte_to_binary(lpDuplicateCalc->cpu.bus));
 							break;
 					}
 
@@ -291,7 +290,7 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					case CDDS_ITEMPREPAINT: 
 					case CDDS_ITEMPREPAINT | CDDS_SUBITEM: 
 						iRow = (int)pListDraw->nmcd.dwItemSpec; 
-						if (lpCalc->cpu.pio.devices[port_map[iRow]].breakpoint) { 
+						if (lpCalc->cpu.pio.devices[lpDebugInfo->port_map[iRow]].breakpoint) { 
 							// pListDraw->clrText   = RGB(252, 177, 0); 
 							pListDraw->clrTextBk = COLOR_BREAKPOINT; 
 							return CDRF_NEWFONT;
@@ -329,10 +328,10 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 				calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwndListView);
 			}
 
-			if (duplicate_calc != NULL) {
-				calc_slot_free(duplicate_calc);
-				free(duplicate_calc);
-				duplicate_calc = NULL;
+			if (lpDebugInfo->duplicate_calc != NULL) {
+				calc_slot_free(lpDebugInfo->duplicate_calc);
+				free(lpDebugInfo->duplicate_calc);
+				lpDebugInfo->duplicate_calc = NULL;
 			}
 			return FALSE;
 		}

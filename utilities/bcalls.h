@@ -1,11 +1,5 @@
-
-
-
-typedef struct {
-	TCHAR name[32];
-	int address;
-} bcall_t;
-
+#ifndef BCALLS_H
+#define BCALLS_H
 
 bcall_t bcalls_83p[] = {
  { _T("_JErrorNo") , 0x4000 }, 
@@ -1923,6 +1917,7 @@ bcall_t bcalls_84pcse[] = {
 { _T("_GetColorValue"), 0x5626 },
 { _T("_WaitAWhile"), 0x56A4 },
 { _T("_MD5Final"), 0x8018 },
+{ _T("_RSAValidate"), 0x801B },
 { _T("_BigNumCompare"), 0x801E },
 { _T("_WriteAByteUnsafe"), 0x8021 },
 { _T("_EraseFlash"), 0x8024 },
@@ -1940,22 +1935,44 @@ bcall_t bcalls_84pcse[] = {
 { _T("_GetFieldSize"), 0x805A },
 { _T("_FindSubField"), 0x805D },
 { _T("_EraseCertificateSector"), 0x8060 },
+{ _T("_CheckHeaderKey"), 0x8063 },
 { _T("_ClearFullScreen"), 0x806C },
+{ _T("_Load_LFontV"), 0x806F },
+{ _T("_ReceiveOS"), 0x8072 },
 { _T("_FindOSHeaderSubField"), 0x8075 },
 { _T("_FindNextCertificateField"), 0x8078 },
+{ _T("_GetByteOrBoot"), 0x807B },
 { _T("_GetCalcSerial"), 0x807E },
 { _T("_EraseFlashPage"), 0x8084 },
 { _T("_WriteFlashUnsafe"), 0x8087 },
 { _T("_DispBootVer"), 0x808A },
 { _T("_MD5Init"), 0x808D },
 { _T("_MD5Update"), 0x8090 },
+{ _T("_MarkOSInvalid"), 0x8093 },
+{ _T("_MarkOSValid"), 0x8099 },
+{ _T("_CheckOSValidated"), 0x809C },
+{ _T("_SetupAppPubKey"), 0x809F },
+{ _T("_SigModR"), 0x80A2 },
+{ _T("_TransformHash"), 0x80A5 },
+{ _T("_IsAppFreeware"), 0x80A8 },
 { _T("_FindAppHeaderSubField"), 0x80AB },
 { _T("_Div32ByDE"), 0x80B1 },
-{ _T("_FindSimpleGroupedField"), 0x80B4 },
 { _T("_GetBootVer"), 0x80B7 },
 { _T("_GetHWVer"), 0x80BA },
+{ _T("_XorA"), 0x80BD },
+{ _T("_bignumpowermod17"), 0x80C0 },
+{ _T("_ProdNrPart1"), 0x80C3 },
 { _T("_WriteAByteSafe"), 0x80C6 },
 { _T("_WriteFlashSafe"), 0x80C9 },
-{ _T("_SetAppLimit"), 0x80CF },
+{ _T("_SetupDateStampPubKey"), 0x80CC },
+{ _T("_SetFlashLowerBound"), 0x80CF },
+{ _T("_LowBatteryBoot"), 0x80D2 },
+{ _T("_DisplayBootMessage"), 0x80E7 },
+{ _T("_NewLineWrap"), 0x80EA },
+{ _T("_DispOSPercentage"), 0x80F9 },
+{ _T("_ResetCalc"), 0x80FC },
+{ _T("_SetupOSPubKey"), 0x80FF },
 { _T(""), -1 }
 };
+
+#endif

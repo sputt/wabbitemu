@@ -191,12 +191,10 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 		case WM_KEYDOWN:
 			switch (wParam) {
 				case VK_RETURN:
-					SendMessage(GetParent(hwnd), WM_COMMAND, 
-						MAKEWPARAM(0, EN_SUBMIT), (LPARAM) hwnd);
+					SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) hwnd);
 					return 0;
 				case VK_ESCAPE:
-					SendMessage(GetParent(hwnd), WM_COMMAND, 
-						MAKEWPARAM(0, EN_CANCEL), (LPARAM) hwnd);
+					SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(0, EN_CANCEL), (LPARAM) hwnd);
 					DestroyWindow(hwnd);
 					return 0;
 			}
@@ -293,8 +291,7 @@ void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, BYTE 
 	if (active == TRUE) {
 		rgbSel = RGB(153, 222, 253);
 		//rgbSel = RGB(24, 153, 255);
-	}
-	else {
+	} else {
 		rgbSel = RGB(190, 190, 190);
 	}
 

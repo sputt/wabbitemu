@@ -349,10 +349,10 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%c"), *((unsigned char *) vfs->data));
 				break;
 			case BIN8:
-				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), byte_to_binary(*((unsigned int *) vfs->data)));
+				StringCbCopy(vfs->szValue, sizeof(vfs->szValue), byte_to_binary(*((unsigned int *) vfs->data)));
 				break;
 			case BIN16:
-				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), byte_to_binary(*((unsigned int *) vfs->data), TRUE));
+				StringCbCopy(vfs->szValue, sizeof(vfs->szValue), byte_to_binary(*((unsigned int *)vfs->data), TRUE));
 				break;
 			default:
 				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%d"), *((unsigned int *) vfs->data));

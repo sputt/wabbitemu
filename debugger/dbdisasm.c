@@ -32,7 +32,6 @@
 
 #define DISASM_LINE_MAX_LEN 2048
 
-extern HWND hwndLastFocus;
 extern Z80_com_t da_opcode[256];
 
 extern HINSTANCE g_hInst;
@@ -474,7 +473,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 	switch (Message) {
 		case WM_SETFOCUS: {
-			hwndLastFocus = hwnd;
+			lpTabInfo->lpDebugInfo->hwndLastFocus = hwnd;
 			if (dps != NULL) {
 				InvalidateSel(hwnd, dps->iSel);
 			}
@@ -489,6 +488,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_DESTROY: {
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, NULL);
 			calc_unregister_event(dps->lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwnd);
 			free(lpTabInfo);
 			return 0;

@@ -361,7 +361,7 @@ void intelhex (MFILE* outfile, const unsigned char* buffer, int size, int page, 
 		page++;
 		address = start_address;   
 		for (i = 0; bpnt < size && i < 512; i++) {
-			 chksum = (uint8_t)((address >> 8) + (address & 0xFF));
+			 chksum = (unsigned char)((address >> 8) + (address & 0xFF));
 			 for(ci = 0; (ci < 64) && (bpnt < size); ci++) {
 				temp = buffer[bpnt++];
 				outbuf[ci++] = hexstr[temp >> 4];
@@ -544,7 +544,7 @@ MFILE *ExportGroup(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 
 	// Actual program data!
 	for(i = 0; i < index; i++) {
-		chksum += (uint8_t)mputc(exportData[i], outfile);
+		chksum += (uint16_t)mputc(exportData[i], outfile);
 	}
 
 	mputc(chksum & 0xFF, outfile);
@@ -560,7 +560,7 @@ MFILE *ExportVar(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 	int i, b, size;
 	int page = sym->page;
 	unsigned int a = sym->address;
-	unsigned short chksum = 0;
+	uint16_t chksum = 0;
 
 	if (sym->type_ID == GroupObj) {
 		return ExportGroup(lpCalc, fn, sym);
@@ -633,15 +633,15 @@ MFILE *ExportVar(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 	mputc((size+17) >> 0x08, outfile);
 	
 
-	chksum  = (unsigned char)mputc(0x0D, outfile);
-	chksum += (unsigned char)mputc(0x00, outfile);
+	chksum = (uint16_t)mputc(0x0D, outfile);
+	chksum += (uint16_t)mputc(0x00, outfile);
 
-	chksum += (unsigned char)mputc(size & 0xFF, outfile);
-	chksum += (unsigned char)mputc(size >> 8, outfile);
-	chksum += (unsigned char)mputc(sym->type_ID, outfile);
+	chksum += (uint16_t)mputc(size & 0xFF, outfile);
+	chksum += (uint16_t)mputc(size >> 8, outfile);
+	chksum += (uint16_t)mputc(sym->type_ID, outfile);
 	
 	for (i = 0; i < 8 && sym->name[i]; i++) {
-		chksum += (unsigned char)mputc(sym->name[i], outfile);
+		chksum += (uint16_t)mputc(sym->name[i], outfile);
 	}
 
 	for (; i < 8; i++) {
@@ -649,19 +649,19 @@ MFILE *ExportVar(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 	}
 
 
-	chksum += (unsigned char)mputc(0x00, outfile); // sym->Resevered[1]
+	chksum += (uint16_t)mputc(0x00, outfile); // sym->Resevered[1]
 
 	if (sym->page)
-		chksum += (unsigned char)mputc(0x80, outfile); // archived
+		chksum += (uint16_t)mputc(0x80, outfile); // archived
 	else
-		chksum += (unsigned char)mputc(0x00, outfile);
+		chksum += (uint16_t)mputc(0x00, outfile);
 
-	chksum += (unsigned char)mputc(size & 0xFF, outfile);
-	chksum += (unsigned char)mputc(size >> 8, outfile);
+	chksum += (uint16_t)mputc(size & 0xFF, outfile);
+	chksum += (uint16_t)mputc(size >> 8, outfile);
 
 	// Actual program data!
 	for(i = 0; i < size; i++) {
-		chksum += (unsigned char)mputc(mem[a++], outfile);
+		chksum += (uint16_t)mputc(mem[a++], outfile);
 	}
 
 	mputc(chksum & 0xFF, outfile);
