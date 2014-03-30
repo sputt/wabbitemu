@@ -9,7 +9,6 @@ using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.TextEditor.Gui.InsightWindow;
-using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.EditorExtensions.Markers;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
@@ -487,6 +486,16 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             {
                 Refresh();
             }
+        }
+
+        public void ReloadFile()
+        {
+            int line = ActiveTextAreaControl.TextArea.Caret.Line;
+            int col = ActiveTextAreaControl.TextArea.Caret.Column;
+            LoadFile(FileName);
+            ActiveTextAreaControl.TextArea.Caret.Line = line;
+            ActiveTextAreaControl.TextArea.Caret.Column = col;
+            ActiveTextAreaControl.TextArea.ScrollToCaret();
         }
     }
 

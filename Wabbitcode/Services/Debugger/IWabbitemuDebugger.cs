@@ -12,7 +12,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         event BreakpointEventHandler OnBreakpoint;
 		event CloseEventHandler OnClose;
 
-        Array Apps
+        ITIApplicationCollection Apps
         {
             get;
         }
@@ -49,7 +49,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             set;
         }
 
-	    Calc_Model Model { get; }
+	    CalcModel Model { get; }
 
 	    void LoadFile(string fileName);
 

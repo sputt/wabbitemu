@@ -299,7 +299,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
 	        if (app != null)
 	        {
-	            LaunchApp(app.Value.Name);
+	            LaunchApp(app.Name);
 	        }
 	    }
 
@@ -709,15 +709,15 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 				bcallAddress &= ~(1 << 15);
 				switch (_debugger.Model)
 				{
-					case Calc_Model.TI_73:
-					case Calc_Model.TI_83P:
+					case CalcModel.TI_73:
+					case CalcModel.TI_83P:
 						page = 0x1F;
 						break;
-					case Calc_Model.TI_83PSE:
-					case Calc_Model.TI_84PSE:
+					case CalcModel.TI_83PSE:
+					case CalcModel.TI_84PSE:
 						page = 0x7F;
 						break;
-					case Calc_Model.TI_84P:
+					case CalcModel.TI_84P:
 						page = 0x3F;
 						break;
 					default:
@@ -729,15 +729,15 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 				bcallAddress &= ~(1 << 14);
 				switch (_debugger.Model)
 				{
-					case Calc_Model.TI_73:
-					case Calc_Model.TI_83P:
+					case CalcModel.TI_73:
+					case CalcModel.TI_83P:
 						page = 0x1B;
 						break;
-					case Calc_Model.TI_83PSE:
-					case Calc_Model.TI_84PSE:
+					case CalcModel.TI_83PSE:
+					case CalcModel.TI_84PSE:
 						page = 0x7B;
 						break;
-					case Calc_Model.TI_84P:
+					case CalcModel.TI_84P:
 						page = 0x3B;
 						break;
 					default:
@@ -755,9 +755,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 			return new CalcLocation(realAddress, realPage, false);
 		}
 
-	    private TIApplication? VerifyApp(string createdName)
+	    private ITIApplication VerifyApp(string createdName)
 		{
-			if (_debugger == null || _debugger.Apps.Length == 0)
+			if (_debugger == null || _debugger.Apps.Count == 0)
 			{
 				throw new DebuggingException("Application not found on calculator");
 			}
@@ -774,13 +774,13 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 	        }
 
 	        string appName = new string(buffer);
-			TIApplication? app = _debugger.Apps.Cast<TIApplication>().SingleOrDefault(a => a.Name == appName);
-			if (app == null || string.IsNullOrEmpty(app.Value.Name))
+			ITIApplication app = _debugger.Apps.Cast<ITIApplication>().SingleOrDefault(a => a.Name == appName);
+			if (app == null || string.IsNullOrEmpty(app.Name))
 			{
 				throw new DebuggingException("Application not found on calculator");
 			}
 
-			_appPage = (byte)app.Value.Page.Index;
+			_appPage = (byte)app.Page.Index;
 			return app;
 		}
 

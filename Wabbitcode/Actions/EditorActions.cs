@@ -173,7 +173,7 @@ namespace Revsoft.Wabbitcode.Actions
                 editor = _dockingService.ActiveDocument as ITextEditor;
             }
 
-            if (editor == null)
+            if (editor == null || line == -1)
             {
                 return;
             }
