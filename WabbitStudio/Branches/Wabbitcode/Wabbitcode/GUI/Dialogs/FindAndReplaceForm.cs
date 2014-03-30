@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
+using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Services;
@@ -40,7 +41,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		private bool _lastSearchWasBackward;
 
 	    private readonly FindResultsWindow _results;
-		private TextEditorControl _editor;
+		private WabbitcodeTextEditor _editor;
 		private TextEditorSearcher _search;
 		private readonly IDockingService _dockingService;
 		private readonly IProjectService _projectService;
@@ -78,9 +79,9 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             }
         }
 
-	    private TextRange FindNext(bool matchCase, bool matchWholeWord, bool searchBackward, string messageIfNotFound)
+	    private TextRange FindNext(string text, bool matchCase, bool matchWholeWord, bool searchBackward, string messageIfNotFound)
 		{
-			if (string.IsNullOrEmpty(findFindBox.Text))
+			if (string.IsNullOrEmpty(text))
 			{
 				MessageBox.Show("No string specified to look for!");
 				return null;
@@ -93,7 +94,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 	        }
 
 			_lastSearchWasBackward = searchBackward;
-			_search.LookFor = findFindBox.Text;
+			_search.LookFor = text;
 			_search.MatchCase = matchCase;
 	        _search.MatchWholeWordOnly = matchWholeWord;
 
@@ -112,7 +113,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			return range;
 		}
 
-		public void ShowFor(Form owner, TextEditorControl editor, SearchMode mode)
+		public void ShowFor(Form owner, WabbitcodeTextEditor editor, SearchMode mode)
 		{
 		    _editor = editor;
             IFileReaderService fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
@@ -125,21 +126,25 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			findNextFindButton.Focus();
 			findFindBox.SelectAll();
 			findFindBox.Focus();
+            string word = editor == null ? string.Empty : editor.GetWordAtCaret();
 
 		    switch (mode)
 		    {
                 case SearchMode.Find:
                     findTabs.SelectTab(findPage);
-                    findFindBox.Focus();
+		            findFindBox.Text = word;
+		            findFindBox.Focus();
                     findFindBox.SelectAll();
 		            break;
                 case SearchMode.Replace:
                     findTabs.SelectTab(replacePage);
+		            replaceFindBox.Text = word;
                     replaceFindBox.Focus();
                     replaceFindBox.SelectAll();
                     break;
                 case SearchMode.FindInFiles:
                     findTabs.SelectTab(findInFilesPage);
+		            findFilesBox.Text = word;
                     findFilesBox.Focus();
                     findFilesBox.SelectAll();
                     break;
@@ -150,15 +155,33 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		{
             bool matchCase = matchCaseFindCheckbox.Checked;
             bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
-            FindNext(matchCase, matchWholeWord, false, "Text not found");
+		    string text = findFindBox.Text;
+            FindNext(text, matchCase, matchWholeWord, false, "Text not found");
 		}
 
 		private void findPrevFindButton_Click(object sender, EventArgs e)
 		{
             bool matchCase = matchCaseFindCheckbox.Checked;
             bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
-			FindNext(matchCase, matchWholeWord, true, "Text not found");
+            string text = findFindBox.Text;
+			FindNext(text, matchCase, matchWholeWord, true, "Text not found");
 		}
+
+        private void replaceNextFindButton_Click(object sender, EventArgs e)
+        {
+            bool matchCase = matchCaseFindCheckbox.Checked;
+            bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
+            string text = replaceFindBox.Text;
+            FindNext(text, matchCase, matchWholeWord, false, "Text not found");
+        }
+
+        private void replacePrevFindButton_Click(object sender, EventArgs e)
+        {
+            bool matchCase = matchCaseFindCheckbox.Checked;
+            bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
+            string text = replaceFindBox.Text;
+            FindNext(text, matchCase, matchWholeWord, true, "Text not found");
+        }
 
 	    private void FindInFiles(string textToFind, bool matchCase, bool matchWholeWord)
 	    {
@@ -230,6 +253,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			{
 				textArea.Document.UndoStack.EndUndoGroup();
 			}
+
+            _search = new TextEditorSearcher(textArea.MotherTextEditorControl.Text);
 		}
 
 		private void SelectResult(TextRange range)
@@ -263,12 +288,13 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             bool matchCase = matchCaseReplaceCheckbox.Checked;
             bool matchWholeWord = matchWholeWordReplaceCheckbox.Checked;
             var sm = _editor.ActiveTextAreaControl.SelectionManager;
-            if (string.Equals(sm.SelectedText, findFindBox.Text, StringComparison.OrdinalIgnoreCase))
+            string text = replaceFindBox.Text;
+            if (string.Equals(text, sm.SelectedText, StringComparison.OrdinalIgnoreCase))
             {
                 InsertText(replaceReplaceBox.Text);
             }
 
-            FindNext(matchCase, matchWholeWord, _lastSearchWasBackward, "Text not found.");
+            FindNext(text, matchCase, matchWholeWord, _lastSearchWasBackward, "Text not found.");
         }
 
         private void replaceAllButton_Click(object sender, EventArgs e)
@@ -283,10 +309,11 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             // _editor.ActiveTextAreaControl.Caret.Position =
             // _editor.Document.OffsetToPosition(_search.BeginOffset);
 
+            string text = replaceFindBox.Text;
             _editor.Document.UndoStack.StartUndoGroup();
             try
             {
-                while (FindNext(matchCase, matchWholeWord, false, null) != null)
+                while (FindNext(text, matchCase, matchWholeWord, false, null) != null)
                 {
                     if (_lastSearchLoopedAround)
                     {

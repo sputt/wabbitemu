@@ -239,6 +239,7 @@
             this.findNextReplaceButton.Size = new System.Drawing.Size(75, 23);
             this.findNextReplaceButton.TabIndex = 19;
             this.findNextReplaceButton.Text = "&Find next";
+            this.findNextReplaceButton.Click += new System.EventHandler(this.replaceNextFindButton_Click);
             // 
             // findPrevReplaceButton
             // 
@@ -248,6 +249,7 @@
             this.findPrevReplaceButton.Size = new System.Drawing.Size(84, 23);
             this.findPrevReplaceButton.TabIndex = 20;
             this.findPrevReplaceButton.Text = "Find pre&vious";
+            this.findPrevReplaceButton.Click += new System.EventHandler(this.replacePrevFindButton_Click);
             // 
             // replaceButton
             // 

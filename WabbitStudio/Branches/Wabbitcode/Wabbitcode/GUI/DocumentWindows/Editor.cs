@@ -210,7 +210,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 "File modified", MessageBoxButtons.YesNo);
             if (result == DialogResult.Yes)
             {
-                editorBox.LoadFile(e.File.FileFullPath);
+                editorBox.ReloadFile();
             }
             else
             {

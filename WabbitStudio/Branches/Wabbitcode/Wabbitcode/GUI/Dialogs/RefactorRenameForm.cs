@@ -22,6 +22,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
         private readonly IProjectService _projectService;
         private readonly IParserService _parserService;
         private readonly Dictionary<string, TextEditorControl> _editors = new Dictionary<string, TextEditorControl>();
+        private readonly Timer _updateTimer = new Timer { Interval = 2000 };
 
         private string _selectedText;
         private List<List<Reference>> _references;
@@ -33,6 +34,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 	        _parserService = parserService;
             _projectService = projectService;
 	        _editor = editor;
+            _updateTimer.Tick += updateTimer_Tick;
         }
 
         /// <summary>
@@ -63,11 +65,13 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
+            _updateTimer.Stop();
             Close();
         }
 
         private void okButton_Click(object sender, EventArgs e)
         {
+            _updateTimer.Stop();
             var refs = _projectService.FindAllReferences(_selectedText);
             foreach (var file in refs)
             {
@@ -205,6 +209,12 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             textArea.SetDesiredColumn();
         }
 
+	    private void updateTimer_Tick(object sender, EventArgs e)
+	    {
+            UpdateEditorReferences();
+            _lastLength = nameBox.TextLength;
+	    }
+
         private void nameBox_TextChanged(object sender, EventArgs e)
         {
             if (!_hasBeenInited)
@@ -212,8 +222,12 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                 return;
             }
 
-            UpdateEditorReferences();
-            _lastLength = nameBox.TextLength;
+            if (_updateTimer.Enabled)
+            {
+                _updateTimer.Stop();
+            }
+
+            _updateTimer.Start();
         }
 	}
 }

@@ -57,6 +57,10 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 				// Uncomment these as they get added in
 				Directory.CreateDirectory(FileLocations.TemplatesDir);
 				Resources.Resources.GetResource("Templates.xml", Path.Combine(FileLocations.TemplatesDir, "Templates.xml"));
+                Directory.CreateDirectory(Path.Combine(FileLocations.TemplatesDir, "Binary"));
+			    var stream = File.Create(Path.Combine(FileLocations.TemplatesDir, "Binary\\Default.asm"));
+                stream.Close();
+
 				Directory.CreateDirectory(Path.Combine(FileLocations.TemplatesDir, "TI-73"));
 
 				// Resources.GetResource("TemplatesSource.nostub73.asm", Path.Combine(templatesDir, "NoStub.asm"));

@@ -60,11 +60,19 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 	    public event BreakpointEventHandler OnBreakpoint;
 	    public event CloseEventHandler OnClose;
 
-        public Array Apps
+        public ITIApplicationCollection Apps
         {
             get
             {
                 return _debugger.Apps;
+            }
+        }
+
+        public ITISymbolCollection Symbols
+        {
+            get
+            {
+                return _debugger.Symbols;
             }
         }
 
@@ -100,10 +108,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             }
         }
 
-        // public Array Symbols
-        // {
-        //    get { return debugger.Symbols; }
-        // }
         public bool Running
         {
             get
@@ -140,7 +144,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _debugger.Breakpoints.Remove(breakpoint);
         }
 
-	    public Calc_Model Model
+	    public CalcModel Model
 	    {
 		    get { return _debugger.Model; }
 	    }
