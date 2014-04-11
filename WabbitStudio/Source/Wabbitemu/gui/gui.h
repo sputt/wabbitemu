@@ -109,6 +109,8 @@ typedef struct MainWindow {
 
 	list<key_string_t> *keys_pressed;
 
+	BOOL teacher_view_init;
+	LPCALC lpTeacherViewCalc;
 	TeacherViewScreen_t teacher_views[TEACHER_VIEW_ROWS][TEACHER_VIEW_COLS];
 
 	DWORD scale;

@@ -21,6 +21,5 @@ void DrawButtonStateNoSkin(Bitmap *pBitmapButton, Bitmap *pBitmapSkin, Bitmap *p
 void DrawButtonStatesAll(keypad_t *keypad, HWND hwndFrame, Bitmap *pBitmapSkin, Bitmap *pBitmapKeymap, UINT skinScale);
 void LogKeypress(LPMAINWINDOW lpMainWindow, int model, int group, int bit);
 HBITMAP DrawButtonAndMask(LPCALC lpCalc, POINT pt, HBITMAP *hbmButton, HBITMAP *hbmMask);
-void DrawButtonShadow(HDC hdc, HDC hdcKeymap, RECT brect);
 
 #endif /* GUIBUTTONS_H */

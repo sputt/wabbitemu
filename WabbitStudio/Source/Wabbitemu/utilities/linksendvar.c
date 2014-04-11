@@ -576,6 +576,18 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 		return LERR_MODEL;
 	}
 
+	u_char *dev_key;
+	find_field(tifile->flash->data[0], 0x80, 0x10, &dev_key);
+	if (dev_key != NULL) {
+		if ((dev_key[1] == 0x04 || dev_key[1] == 0x0A) && cpu->pio.model == TI_84PCSE) {
+			return LERR_MODEL;
+		}
+
+		if (dev_key[1] == 0x0F && cpu->pio.model < TI_84PCSE) {
+			return LERR_MODEL;
+		}
+	}
+
 	u_int page;
 	for (page = upages.start; page >= upages.end + tifile->flash->pages;) {
 		if (check_flashpage_empty(dest, page, 1)) {
@@ -627,8 +639,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	// force reset the app list says BrandonW. seems to work, apps show up (sometimes)
 	if (cpu->pio.model >= TI_84PCSE) {
 		mem_write(cpu->mem_c, 0x9F68, 0x00);
-	}
-	else {
+	} else {
 		mem_write(cpu->mem_c, 0x9C87, 0x00);
 	}
 

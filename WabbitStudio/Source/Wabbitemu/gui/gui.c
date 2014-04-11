@@ -1760,24 +1760,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				break;
 			}
 
-			lpMainWindow->teacher_views[0][1] = WINDOW_SCREEN;
-			lpMainWindow->teacher_views[1][0] = GRAPH_SCREEN;
-			lpMainWindow->teacher_views[1][1] = TABLE_SCREEN;
+			if (lpMainWindow->teacher_view_init == FALSE) {
+				lpMainWindow->teacher_views[0][1] = WINDOW_SCREEN;
+				lpMainWindow->teacher_views[1][0] = GRAPH_SCREEN;
+				lpMainWindow->teacher_views[1][1] = TABLE_SCREEN;
+				lpMainWindow->teacher_view_init = TRUE;
+			}
 
 			RECT r;
 			int lcdWidth = lpCalc->cpu.pio.lcd->display_width;
 			int lcdHeight = lpCalc->cpu.pio.lcd->height;
+			int scale = lpCalc->model < TI_84PCSE ? TEACHER_VIEW_SCALE : 1;
 			SetRect(&r, 0, 0, 
-				lcdWidth * TEACHER_VIEW_SCALE * TEACHER_VIEW_COLS, 
-				lcdHeight * TEACHER_VIEW_SCALE * TEACHER_VIEW_ROWS);
-			AdjustWindowRect(&r, WS_CAPTION, FALSE);
+				(lcdWidth * scale * TEACHER_VIEW_COLS), 
+				(lcdHeight * scale * TEACHER_VIEW_ROWS) +
+				(TEACHER_VIEW_CAPTION_SIZE * (TEACHER_VIEW_ROWS)));
+			AdjustWindowRect(&r, WS_CAPTION | WS_SYSMENU, FALSE);
 
 			POINT startPoint = GetStartPoint();
 			lpMainWindow->hwndTeacherView = CreateWindowEx(
 				0,
 				g_szTeacherViewName,
 				_T("Teacher View"),
-				(WS_CAPTION | WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX),
+				(WS_CAPTION | WS_SYSMENU | WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX),
 				startPoint.x, startPoint.y, r.right - r.left, r.bottom - r.top,
 				NULL, 0, g_hInst, (LPVOID)lpMainWindow);
 
@@ -2035,6 +2040,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		group = c.GetGreen() >> 4;
 		bit	= c.GetBlue() >> 4;
+		HandleTeacherViewKey(lpMainWindow->hwndTeacherView, lpCalc, group, bit);
 		LogKeypress(lpMainWindow, lpCalc->model, group, bit);
 		if (group == KEYGROUP_ON && bit == KEYBIT_ON){
 			kp->on_pressed |= KEY_MOUSEPRESS;

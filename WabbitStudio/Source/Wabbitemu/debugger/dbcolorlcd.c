@@ -104,7 +104,6 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	switch (uMsg) {
 		case WM_KEYDOWN:
 			if (wParam == VK_RETURN) {
-				LPCALC lpCalc = lpDebugInfo->lpCalc;
 				CloseSaveEdit(lpDebugInfo);
 			} else if (wParam == VK_ESCAPE) {
 				lpDebugInfo->hwndEditControl = NULL;

@@ -49,7 +49,8 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 					if (label == NULL) {
 						success = _stscanf_s(result, _T("%x"), &goto_addr);
 					} else {
-						goto_addr = label->addr;
+						goto_addr = label->addr + (label->page << 16);
+						success = TRUE;
 					}
 				} else {
 					success = _stscanf_s(result + 1, _T("%x"), &goto_addr);

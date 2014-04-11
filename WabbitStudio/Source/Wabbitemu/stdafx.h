@@ -80,6 +80,7 @@ typedef std::string tstring;
 #endif
 
 #elif defined(_LINUX) || defined(_ANDROID)
+#include <float.h>
 #include <assert.h>
 #include <setjmp.h>
 #include <stdio.h>
