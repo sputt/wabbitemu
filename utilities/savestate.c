@@ -623,43 +623,51 @@ void SaveSTDINT(SAVESTATE_t* save, STDINT_t *stdint) {
 	WriteInt(chunk, stdint->xy);
 }
 
+void SaveLinkAssist(CHUNK_t *chunk, LINKASSIST_t *linka) {
+	WriteChar(chunk, linka->link_enable);
+	WriteChar(chunk, linka->in);
+	WriteChar(chunk, linka->out);
+	WriteChar(chunk, linka->working);
+	WriteInt(chunk, linka->receiving);
+	WriteInt(chunk, linka->read);
+	WriteInt(chunk, linka->ready);
+	WriteInt(chunk, linka->error);
+	WriteInt(chunk, linka->sending);
+	WriteDouble(chunk, linka->last_access);
+	WriteInt(chunk, linka->bit);
+}
+
 void SaveSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	int i;
 	if (!se_aux) return;
+	
+	if (save->model < TI_83P) {
+		return;
+	}
+
 	CHUNK_t* chunk = NewChunk(save, SE_AUX_tag);
 	
-	if (save->model > TI_83P) {
-		WriteChar(chunk, se_aux->clock.enable);
-		WriteInt(chunk, (uint32_t)se_aux->clock.set);
-		WriteInt(chunk, (uint32_t)se_aux->clock.base);
-		WriteDouble(chunk, se_aux->clock.lasttime);
+	if (save->model == TI_83P) {
+		SaveLinkAssist(chunk, (LINKASSIST_t *)se_aux);
+		return;
+	}
+
+	WriteChar(chunk, se_aux->clock.enable);
+	WriteInt(chunk, (uint32_t)se_aux->clock.set);
+	WriteInt(chunk, (uint32_t)se_aux->clock.base);
+	WriteDouble(chunk, se_aux->clock.lasttime);
+
+	SaveLinkAssist(chunk, &se_aux->linka);
 	
-		for(i = 0; i < 7; i++) {
-			WriteChar(chunk, se_aux->delay.reg[i]);
-		}
-	
-		for(i = 0; i < 6; i++) {
-			WriteInt(chunk, se_aux->md5.reg[i]);
-		}
-		WriteChar(chunk, se_aux->md5.s);
-		WriteChar(chunk, se_aux->md5.mode);
+	for(i = 0; i < 7; i++) {
+		WriteChar(chunk, se_aux->delay.reg[i]);
 	}
 	
-	
-	WriteChar(chunk, se_aux->linka.link_enable);
-	WriteChar(chunk, se_aux->linka.in);
-	WriteChar(chunk, se_aux->linka.out);
-	WriteChar(chunk, se_aux->linka.working);
-	WriteInt(chunk, se_aux->linka.receiving);
-	WriteInt(chunk, se_aux->linka.read);
-	WriteInt(chunk, se_aux->linka.ready);
-	WriteInt(chunk, se_aux->linka.error);
-	WriteInt(chunk, se_aux->linka.sending);
-	WriteDouble(chunk, se_aux->linka.last_access);
-	WriteInt(chunk, se_aux->linka.bit);
-
-	if (save->model < TI_83PSE)
-		return;
+	for(i = 0; i < 6; i++) {
+		WriteInt(chunk, se_aux->md5.reg[i]);
+	}
+	WriteChar(chunk, se_aux->md5.s);
+	WriteChar(chunk, se_aux->md5.mode);
 	
 	WriteDouble(chunk, se_aux->xtal.lastTime);
 	WriteLong(chunk, se_aux->xtal.ticks);

@@ -12,7 +12,7 @@ typedef struct {
 
 
 flag_t flags83p[] = {
-	{ _T("trigFlags"), 0, {
+	{ _T("trigFlags"), 0x00, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T("trigDeg"), 2 },
@@ -22,7 +22,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("kbdFlags"), 0,  {
+	{ _T("kbdFlags"), 0x00, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -32,7 +32,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("doneFlags"), 0,
+	{ _T("doneFlags"), 0x00,
 		{ { _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -43,7 +43,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 } }
 	},
-	{ _T("ioDelFlag"), 0, {
+	{ _T("ioDelFlag"), 0x00, {
 		{ _T("inDelete"), 0 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -53,7 +53,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("editFlags"), 1, {
+	{ _T("editFlags"), 0x01, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T("editOpen"), 2 },
@@ -63,7 +63,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("monFlags"), 1, {
+	{ _T("monFlags"), 0x01, {
 		{ _T(""), -1 },
 		 { _T(""), -1 },
 		 { _T(""), -1 },
@@ -73,7 +73,7 @@ flag_t flags83p[] = {
 		 { _T(""), -1 },
 		 { _T(""), -1 }
 	} },
-	{ _T("plotFlags"), 2, {
+	{ _T("plotFlags"), 0x02, {
 		{ _T(""), -1 },
 		{ _T("plotLoc"), 1 },
 		{ _T("plotDisp"), 2 },
@@ -83,7 +83,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("grfModeFlags"), 2, {
+	{ _T("grfModeFlags"), 0x02, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -93,17 +93,17 @@ flag_t flags83p[] = {
 		{ _T("grfParamM"), 6 },
 		{ _T("grfRecurM"), 7 }
 	} },
-	{ _T("graphFlags"), 3, {
+	{ _T("graphFlags"), 0x03, {
 		{ _T("graphDraw"), 0 },
 		{ _T(""), -1 },
-		{ _T(""), -1 },
+		{ _T("graphCursor"), 2 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("grfDBFlags"), 4, {
+	{ _T("grfDBFlags"), 0x04, {
 		{ _T("grfDot"), 0 },
 		{ _T("grfSimul"), 1 },
 		{ _T("grfGrid"), 2 },
@@ -113,7 +113,7 @@ flag_t flags83p[] = {
 		{ _T("grfLabel"), 6 },
 		{ _T(""), -1 }
 	} },
-	{ _T("textFlags"), 5, {
+	{ _T("textFlags"), 0x05, {
 		{ _T(""), -1 },
 		{ _T("textEraseBelow"), 1 },
 		{ _T("textScrolled"), 2 },
@@ -123,7 +123,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("ParsFlag2"), 7, {
+	{ _T("ParsFlag2"), 0x07, {
 		{ _T("numOP1"), 0 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -133,7 +133,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("newDispF"), 8, {
+	{ _T("newDispF"), 0x08, {
 		{ _T("preClrForMode"), 0 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -143,7 +143,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("apdFlags"), 8, {
+	{ _T("apdFlags"), 0x08, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T("apdAble"), 2 },
@@ -153,7 +153,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("onFlags"), 9, {
+	{ _T("onFlags"), 0x09, {
 		{ _T(""), -1 },
 		{ _T("parseInput"), 1 },
 		{ _T(""), -1 },
@@ -163,7 +163,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("statFlags"), 9, {
+	{ _T("statFlags"), 0x09, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -173,7 +173,7 @@ flag_t flags83p[] = {
 		{ _T("statsValid"), 6 },
 		{ _T("statANSDISP"), 7 }
 	} },
-	{ _T("fmtFlags"), 10, {
+	{ _T("fmtFlags"), 0x0A, {
 		{ _T("fmtExponent"), 0 },
 		{ _T("fmtEng"), 1 },
 		{ _T("fmtHex"), 2 },
@@ -183,7 +183,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("numMode"), 10, {
+	{ _T("numMode"), 0x0A, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -193,7 +193,7 @@ flag_t flags83p[] = {
 		{ _T("fmtRect"), 6 },
 		{ _T("fmtPolar"), 7 }
 	} },
-	{ _T("fmtOverride"), 11, {
+	{ _T("fmtOverride"), 0x0B, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -203,7 +203,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("fmtEditFlags"), 12, {
+	{ _T("fmtEditFlags"), 0x0C, {
 		{ _T("fmtEdit"), 0 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -213,7 +213,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("curFlags"), 12, {
+	{ _T("curFlags"), 0x0C, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T("curAble"), 2 },
@@ -223,7 +223,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("appFlags"), 13, {
+	{ _T("appFlags"), 0x0D, {
 		{ _T("appWantIntrpt"), 0 },
 		{ _T("appTextSave"), 1 },
 		{ _T("appAutoScroll"), 2 },
@@ -243,7 +243,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T("enableQueue"), 7 }
 	} },
-	{ _T("seqFlags"), 15, {
+	{ _T("seqFlags"), 0x0F, {
 		{ _T("webMode"), 0 },
 		{ _T("webVert"), 1 },
 		{ _T("sequv"), 2 },
@@ -253,7 +253,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("promptFlags"), 17, {
+	{ _T("promptFlags"), 0x11, {
 		{ _T("promptEdit"), 0 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -263,7 +263,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("indicFlags"), 18, {
+	{ _T("indicFlags"), 0x12, {
 		{ _T("indicRun"), 0 },
 		{ _T("indicInUse"), 1 },
 		{ _T("indicOnly"), 2 },
@@ -273,7 +273,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("shiftFlags"), 18, {
+	{ _T("shiftFlags"), 0x12, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -283,7 +283,7 @@ flag_t flags83p[] = {
 		{ _T("shiftALock"), 6 },
 		{ _T("shiftKeepAlph"), 7 }
 	} },
-	{ _T("tblFlags"), 19, {
+	{ _T("tblFlags"), 0x13, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -293,7 +293,7 @@ flag_t flags83p[] = {
 		{ _T("reTable"), 6 },
 		{ _T(""), -1 }
 	} },
-	{ _T("sGrFlags"), 20, {
+	{ _T("sGrFlags"), 0x14, {
 		{ _T("grfSplit"), 0 },
 		{ _T("vertSplit"), 1 },
 		{ _T("grfSChanged"), 2 },
@@ -303,7 +303,7 @@ flag_t flags83p[] = {
 		{ _T("cmp_mod_box"), 6 },
 		{ _T("textWrite"), 7 }
 	} },
-	{ _T("newIndicFlags"), 21, {
+	{ _T("newIndicFlags"), 0x15, {
 		{ _T("extraIndic"), 0 },
 		{ _T("saIndic"), 1 },
 		{ _T(""), -1 },
@@ -313,7 +313,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("newFlags2"), 22, {
+	{ _T("newFlags2"), 0x16, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -323,7 +323,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("interruptFlags"), 22, {
+	{ _T("interruptFlags"), 0x16, {
 		{ _T("secondTimerEnabled"), 0 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -333,7 +333,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("batteryFlags"), 22, {
+	{ _T("batteryFlags"), 0x16, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T("batteriesGood"), 2 },
@@ -343,18 +343,18 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("smartFlags"), 23, {
+	{ _T("smartFlags"), 0x17, {
+		{ _T("smartGraph"), 0 },
+		{ _T("smartGraph_inv"), 1 },
 		{ _T(""), -1 },
-		{ _T(""), -1 },
-		{ _T(""), -1 },
-		{ _T(""), -1 },
+		{ _T("smarter_mask"), 3 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("more_Flags"), 26, {
-		{ _T(""), -1 },
+	{ _T("statFlags2"), 0x1A, {
+		{ _T("statDiagnosticsOn"), 0 },
 		{ _T(""), -1 },
 		{ _T("No_Del_Stat"), 2 },
 		{ _T(""), -1 },
@@ -363,27 +363,17 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("linkFlags"), 27, {
+	{ _T("linkFlags"), 0x1B, {
 		{ _T(""), -1 },
 		{ _T("IDis95h"), 1 },
 		{ _T("IDis82h"), 2 },
 		{ _T("IDis83h"), 3 },
 		{ _T("IDis03h"), 4 },
-		{ _T(""), -1 },
-		{ _T(""), -1 },
-		{ _T(""), -1 }
-	} },
-	{ _T("asm_Flag1"), 33, {
-		{ _T(""), -1 },
-		{ _T(""), -1 },
-		{ _T(""), -1 },
-		{ _T(""), -1 },
-		{ _T(""), -1 },
-		{ _T(""), -1 },
+		{ _T("USBenabled"), 5 },
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("asm_Flag2"), 34, {
+	{ _T("asm_Flag1"), 0x21, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -393,7 +383,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("asm_Flag3"), 35, {
+	{ _T("asm_Flag2"), 0x22, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -403,7 +393,17 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("getSendFlg"), 36, {
+	{ _T("asm_Flag3"), 0x23, {
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 }
+	} },
+	{ _T("getSendFlg"), 0x24, {
 		{ _T(""), -1 },
 		{ _T("comFailed"), 1 },
 		{ _T(""), -1 },
@@ -413,7 +413,17 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("appLwrCaseFlag"), 36, {
+	{ _T("selfTestFlg"), 0x24, {
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T("resetOnPowerOn"), 2 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 }
+		} },
+	{ _T("appLwrCaseFlag"), 0x24, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -423,7 +433,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("contextFlags"), 37, {
+	{ _T("contextFlags"), 0x25, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -433,7 +443,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("groupFlags"), 38, {
+	{ _T("groupFlags"), 0x26, {
 		{ _T(""), -1 },
 		{ _T("inGroup"), 1 },
 		{ _T("noCompletionByte"), 2 },
@@ -443,7 +453,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 		} },
-	{ _T("apiFlag"), 40, {
+	{ _T("apiFlag"), 0x28, {
 		{ _T("AppAllowContext"), 0 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -453,7 +463,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T("appRetOffKey"), 7 }
 	} },
-	{ _T("apiFlg2"), 41, {
+	{ _T("apiFlg2"), 0x29, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -463,7 +473,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 		} },
-	{ _T("apiFlg3"), 42, {
+	{ _T("apiFlg3"), 0x2A, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -473,9 +483,9 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("apiFlg4"), 43, {
+	{ _T("apiFlg4"), 0x2B, {
 		{ _T(""), -1 },
-		{ _T(""), -1 },
+		{ _T("cellOverride"), 1 },
 		{ _T("fullScrnDraw"), 2 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -483,7 +493,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("xapFlag0"), 46, {
+	{ _T("xapFlag0"), 0x2E, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -493,7 +503,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 		} },
-	{ _T("xapFlag1"), 47, {
+	{ _T("xapFlag1"), 0x2F, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -503,7 +513,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 		} },
-	{ _T("xapFlag2"), 48, {
+	{ _T("xapFlag2"), 0x30, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -513,7 +523,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("xapFlag3"), 49, {
+	{ _T("xapFlag3"), 0x31, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -523,7 +533,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("fontFlags"), 50, {
+	{ _T("fontFlags"), 0x32, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T("fracDrawLFont"), 2 },
@@ -533,7 +543,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T("customFont"), 7 }
 	} },
-	{ _T("scriptFlag"), 51, {
+	{ _T("scriptFlag"), 0x33, {
 		{ _T("alt_On"), 0 },
 		{ _T("alt_Off"), 1 },
 		{ _T(""), -1 },
@@ -543,7 +553,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("rclFlag2"), 51, {
+	{ _T("rclFlag2"), 0x33, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T("useRclQueueEnd"), 2 },
@@ -553,17 +563,17 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("backGroundLink"), 51, {
+	{ _T("hookflags1"), 0x33, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T("ignoreBPLink"), 3 },
 		{ _T("bPLinkOn"), 4 },
-		{ _T(""), -1 },
-		{ _T(""), -1 },
+		{ _T("enableKeyEcho"), 5 },
+		{ _T("noTempDelete"), 6 },
 		{ _T(""), -1 }
 	} },
-	{ _T("sysHookFlg"), 52, {
+	{ _T("sysHookFlg"), 0x34, {
 		{ _T("getCSCHookActive"), 0 },
 		{ _T("libraryHookActive"), 1 },
 		{ _T(""), -1 },
@@ -573,7 +583,7 @@ flag_t flags83p[] = {
 		{ _T("catalog2HookActive"), 6 },
 		{ _T("cursorHookActive"), 7 }
 	} },
-	{ _T("sysHookFlg1"), 53, {
+	{ _T("sysHookFlg1"), 0x35, {
 		{ _T("tokenHookActive"), 0 },
 		{ _T("localizeHookActive"), 1 },
 		{ _T("windowHookActive"), 2 },
@@ -583,7 +593,7 @@ flag_t flags83p[] = {
 		{ _T("regraphHookActive"), 6 },
 		{ _T("drawingHookActive"), 7 }
 	} },
-	{ _T("sysHookFlag2"), 54, {
+	{ _T("sysHookFlag2"), 0x36, {
 		{ _T("traceHookActive"), 0 },
 		{ _T("parserHookActive"), 1 },
 		{ _T("appChangeHookActive"), 2 },
@@ -593,7 +603,7 @@ flag_t flags83p[] = {
 		{ _T("menuHookActive"), 6 },
 		{ _T("silentLinkHookActive"), 7 }
 	} },
-	{ _T("plotFlag3"), 60, {
+	{ _T("plotFlag3"), 0x3C, {
 		{ _T("bufferOnly"), 0 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -603,7 +613,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 		} },
-	{ _T("dBKeyFlags"), 61, {
+	{ _T("dBKeyFlags"), 0x3D, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -613,7 +623,7 @@ flag_t flags83p[] = {
 		{ _T("keyDefaultsF"), 6 },
 		{ _T(""), -1 }
 	} },
-	{ _T("silentLinkFlags"), 62, {
+	{ _T("silentLinkFlags"), 0x3E, {
 		{ _T("silentLinkActive"), 0 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -623,7 +633,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("extraHookFlags"), 62, {
+	{ _T("extraHookFlags"), 0x3E, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -633,7 +643,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("clockFlags"), 63, {
+	{ _T("clockFlags"), 0x3F, {
 		{ _T("notMDYMode"), 0 },
 		{ _T("isYMDMode"), 1 },
 		{ _T("is24Hour"), 2 },
@@ -643,7 +653,7 @@ flag_t flags83p[] = {
 		{ _T("clockOn"), 6 },
 		{ _T(""), -1 }
 	} },
-	{ _T("USBFlag1"), 64, {
+	{ _T("USBFlag1"), 0x40, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T("usbReceiveZone1"), 2 },
@@ -653,7 +663,7 @@ flag_t flags83p[] = {
 		{ _T(""), -1 },
 		{ _T(""), -1 }
 	} },
-	{ _T("USBFlag2"), 64, {
+	{ _T("USBFlag2"), 0x41, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },
 		{ _T(""), -1 },
@@ -662,7 +672,17 @@ flag_t flags83p[] = {
 		{ _T("usbDataWaiting"), 5 },
 		{ _T(""), -1 },
 		{ _T(""), -1 }
-		} },
+	} },
+	{ _T("USBFlag3"), 0x42, {
+		{ _T("usbTimeoutError"), 0 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 },
+		{ _T(""), -1 }
+	} },
 	{ _T(""), -1, {
 		{ _T(""), -1 },
 		{ _T(""), -1 },

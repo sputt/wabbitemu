@@ -1051,13 +1051,13 @@ void dec_reg8(CPU_t *cpu) {
 					result = reg;
 					result--;
 					CPU_mem_write(cpu,cpu->ix+offset,result);
-					tc_add(cpu->timer_c,19-4);
+					tc_add(cpu->timer_c,19);
 				} else {
 					reg = CPU_mem_read(cpu,cpu->iy+offset);
 					result = reg;
 					result--;
 					CPU_mem_write(cpu,cpu->iy+offset,result);
-					tc_add(cpu->timer_c,19-4);
+					tc_add(cpu->timer_c,19);
 				}
 			}
 			break;
@@ -1147,13 +1147,13 @@ void inc_reg8(CPU_t *cpu) {
 					result = reg;
 					result++;
 					CPU_mem_write(cpu,cpu->ix+offset,result);
-					tc_add(cpu->timer_c,19-4);
+					tc_add(cpu->timer_c,19);
 				} else {
 					reg = CPU_mem_read(cpu,cpu->iy+offset);
 					result = reg;
 					result++;
 					CPU_mem_write(cpu,cpu->iy+offset,result);
-					tc_add(cpu->timer_c,19-4);
+					tc_add(cpu->timer_c,19);
 				}
 			}
 			break;

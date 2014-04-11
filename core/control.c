@@ -724,7 +724,7 @@ void ld_r_num8(CPU_t *cpu) {
 				} else {
 					CPU_mem_write(cpu, cpu->iy + offset, reg);
 				}
-				tc_add(cpu->timer_c, 7);
+				tc_add(cpu->timer_c, 12);
 			}
 			break;
 		case 0x07:
@@ -784,7 +784,7 @@ void ld_r_r(CPU_t *cpu) {
 				} else {
 					reg = CPU_mem_read(cpu, cpu->iy + offset);
 				}
-				tc_add(cpu->timer_c, 7);
+				tc_add(cpu->timer_c, 15);
 			}
 			break;
 		case 0x07:
@@ -838,7 +838,7 @@ void ld_r_r(CPU_t *cpu) {
 				} else {
 					CPU_mem_write(cpu, cpu->iy + offset, reg);
 				}
-				tc_add(cpu->timer_c, 7);
+				tc_add(cpu->timer_c, 15);
 			}
 			break;
 		case 0x07:
@@ -867,8 +867,8 @@ void ex_sp_hl(CPU_t *cpu) {
 		CPU_mem_write(cpu,cpu->sp, cpu->l);
 		cpu->hl = reg;
 	} else {
+		tc_add(cpu->timer_c, 23);
 		if (cpu->prefix == 0xDD) {
-			tc_add(cpu->timer_c,23);
 			CPU_mem_write(cpu,cpu->sp + 1, cpu->ixh);
 			CPU_mem_write(cpu,cpu->sp, cpu->ixl);
 			cpu->ix = reg;

@@ -12,7 +12,7 @@ typedef struct disasmhdr {
 	unsigned int cx;
 	unsigned int nCharsWidth;
 	TCHAR pszText[32];
-	void (*lpfnCallback)(LPCALC, HDC, Z80_info_t*, RECT*);
+	void (*lpfnCallback)(LPCALC, HDC, Z80_info_t*, ViewType, RECT*);
 	UINT uFormat;
 	HFONT hfont;
 } disasmhdr_t;
@@ -48,11 +48,11 @@ typedef struct disasmpane_settings {
 } disasmpane_settings_t, dp_settings;
 
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-void sprint_addr(LPCALC, HDC, Z80_info_t *, RECT *);
-void sprint_command(LPCALC, HDC, Z80_info_t *, RECT *);
-void sprint_data(LPCALC, HDC, Z80_info_t *, RECT *);
-void sprint_size(LPCALC, HDC, Z80_info_t *, RECT *);
-void sprint_clocks(LPCALC, HDC, Z80_info_t *, RECT *);
+void sprint_addr(LPCALC, HDC, Z80_info_t *, ViewType type, RECT *);
+void sprint_command(LPCALC, HDC, Z80_info_t *, ViewType type, RECT *);
+void sprint_data(LPCALC, HDC, Z80_info_t *, ViewType type, RECT *);
+void sprint_size(LPCALC, HDC, Z80_info_t *, ViewType type, RECT *);
+void sprint_clocks(LPCALC, HDC, Z80_info_t *, ViewType type, RECT *);
 void CPU_stepout(LPCALC, BOOL tiosDebug);
 void CPU_stepover(LPCALC, BOOL tiosDebug);
 void cycle_pcs(dp_settings *);

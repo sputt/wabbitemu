@@ -224,6 +224,45 @@ HRESULT __stdcall CDropTarget::DragLeave() {
 	return S_OK;
 }
 
+BOOL ValidateData(TCHAR *path, LPMAINWINDOW lpMainWindow) {
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+	TIFILE_t *tifile = importvar(path, TRUE);
+	if (tifile == NULL) {
+		return FALSE;
+	}
+
+	TifileVarType_t type = tifile->type;
+	BOOL valid_backup = tifile->backup != NULL;
+	FreeTiFile(tifile);
+	switch (type) {
+	case FLASH_TYPE:
+		if (lpCalc->model >= TI_73) {
+			lpMainWindow->is_calc_file = TRUE;
+			return TRUE;
+		}
+		break;
+	case ROM_TYPE:
+	case LABEL_TYPE:
+	case SAV_TYPE:
+	case BREAKPOINT_TYPE:
+		return TRUE;
+	case BACKUP_TYPE:
+		if (valid_backup && (lpCalc->model == TI_82 &&
+			lpCalc->model == TI_73 && lpCalc->model == TI_85)) {
+			return TRUE;
+		}
+		break;
+	case VAR_TYPE:
+	case GROUP_TYPE:
+	case ZIP_TYPE:
+		lpMainWindow->is_archive_only = FALSE;
+		lpMainWindow->is_calc_file = TRUE;
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 	STGMEDIUM stgmed;
 	TCHAR path[MAX_PATH];
@@ -249,42 +288,10 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 					PVOID pData = GlobalLock(stgmed.hGlobal);
 					UINT count = DragQueryFile((HDROP) pData, (UINT) ~0, path, 256);
 					while (count--) {
-						DragQueryFile((HDROP) pData, count, path, ARRAYSIZE(path));
-						TIFILE_t *tifile = importvar(path, TRUE);
-						if (tifile == NULL) {
-							continue;
-						}
-
-						switch (tifile->type) {
-						case FLASH_TYPE:
-							if (lpCalc->model >= TI_73) {
-								valid = TRUE;
-								lpMainWindow->is_calc_file = TRUE;
-							}
-							break;
-						case ROM_TYPE:
-						case LABEL_TYPE:
-						case SAV_TYPE:
-						case BREAKPOINT_TYPE:
-							valid = TRUE;
-							break;
-						case BACKUP_TYPE:
-							if (tifile->backup != NULL && (lpCalc->model == TI_82 &&
-								lpCalc->model == TI_73 && lpCalc->model == TI_85)) {
-								valid = TRUE;
-							}
-							break;
-						case VAR_TYPE:
-						case GROUP_TYPE:
-						case ZIP_TYPE:
-							lpMainWindow->is_archive_only = FALSE;
-							lpMainWindow->is_calc_file = TRUE;
-							valid = TRUE;
-							break;
-						}
-
-						FreeTiFile(tifile);
+						DragQueryFile((HDROP)pData, count, path, ARRAYSIZE(path));
+						valid |= ValidateData(path, lpMainWindow);
 					}
+
 					GlobalUnlock(stgmed.hGlobal);
 					break;
 				}
@@ -312,31 +319,17 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 									if (file != NULL) {
 										fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
 										fclose(file);
-
-										TIFILE_t *tifile = importvar(path, TRUE);
-										valid = tifile != NULL;
-										if (valid &&  tifile->flash == NULL) {
-											lpMainWindow->is_archive_only = FALSE;
-										}
-
-										if (valid && (tifile->rom || tifile->save)) {
-											lpMainWindow->is_calc_file = FALSE;
-										}
-
-										if (valid && tifile->backup != NULL && (lpCalc->model != TI_82 &&
-											lpCalc->model != TI_73 && lpCalc->model != TI_85))
-										{
-											valid = FALSE;
-										}
-
-										FreeTiFile(tifile);
+										valid |= ValidateData(path, lpMainWindow);
 									}
+
 									_tremove(path);
 								}
+
 								free(lpBuffer);
 								ReleaseStgMedium(&stgmedData);
 							}
 						}
+
 						GlobalUnlock(stgmed.hGlobal);
 					}
 

@@ -1076,8 +1076,8 @@ void port3A_83pse(CPU_t *cpu, device_t *dev) {
 	}
 
 	if (cpu->pio.model == TI_84PCSE) {
-		if (lcd->backlight_active && lcd->backlight_off_elapsed > DBL_EPSILON &&
-			((cpu->timer_c->elapsed - lcd->backlight_off_elapsed - BACKLIGHT_OFF_DELAY) > DBL_EPSILON))
+		if (lcd->backlight_active && lcd->backlight_off_elapsed > DBL_MIN &&
+			((cpu->timer_c->elapsed - lcd->backlight_off_elapsed - BACKLIGHT_OFF_DELAY) > DBL_MIN))
 		{
 			lcd->backlight_active = FALSE;
 		}

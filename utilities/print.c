@@ -51,7 +51,7 @@ void press_textA(TCHAR *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 }
 
 
-void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
+void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, ViewType type, const TCHAR *fmt, ...) {
 	TCHAR *p;
 	va_list argp;
 	RECT r = *rc;
@@ -62,7 +62,7 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR 
 	if (calc_size == FALSE) {
 		calc_size = TRUE;
 		
-		MyDrawText(lpCalc, hdc, rc, zinf, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+		MyDrawText(lpCalc, hdc, rc, zinf, type, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
 		
 		TCHAR szFilltext[1024];
 		memset(szFilltext, 'A', mspf_size);
@@ -132,7 +132,7 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR 
 				}
 				case 'g':
 				{
-					waddr_t waddr = OffsetWaddr(lpCalc->cpu.mem_c, REGULAR, zinf->waddr, 2 + ((char) va_arg(argp, INT_PTR)));
+					waddr_t waddr = OffsetWaddr(lpCalc->cpu.mem_c, type, zinf->waddr, 2 + ((char)va_arg(argp, INT_PTR)));
 					TCHAR *name;
 					
 					name = FindAddressLabel(lpCalc, waddr);
@@ -149,9 +149,35 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR 
 				case 'a': //address
 					{
 						TCHAR *name;
-						uint16_t val = (uint16_t)va_arg(argp, INT_PTR);
+						int val = (int)va_arg(argp, INT_PTR);
+						waddr_t waddr;
+						switch (type) {
+						case REGULAR:
+							waddr = addr16_to_waddr(lpCalc->cpu.mem_c, (uint16_t)val);
+							break;
+						case FLASH: {
+							// assumption here is that page 0 will always be in bank 0
+							// unless we haven't changed it out
+							if (val < 0x4000) {
+								waddr.page = lpCalc->mem_c.banks[0].page;
+								waddr.is_ram = FALSE;
+							} else if (val > 0x4000 && val < 0x8000) {
+								waddr.page = zinf->waddr.page;
+								waddr.is_ram = FALSE;
+							}
 
-						name = FindAddressLabel(lpCalc, addr16_to_waddr(lpCalc->cpu.mem_c, val));
+							waddr.addr = mc_base(val);
+							break;
+						}
+						case RAM: {
+							bank_state_t *bank = &lpCalc->mem_c.banks[val > 0xC000 ? 3 : 2];
+							waddr.page = bank->page;
+							waddr.addr = mc_base(val);							
+							waddr.is_ram = TRUE;
+							break;
+						}
+						}
+						name = FindAddressLabel(lpCalc, waddr);
 						
 						if (name) {
 							press_text(name, RGB(0, 0, 0));
@@ -261,9 +287,18 @@ void mysprintf(LPCALC lpCalc, TCHAR *output, int outputLength, Z80_info_t* zinf,
 				case 'a': //address
 					{
 						TCHAR *name;
-						uint16_t val = (uint16_t)va_arg(argp, INT_PTR);
-
-						name = FindAddressLabel(lpCalc, addr16_to_waddr(lpCalc->cpu.mem_c, val));
+						int val = (int)va_arg(argp, INT_PTR);
+						waddr_t waddr;
+						switch (type) {
+						case REGULAR:
+							waddr = addr16_to_waddr(lpCalc->cpu.mem_c, (uint16_t)val);
+							break;
+						case FLASH:
+						case RAM:
+							waddr = addr32_to_waddr(val, type == RAM);
+							break;
+						}
+						name = FindAddressLabel(lpCalc, waddr);
 						
 						if (name) {
 							StringCbCat(output, outputLength, name);

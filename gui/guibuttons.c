@@ -82,49 +82,9 @@ void LogKeypress(LPMAINWINDOW lpMainWindow, int model, int group, int bit) {
 	}
 }	
 
-void DrawButtonShadow(HDC hdc, HDC hdcKeymap, RECT brect)
+void DrawButtonStateNoSkin(Bitmap *pBitmapButton, Bitmap *pBitmapSkin, Bitmap *pBitmapKeymap,
+	RECT brect, UINT state)
 {
-	int width = brect.right - brect.left;
-	int height = brect.bottom - brect.top;
-	COLORREF colormatch = GetPixel(hdcKeymap, brect.left + width / 2, brect.top + height / 2);
-
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			COLORREF colortest = GetPixel(hdcKeymap, x + brect.left, y + brect.top);
-			if (colortest == colormatch) {
-				COLORREF colortestdown = GetPixel(hdcKeymap, x + brect.left, y + brect.top + 1);
-				COLORREF colortestup = GetPixel(hdcKeymap, x + brect.left, y + brect.top - 1);
-				COLORREF colortestright = GetPixel(hdcKeymap, x + brect.left + 1, y + brect.top);
-				COLORREF colortestleft = GetPixel(hdcKeymap, x + brect.left - 1, y + brect.top);
-#define SHADOW_OFFSET 100
-#define SHADOW_CONSTANT 40
-#define SHADOW_SIZE 3
-				if (GetRValue(colortestdown) == 0xFF) {
-					for (int i = 1; i < SHADOW_SIZE; i++) {
-						SetPixel(hdc, x, y + i,  RGB(SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET));
-					}
-				}
-				if (GetRValue(colortestup) == 0xFF) {
-					for (int i = 1; i < SHADOW_SIZE; i++) {
-						SetPixel(hdc, x, y - i,  RGB(SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET));
-					}
-				}
-				if (GetRValue(colortestright) == 0xFF) {
-					for (int i = 1; i < SHADOW_SIZE; i++) {
-						SetPixel(hdc, x + i, y,  RGB(SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET));
-					}
-				}
-				if (GetRValue(colortestleft) == 0xFF) {
-					for (int i = 1; i < SHADOW_SIZE; i++) {
-						SetPixel(hdc, x - i, y,  RGB(SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET));
-					}
-				}
-			}
-		}
-	}
-}
-
-void DrawButtonStateNoSkin(Bitmap *pBitmapButton, Bitmap *pBitmapSkin, Bitmap *pBitmapKeymap, RECT brect, UINT state) {
 	DisplayButtonState dbs = (DisplayButtonState)state;
 	LONG width = brect.right - brect.left;
 	LONG height = brect.bottom - brect.top;
@@ -177,7 +137,9 @@ void DrawButtonState(Bitmap *pBitmapSkin, Bitmap *pBitmapKeymap, RECT brect, UIN
 	graphics.DrawImage(&buttonBitmap, brect.left, brect.top, width, height);
 }
 
-void DrawButtonStatesAll(keypad_t *keypad, HWND hwndFrame, Bitmap *pBitmapSkin, Bitmap *pBitmapKeymap, double skinScale) {
+void DrawButtonStatesAll(keypad_t *keypad, HWND hwndFrame, Bitmap *pBitmapSkin,
+	Bitmap *pBitmapKeymap, double skinScale)
+{
 	if (keypad == NULL) {
 		return;
 	}
@@ -251,6 +213,7 @@ void HandleKeyDown(LPMAINWINDOW lpMainWindow, WPARAM key) {
 		return;
 	}
 
+	HandleTeacherViewKey(lpMainWindow->hwndTeacherView, lpCalc, kp->group, kp->bit);
 	LogKeypress(lpMainWindow, lpCalc->model, kp->group, kp->bit);
 	if (changed) {
 		FinalizeButtons(lpMainWindow);

@@ -338,9 +338,9 @@ TCHAR *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, TCHAR *buffer) {
 		uint16_t ptr = sym->address;
 		TCHAR *p = buffer;
 		BOOL is_imaginary = FALSE;
-	TI_num_extract:
+	TI_num_extract:;
 		uint8_t type = mem_read(cpu->mem_c, ptr++);
-		int exp = (TCHAR) (mem_read(cpu->mem_c, ptr++) ^ 0x80);
+		int exp = (int) (mem_read(cpu->mem_c, ptr++) ^ 0x80);
 		if (exp == -128) {
 			exp = 128;
 		}

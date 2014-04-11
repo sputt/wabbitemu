@@ -122,7 +122,6 @@ typedef struct SE_AUX {
 	USB_t usb;
 } SE_AUX_t;
 
-STDINT_t *INT83PSE_init(CPU_t*);
 int device_init_83pse(CPU_t*, int model);
 int memory_init_83pse(memc *);
 int memory_init_84p(memc *);

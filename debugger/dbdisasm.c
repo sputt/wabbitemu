@@ -36,7 +36,7 @@ extern Z80_com_t da_opcode[256];
 
 extern HINSTANCE g_hInst;
 
-void sprint_addr(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
+void sprint_addr(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, ViewType, RECT *r) {
 	TCHAR s[64];
 
 	SetTextColor(hdc, RGB(0, 0, 0));
@@ -60,7 +60,7 @@ void sprint_addr(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 }
 
-void sprint_data(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
+void sprint_data(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, ViewType, RECT *r) {
 	TCHAR s[64];
 	int j;
 	SetTextColor(hdc, RGB(0, 0, 0));
@@ -81,11 +81,11 @@ void sprint_data(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 }
 
-void sprint_command(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
-	MyDrawText(lpCalc, hdc, r, zinf, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+void sprint_command(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, ViewType type, RECT *r) {
+	MyDrawText(lpCalc, hdc, r, zinf, type, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
 }
 
-void sprint_size(LPCALC, HDC hdc, Z80_info_t *zinf, RECT *r) {
+void sprint_size(LPCALC, HDC hdc, Z80_info_t *zinf, ViewType, RECT *r) {
 	TCHAR s[64];
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (zinf->size == 0) return;
@@ -95,7 +95,7 @@ void sprint_size(LPCALC, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 }
 
-void sprint_clocks(LPCALC, HDC hdc, Z80_info_t *zinf, RECT *r) {
+void sprint_clocks(LPCALC, HDC hdc, Z80_info_t *zinf, ViewType, RECT *r) {
 	TCHAR s[64];
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (da_opcode[zinf->index].clocks != -1) {
@@ -926,7 +926,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					if (iCol != -1) {
 						tr.right = tr.left + dps->hdrs[iCol].cx;
 						SelectObject(hdc, dps->hdrs[iCol].hfont);
-						dps->hdrs[iCol].lpfnCallback(dps->lpCalc, hdc, &dps->zinf[i], &tr);
+						dps->hdrs[iCol].lpfnCallback(dps->lpCalc, hdc, &dps->zinf[i], dps->type, &tr);
 					}
 				}
 
@@ -1036,10 +1036,34 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						StringCbCat(copy_line, sizeof(copy_line), _T("\r\n"));
 						StringCbCat(disassembly, DISASM_LINE_MAX_LEN, copy_line);
 					}
-					OpenClipboard(hwnd);
-					EmptyClipboard();
-					SetClipboardData(CF_TEXT, (HLOCAL) disassembly);
-					CloseClipboard();
+
+					BOOL success = OpenClipboard(hwnd);
+					if (!success) {
+						MessageBox(hwnd, _T("Unable to open clipboard"), _T("Error"), MB_OK);
+						break;
+					}
+
+					success = EmptyClipboard();
+					if (!success) {
+						MessageBox(hwnd, _T("Unable to empty clipboard"), _T("Error"), MB_OK);
+						break;
+					}
+
+#ifdef UNICODE
+					HANDLE hData = SetClipboardData(CF_UNICODETEXT, (HANDLE)disassembly);
+#else
+					HANDLE hData = SetClipboardData(CF_TEXT, (HANDLE)disassembly);
+#endif
+					if (hData == NULL) {
+						MessageBox(hwnd, _T("Unable to set clipboard data"), _T("Error"), MB_OK);
+						break;
+					}
+
+					success = CloseClipboard();
+					if (!success) {
+						MessageBox(hwnd, _T("Unable to open clipboard"), _T("Error"), MB_OK);
+						break;
+					}
 					break;
 				}
 				case DB_DISASM: {
@@ -1417,13 +1441,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					return 0;
 				case VK_F3:
 					SendMessage(hwnd, WM_COMMAND, DB_MEMPOINT_WRITE, 0);
-					break;
+					return 0;
 				case 'G':
 					SendMessage(hwnd, WM_COMMAND, DB_GOTO, 0);
-					break;
+					return 0;
 				case 'F':
 					SendMessage(hwnd, WM_COMMAND, DB_OPEN_FIND, 0);
 					break;
+				default:
+					return 0;
 			}
 
 			if (bCenter && (dps->nSel < dps->nPane || dps->nSel > dps->nPane + dps->nPage)) {
