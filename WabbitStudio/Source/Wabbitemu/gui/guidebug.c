@@ -376,6 +376,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			LPCALC lpCalc = lpMainWindow->lpCalc;
 			lpDebugInfo->lpCalc = lpCalc;
 			lpDebugInfo->bTIOSDebug = lpMainWindow->bTIOSDebug;
+			lpDebugInfo->lpMainWindow = lpMainWindow;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LPARAM) lpDebugInfo);
 
 			lpDebugInfo->cyGripper = 10;
@@ -1187,6 +1188,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			GetWindowPlacement(hwnd, &lpDebugInfo->db_placement);
 			lpDebugInfo->db_maximized = IsMaximized(hwnd);
+			lpDebugInfo->lpMainWindow->hwndDebug = NULL;
 
 			int selIndex = TabCtrl_GetCurSel(lpDebugInfo->hmem);
 			int groupIndex = lpDebugInfo->total_mem_pane / 3;

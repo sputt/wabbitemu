@@ -10,10 +10,10 @@
 #define BUFFER_BANKS		(4)
 
 
-#define BankTime			(((float) PREFERED_SAMPLES) / ((float) SAMPLE_RATE))
-#define SampleLength		((1.0f) / ((float) SAMPLE_RATE))
-#define SampleSizeBits		(SAMPLE_SIZE << 3)
-#define BankSize			(PREFERED_SAMPLES * CHANNELS * SAMPLE_SIZE)
+#define BANK_TIME			(((float) PREFERED_SAMPLES) / ((float) SAMPLE_RATE))
+#define SAMPLE_LENGTH		((1.0f) / ((float) SAMPLE_RATE))
+#define SAMPLE_SIZE_BITS	(SAMPLE_SIZE << 3)
+#define BANK_SIZE			(PREFERED_SAMPLES * CHANNELS * SAMPLE_SIZE)
 
 #define BUFFER_SMAPLES		(SAMPLE_RATE)
 #define AUDIO_BUFFER_SIZE	(BUFFER_SMAPLES * CHANNELS * SAMPLE_SIZE)

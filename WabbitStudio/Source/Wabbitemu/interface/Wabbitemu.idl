@@ -583,6 +583,14 @@ interface IWabbitemu : IDispatch
 
 	[helpstring("Opens the file given and if recognized, sends it to the calculator.")]
 	HRESULT LoadFile([in] BSTR FileName);
+	[helpstring("Saves the current calculator to the file, using the format specified. 0 means no compression\
+		1 means use ZLIB.")]
+	HRESULT SaveFile([in] BSTR FileName, [in] BSTR Author, [in] BSTR Comment, [in] int Compress);
+
+	[helpstring("Starts recording a GIF.")]
+	HRESULT StartRecordGIF([in] BSTR FileName);
+	[helpstring("Stops recording the current GIF and saves it to the filename given when started.")]
+	HRESULT StopRecordGIF();
 
 	[propget, helpstring("List of applications on the calculator.")]
 	HRESULT Apps([out, retval] ITIApplicationCollection **AppList);

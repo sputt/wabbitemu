@@ -10,6 +10,7 @@
 #include "calc.h"
 #include "registry.h"
 #include "var.h"
+#include "pngexport.h"
 
 #include "CMemoryContext.h"
 
@@ -277,6 +278,35 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 		return E_INVALIDARG;
 	}
 
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::SaveFile(BSTR FileName, BSTR Author, BSTR Comment, int Compress)
+{
+	SAVESTATE_t *save = SaveSlot(m_lpCalc, _bstr_t(Author), _bstr_t(Comment));
+	WriteSave(_bstr_t(FileName), save, Compress);
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::StartRecordGIF(BSTR FileName)
+{
+	calc_start_screenshot(_bstr_t(FileName));
+	_Module.SetGIFState(GDS_STARTING);
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::StopRecordGIF()
+{
+	_Module.SetGIFState(GDS_ENDING);
+	calc_stop_screenshot();
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::SavePNG(BSTR FileName)
+{
+	m_lpCalc->running = FALSE;
+	export_png(m_lpCalc, _bstr_t(FileName));
+	m_lpCalc->running = FALSE;
 	return S_OK;
 }
 

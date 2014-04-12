@@ -69,6 +69,11 @@ public:
 	STDMETHOD(get_Breakpoints)(IBreakpointCollection **pBC);
 
 	STDMETHOD(LoadFile)(BSTR bstrFileName);
+	STDMETHOD(SaveFile)(BSTR FileName, BSTR Author, BSTR Comment, int Compress);
+
+	STDMETHOD(StartRecordGIF)(BSTR FileName);
+	STDMETHOD(StopRecordGIF)();
+	STDMETHOD(SavePNG)(BSTR FileName);
 
 	STDMETHOD(get_Apps)(ITIApplicationCollection **ppAppList);
 	STDMETHOD(get_Symbols)(ITISymbolCollection **ppSymList);
