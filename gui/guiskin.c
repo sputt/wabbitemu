@@ -262,9 +262,9 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 		MessageBox(lpMainWindow->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"), MB_OK | MB_ICONERROR);
 		return 0;
 	} else {
-		if (lpMainWindow->skin_scale == 0.0) {
+		if (lpMainWindow->skin_scale < DBL_MIN) {
 			lpMainWindow->skin_scale = 1.0;
-		} else if (lpMainWindow->default_skin_scale) {
+		} else if (lpMainWindow->default_skin_scale > DBL_MIN) {
 			lpMainWindow->skin_scale = lpMainWindow->skin_scale / lpMainWindow->default_skin_scale;
 		}
 

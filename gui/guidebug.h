@@ -99,7 +99,7 @@ typedef struct tagDEBUGWINDOWINFO
 	LPCALC duplicate_calc;
 	int port_map[0xFF];
 	WNDPROC wpOrigEditProc;
-
+	LPMAINWINDOW lpMainWindow;
 } DEBUGWINDOWINFO, *LPDEBUGWINDOWINFO;
 
 typedef struct tagTABWINDOWINFO {

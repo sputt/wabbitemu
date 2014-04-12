@@ -86,6 +86,7 @@ BOOL gif_anim_advance;
 BOOL silent_mode = FALSE;
 BOOL is_exiting = FALSE;
 HWND hwndCurrentDlg = NULL;
+BOOL frame_skip = FALSE;
 
 extern keyprog_t keygrps[256];
 extern keyprog_t keysti83[256];
@@ -121,12 +122,16 @@ void gui_draw(LPCALC, LPVOID lParam) {
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
 	if (lpMainWindow->hwndLCD != NULL) {
 		InvalidateRect(lpMainWindow->hwndLCD, NULL, FALSE);
-		UpdateWindow(lpMainWindow->hwndLCD);
+		if (frame_skip == TRUE) {
+			UpdateWindow(lpMainWindow->hwndLCD);
+		}
 	}
 
 	if (lpMainWindow->hwndDetachedLCD != NULL) {
 		InvalidateRect(lpMainWindow->hwndDetachedLCD, NULL, FALSE);
-		UpdateWindow(lpMainWindow->hwndDetachedLCD);
+		if (frame_skip == FALSE) {
+			UpdateWindow(lpMainWindow->hwndDetachedLCD);
+		}
 	}
 
 	if (lpMainWindow->gif_disp_state != GDS_IDLE) {
@@ -300,11 +305,11 @@ void avi_audio_frame(LPMAINWINDOW lpMainWindow) {
 
 	AUDIO_t *audio = lpMainWindow->lpCalc->audio;
 
-	u_char *buffer[BankSize];
-	unsigned char* dataout = (unsigned char *)&audio->buffer[audio->PlayPnt];
-	unsigned char* datain = (unsigned char *)buffer;
-	unsigned char* dataend = (unsigned char *)&audio->buffer[BUFFER_SMAPLES];
-	for (int i = 0; i < BankSize; i++) {
+	u_char *buffer[BANK_SIZE];
+	unsigned char *dataout = (unsigned char *)&audio->buffer[audio->PlayPnt];
+	unsigned char *datain = (unsigned char *)buffer;
+	unsigned char *dataend = (unsigned char *)&audio->buffer[BUFFER_SMAPLES];
+	for (int i = 0; i < BANK_SIZE; i++) {
 		if (dataout >= dataend) {
 			dataout = (unsigned char *)&audio->buffer[0];
 		}
@@ -312,8 +317,9 @@ void avi_audio_frame(LPMAINWINDOW lpMainWindow) {
 		datain[i] = dataout[0];
 		dataout++;
 	}
+
 	HRESULT hResult = lpMainWindow->m_CurrentAvi->AppendAudioData(&audio->wfx,
-		buffer, BankSize);
+		buffer, BANK_SIZE);
 	if (FAILED(hResult)) {
 		TCHAR buf[512];
 		StringCbCopy(buf, sizeof(buf), lpMainWindow->m_CurrentAvi->GetLastErrorMessage());
@@ -337,13 +343,15 @@ VOID CALLBACK TimerProc(HWND, UINT, UINT_PTR, DWORD dwTimer) {
 	// a frame skip?
 	if (difference > -TPF) {
 		calc_run_all();
+		frame_skip = TRUE;
 		while (difference >= TPF) {
 			calc_run_all();
 			difference -= TPF;
 		}
 
-		// Frame skip if we're too far ahead.
+		frame_skip = FALSE;
 	} else {
+		// Frame skip if we're too far ahead.
 		difference += TPF;
 	}
 }

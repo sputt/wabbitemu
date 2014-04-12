@@ -509,6 +509,13 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 			CPU_step(&lpCalc->cpu);
 		}
 
+		if (!calc_waiting_link && lpCalc->cpu.pio.lcd != NULL &&
+			(tc_elapsed(&lpCalc->timer_c) - lpCalc->cpu.pio.lcd->lastaviframe) >= (1.0 / AVI_FPS))
+		{
+			notify_event(lpCalc, AVI_VIDEO_FRAME_EVENT);
+			lpCalc->cpu.pio.lcd->lastaviframe += 1.0 / AVI_FPS;
+		}
+
 		if (tc_tstates((&lpCalc->timer_c)) >= time_end) {
 			lpCalc->time_error = (time_t)(tc_tstates((&lpCalc->timer_c)) - time_end);
 			break;
@@ -661,6 +668,7 @@ int calc_run_all(void) {
 					calcs[j].cpu.pio.link->hasChanged = FALSE;
 					CPU_step(&calcs[j].cpu);
 				}
+
 				active_calc = j;
 				int speed = calcs[j].speed;
 				int time = (int)((int64_t) speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
@@ -669,14 +677,6 @@ int calc_run_all(void) {
 				} /*else {
 					calcs[j].cpu.linking_time += time;
 				}*/
-
-				if (!calc_waiting_link && calcs[j].cpu.timer_c != NULL &&
-					calcs[j].cpu.pio.lcd != NULL &&
-					(tc_elapsed(calcs[j].cpu.timer_c) - calcs[j].cpu.pio.lcd->lastaviframe) >= (1.0 / AVI_FPS))
-				{
-					notify_event(&calcs[j], AVI_VIDEO_FRAME_EVENT);
-					calcs[j].cpu.pio.lcd->lastaviframe += 1.0 / AVI_FPS;
-				}
 			}
 		}
 

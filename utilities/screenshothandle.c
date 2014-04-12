@@ -129,13 +129,10 @@ void handle_screenshot(LPCALC lpCalc, LPVOID lParam) {
 			shades = 255;
 			size = screenshot_color_size;
 		}
-		//we also need to find the size of all the LCDs
+		// we also need to find the size of all the LCDs
 	}
 
-	/*if ((gif_write_state != GIF_IDLE) && (!lpCalc->running))
-		gif_write_state = GIF_END;*/
 	int calc_pos = 0;
-	//int num_calcs = calc_count();
 
 	switch (gif_write_state) {
 		case GIF_IDLE: {
@@ -166,9 +163,12 @@ void handle_screenshot(LPCALC lpCalc, LPVOID lParam) {
 				gif_colors = shades + 1;
 			
 				uint8_t *gif = generate_gif_image(lcd, size);
-				for (i = 0; i < gif_ys; i++)
-					for (j = 0; j < gif_indiv_xs; j++)
-						gif_frame[i * gif_xs + j + calc_pos] = gif[i * gif_indiv_xs + j];	
+				for (i = 0; i < gif_ys; i++) {
+					for (j = 0; j < gif_indiv_xs; j++) {
+						gif_frame[i * gif_xs + j + calc_pos] = gif[i * gif_indiv_xs + j];
+					}
+				}
+
 				calc_pos += gif_indiv_xs;
 				free(gif);
 			}
@@ -188,9 +188,12 @@ void handle_screenshot(LPCALC lpCalc, LPVOID lParam) {
 
 					uint8_t *gif = generate_gif_image(lcd, size);
 					gif_indiv_xs = lcd->display_width * size;
-					for (i = 0; i < gif_ys; i++)
-						for (j = 0; j < gif_indiv_xs; j++)
+					for (i = 0; i < gif_ys; i++) {
+						for (j = 0; j < gif_indiv_xs; j++) {
 							gif_frame[i * gif_xs + j + calc_pos] = gif[i * gif_indiv_xs + j];
+						}
+					}
+
 					calc_pos += gif_indiv_xs;
 					free(gif);
 				}
