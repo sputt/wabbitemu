@@ -1,12 +1,13 @@
 ﻿using System;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
     public class ParserEventArgs : EventArgs
     {
-        public string FileName { get; private set; }
+        public FilePath FileName { get; private set; }
 
-        public ParserEventArgs(string filename)
+        public ParserEventArgs(FilePath filename)
         {
             FileName = filename;
         }

@@ -9,6 +9,7 @@ using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
@@ -70,12 +71,12 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			warnToolButton.Text = _warnings + " Warnings";
 		}
 
-		private void AddError(string description, string file, string line, bool visible)
+        private void AddError(string description, FilePath file, string line, bool visible)
 		{
 		    AddRow(description, file, line, visible, false);
 		}
 
-	    private void AddRow(string description, string file, string line, bool visible, bool isWarning)
+        private void AddRow(string description, FilePath file, string line, bool visible, bool isWarning)
 	    {
 	        DataGridViewRow row = new DataGridViewRow();
 	        row.CreateCells(errorGridView);
@@ -91,7 +92,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 	        errorGridView.Rows.Add(row);
 	    }
 
-	    private void AddWarning(string description, string file, string line, bool visible)
+        private void AddWarning(string description, FilePath file, string line, bool visible)
 		{
             AddRow(description, file, line, visible, true);
 		}
@@ -109,7 +110,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			}
 
 			int line = (int)errorGridView.Rows[e.RowIndex].Cells[4].Value;
-			string file = errorGridView.Rows[e.RowIndex].Cells[3].Tag.ToString();
+            FilePath file = (FilePath) errorGridView.Rows[e.RowIndex].Cells[3].Tag;
 		    if (file != FcreateFile)
 		    {
 		        new GotoLineAction(file, line - 1).Execute();
@@ -141,7 +142,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 			int row = errorGridView.SelectedRows[0].Index;
 			int line = (int)errorGridView.Rows[row].Cells[4].Value;
-			string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
+            FilePath file = (FilePath) errorGridView.Rows[row].Cells[3].Tag;
 			string error = errorGridView.Rows[row].Cells[2].Value.ToString();
             new GotoLineAction(file, line - 1).Execute();
 	        if (!error.Contains("Relative jump"))
@@ -158,7 +159,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 			int row = errorGridView.SelectedRows[0].Index;
 			int line = (int)errorGridView.Rows[row].Cells[4].Value;
-			string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
+            FilePath file = (FilePath) errorGridView.Rows[row].Cells[3].Tag;
             new GotoLineAction(file, line).Execute();
 		}
 
@@ -170,14 +171,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 				return;
 			}
 
-			this.Invoke(() =>
-			{
-			    ParseOutput(e.Output.ParsedErrors);
-			    if (!e.Output.Succeeded)
-			    {
-			        Show();
-			    }
-			});
+			this.Invoke(() => ParseOutput(e.Output.ParsedErrors));
 		}
 
 		private void Instance_AssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
@@ -187,14 +181,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		        return;
 		    }
 
-			this.Invoke(() =>
-			{
-			    ParseOutput(e.Output.ParsedErrors);
-                if (!e.Output.Succeeded)
-                {
-                    Show();
-                }
-			});
+			this.Invoke(() => ParseOutput(e.Output.ParsedErrors));
 		}
 
 		private void warnToolButton_CheckedChanged(object sender, EventArgs e)

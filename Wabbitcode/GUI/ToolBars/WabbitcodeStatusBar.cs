@@ -65,5 +65,32 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
             _lineStatusLabel.Text = lineString;
             _colStatusLabel.Text = colString;
         }
+
+        public void ShowProgressBar(bool show)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(() => ShowProgressBar(show));
+                return;
+            }
+
+            _progressBar.Visible = show;
+        }
+
+        public void IncrementProgressBarProgress(int value)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(() => IncrementProgressBarProgress(value));
+                return;
+            }
+
+            if (_progressBar.Value + value > _progressBar.Maximum)
+            {
+                _progressBar.Value = _progressBar.Maximum;
+                return;
+            }
+            _progressBar.Value += value;
+        }
     }
 }

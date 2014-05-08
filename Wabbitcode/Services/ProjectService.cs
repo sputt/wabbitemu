@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Revsoft.Wabbitcode.Services.Utils;
 using Revsoft.Wabbitcode.Utils;
@@ -12,6 +12,7 @@ using Revsoft.Wabbitcode.Utils;
 namespace Revsoft.Wabbitcode.Services
 {
 	[ServiceDependency(typeof(IParserService))]
+    [ServiceDependency(typeof(IStatusBarService))]
 	public class ProjectService : IProjectService
     {
         #region Events
@@ -27,6 +28,7 @@ namespace Revsoft.Wabbitcode.Services
 
         private readonly List<ParserInformation> _parseInfo = new List<ParserInformation>();
 		private readonly IParserService _parserService;
+        private readonly IStatusBarService _statusBarService;
 
 		private IList<ParserInformation> ParserInfomInformation
 		{
@@ -38,18 +40,24 @@ namespace Revsoft.Wabbitcode.Services
 
 		public IProject Project { get; private set; }
 
-		public ProjectService(IParserService parserService)
+		public ProjectService(IParserService parserService, IStatusBarService statusBarService)
 		{
 		    _parserService = parserService;
+		    _statusBarService = statusBarService;
 		}
 
-		public bool OpenProject(string fileName)
+		public bool OpenProject(FilePath fileName)
 		{
 			Project = new WabbitcodeProject(fileName);
 			Project.OpenProject(fileName);
 
 			_parseInfo.Clear();
-			Task.Factory.StartNew(() => ParseFiles(Project.MainFolder));
+			Task.Factory.StartNew(() =>
+			{
+                _statusBarService.ShowProgressBar(true);
+			    ParseFiles(Project.MainFolder, 100);
+                _statusBarService.ShowProgressBar(false);
+			});
 
             if (ProjectOpened != null)
             {
@@ -59,7 +67,7 @@ namespace Revsoft.Wabbitcode.Services
 			return true;
 		}
 
-		public ProjectFile AddFile(ProjectFolder parent, string fullPath)
+		public ProjectFile AddFile(ProjectFolder parent, FilePath fullPath)
 		{
 			ProjectFile file = new ProjectFile(parent, fullPath, Project.ProjectDirectory);
 			parent.AddFile(file);
@@ -71,9 +79,9 @@ namespace Revsoft.Wabbitcode.Services
 			return file;
 		}
 
-		public ProjectFolder AddFolder(string dirName, ProjectFolder parentDir)
+		public ProjectFolder AddFolder(string folderName, ProjectFolder parentDir)
 		{
-			ProjectFolder folder = new ProjectFolder(parentDir, dirName);
+			ProjectFolder folder = new ProjectFolder(parentDir, folderName);
 			parentDir.AddFolder(folder);
             if (ProjectFolderAdded != null)
             {
@@ -100,7 +108,7 @@ namespace Revsoft.Wabbitcode.Services
 			CreateInternalProject();
 		}
 
-		public bool ContainsFile(string file)
+        public bool ContainsFile(FilePath file)
 		{
 			return file != null && Project.ContainsFile(file);
 		}
@@ -120,7 +128,7 @@ namespace Revsoft.Wabbitcode.Services
 			return Project;
 		}
 
-		public IProject CreateNewProject(string projectFile, string projectName)
+        public IProject CreateNewProject(FilePath projectFile, string projectName)
 		{
 			Project = new WabbitcodeProject();
 			Project.CreateNewProject(projectFile, projectName);
@@ -133,7 +141,7 @@ namespace Revsoft.Wabbitcode.Services
 			return Project;
 		}
 
-		public void DeleteFile(string fullPath)
+        public void DeleteFile(FilePath fullPath)
 		{
 			ProjectFile file = Project.FindFile(fullPath);
 			DeleteFile(file.Folder, file);
@@ -159,7 +167,7 @@ namespace Revsoft.Wabbitcode.Services
             }
 		}
 
-		public void RemoveParseData(string fullPath)
+        public void RemoveParseData(FilePath fullPath)
 		{
 			ParserInformation replaceMe = GetParseInfo(fullPath);
 			if (replaceMe != null)
@@ -168,7 +176,7 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		public ParserInformation GetParseInfo(string file)
+        public ParserInformation GetParseInfo(FilePath file)
 		{
 			lock (_parseInfo)
 			{
@@ -186,28 +194,37 @@ namespace Revsoft.Wabbitcode.Services
 			Project.SaveProject();
 		}
 
-		private void ParseFiles(ProjectFolder folder)
+		private void ParseFiles(ProjectFolder folder, int incrementValue)
 		{
+		    double folderInc = (double)incrementValue/(folder.Folders.Count + 1);
 			foreach (ProjectFolder subFolder in folder.Folders)
 			{
-				ParseFiles(subFolder);
+				ParseFiles(subFolder, (int)folderInc);
 			}
 
+		    double fileInc = folderInc/folder.Files.Count;
             foreach (ProjectFile file in folder.Files.ToArray())
 			{
 				_parserService.ParseFile(0, file.FileFullPath);
+                _statusBarService.IncrementProgressBarProgress((int)fileInc);
 			}
 		}
 
 		public IEnumerable<List<Reference>> FindAllReferences(string refString)
 		{
-			var refsList = new List<List<Reference>>();
+			var refsList = new ConcurrentBag<List<Reference>>();
 			var files = Project.GetProjectFiles();
-			refsList.AddRange(files.Select(file =>
-			{
-				string filePath = Path.Combine(Project.ProjectDirectory, file.FileFullPath);
-				return _parserService.FindAllReferencesInFile(filePath, refString);
-			}).Where(refs => refs.Count > 0));
+
+		    Task.WaitAll(files.Select(file => Project.ProjectDirectory.Combine(file.FileFullPath))
+                .Select(filePath => Task.Factory.StartNew(() =>
+		    {
+		        var refs = _parserService.FindAllReferencesInFile(filePath, refString);
+		        if (refs.Any())
+		        {
+		            refsList.Add(refs);
+		        }
+		    })).ToArray());
+
 			return refsList;
 		}
 

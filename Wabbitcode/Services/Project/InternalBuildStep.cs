@@ -1,6 +1,7 @@
 ﻿using System;
 using Revsoft.Wabbitcode.Services.Assembler;
 using System.IO;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -14,8 +15,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 	public class InternalBuildStep : IBuildStep
 	{
-		private string _inputFile;
-		private string _outputFile;
+        private FilePath _inputFile;
+        private FilePath _outputFile;
 		private string _outputText = string.Empty;
 		private int _stepNumber;
 		private BuildStepType _stepType;
@@ -27,7 +28,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 		/// <param name="type">Type of internal operation to peform</param>
 		/// <param name="inputFile">File to input to spasm</param>
 		/// <param name="outputFile">File expected to be received</param>
-		public InternalBuildStep(int number, BuildStepType type, string inputFile, string outputFile)
+        public InternalBuildStep(int number, BuildStepType type, FilePath inputFile, FilePath outputFile)
 		{
 			_stepNumber = number;
 			_stepType = type;
@@ -54,7 +55,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 		}
 
-		public string InputFile
+        public FilePath InputFile
 		{
 			get
 			{
@@ -79,7 +80,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 				}
 		*/
 
-		public string OutputFile
+        public FilePath OutputFile
 		{
 			get
 			{
@@ -149,8 +150,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 			        outputString = assembler.Assemble();
 			        output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
 					project.BuildSystem.ProjectOutput = _outputFile;
-					project.BuildSystem.ListOutput = Path.ChangeExtension(_outputFile, "lst");
-					project.BuildSystem.LabelOutput = Path.ChangeExtension(_outputFile, "lab");
+					project.BuildSystem.ListOutput = _outputFile.ChangeExtension("lst");
+					project.BuildSystem.LabelOutput = _outputFile.ChangeExtension("lab");
 					break;
                 case BuildStepType.Assemble:
                     AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
@@ -165,7 +166,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			        outputString = assembler.Assemble();
                     output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
 					project.BuildSystem.ProjectOutput = _outputFile;
-					project.BuildSystem.ListOutput = Path.ChangeExtension(_outputFile, "lst");
+                    project.BuildSystem.ListOutput = _outputFile.ChangeExtension("lst");
 					break;
 				case BuildStepType.SymbolTable:
 					AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
@@ -173,7 +174,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			        outputString = assembler.Assemble();
                     output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
 					project.BuildSystem.ProjectOutput = _outputFile;
-					project.BuildSystem.LabelOutput = Path.ChangeExtension(_outputFile, "lab");
+					project.BuildSystem.LabelOutput = _outputFile.ChangeExtension("lab");
 					break;
 				default:
 					throw new InvalidOperationException("Unknown step type");

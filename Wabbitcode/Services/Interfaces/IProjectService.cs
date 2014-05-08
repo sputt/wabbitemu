@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
@@ -16,18 +17,18 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 
 		IProject Project { get; }
 
-		bool OpenProject(string fileName);
-		ProjectFile AddFile(ProjectFolder parent, string fullPath);
-		ProjectFolder AddFolder(string dirName, ProjectFolder parentDir);
+        bool OpenProject(FilePath fileName);
+		ProjectFile AddFile(ProjectFolder parent, FilePath fullPath);
+        ProjectFolder AddFolder(string folderName, ProjectFolder parentDir);
 		void CloseProject();
-		bool ContainsFile(string file);
+        bool ContainsFile(FilePath file);
 		IProject CreateInternalProject();
-		IProject CreateNewProject(string projectFile, string projectName);
-		void DeleteFile(string fullPath);
+        IProject CreateNewProject(FilePath projectFile, string projectName);
+        void DeleteFile(FilePath fullPath);
 		void DeleteFile(ProjectFolder parentDir, ProjectFile file);
 		void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir);
-		void RemoveParseData(string fullPath);
-		ParserInformation GetParseInfo(string file);
+        void RemoveParseData(FilePath fullPath);
+        ParserInformation GetParseInfo(FilePath file);
 		void SaveProject();
 		IEnumerable<List<Reference>> FindAllReferences(string refString);
 	}

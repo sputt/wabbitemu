@@ -1,16 +1,15 @@
 ﻿using System;
-using Revsoft.Wabbitcode.Extensions;
 
 namespace Revsoft.Wabbitcode.Utils
 {
 	public class DocumentLocation
 	{
-		public string FileName { get; private set; }
+		public FilePath FileName { get; private set; }
 		public int LineNumber { get; private set; }
 
-		public DocumentLocation(string fileName, int lineNumber)
+		public DocumentLocation(FilePath fileName, int lineNumber)
 		{
-		    if (string.IsNullOrEmpty(fileName))
+		    if (fileName == null)
 		    {
 		        throw new ArgumentNullException("fileName");
 		    }
@@ -41,12 +40,12 @@ namespace Revsoft.Wabbitcode.Utils
 
 		private bool Equals(DocumentLocation other)
 		{
-			return FileOperations.CompareFilePath(FileName, other.FileName) && LineNumber == other.LineNumber;
+			return FileName == other.FileName && LineNumber == other.LineNumber;
 		}
 
 		public override int GetHashCode()
 		{
-			return ((FileName.ToLower().GetHashCode()) * 397) ^ LineNumber;
+			return ((FileName.GetHashCode()) * 397) ^ LineNumber;
 		}
 
 	    public override string ToString()

@@ -8,10 +8,9 @@ using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Interfaces;
-using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.Dialogs
 {
@@ -20,7 +19,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		private const int PreviewHeight = 400;
 	    private readonly ITextEditor _editor;
         private readonly IProjectService _projectService;
-        private readonly IParserService _parserService;
+        private readonly IFileService _fileService;
         private readonly Dictionary<string, TextEditorControl> _editors = new Dictionary<string, TextEditorControl>();
         private readonly Timer _updateTimer = new Timer { Interval = 2000 };
 
@@ -29,9 +28,9 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 	    private bool _hasBeenInited;
 	    private int _lastLength;
 
-	    public RefactorRenameForm(ITextEditor editor, IParserService parserService, IProjectService projectService)
+	    public RefactorRenameForm(ITextEditor editor, IFileService fileService, IProjectService projectService)
 	    {
-	        _parserService = parserService;
+	        _fileService = fileService;
             _projectService = projectService;
 	        _editor = editor;
             _updateTimer.Tick += updateTimer_Tick;
@@ -44,12 +43,6 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 	    public bool Initialize()
 	    {
             _selectedText = _editor.GetWordAtCaret();
-
-	        var parserData = _parserService.GetParserData(_selectedText, Settings.Default.CaseSensitive);
-	        if (!parserData.Any())
-	        {
-	            return false;
-	        }
 
             _references = _projectService.FindAllReferences(_selectedText).ToList();
 
@@ -75,27 +68,26 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             var refs = _projectService.FindAllReferences(_selectedText);
             foreach (var file in refs)
             {
-                string fileName = file.First().File;
-
-                TextEditorControl editor = new WabbitcodeTextEditor();
-                editor.LoadFile(fileName);
+                FilePath fileName = file.First().File;
+                IDocument document = _fileService.GetOpenDocument(fileName);
+                document.UndoStack.StartUndoGroup();
 
                 foreach (var reference in file)
                 {
-                    int offset = editor.Document.GetOffsetForLineNumber(reference.Line) + reference.Col;
+                    int offset = document.GetOffsetForLineNumber(reference.Line) + reference.Col;
                     int len = reference.ReferenceString.Length;
-                    editor.Document.Replace(offset, len, nameBox.Text);
+                    document.Replace(offset, len, nameBox.Text);
                 }
 
-                try
-                {
-                    editor.SaveFile(fileName);
-                }
-                catch (Exception ex)
-                {
-                    DockingService.ShowError("Error saving refactor", ex);
-                }
+                document.UndoStack.EndUndoGroup();
             }
+
+            foreach (var editor in _editors)
+            {
+                editor.Value.Dispose();
+            }
+
+            _editors.Clear();
         }
 
         private void SetupPreview()
@@ -119,7 +111,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                 var editor = new WabbitcodeTextEditor
                 {
                     Dock = DockStyle.Fill,
-                    IsIconBarVisible = false
+                    IsIconBarVisible = false,
+                    UseTextHighlighting = false,
                 };
                 editor.LoadFile(fileName);
                 

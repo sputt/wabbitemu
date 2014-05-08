@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -68,7 +69,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 		}
 
-		public string MainFile
+        public FilePath MainFile
 		{
 			get
 			{
@@ -83,7 +84,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 		}
 
-		public string MainOutput
+        public FilePath MainOutput
 		{
 			get
 			{
@@ -106,11 +107,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 		}
 
-		public string LabelOutput { get; set; }
+        public FilePath LabelOutput { get; set; }
 
-		public string ListOutput { get; set; }
+        public FilePath ListOutput { get; set; }
 
-		public string ProjectOutput { get; set; }
+        public FilePath ProjectOutput { get; set; }
 
 		private InternalBuildStep GetMainBuildStep()
 		{
@@ -143,7 +144,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		public void ReadXML(XmlTextReader reader)
 		{
-			string root = _project.ProjectDirectory;
+            FilePath root = _project.ProjectDirectory;
 			reader.MoveToNextElement();
 			if (reader.Name != "BuildSystem")
 			{
@@ -156,7 +157,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 			    string[] includeDirs = attribute.Split(';');
 			    foreach (string include in includeDirs.Where(include => !string.IsNullOrEmpty(include)))
 			    {
-			        _project.IncludeDirs.Add(Uri.UnescapeDataString(new Uri(Path.Combine(root, include)).AbsolutePath));
+			        string path = Uri.UnescapeDataString(new Uri(Path.Combine(root, include)).AbsolutePath);
+			        _project.IncludeDirs.Add(new FilePath(path));
 			    }
 			}
 
@@ -180,7 +182,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 							{
 								ExternalBuildStep exstep = new ExternalBuildStep(
 									count,
-									Path.Combine(root, inputFile),
+									root.Combine(inputFile),
 									arguments);
 								configToAdd.AddStep(exstep);
 							}
@@ -193,8 +195,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 								InternalBuildStep instep = new InternalBuildStep(
 									count,
 									type,
-									Path.Combine(root, inputFile),
-									Path.Combine(root, outputFile));
+									root.Combine(inputFile),
+									root.Combine(outputFile));
 								configToAdd.AddStep(instep);
 							}
 							break;

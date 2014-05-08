@@ -76,15 +76,15 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			}
 			string value = breakpointGridView.SelectedRows[0].Cells[1].Value.ToString();
 			int splitter = value.IndexOf(':', 4);
-			string file = value.Substring(0, splitter);
+			FilePath file = new FilePath(value.Substring(0, splitter));
 			IProject project = _projectService.Project;
 			if (!project.IsInternal)
 			{
-				file = Path.Combine(project.ProjectDirectory, file);
+				file = new FilePath(Path.Combine(project.ProjectDirectory, file));
 			}
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
 		    WabbitcodeBreakpoint breakpoint = WabbitcodeBreakpointManager.Breakpoints.FirstOrDefault(
-                b => FileOperations.CompareFilePath(b.File, file) && b.LineNumber == lineNum);
+                b => b.File == file && b.LineNumber == lineNum);
 			if (breakpoint == null)
 			{
 				return;
@@ -97,11 +97,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 			string value = e.Row.Cells[1].Value.ToString();
 			int splitter = value.IndexOf(':', 4);
-			string file = value.Substring(0, splitter);
+			FilePath file = new FilePath(value.Substring(0, splitter));
 			IProject project = _projectService.Project;
 			if (!project.IsInternal)
 			{
-				file = Path.Combine(project.ProjectDirectory, file);
+				file = new FilePath(Path.Combine(project.ProjectDirectory, file));
 			}
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
 			WabbitcodeBreakpointManager.RemoveBreakpoint(file, lineNum);
@@ -130,11 +130,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 			string value = breakpointGridView.SelectedRows[0].Cells[1].Value.ToString();
 			int splitter = value.IndexOf(':', 4);
-			string file = value.Substring(0, splitter);
+			FilePath file = new FilePath(value.Substring(0, splitter));
 			IProject project = _projectService.Project;
 			if (!project.IsInternal)
 			{
-				file = Path.Combine(project.ProjectDirectory, file);
+				file = new FilePath(Path.Combine(project.ProjectDirectory, file));
 			}
 
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));

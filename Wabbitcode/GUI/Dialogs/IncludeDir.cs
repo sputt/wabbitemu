@@ -8,6 +8,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.Dialogs
 {
@@ -23,8 +24,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			_project = projectService.Project;
 
 			var directories = _project.IsInternal ?
-									   Settings.Default.IncludeDirs.Cast<string>() :
-									   _project.IncludeDirs;
+								Settings.Default.IncludeDirs.Cast<string>().Select(path => new FilePath(path)) :
+								_project.IncludeDirs;
 			foreach (string dir in directories.Where(dir => !string.IsNullOrEmpty(dir)))
 			{
 				includeDirList.Items.Add(_project.IsInternal
@@ -80,8 +81,9 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 					{
 						continue;
 					}
+
 					string temp = new Uri(Path.Combine(path, includeDir)).AbsolutePath;
-					_project.IncludeDirs.Add(temp);
+					_project.IncludeDirs.Add(new FilePath(temp));
 				}
 			}
 

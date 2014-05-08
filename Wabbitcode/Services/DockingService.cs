@@ -84,15 +84,33 @@ namespace Revsoft.Wabbitcode.Services
 
 		#region Events
 
-		public event EventHandler OnActiveDocumentChanged;
+		public event EventHandler ActiveDocumentChanged;
+        public event EventHandler<DockContentEventArgs> DocumentWindowAdded;
+        public event EventHandler<DockContentEventArgs> DocumentWindowRemoved;
 
 		private void DockPanelOnActiveDocumentChanged(object sender, EventArgs eventArgs)
 		{
-			if (OnActiveDocumentChanged != null)
+			if (ActiveDocumentChanged != null)
 			{
-				OnActiveDocumentChanged(sender, eventArgs);
+				ActiveDocumentChanged(sender, eventArgs);
 			}
 		}
+
+        private void DockPanel_ContentRemoved(object sender, DockContentEventArgs e)
+        {
+            if (DocumentWindowRemoved != null)
+            {
+                DocumentWindowRemoved(sender, e);
+            }
+        }
+
+        private void DockPanel_ContentAdded(object sender, DockContentEventArgs e)
+        {
+            if (DocumentWindowAdded != null)
+            {
+                DocumentWindowAdded(sender, e);
+            }
+        }
 
 		#endregion
 
@@ -226,17 +244,17 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void LoadConfig(DeserializeDockContent dockContent)
 		{
-			try
-			{
+            //try
+            //{
 				if (File.Exists(FileLocations.ConfigFile))
 				{
 					_dockPanel.LoadFromXml(FileLocations.ConfigFile, dockContent);
 				}
-			}
-            catch (Exception ex)
-            {
-                ShowError("Error Loading the DockPanel Config File", ex);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    ShowError("Error Loading the DockPanel Config File", ex);
+            //}
 		}
 
 	    public void InitPanels()
@@ -302,8 +320,10 @@ namespace Revsoft.Wabbitcode.Services
 			ToolStripManager.Renderer = new VS2012ToolStripRenderer();
 
 			_dockPanel.ActiveDocumentChanged += DockPanelOnActiveDocumentChanged;
+            _dockPanel.ContentAdded += DockPanel_ContentAdded;
+            _dockPanel.ContentRemoved += DockPanel_ContentRemoved;
 		}
 
-		#endregion
+	    #endregion
 	}
 }

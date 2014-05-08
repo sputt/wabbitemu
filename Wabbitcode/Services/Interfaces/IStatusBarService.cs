@@ -21,6 +21,18 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
         /// <param name="info">Code count information containing min runtime, max runtime and size. If null the field will be hidden</param>
         void SetCodeCountInfo(CodeCountInfo info);
 
+        /// <summary>
+        /// Shows or hides the progress bar
+        /// </summary>
+        /// <param name="show"></param>
+        void ShowProgressBar(bool show);
+
+        /// <summary>
+        /// Sets the progress bar to the value
+        /// </summary>
+        /// <param name="value">Value to set increment the progress bar by.</param>
+        void IncrementProgressBarProgress(int value);
+
         void ShowStatusBar();
         void HideStatusBar();
     }

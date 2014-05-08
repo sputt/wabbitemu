@@ -10,7 +10,6 @@ using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Utils;
-using IFileReaderService = Revsoft.Wabbitcode.Services.Interfaces.IFileReaderService;
 
 namespace Revsoft.Wabbitcode.GUI.ToolBars
 {
@@ -93,7 +92,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
         };
 
         private readonly IDockingService _dockingService;
-        private readonly IFileReaderService _fileReaderService;
+        private readonly IFileService _fileService;
         private readonly IProjectService _projectService;
 
         public MainToolBar()
@@ -120,7 +119,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
             Text = "Main Toolbar";
 
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
+            _fileService = ServiceFactory.Instance.GetServiceInstance<IFileService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
 
             _newToolStripButton.Click += newToolButton_Click;
@@ -133,7 +132,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
             _runToolButton.Click += RunToolButton_Click;
             _configBox.SelectedIndexChanged += configBox_SelectedIndexChanged;
             _findBox.KeyPress += findBox_KeyPress;
-            _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+            _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
             _projectService.ProjectOpened += ProjectService_ProjectOpened;
         }
 
@@ -142,7 +141,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
             _projectService.Project.BuildSystem.CurrentConfigIndex = _configBox.SelectedIndex;
         }
 
-        private void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
+        private void DockingServiceActiveDocumentChanged(object sender, EventArgs e)
         {
             bool enabled = _dockingService.Documents.Any();
             _saveToolStripButton.Enabled = enabled;
@@ -234,7 +233,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
                 return;
             }
 
-            string fileText = _fileReaderService.GetFileText(editor.FileName);
+            string fileText = _fileService.GetFileText(editor.FileName);
             TextEditorSearcher searcher = new TextEditorSearcher(fileText);
             int beginOffset = editor.CaretOffset + lookFor.Length + 1;
             bool looped;

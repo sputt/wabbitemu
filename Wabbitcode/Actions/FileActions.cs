@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.GUI.DocumentWindows;
@@ -32,13 +33,13 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class OpenFileAction : AbstractUiAction
     {
-        private string[] _fileNames;
+        private IEnumerable<FilePath> _fileNames;
 
         public OpenFileAction() : this(null)
         {
         }
 
-        public OpenFileAction(params string[] fileNames)
+        public OpenFileAction(params FilePath[] fileNames)
         {
             _fileNames = fileNames;
         }
@@ -94,7 +95,7 @@ namespace Revsoft.Wabbitcode.Actions
                 return false;
             }
 
-            _fileNames = openFileDialog.FileNames;
+            _fileNames = openFileDialog.FileNames.Select(path => new FilePath(path));
             return true;
         }
     }
@@ -126,7 +127,7 @@ namespace Revsoft.Wabbitcode.Actions
                     return;
                 }
 
-                string fileName = openFileDialog.FileName;
+                FilePath fileName = new FilePath(openFileDialog.FileName);
 
                 if (!_projectService.OpenProject(fileName))
                 {
@@ -206,7 +207,7 @@ namespace Revsoft.Wabbitcode.Actions
                 return;
             }
 
-            _editor.SaveFile(saveFileDialog.FileName);
+            _editor.SaveFile(new FilePath(saveFileDialog.FileName));
         }
     }
 
@@ -265,7 +266,7 @@ namespace Revsoft.Wabbitcode.Actions
             }
 
             string[] files = (string[])_dataObject.GetData(DataFormats.FileDrop);
-            new OpenFileAction(files).Execute();
+            new OpenFileAction(files.Select(p => new FilePath(p)).ToArray()).Execute();
         }
     }
 }

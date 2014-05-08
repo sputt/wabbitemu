@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Revsoft.Wabbitcode.Services.Utils;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    [ServiceDependency(typeof(IFileReaderService))]
+    [ServiceDependency(typeof(IFileService))]
     public class ParserService : IParserService
     {
         #region Events
@@ -20,14 +21,14 @@ namespace Revsoft.Wabbitcode.Services
         #endregion
 
         private readonly Dictionary<string, ParserInformation> _parserInfoDictionary = new Dictionary<string, ParserInformation>();
-        private readonly IFileReaderService _fileReaderService;
+        private readonly IFileService _fileService;
 
         /// <summary>
         /// Finds all references to the given text.
         /// </summary>
         /// <param name="file">Fully rooted path to the file</param>
         /// <param name="refString">String to find references to</param>
-        public List<Reference> FindAllReferencesInFile(string file, string refString)
+        public List<Reference> FindAllReferencesInFile(FilePath file, string refString)
         {
             if (string.IsNullOrEmpty(file))
             {
@@ -42,7 +43,7 @@ namespace Revsoft.Wabbitcode.Services
                 return new List<Reference>();
             }
 
-            string fileText = _fileReaderService.GetFileText(file);
+            string fileText = _fileService.GetFileText(file);
             return parser.FindReferences(file, fileText, refString, Settings.Default.CaseSensitive);
         }
 
@@ -68,15 +69,15 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
-        public void ParseFile(int hashCode, string filename)
+        public void ParseFile(int hashCode, FilePath filename)
         {
-            string fileText = _fileReaderService.GetFileText(filename);
+            string fileText = _fileService.GetFileText(filename);
             ParseFile(hashCode, filename, fileText);
         }
 
-        public void ParseFile(int hashCode, string file, string fileText)
+        public void ParseFile(int hashCode, FilePath file, string fileText)
         {
-            if (string.IsNullOrEmpty(file))
+            if (file == null)
             {
                 System.Diagnostics.Debug.WriteLine("No file name specified");
                 return;
@@ -105,8 +106,8 @@ namespace Revsoft.Wabbitcode.Services
 
             lock (_parserInfoDictionary)
             {
-                _parserInfoDictionary.Remove(file.ToLower());
-                _parserInfoDictionary.Add(file.ToLower(), parserInfo);
+                _parserInfoDictionary.Remove(file);
+                _parserInfoDictionary.Add(file, parserInfo);
                 foreach (var item in _parserInfoDictionary)
                 {
                     item.Value.IsIncluded = false;
@@ -119,12 +120,12 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
-        public ParserInformation GetParserInfo(string fileName)
+        public ParserInformation GetParserInfo(FilePath fileName)
         {
             lock (_parserInfoDictionary)
             {
                 ParserInformation info;
-                _parserInfoDictionary.TryGetValue(fileName.ToLower(), out info);
+                _parserInfoDictionary.TryGetValue(fileName, out info);
                 return info;
             }
         }
@@ -142,9 +143,9 @@ namespace Revsoft.Wabbitcode.Services
             return resolvedType;
         }
 
-        public ParserService(IFileReaderService fileReaderService)
+        public ParserService(IFileService fileService)
         {
-            _fileReaderService = fileReaderService;
+            _fileService = fileService;
         }
 
         public void DestroyService()

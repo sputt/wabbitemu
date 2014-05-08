@@ -1,5 +1,7 @@
 using System.Windows.Forms;
+using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.GUI.Dialogs;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Interfaces
 {
@@ -11,7 +13,8 @@ namespace Revsoft.Wabbitcode.Interfaces
         int CaretColumn { get; set; }
         int CaretOffset { get; set; }
         int TotalLines { get; }
-        string FileName { get; }
+        FilePath FileName { get; }
+        IDocument Document { get; }
 
         string GetWordAtCaret();
 

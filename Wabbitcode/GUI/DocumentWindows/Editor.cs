@@ -38,14 +38,15 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         private static bool _bindingsRegistered;
 
-        internal static Editor OpenDocument(string filename)
+        internal static Editor OpenDocument(FilePath filename)
         {
             IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
             var child = dockingService.Documents.OfType<Editor>()
-                .SingleOrDefault(e => FileOperations.CompareFilePath(e.FileName, filename));
+                .SingleOrDefault(e => e.FileName == filename);
             if (child != null)
             {
                 child.Show();
+                child.Activate();
                 return child;
             }
 
@@ -142,6 +143,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
         }
 
+        public IDocument Document
+        {
+            get { return editorBox.Document; }
+        }
+
         #endregion
 
 		public Editor()
@@ -188,7 +194,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         private void Project_FileModifiedExternally(object sender, FileModifiedEventArgs e)
         {
-            if (!FileOperations.CompareFilePath(e.File.FileFullPath, FileName) || _wasExternallyModified)
+            if (e.File.FileFullPath != FileName || _wasExternallyModified)
             {
                 return;
             }
@@ -332,7 +338,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
 
             DocumentLocation debugLine = debugger.GetAddressLocation(_debuggerService.CurrentDebugger.CPU.PC);
-            if (debugLine == null || !FileOperations.CompareFilePath(debugLine.FileName, FileName))
+            if (debugLine == null || debugLine.FileName != FileName)
             {
                 return;
             }
@@ -362,7 +368,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             editorBox.RemoveDebugHighlight();
             new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1).Execute();
 
-            if (!FileOperations.CompareFilePath(e.Location.FileName, FileName))
+            if (e.Location.FileName != FileName)
             {
                 return;
             }
@@ -394,7 +400,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
             else
             {
-                if (!FileOperations.CompareFilePath(e.Location.FileName, FileName))
+                if (e.Location.FileName != FileName)
                 {
                     return;
                 }
@@ -421,7 +427,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
 			if (string.IsNullOrEmpty(FileName))
 			{
-				FileName = "New Document";
+				FileName = new FilePath("New Document");
 			}
 
 			DialogResult dlg = MessageBox.Show(this, "Document '" + FileName + "' has changed. Save changes?", "Wabbitcode", MessageBoxButtons.YesNoCancel);
@@ -445,7 +451,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 return;
             }
 
-            string foldingString = string.Format("{0}|{1}", FileName.ToLower(), editorBox.Document.FoldingManager.SerializeToString());
+            string foldingString = string.Format("{0}|{1}", FileName, editorBox.Document.FoldingManager.SerializeToString());
             FindDocumentFolding(folding => Settings.Default.DocumentFoldings.Remove(folding));
 
             Settings.Default.DocumentFoldings.Add(foldingString);
@@ -460,8 +466,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
             foreach (string folding in Settings.Default.DocumentFoldings)
             {
-                string fileName = folding.Split('|').First();
-                if (!FileOperations.CompareFilePath(fileName, FileName))
+                FilePath fileName = new FilePath(folding.Split('|').First());
+                if (fileName != FileName)
                 {
                     continue;
                 }
@@ -524,7 +530,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
 		void WabbitcodeBreakpointManager_OnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
 		{
-			if (!FileOperations.CompareFilePath(e.Breakpoint.File, FileName))
+			if (e.Breakpoint.File != FileName)
 			{
 				return;
 			}
@@ -534,7 +540,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
 		void WabbitcodeBreakpointManager_OnBreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e)
 		{
-			if (!FileOperations.CompareFilePath(e.Breakpoint.File, FileName))
+			if (e.Breakpoint.File != FileName)
 			{
 				return;
 			}
@@ -578,7 +584,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 			// no need to make a stricter regex, as we own the inputs here
 			Match match = Regex.Match(bgotoButton.Text, "(?<action>.*?) (?<name>.*)");
 		    string action = match.Groups["action"].Value;
-			string text = match.Groups["name"].Value;
+            FilePath text = new FilePath(match.Groups["name"].Value);
 
 			if (action == "Goto")
 			{
@@ -586,8 +592,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 			}
 			else
 			{
-				string fileFullPath = Path.IsPathRooted(text) ? text : FileOperations.NormalizePath(
-                    _projectService.Project.GetFilePathFromRelativePath(text));
+                FilePath fileFullPath = Path.IsPathRooted(text) ? text : 
+                    _projectService.Project.GetFilePathFromRelativePath(text).NormalizePath();
                 new GotoFileAction(fileFullPath).Execute();
 			}
 		}
@@ -849,7 +855,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 	        FindAndReplaceForm.Instance.ShowFor(owner, editorBox, mode);
 	    }
 
-        public override void OpenFile(string fileName)
+        public override void OpenFile(FilePath fileName)
         {
             base.OpenFile(fileName);
 

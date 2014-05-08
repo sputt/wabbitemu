@@ -1,11 +1,10 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.Dialogs
 {
@@ -42,8 +41,9 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		private void addDirButton_Click(object sender, EventArgs e)
 		{
 			int count = buildSeqList.Items.Count;
-			string fileName = _project.ProjectName + ".asm";
-			IBuildStep stepToAdd = new InternalBuildStep(count, BuildStepType.Assemble, fileName, Path.ChangeExtension(fileName, "8xk"));
+			FilePath fileName = new FilePath(_project.ProjectName + ".asm");
+			IBuildStep stepToAdd = new InternalBuildStep(count, BuildStepType.Assemble,
+                fileName, fileName.ChangeExtension("8xk"));
 			_currentConfig.AddStep(stepToAdd);
 			buildSeqList.Items.Insert(count, stepToAdd);
 			_needsSave = true;
@@ -162,11 +162,12 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			IBuildStep step = (IBuildStep)buildSeqList.SelectedItem;
 			if (step is InternalBuildStep)
 			{
-				step.InputFile = FileOperations.NormalizePath(Path.Combine(_project.ProjectDirectory, inputBox.Text));
+			    FilePath newPath = new FilePath(inputBox.Text);
+                step.InputFile = _project.ProjectDirectory.Combine(newPath).NormalizePath();
 			}
 			else if (step is ExternalBuildStep)
 			{
-				step.InputFile = inputBox.Text;
+				step.InputFile = new FilePath(inputBox.Text);
 			}
 
 			int index = buildSeqList.SelectedIndex;
@@ -253,7 +254,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		private void outputBox_TextChanged(object sender, EventArgs e)
 		{
 			InternalBuildStep step = (InternalBuildStep)buildSeqList.SelectedItem;
-			step.OutputFile = FileOperations.NormalizePath(Path.Combine(_project.ProjectDirectory, outputBox.Text));
+            FilePath newPath = new FilePath(outputBox.Text);
+			step.OutputFile = _project.ProjectDirectory.Combine(newPath).NormalizePath();
 			_needsSave = true;
 		}
 
@@ -276,7 +278,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			int stepNum = ((IBuildStep)buildSeqList.SelectedItem).StepNumber;
 			if (buildSeqList.SelectedItem is InternalBuildStep && stepTypeBox.SelectedIndex != 0)
 			{
-				step = new ExternalBuildStep(buildSeqList.SelectedIndex, "cmd.exe", string.Empty)
+				step = new ExternalBuildStep(buildSeqList.SelectedIndex, new FilePath("cmd.exe"), string.Empty)
 				{
 					StepNumber = stepNum
 				};
@@ -286,8 +288,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 				step = new InternalBuildStep(
 					buildSeqList.SelectedIndex,
 					BuildStepType.Assemble,
-					Path.ChangeExtension(_project.ProjectFile, ".asm"),
-					Path.ChangeExtension(_project.ProjectFile, ".8xk"))
+					_project.ProjectFile.ChangeExtension(".asm"),
+					_project.ProjectFile.ChangeExtension(".8xk"))
 				{
 					StepNumber = stepNum
 				};

@@ -1,16 +1,17 @@
 ﻿using System.IO;
 using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
     public class ProjectFile
     {
-	    private string _filePath;
-	    private readonly string _projectDir;
+	    private FilePath _filePath;
+	    private readonly FilePath _projectDir;
         private ProjectFolder _folder;
         private readonly ProjectFolder _parentFolder;
 
-        public ProjectFile(ProjectFolder projectFolder, string fullPath, string projectDir)
+        public ProjectFile(ProjectFolder projectFolder, FilePath fullPath, FilePath projectDir)
         {
             _parentFolder = projectFolder;
             _filePath = fullPath;
@@ -19,11 +20,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 	    public string FileFoldings { get; set; }
 
-	    public string FileFullPath
+	    public FilePath FileFullPath
         {
             get
             {
-	            return Path.IsPathRooted(_filePath) ? _filePath : FileOperations.GetAbsolutePath(_projectDir, _filePath);
+	            return Path.IsPathRooted(_filePath) ? 
+                    _filePath :
+                    _projectDir.GetAbsolutePath(_filePath);
             }
 
 		    set
@@ -32,11 +35,13 @@ namespace Revsoft.Wabbitcode.Services.Project
             }
         }
 
-        public string FileRelativePath
+        public FilePath FileRelativePath
         {
             get
             {
-				return Path.IsPathRooted(_filePath) ? FileOperations.GetRelativePath(_projectDir, _filePath) : _filePath;
+				return Path.IsPathRooted(_filePath) ?
+                    new FilePath(FileOperations.GetRelativePath(_projectDir, _filePath)) : 
+                    _filePath;
             }
 	        set
             {

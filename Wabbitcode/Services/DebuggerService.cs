@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using Revsoft.Wabbitcode.Exceptions;
-using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
@@ -75,7 +74,7 @@ namespace Revsoft.Wabbitcode.Services
             string createdName = project.BuildSystem.ProjectOutput;
             if (!Path.IsPathRooted(createdName))
             {
-                createdName = FileOperations.NormalizePath(Path.Combine(project.ProjectDirectory, createdName));
+                createdName = project.ProjectDirectory.Combine(createdName).NormalizePath();
             }
 
             if (string.IsNullOrEmpty(project.BuildSystem.ListOutput))

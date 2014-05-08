@@ -56,7 +56,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         bool SetBreakpoint(WabbitcodeBreakpoint breakpoint);
         void ClearBreakpoint(WabbitcodeBreakpoint newBreakpoint);
 
-        void SetPCToSelect(string fileName, int lineNumber);
+        void SetPCToSelect(FilePath fileName, int lineNumber);
 
         void Step();
         void StepOut();

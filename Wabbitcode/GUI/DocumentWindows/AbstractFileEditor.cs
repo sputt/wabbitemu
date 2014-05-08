@@ -1,18 +1,19 @@
 using System.IO;
 using Revsoft.Wabbitcode.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 {
     public abstract class AbstractFileEditor : DockContent, IClipboardOperation, IUndoable, ISelectable
     {
-        private string _fileName;
+        private FilePath _fileName;
         protected abstract bool DocumentChanged { get; set; }
 
         /// <summary>
         /// Gets the full path to the file that is open in this editor
         /// </summary>
-        public string FileName
+        public FilePath FileName
         {
             get
             {
@@ -27,13 +28,13 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
         }
 
-        public virtual void OpenFile(string fileName)
+        public virtual void OpenFile(FilePath fileName)
         {
             FileName = fileName;
             DocumentChanged = false;
         }
 
-        internal void SaveFile(string fileName)
+        public void SaveFile(FilePath fileName)
         {
             if (string.IsNullOrEmpty(fileName))
             {
@@ -72,7 +73,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
 
             string filename = values[1];
-            OpenFile(filename);
+            OpenFile(new FilePath(filename));
         }
     }
 }

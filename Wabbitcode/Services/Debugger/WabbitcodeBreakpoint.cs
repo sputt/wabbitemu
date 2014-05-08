@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Revsoft.Wabbitcode.Utils;
 using WabbitemuLib;
 
 namespace Revsoft.Wabbitcode.Services.Debugger
@@ -39,7 +40,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
 		public ushort Address { get; set; }
 		public bool Enabled { get; set; }
-		public string File { get; set; }
+		public FilePath File { get; set; }
 		public HitCountEnum HitCountCondition { get; set; }
 		public int HitCountConditionNumber { get; set; }
 		public bool IsRam { get; set; }
@@ -63,7 +64,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 			Enabled = true;
 		}
 
-		public WabbitcodeBreakpoint(string file, int lineNumber) : this()
+		public WabbitcodeBreakpoint(FilePath file, int lineNumber) : this()
 		{
 			File = file;
 			LineNumber = lineNumber;

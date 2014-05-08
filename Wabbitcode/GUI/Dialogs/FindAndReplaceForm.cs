@@ -14,7 +14,6 @@ using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Utils;
-using IFileReaderService = Revsoft.Wabbitcode.Services.Interfaces.IFileReaderService;
 
 namespace Revsoft.Wabbitcode.GUI.Dialogs
 {
@@ -50,14 +49,14 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		{
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
-            _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+            _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
 
             _results = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
 
 			InitializeComponent();
 		}
 
-        void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
+        void DockingServiceActiveDocumentChanged(object sender, EventArgs e)
         {
             ITextEditor textEditor = _dockingService.ActiveDocument as ITextEditor;
             if (textEditor == null || Visible == false)
@@ -116,8 +115,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		public void ShowFor(Form owner, WabbitcodeTextEditor editor, SearchMode mode)
 		{
 		    _editor = editor;
-            IFileReaderService fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
-            string fileText = editor == null ? string.Empty : fileReaderService.GetFileText(editor.FileName);
+            IFileService fileService = ServiceFactory.Instance.GetServiceInstance<IFileService>();
+            string fileText = editor == null ? string.Empty : fileService.GetFileText(new FilePath(editor.FileName));
             _search = new TextEditorSearcher(fileText);
 
 		    Owner = owner;
@@ -126,7 +125,13 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			findNextFindButton.Focus();
 			findFindBox.SelectAll();
 			findFindBox.Focus();
-            string word = editor == null ? string.Empty : editor.GetWordAtCaret();
+		    string word = string.Empty;
+		    if (editor != null)
+		    {
+		        word = editor.ActiveTextAreaControl.SelectionManager.HasSomethingSelected ?
+                    editor.ActiveTextAreaControl.SelectionManager.SelectedText :
+                    editor.GetWordAtCaret();
+		    }
 
 		    switch (mode)
 		    {

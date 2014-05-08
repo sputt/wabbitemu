@@ -551,7 +551,7 @@ namespace Revsoft.Wabbitcode.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Green")]
+        [global::System.Configuration.DefaultSettingValueAttribute("32, 124, 71")]
         public global::System.Drawing.Color BlockCommentColor {
             get {
                 return ((global::System.Drawing.Color)(this["BlockCommentColor"]));

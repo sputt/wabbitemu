@@ -8,6 +8,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Utils;
 using Label = Revsoft.Wabbitcode.Services.Parser.Label;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
@@ -38,20 +39,18 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		    _parserService.OnParserFinished += (sender, args) =>
 		    {
 		        var document = DockingService.ActiveDocument as AbstractFileEditor;
-		        if (document == null || 
-                    string.IsNullOrEmpty(document.FileName) ||
-                    !FileOperations.CompareFilePath(args.FileName, document.FileName) ||
-                    !IsHandleCreated)
+		        if (document == null || string.IsNullOrEmpty(document.FileName) ||
+                    args.FileName != document.FileName || !IsHandleCreated)
 		        {
 		            return;
 		        }
 
 		        this.Invoke(UpdateLabelBox);
 		    };
-            DockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+            DockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
 		}
 
-        void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
+        void DockingServiceActiveDocumentChanged(object sender, EventArgs e)
         {
             if (DockingService.ActiveDocument != null)
             {
@@ -76,8 +75,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 return;
             }
 
-		    string fileName = fileEditor.FileName;
-			if (string.IsNullOrEmpty(fileName))
+            FilePath fileName = fileEditor.FileName;
+			if (fileName == null)
 			{
 				return;
 			}

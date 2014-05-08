@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -29,7 +30,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			set;
 		}
 
-		string MainFile
+        FilePath MainFile
 		{
 			get;
 		}
@@ -39,19 +40,19 @@ namespace Revsoft.Wabbitcode.Services.Project
 			get;
 		}
 
-		string ProjectOutput
+        FilePath ProjectOutput
 		{
 			get;
 			set;
 		}
 
-		string LabelOutput
+		FilePath LabelOutput
 		{
 			get;
 			set;
 		}
 
-		string ListOutput
+        FilePath ListOutput
 		{
 			get;
 			set;

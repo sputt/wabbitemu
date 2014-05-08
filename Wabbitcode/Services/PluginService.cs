@@ -20,6 +20,8 @@ namespace Revsoft.Wabbitcode.Services
                 return;
             }
 
+            return;
+
             string[] dllFileNames = Directory.GetFiles(dir, "*.dll");
 
             List<Assembly> assemblies = new List<Assembly>();

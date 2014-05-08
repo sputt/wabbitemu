@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
@@ -10,8 +11,8 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
         event EventHandler<AssemblyFinishFileEventArgs> AssemblerFileFinished;
         event EventHandler<AssemblyFinishProjectEventArgs> AssemblerProjectFinished;
 
-		AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir, IEnumerable<string> includeDirs,
-			AssemblyFlags flags = AssemblyFlags.Normal);
+        AssemblerOutput AssembleFile(FilePath inputFile, FilePath outputFile, FilePath originalDir,
+            IEnumerable<FilePath> includeDirs, AssemblyFlags flags = AssemblyFlags.Normal);
 
 		void AssembleProject(IProject project);
 		CodeCountInfo CountCode(string lines);
