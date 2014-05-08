@@ -1,8 +1,10 @@
-﻿namespace Revsoft.Wabbitcode.Services.Assembler
+﻿using Revsoft.Wabbitcode.Utils;
+
+namespace Revsoft.Wabbitcode.Services.Assembler
 {
     public class BuildError
     {
-        public BuildError(string file, int lineNumber, string description, bool isWarning)
+        public BuildError(FilePath file, int lineNumber, string description, bool isWarning)
         {
             File = file;
             LineNumber = lineNumber;
@@ -16,7 +18,7 @@
             set;
         }
 
-        public string File
+        public FilePath File
         {
             get;
             private set;

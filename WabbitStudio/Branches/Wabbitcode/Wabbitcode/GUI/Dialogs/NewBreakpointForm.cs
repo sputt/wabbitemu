@@ -43,7 +43,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			}
 
 			lineNum--;
-			string fileName = fileBox.Text;
+			FilePath fileName = new FilePath(fileBox.Text);
 			if (File.Exists(fileName))
 			{
                 new GotoFileAction(fileName).Execute();

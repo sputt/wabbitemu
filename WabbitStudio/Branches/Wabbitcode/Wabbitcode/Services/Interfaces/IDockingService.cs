@@ -7,7 +7,9 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
 {
 	public interface IDockingService : IService
 	{
-        event EventHandler OnActiveDocumentChanged;
+        event EventHandler ActiveDocumentChanged;
+        event EventHandler<DockContentEventArgs> DocumentWindowAdded;
+        event EventHandler<DockContentEventArgs> DocumentWindowRemoved;
 
 	    void RegisterDockingWindow(ToolWindow dockingWindow);
 	    ToolWindow GetDockingWindow(string name);

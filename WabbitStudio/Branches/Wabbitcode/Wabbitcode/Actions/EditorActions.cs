@@ -4,38 +4,35 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
-using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
-using Revsoft.Wabbitcode.GUI.DocumentWindows;
 using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Utils;
-using IFileReaderService = Revsoft.Wabbitcode.Services.Interfaces.IFileReaderService;
 
 namespace Revsoft.Wabbitcode.Actions
 {
     public class GotoDefinitionAction : AbstractUiAction
     {
-        private readonly string _fileName;
+        private readonly FilePath _fileName;
         private readonly string _text;
         private readonly int _currentLine;
         private readonly IDockingService _dockingService;
         private readonly IParserService _parserService;
         private readonly IProjectService _projectService;
-        private readonly IFileReaderService _fileReaderService;
+        private readonly IFileService _fileService;
         private readonly FindResultsWindow _findResults;
 
-        public GotoDefinitionAction(string fileName, string text, int currentLine)
+        public GotoDefinitionAction(FilePath fileName, string text, int currentLine)
         {
             _fileName = fileName;
             _text = text;
             _currentLine = currentLine;
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
+            _fileService = ServiceFactory.Instance.GetServiceInstance<IFileService>();
             _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
@@ -76,7 +73,7 @@ namespace Revsoft.Wabbitcode.Actions
                 _findResults.NewFindResults(_text, _projectService.Project.ProjectName);
                 foreach (IParserData data in parserData)
                 {
-                    string line = _fileReaderService.GetLine(data.Parent.SourceFile, data.Location.Line + 1);
+                    string line = _fileService.GetLine(data.Parent.SourceFile, data.Location.Line + 1);
                     _findResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, line);
                 }
                 _findResults.DoneSearching();
@@ -93,9 +90,9 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class GotoFileAction : AbstractUiAction
     {
-        private readonly string _fileName;
+        private readonly FilePath _fileName;
 
-        public GotoFileAction(string fileName)
+        public GotoFileAction(FilePath fileName)
         {
             _fileName = fileName;
         }
@@ -108,28 +105,18 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class GotoLabelAction : AbstractUiAction
     {
-        private readonly IDockingService _dockingService;
         private readonly IParserData _parserData;
 
         public GotoLabelAction(IParserData parserData)
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
             _parserData = parserData;
         }
 
         public override void Execute()
         {
             ParserInformation info = _parserData.Parent;
-            string file = info.SourceFile;
-            new GotoFileAction(file).Execute();
-            Editor child = _dockingService.ActiveDocument as Editor;
-            if (child == null)
-            {
-                return;
-            }
-
-            child.GotoLine(_parserData.Location.Line);
-            child.Focus();
+            FilePath file = info.SourceFile;
+            new GotoLineAction(file, _parserData.Location.Line).Execute();
         }
     }
 
@@ -148,7 +135,7 @@ namespace Revsoft.Wabbitcode.Actions
             _location = location;
         }
 
-        public GotoLineAction(string fileName, int lineNumber)
+        public GotoLineAction(FilePath fileName, int lineNumber)
             : this(new DocumentLocation(fileName, lineNumber))
         {
         }
@@ -170,7 +157,8 @@ namespace Revsoft.Wabbitcode.Actions
             {
                 new GotoFileAction(_location.FileName).Execute();
                 line = _location.LineNumber;
-                editor = _dockingService.ActiveDocument as ITextEditor;
+                editor = _dockingService.Documents.OfType<ITextEditor>()
+                    .Single(d => d.FileName == _location.FileName);
             }
 
             if (editor == null || line == -1)
@@ -199,11 +187,7 @@ namespace Revsoft.Wabbitcode.Actions
         public Keys[] Keys { get; set; }
         public void Execute(TextArea textArea)
         {
-            WabbitcodeTextEditor editor = textArea.MotherTextEditorControl as WabbitcodeTextEditor;
-            if (editor != null)
-            {
-                editor.StartCtrlSpaceCompletion();
-            }
+            // TODO
         }
     }
 }

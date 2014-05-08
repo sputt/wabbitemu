@@ -17,7 +17,6 @@ using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
-using IFileReaderService = Revsoft.Wabbitcode.Services.Interfaces.IFileReaderService;
 
 namespace Revsoft.Wabbitcode.GUI
 {
@@ -92,7 +91,7 @@ namespace Revsoft.Wabbitcode.GUI
                 return null;
             }
 
-            string fileName = parsedStrings[1];
+            FilePath fileName = new FilePath(parsedStrings[1]);
             if (!File.Exists(fileName))
             {
                 return null;
@@ -100,7 +99,7 @@ namespace Revsoft.Wabbitcode.GUI
 
             new OpenFileAction(fileName).Execute();
 	        var doc = _dockingService.Documents.OfType<AbstractFileEditor>()
-                .FirstOrDefault(d => FileOperations.CompareFilePath(fileName, d.FileName));
+                .FirstOrDefault(d => fileName == d.FileName);
 	        if (doc == null)
 	        {
 	            return null;
@@ -132,7 +131,7 @@ namespace Revsoft.Wabbitcode.GUI
 			}
 		}
 
-	    private void DockingService_OnActiveDocumentChanged(object sender, EventArgs eventArgs)
+	    private void DockingServiceActiveDocumentChanged(object sender, EventArgs eventArgs)
 		{
 			if (Disposing)
 			{
@@ -152,7 +151,7 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void InitializeEvents()
         {
-            _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+            _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
             _debuggerService.OnDebuggingEnded += (sender, args) => EndDebug();
             _projectService.ProjectOpened += ProjectService_OnProjectOpened;
@@ -168,7 +167,7 @@ namespace Revsoft.Wabbitcode.GUI
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
             ServiceFactory.Instance.GetServiceInstance<IParserService>();
             ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
-            ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
+            ServiceFactory.Instance.GetServiceInstance<IFileService>();
             _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
             _pluginService = ServiceFactory.Instance.GetServiceInstance<IPluginService>();
         }
@@ -212,8 +211,11 @@ namespace Revsoft.Wabbitcode.GUI
                 return;
             }
 
-            new OpenFileAction(args.Where(arg => !string.IsNullOrEmpty(arg)).ToArray())
-                .Execute();
+            new OpenFileAction(args
+                .Where(arg => !string.IsNullOrEmpty(arg))
+                .Select(arg => new FilePath(arg))
+                .ToArray()
+                ).Execute();
         }
 
         public void ProcessParameters(string[] args)
@@ -258,7 +260,7 @@ namespace Revsoft.Wabbitcode.GUI
                 bool valid = false;
                 if (File.Exists(Settings.Default.StartupProject))
                 {
-                    valid = _projectService.OpenProject(Settings.Default.StartupProject);
+                    valid = _projectService.OpenProject(new FilePath(Settings.Default.StartupProject));
                 }
                 else
                 {

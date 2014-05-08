@@ -6,6 +6,7 @@ using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 {
@@ -23,11 +24,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             SizeMode = PictureBoxSizeMode.AutoSize,
         };
 
-        internal static ImageViewer OpenImage(string fileName)
+        internal static ImageViewer OpenImage(FilePath fileName)
         {
             IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
             var child = dockingService.Documents.OfType<ImageViewer>()
-                .SingleOrDefault(e => FileOperations.CompareFilePath(e.FileName, fileName));
+                .SingleOrDefault(e => e.FileName == fileName);
             if (child != null)
             {
                 child.Show();
@@ -94,7 +95,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         protected override bool DocumentChanged { get; set; }
 
-        public override void OpenFile(string fileName)
+        public override void OpenFile(FilePath fileName)
         {
             base.OpenFile(fileName);
 

@@ -5,6 +5,7 @@
 //     <version>$Revision: 3206 $</version>
 // </file>
 
+using System;
 using System.Drawing;
 
 namespace Revsoft.TextEditor.Document
@@ -20,7 +21,7 @@ namespace Revsoft.TextEditor.Document
 	/// <summary>
 	/// Marks a part of a document.
 	/// </summary>
-	public class TextMarker : AbstractSegment
+	public class TextMarker : AbstractSegment, IComparable
 	{
 		TextMarkerType textMarkerType;
 		Color          color;
@@ -125,5 +126,18 @@ namespace Revsoft.TextEditor.Document
             this.color = color;
             this.priority = priority;
         }
+
+	    public int CompareTo(object obj)
+	    {
+	        TextMarker marker = obj as TextMarker;
+	        if (marker == null)
+	        {
+	            return Equals(obj) ? 0 : 1;
+	        }
+
+	        return Offset != marker.Offset ? 
+                Offset.CompareTo(marker.Offset) :
+                EndOffset.CompareTo(marker.EndOffset);
+	    }
 	}
 }

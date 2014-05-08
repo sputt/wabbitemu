@@ -32,7 +32,7 @@ namespace Revsoft.Wabbitcode
 				{ typeof(ISymbolService), typeof(SymbolService) },
 				{ typeof(IParserService), typeof(ParserService) },
 				{ typeof(IBackgroundAssemblerService), typeof(BackgroundAssemblerService) },
-                { typeof(IFileReaderService), typeof(FileReaderService) },
+                { typeof(IFileService), typeof(FileService) },
                 { typeof(IStatusBarService), typeof(StatusBarService) },
                 { typeof(IToolBarService), typeof(ToolBarService) },
                 { typeof(IDebuggerService), typeof(DebuggerService) },

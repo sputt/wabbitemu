@@ -135,7 +135,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="BlockCommentColor" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)">Green</Value>
+      <Value Profile="(Default)">32, 124, 71</Value>
     </Setting>
     <Setting Name="ConditionsEnabled" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

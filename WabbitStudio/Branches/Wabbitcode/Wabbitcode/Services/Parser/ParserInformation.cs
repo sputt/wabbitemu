@@ -1,15 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Revsoft.Wabbitcode.Utils;
 
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
     public class ParserInformation : IEnumerable<IParserData>
     {
-        private readonly string _sourceFile;
+        private readonly FilePath _sourceFile;
         private readonly int _sourceFileHash;
 
-        public ParserInformation(int fileHashCode, string file)
+        public ParserInformation(int fileHashCode, FilePath file)
         {
             _sourceFileHash = fileHashCode;
             _sourceFile = file;
@@ -48,7 +49,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
             get; private set;
         }
 
-        public string SourceFile
+        public FilePath SourceFile
         {
             get
             {

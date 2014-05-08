@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
@@ -87,7 +88,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 				return;
 			}
 
-			string file = match.Groups["fileName"].Value;
+            FilePath file = new FilePath(match.Groups["fileName"].Value);
 			line = Convert.ToInt32(match.Groups["lineNum"].Value);
             new GotoLineAction(file, line - 1).Execute();
 		}

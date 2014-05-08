@@ -1,4 +1,6 @@
-﻿namespace Revsoft.Wabbitcode.Services.Project
+﻿using Revsoft.Wabbitcode.Utils;
+
+namespace Revsoft.Wabbitcode.Services.Project
 {
 	using System;
 	using System.Diagnostics;
@@ -10,11 +12,11 @@
 		private const int ProcessTimeout = 30 * 1000;
 
 		private readonly string _args;
-		private string _input;
+        private FilePath _input;
 		private string _outputText = string.Empty;
 		private int _stepNumber;
 
-		public ExternalBuildStep(int number, string program, string arguments)
+        public ExternalBuildStep(int number, FilePath program, string arguments)
 		{
 			_stepNumber = number;
 			_input = program;
@@ -37,7 +39,7 @@
 			}
 		}
 
-		public string InputFile
+		public FilePath InputFile
 		{
 			get
 			{

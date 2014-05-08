@@ -30,7 +30,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 		private IBreakpoint _delMemBreakpoint;
 
 		private readonly ISymbolService _symbolService;
-        private readonly IFileReaderService _fileReaderService;
+        private readonly IFileService _fileService;
 	    private readonly IDebuggerService _debuggerService;
 
 	    #endregion
@@ -82,7 +82,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 		    _disposed = false;
 
 		    _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
-		    _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
+		    _fileService = ServiceFactory.Instance.GetServiceInstance<IFileService>();
 			_symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
 
             WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
@@ -261,7 +261,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 			}
 		}
 
-        public void SetPCToSelect(string fileName, int lineNumber)
+        public void SetPCToSelect(FilePath fileName, int lineNumber)
         {
             CalcLocation value = _symbolService.ListTable.GetCalcLocation(fileName, lineNumber);
             if (value == null)
@@ -377,7 +377,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             byte oldPage = GetRelativePageNum(currentPC);
             DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
 
-            string line = _fileReaderService.GetLine(key.FileName, key.LineNumber);
+            string line = _fileService.GetLine(key.FileName, key.LineNumber);
 
             int commentIndex = line.IndexOf(";", StringComparison.Ordinal);
             if (commentIndex != -1)
@@ -477,7 +477,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 return null;
             }
 
-            string line = _fileReaderService.GetLine(key.FileName, key.LineNumber);
+            string line = _fileService.GetLine(key.FileName, key.LineNumber);
             Regex callRegex = new Regex(@"\s*(?<command>\w*call)[\(?|\s]\s*((?<condition>z|nz|c|nc),\s*)?(?<call>\w*?)\)?\s*(;.*)?$",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
             Match match = callRegex.Match(line);
@@ -553,7 +553,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 			if (location == null)
 			{
 				// move the breakpoint to the nearest location
-				string fileName = newBreakpoint.File;
+                FilePath fileName = newBreakpoint.File;
 				int lineNumber = newBreakpoint.LineNumber;
 				CalcLocation value = _symbolService.ListTable.GetNextNearestCalcLocation(fileName, lineNumber + 1);
 				DocumentLocation newLocation = _symbolService.ListTable.GetFileLocation(value.Page, value.Address, value.IsRam);

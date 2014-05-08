@@ -12,6 +12,7 @@ using Revsoft.Wabbitcode.GUI.DocumentWindows;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
@@ -143,7 +144,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			projViewer.SelectedNodes.Clear();
 		}
 
-		internal void AddExistingFile(string file)
+		internal void AddExistingFile(FilePath file)
 		{
 			try
 			{
@@ -183,7 +184,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 				parent = projViewer.Nodes[0];
 			}
 
-			string file = Path.Combine(_projectService.Project.ProjectDirectory, fileName);
+			FilePath file = _projectService.Project.ProjectDirectory.Combine(fileName);
 			StreamWriter writer = File.CreateText(file);
 			writer.Close();
 			ProjectFile fileAdded = _projectService.AddFile((ProjectFolder)parent.Tag, file);
@@ -360,7 +361,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 				return;
 			}
 
-			string filePath = file.FileFullPath;
+            FilePath filePath = file.FileFullPath;
 			if (File.Exists(filePath))
 			{
 			    new OpenFileAction(filePath).Execute();
@@ -438,13 +439,13 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 				        return;
 				    }
 
-				    string dir = Path.GetDirectoryName(file.FileFullPath);
+				    FilePath dir = file.FileFullPath.GetDirectoryName();
 				    if (string.IsNullOrEmpty(dir))
 				    {
 				        return;
 				    }
 
-				    string newFile = Path.Combine(dir, e.Label);
+				    FilePath newFile = dir.Combine(e.Label);
 				    File.Move(file.FileFullPath, newFile);
 				    file.FileFullPath = newFile;
 				}
@@ -576,19 +577,20 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		        return;
 		    }
 
-		    string dir = Path.GetDirectoryName(file.FileFullPath);
+		    FilePath dir = file.FileFullPath.GetDirectoryName();
 		    if (string.IsNullOrEmpty(dir))
 		    {
 		        return;
 		    }
 
-			string newFileName = Path.Combine(dir, newName);
+			FilePath newFileName = dir.Combine(newName);
 			File.Move(file.FileFullPath, newFileName);
             foreach (AbstractFileEditor editor in DockingService.Documents.OfType<AbstractFileEditor>()
-				.Where(editor => string.Equals(editor.FileName, file.FileFullPath, StringComparison.OrdinalIgnoreCase)))
+				.Where(editor => editor.FileName == file.FileFullPath))
 			{
 				editor.FileName = newFileName;
 			}
+
 			file.FileFullPath = newFileName;
 			node.Text = newName;
 			projViewer.Sort();

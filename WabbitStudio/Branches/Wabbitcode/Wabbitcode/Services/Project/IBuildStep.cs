@@ -1,4 +1,6 @@
-﻿namespace Revsoft.Wabbitcode.Services.Project
+﻿using Revsoft.Wabbitcode.Utils;
+
+namespace Revsoft.Wabbitcode.Services.Project
 {
 	using System;
 
@@ -9,7 +11,7 @@
 			get;
 		}
 
-		string InputFile
+        FilePath InputFile
 		{
 			get;
 			set;

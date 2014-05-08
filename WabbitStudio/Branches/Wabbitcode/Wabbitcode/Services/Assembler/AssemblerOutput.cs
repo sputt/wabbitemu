@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Assembler
 {
@@ -38,7 +39,8 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 			foreach (string line in lines)
 			{
 				int thirdColon, secondColon, firstColon;
-				string file, lineNum, description;
+			    FilePath file;
+				string lineNum, description;
 				if (line.Contains("error"))
 				{
 					firstColon = line.IndexOf(':', 3);
@@ -51,7 +53,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 					else
 					{
 						// file = Path.Combine(startDir, line.Substring(0, firstColon));
-						file = line.Substring(0, firstColon);
+						file = new FilePath(line.Substring(0, firstColon));
 						lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
 						int lineNumber;
 						if (!int.TryParse(lineNum, out lineNumber))
@@ -77,8 +79,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 				}
 				else
 				{
-					// file = Path.Combine(startDir, line.Substring(0, firstColon));
-					file = line.Substring(0, firstColon);
+					file = new FilePath(line.Substring(0, firstColon));
 					lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
 					description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
 					_parsedErrors.Add(new BuildError(file, Convert.ToInt32(lineNum), description, true));

@@ -8,6 +8,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
@@ -114,7 +115,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 				return;
 			}
 
-			string file = match.Groups["fileName"].Value;
+            FilePath file = new FilePath(match.Groups["fileName"].Value);
 			int lineNumber = Convert.ToInt32(match.Groups["lineNum"].Value);
             new GotoLineAction(file, lineNumber - 1).Execute();
 		}

@@ -6,11 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Revsoft.Wabbitcode.Services.Utils;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services
 {
 	[ServiceDependency(typeof(ISymbolService))]
-    [ServiceDependency(typeof(IFileReaderService))]
+    [ServiceDependency(typeof(IFileService))]
 	public sealed class AssemblerService : IAssemblerService, IDisposable
 	{
 		#region Events
@@ -28,16 +29,16 @@ namespace Revsoft.Wabbitcode.Services
 										  "Assembling {1}" + Environment.NewLine + "{2}";
 
 		private readonly ISymbolService _symbolService;
-	    private readonly IFileReaderService _fileReaderService;
+	    private readonly IFileService _fileService;
 
-		public AssemblerService(IFileReaderService fileReaderService, ISymbolService symbolService)
+		public AssemblerService(IFileService fileService, ISymbolService symbolService)
 		{
-		    _fileReaderService = fileReaderService;
+		    _fileService = fileService;
 			_symbolService = symbolService;
 		}
 
-	    public AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir, 
-            IEnumerable<string> includeDirs, AssemblyFlags flags = AssemblyFlags.Normal)
+        public AssemblerOutput AssembleFile(FilePath inputFile, FilePath outputFile, FilePath originalDir,
+            IEnumerable<FilePath> includeDirs, AssemblyFlags flags = AssemblyFlags.Normal)
 	    {
 	        _assembler = AssemblerFactory.CreateAssembler();
 
@@ -62,13 +63,13 @@ namespace Revsoft.Wabbitcode.Services
 
 				if (succeeded && !string.IsNullOrEmpty(project.BuildSystem.ListOutput))
 				{
-				    string fileText = _fileReaderService.GetFileText(project.BuildSystem.ListOutput);
+				    string fileText = _fileService.GetFileText(project.BuildSystem.ListOutput);
                     _symbolService.ParseListFile(fileText);
 				}
 
                 if (succeeded && !string.IsNullOrEmpty(project.BuildSystem.LabelOutput))
 				{
-                    string fileText = _fileReaderService.GetFileText(project.BuildSystem.LabelOutput);
+                    string fileText = _fileService.GetFileText(project.BuildSystem.LabelOutput);
                     _symbolService.ParseSymbolFile(fileText);
 				}
 

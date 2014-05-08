@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
-using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -30,7 +29,7 @@ namespace Revsoft.Wabbitcode.Utils
 		public static event BreakpointRemoved OnBreakpointRemoved;
 		#endregion
 
-		public static void AddBreakpoint(string fileName, int lineNumber)
+		public static void AddBreakpoint(FilePath fileName, int lineNumber)
 		{
 			WabbitcodeBreakpoint newBreak = new WabbitcodeBreakpoint(fileName, lineNumber);
 			if (BreakList.Contains(newBreak))
@@ -62,9 +61,9 @@ namespace Revsoft.Wabbitcode.Utils
 		    statusBarService.SetText("A breakpoint could not be set at this location");
 		}
 
-		public static void RemoveBreakpoint(string fileName, int lineNumber)
+		public static void RemoveBreakpoint(FilePath fileName, int lineNumber)
 		{
-			WabbitcodeBreakpoint newBreak = Breakpoints.FirstOrDefault(b => FileOperations.CompareFilePath(fileName, b.File) && b.LineNumber == lineNumber);
+			WabbitcodeBreakpoint newBreak = Breakpoints.FirstOrDefault(b => fileName == b.File && b.LineNumber == lineNumber);
 			if (newBreak == null)
 			{
 				return;

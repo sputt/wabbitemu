@@ -8,6 +8,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -21,18 +22,18 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 	    public WabbitcodeProject()
 		{
-			IncludeDirs = new List<string>();
+            IncludeDirs = new List<FilePath>();
 		    BuildSystem = new BuildSystem(this);
 			_watcher = new FileSystemWatcher();
             _watcher.Changed += Watcher_OnChanged;
             _watcher.Renamed += Watcher_OnRenamed;
 		}
 
-	    public WabbitcodeProject(string projectFile)
+        public WabbitcodeProject(FilePath projectFile)
 			: this()
 		{
 			ProjectFile = projectFile;
-			ProjectDirectory = Path.GetDirectoryName(projectFile);
+            ProjectDirectory = projectFile.GetDirectoryName();
             SetupWatcher();
 		}
 
@@ -44,13 +45,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 	    public IBuildSystem BuildSystem { get; private set; }
 
-		public IList<string> IncludeDirs { get; private set; }
+        public IList<FilePath> IncludeDirs { get; private set; }
 
 		public bool NeedsSave { get; private set; }
 
-		public string ProjectDirectory { get; private set; }
+		public FilePath ProjectDirectory { get; private set; }
 
-		public string ProjectFile { get; private set; }
+		public FilePath ProjectFile { get; private set; }
 
 		public string ProjectName { get; set; }
 
@@ -64,13 +65,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		#endregion
 
-		public bool ContainsFile(string file)
+        public bool ContainsFile(FilePath file)
 		{
 			_fileFound = null;
 			return RecurseSearchFolders(MainFolder, Path.GetFileName(file));
 		}
 
-		public ProjectFile FindFile(string fullPath)
+        public ProjectFile FindFile(FilePath fullPath)
 		{
 			if (_fileFound != null && string.Equals(_fileFound.FileFullPath, fullPath, StringComparison.OrdinalIgnoreCase))
 			{
@@ -99,13 +100,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 		    }
 		}
 
-		public void CreateNewProject(string projectFile, string projectName)
+		public void CreateNewProject(FilePath projectFile, string projectName)
 		{
 			ProjectFolder folder = new ProjectFolder(null, projectName);
 			_mainFolder = folder;
 			ProjectName = projectName;
 			ProjectFile = projectFile;
-			ProjectDirectory = Path.GetDirectoryName(projectFile);
+            ProjectDirectory = projectFile.GetDirectoryName();
 
 			BuildSystem = new BuildSystem(this);
 			BuildSystem.CreateDefaultConfigs();
@@ -132,7 +133,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 	        }
 	    }
 
-	    public void OpenProject(string projectFile)
+        public void OpenProject(FilePath projectFile)
 		{
 			FileStream stream = null;
 			try
@@ -212,8 +213,9 @@ namespace Revsoft.Wabbitcode.Services.Project
 					}
 						break;
 					case "File":
-					{
-						ProjectFile file = new ProjectFile(folder, reader.GetAttribute("Path"), ProjectDirectory);
+				    {
+				        FilePath path = new FilePath(reader.GetAttribute("Path"));
+						ProjectFile file = new ProjectFile(folder, path, ProjectDirectory);
 						folder.AddFile(file);
 					}
 						break;
@@ -266,15 +268,15 @@ namespace Revsoft.Wabbitcode.Services.Project
         /// </summary>
         /// <param name="relativePath">The relative file path to search for</param>
         /// <returns>The absolute path string. Null if an existing file cannot be found.</returns>
-	    public string GetFilePathFromRelativePath(string relativePath)
+        public FilePath GetFilePathFromRelativePath(string relativePath)
 	    {
-            IEnumerable<string> includeDirs = IsInternal ?
-                Settings.Default.IncludeDirs.Cast<string>() :
+            IEnumerable<FilePath> includeDirs = IsInternal ?
+                Settings.Default.IncludeDirs.Cast<string>().Select(path => new FilePath(path)) :
                 IncludeDirs;
 
-            foreach (string dir in includeDirs.Where(dir => File.Exists(Path.Combine(dir, relativePath))))
+            foreach (FilePath dir in includeDirs.Where(dir => File.Exists(Path.Combine(dir, relativePath))))
             {
-                return Path.Combine(dir, relativePath);
+                return dir.Combine(relativePath);
             }
 
             if (IsInternal)
@@ -282,8 +284,8 @@ namespace Revsoft.Wabbitcode.Services.Project
                 return null;
             }
 
-            return File.Exists(Path.Combine(ProjectDirectory, relativePath)) ?
-                Path.Combine(ProjectDirectory, relativePath) :
+            return File.Exists(ProjectDirectory.Combine(relativePath)) ?
+                ProjectDirectory.Combine(relativePath) :
                 null;
         }
 
@@ -324,7 +326,7 @@ namespace Revsoft.Wabbitcode.Services.Project
                 return;
             }
 
-            var projectFile = FindFile(e.FullPath);
+            var projectFile = FindFile(new FilePath(e.FullPath));
             if (projectFile != null)
             {
                 FileModifiedExternally(this, new FileModifiedEventArgs(projectFile));

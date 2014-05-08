@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.EditorExtensions.Markers;
 using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -12,13 +14,15 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 {
     internal class ErrorUnderliner : IDisposable
     {
-        private readonly WabbitcodeTextEditor _wabbitcodeTextEditor;
+        private readonly WabbitcodeTextEditor _editor;
         private readonly IDocument _document;
 
-        public ErrorUnderliner(WabbitcodeTextEditor wabbitcodeTextEditor)
+        public bool Enabled { get; set; }
+
+        public ErrorUnderliner(WabbitcodeTextEditor editor)
         {
-            _wabbitcodeTextEditor = wabbitcodeTextEditor;
-            _document = _wabbitcodeTextEditor.Document;
+            _editor = editor;
+            _document = _editor.Document;
 
             IBackgroundAssemblerService backgroundAssemblerService = ServiceFactory.Instance.GetServiceInstance<IBackgroundAssemblerService>();
             backgroundAssemblerService.BackgroundAssemblerComplete += BackgroundAssemblerService_BackgroundAssemblerComplete;
@@ -26,35 +30,56 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         private void BackgroundAssemblerService_BackgroundAssemblerComplete(object sender, AssemblyFinishEventArgs e)
         {
-            _document.MarkerStrategy.RemoveAll(m => m is ErrorMarker);
+            UnderlineErrors(e.Output.ParsedErrors);
+        }
 
-            foreach (BuildError error in e.Output.ParsedErrors.Where(
-                error => FileOperations.CompareFilePath(error.File, _wabbitcodeTextEditor.FileName)))
+        private void UnderlineErrors(IEnumerable<BuildError> parsedErrors)
+        {
+            if (_editor.IsDisposed || _editor.Disposing || !Enabled)
             {
-                int offset;
-                int endOffset;
-                var segment =  _document.GetLineSegment(error.LineNumber - 1);
-                Match match = Regex.Match(error.Description, "'(?<error>.*?)'");
-                string line = string.Empty;
-                BuildError errorCopy = error;
-                if (_wabbitcodeTextEditor.InvokeRequired)
-                {
-                    _wabbitcodeTextEditor.Invoke(() => line = _wabbitcodeTextEditor.GetLineText(errorCopy.LineNumber - 1));
-                }
+                return;
+            }
 
+            if (_editor.InvokeRequired)
+            {
+                _editor.Invoke(() => UnderlineErrors(parsedErrors));
+                return;
+            }
+
+            _document.MarkerStrategy.RemoveAll(m => m is ErrorMarker);
+            var options = Settings.Default.CaseSensitive ? 
+                StringComparison.Ordinal :
+                StringComparison.OrdinalIgnoreCase;
+            foreach (BuildError error in parsedErrors.Where(
+                error => error.File == _editor.FileName))
+            {
+                var segment = _document.GetLineSegment(error.LineNumber - 1);
+                Match match = Regex.Match(error.Description, "'(?<error>.*?)'");
+
+                TextWord word;
+                int offset = segment.Offset;
+                int length;
                 if (match.Success)
                 {
-                    offset = segment.Offset + line.IndexOf(match.Groups["error"].Value, StringComparison.Ordinal);
-                    endOffset = offset + match.Groups["error"].Length;
+                     word = segment.Words.FirstOrDefault(
+                         s => s.Word.Equals(match.Groups["error"].Value, options)) ??
+                         segment.Words.FirstOrDefault(w => !w.IsWhiteSpace);
+
+                    length = match.Groups["error"].Length;
                 }
                 else
                 {
-                    offset = segment.Offset + segment.Words.First(w => !w.IsWhiteSpace).Offset;
+                    word = segment.Words.FirstOrDefault(w => !w.IsWhiteSpace);
                     TextWord lastWord = segment.Words.Last(w => !w.IsWhiteSpace);
-                    endOffset = lastWord.Offset + lastWord.Length;
+                    length = lastWord.Offset + lastWord.Length;
                 }
 
-                ErrorMarker marker = new ErrorMarker(offset, endOffset - offset, error.Description, error.IsWarning);
+                if (word != null)
+                {
+                    offset += word.Offset;
+                }
+
+                ErrorMarker marker = new ErrorMarker(offset, length, error.Description, error.IsWarning);
                 _document.MarkerStrategy.AddMarker(marker);
             }
         }

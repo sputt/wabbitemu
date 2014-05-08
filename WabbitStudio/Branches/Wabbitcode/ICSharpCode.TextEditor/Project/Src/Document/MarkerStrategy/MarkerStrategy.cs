@@ -33,13 +33,13 @@ namespace Revsoft.TextEditor.Document
 		public void AddMarker(TextMarker item)
 		{
 			markersTable.Clear();
-			textMarker.Add(item);
-		}
-		
-		public void InsertMarker(int index, TextMarker item)
-		{
-			markersTable.Clear();
-			textMarker.Insert(index, item);
+            int startIndex = textMarker.BinarySearch(item);
+            if (startIndex < 0)
+            {
+                startIndex = ~startIndex;
+            }
+
+			textMarker.Insert(startIndex, item);
 		}
 		
 		public void RemoveMarker(TextMarker item)
@@ -81,7 +81,19 @@ namespace Revsoft.TextEditor.Document
 		{
 			int endOffset = offset + length - 1;
 			List<TextMarker> markers = new List<TextMarker>();
-			for (int i = 0; i < textMarker.Count; ++i) {
+		    int startIndex = textMarker.BinarySearch(new TextMarker(offset, 1, TextMarkerType.SolidBlock));
+		    if (startIndex < 0)
+		    {
+		        startIndex = ~startIndex;
+		    }
+
+            int endIndex = textMarker.BinarySearch(new TextMarker(endOffset, 1, TextMarkerType.SolidBlock));
+		    if (endIndex < 0)
+		    {
+		        endIndex = ~endIndex;
+		    }
+
+			for (int i = startIndex; i < endIndex; ++i) {
 				TextMarker marker = textMarker[i];
 				if (// start in marker region
 				    marker.Offset <= offset && offset <= marker.EndOffset ||

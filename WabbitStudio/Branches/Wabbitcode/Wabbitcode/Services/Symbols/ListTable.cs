@@ -26,9 +26,9 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 		    StreamWriter writer = null;
             Regex fileRegex = new Regex("Listing for (built\\-in|file) (\"(?<file>.+)\"|(?<file>.+))", RegexOptions.Compiled);
             Regex listingRegex = new Regex(@"(?<lineNum>[\d| ]{5}) (?<page>[0-9A-F]{2}):(?<addr>[0-9A-F]{4}) (?<byte1>[0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) (?<line>.*)", RegexOptions.Compiled);
-			string currentFile = string.Empty;
+			FilePath currentFile = new FilePath(string.Empty);
 			string[] lines = listFileContents.Split('\n');
-            Dictionary<string, int> fcreateForFile = new Dictionary<string, int>();
+            Dictionary<FilePath, int> fcreateForFile = new Dictionary<FilePath, int>();
 			foreach (string line in lines.Where(line => !string.IsNullOrWhiteSpace(line)))
 			{
 			    Match fileMatch = fileRegex.Match(line);
@@ -47,12 +47,12 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                         {
                             fcreateForFile[currentFile] = ++fcreateNum;
                         }
-						currentFile = currentFile + fcreateNum + ".fcreate";
+						currentFile = new FilePath(currentFile + fcreateNum + ".fcreate");
                         writer = new StreamWriter(currentFile);
                     }
 					else
                     {
-                        currentFile = file;
+                        currentFile = new FilePath(file);
                         if (writer != null)
                         {
                             writer.Flush();
@@ -84,7 +84,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                         continue;
                     }
 
-                    DocumentLocation key = new DocumentLocation(currentFile.ToLower(), lineNumber);
+                    DocumentLocation key = new DocumentLocation(currentFile, lineNumber);
                     CalcLocation value = new CalcLocation(address, page, address >= 0x8000);
 
                     if (!calcToFile.ContainsKey(value))
@@ -115,7 +115,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 		/// <param name="lineNumber">The 1-indexed line number</param>
 		/// <returns>The absolute location on the calculator the file and line number map to. Returns null 
 		/// if the file line number combination do not map to a location on the calc</returns>
-		public CalcLocation GetCalcLocation(string filename, int lineNumber)
+		public CalcLocation GetCalcLocation(FilePath filename, int lineNumber)
 		{
 		    if (string.IsNullOrEmpty(filename))
 		    {
@@ -123,7 +123,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 		    }
 
 			CalcLocation value;
-			DocumentLocation key = new DocumentLocation(filename.ToLower(), lineNumber);
+			DocumentLocation key = new DocumentLocation(filename, lineNumber);
 			_fileToCalc.TryGetValue(key, out value);
 			return value;
 		}
@@ -144,9 +144,9 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 		/// <returns>The absolute location on the calculator the file and line number map to. If
 		/// it does not map absolutely, it returns the next closest location. Returns null if
 		/// the file never maps to a location on calc</returns>
-		public CalcLocation GetNextNearestCalcLocation(string fileName, int lineNumber)
+		public CalcLocation GetNextNearestCalcLocation(FilePath fileName, int lineNumber)
 		{
-			var initialListing = _fileToCalc.Where(s => string.Compare(s.Key.FileName, fileName, StringComparison.OrdinalIgnoreCase) == 0);
+			var initialListing = _fileToCalc.Where(s => s.Key.FileName == fileName);
 			// we shouldn't ever call this when we are adding more, but just to be sure,
 			// we'll avoid multiple enumeration
 		    var listInFile = initialListing.ToList();

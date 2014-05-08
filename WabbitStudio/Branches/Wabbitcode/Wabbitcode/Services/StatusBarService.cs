@@ -49,6 +49,16 @@ namespace Revsoft.Wabbitcode.Services
             _statusBar.SetCodeCountInfo(info);
         }
 
+        public void ShowProgressBar(bool show)
+        {
+            _statusBar.ShowProgressBar(show);
+        }
+
+        public void IncrementProgressBarProgress(int value)
+        {
+            _statusBar.IncrementProgressBarProgress(value);
+        }
+
         public void ShowStatusBar()
         {
             _statusBar.Show();

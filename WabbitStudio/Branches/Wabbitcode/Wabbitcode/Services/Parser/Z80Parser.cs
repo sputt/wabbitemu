@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
@@ -121,14 +122,16 @@ namespace Revsoft.Wabbitcode.Services.Parser
             }
         }
 
-        public List<Reference> FindReferences(string fileName, string fileText, string textToFind, bool caseSensitive)
+        public List<Reference> FindReferences(FilePath fileName, string fileText, string textToFind, bool caseSensitive)
         {
             List<Reference> refs = new List<Reference>();
             var options = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
             int len = textToFind.Length;
 
+            int offset = 0;
             string[] lines = fileText.Split('\n');
-            for (int i = 0; i < lines.Length; i++)
+            // +1 to offset for \n
+            for (int i = 0; i < lines.Length; offset += lines[i++].Length + 1)
             {
                 string line = lines[i];
                 string originalLine = line;
@@ -143,6 +146,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
                     while (!line.Trim().StartsWith("#" + EndCommentString, options))
                     {
                         line = lines[++i];
+                        offset += line.Length;
                     }
 
                     continue;
@@ -185,7 +189,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
                     continue;
                 }
 
-                refs.Add(new Reference(fileName, i, refactorIndex, textToFind, originalLine));
+                refs.Add(new Reference(fileName, i, refactorIndex, offset + refactorIndex, textToFind, originalLine));
             }
 
             return refs;
@@ -544,6 +548,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
             // we expect a description to be before whatever line we start on
             lineIndex--;
             string description = string.Empty;
+            bool hasFoundComment = false;
             while (lineIndex >= 0)
             {
                 string line = _lines[lineIndex];
@@ -551,8 +556,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 if (lineStartChar == CommentChar || line.Trim() == CommentString)
                 {
                     description = line + "\n" + description;
+                    hasFoundComment = true;
                 }
-                else if (!IsValidLabelChar(lineStartChar))
+                else if (!IsValidLabelChar(lineStartChar) || hasFoundComment)
                 {
                     break;
                 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -13,7 +14,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			get;
 		}
 
-		IList<string> IncludeDirs
+        IList<FilePath> IncludeDirs
 		{
 			get;
 		}
@@ -28,12 +29,12 @@ namespace Revsoft.Wabbitcode.Services.Project
 			get;
 		}
 
-		string ProjectDirectory
+		FilePath ProjectDirectory
 		{
 			get;
 		}
 
-		string ProjectFile
+		FilePath ProjectFile
 		{
 			get;
 		}
@@ -47,13 +48,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 		bool IsInternal{ get; }
 
 	    IEnumerable<ProjectFile> GetProjectFiles();
-		bool ContainsFile(string file);
-		ProjectFile FindFile(string fullPath);
-	    string GetFilePathFromRelativePath(string relativePath);
+        bool ContainsFile(FilePath file);
+        ProjectFile FindFile(FilePath fullPath);
+        FilePath GetFilePathFromRelativePath(string relativePath);
 
 
-		void CreateNewProject(string projectFile, string projectName);
-		void OpenProject(string projectFile);
+		void CreateNewProject(FilePath projectFile, string projectName);
+        void OpenProject(FilePath projectFile);
 		void SaveProject();
 
 	    void EnableFileWatcher(bool enabled);

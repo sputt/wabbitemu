@@ -1,4 +1,6 @@
-﻿namespace Revsoft.Wabbitcode.Services.Assembler
+﻿using System.Runtime.InteropServices;
+
+namespace Revsoft.Wabbitcode.Services.Assembler
 {
     class SpasmComAssembler : IAssembler
     {
@@ -32,8 +34,15 @@
         {
             lock (_spasm)
             {
-                _spasm.Assemble();
-                return _spasm.StdOut.ReadAll();
+                try
+                {
+                    _spasm.Assemble();
+                    return _spasm.StdOut.ReadAll();
+                }
+                catch (COMException)
+                {
+                    return "Error assembling.";
+                }
             }
         }
 
@@ -41,8 +50,15 @@
         {
             lock (_spasm)
             {
-                _spasm.Assemble(code);
-                return _spasm.StdOut.ReadAll();
+                try
+                {
+                    _spasm.Assemble(code);
+                    return _spasm.StdOut.ReadAll();
+                }
+                catch (COMException)
+                {
+                    return string.Empty;
+                }
             }
         }
 

@@ -14,6 +14,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.GUI.Menus
@@ -280,7 +281,11 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         #region Refactor Menu Items
 
-        private static readonly ToolStripMenuItem RenameMenuItem = new ToolStripMenuItem("Rename");
+        private static readonly ToolStripMenuItem RenameMenuItem = new ToolStripMenuItem("Rename")
+        {
+            ShortcutKeys = Keys.Control | Keys.R
+        };
+
         private static readonly ToolStripMenuItem ExtractMethodMenuItem = new ToolStripMenuItem("Extract Method");
 
         #endregion
@@ -528,7 +533,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
             _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
-            _dockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
+            _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
             _projectService.ProjectOpened += ProjectService_OnProjectOpened;
             _projectService.ProjectClosed += ProjectService_OnProjectClosed;
             _toolBarService.OnToolBarVisibilityChanged += ToolBarService_OnToolBarVisibilityChanged;
@@ -718,10 +723,10 @@ namespace Revsoft.Wabbitcode.GUI.Menus
         /// </summary>
         /// <param name="sender">This is the button object. This is casted to get which button was clicked.</param>
         /// <param name="e">Nobody cares about this arg.</param>
-        private void OpenRecentDoc(object sender, EventArgs e)
+        private static void OpenRecentDoc(object sender, EventArgs e)
         {
             MenuItem button = (MenuItem) sender;
-            new OpenFileAction(button.Text).Execute();
+            new OpenFileAction(new FilePath(button.Text)).Execute();
         }
 
         private void AddRecentItem(string file)
@@ -894,7 +899,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
             menuItem.Checked = window.VisibleState != DockState.Hidden && !window.IsHidden;
         }
 
-        private void DockingService_OnActiveDocumentChanged(object sender, EventArgs eventArgs)
+        private void DockingServiceActiveDocumentChanged(object sender, EventArgs eventArgs)
         {
             EnableDocumentMenus();
         }

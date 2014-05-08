@@ -7,7 +7,7 @@ namespace Revsoft.Wabbitcode.Utils
 {
     public static class FileTypeMethodFactory
     {
-        public delegate bool FileHandlerDelegate(string fileName);
+        public delegate bool FileHandlerDelegate(FilePath fileName);
 
         private static readonly Dictionary<string, FileHandlerDelegate> FileMethods = new Dictionary<string, FileHandlerDelegate>();
         private static FileHandlerDelegate _defaultHandler;
@@ -37,7 +37,7 @@ namespace Revsoft.Wabbitcode.Utils
             _defaultHandler = handler;
         }
 
-        public static bool OpenRegisteredFile(string fileName)
+        public static bool OpenRegisteredFile(FilePath fileName)
         {
             string extension = Path.GetExtension(fileName);
             if (extension == null)

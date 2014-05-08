@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Assembler
 {
     internal static class AssemblerHelper
     {
-        public static void SetupAssembler(IAssembler assembler, string inputFile, string outputFile, string currentDirectory,
-            IEnumerable<string> includeDirs, AssemblyFlags flags)
+        public static void SetupAssembler(IAssembler assembler, FilePath inputFile, FilePath outputFile,
+            FilePath currentDirectory, IEnumerable<FilePath> includeDirs, AssemblyFlags flags)
         {
             assembler.SetWorkingDirectory(currentDirectory);
 

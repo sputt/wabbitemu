@@ -17,6 +17,7 @@ using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
+using Timer = System.Windows.Forms.Timer;
 
 namespace Revsoft.Wabbitcode.EditorExtensions
 {
@@ -25,7 +26,6 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         private InsightWindow _insightWindow;
         private CodeCompletionWindow _codeCompletionWindow;
         private bool _inHandleKeyPress;
-        private bool _isUpdatingRefs;
         private static readonly Regex LineRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|\%|'|\\|\<|\>]*?)\s*(;.*)?$", RegexOptions.Compiled);
         private readonly Timer _textChangedTimer = new Timer
         {
@@ -33,7 +33,24 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             Enabled = false
         };
 
+        private readonly Timer _updateRefsTimer = new Timer
+        {
+            Interval = 500,
+            Enabled = false
+        };
+
         private readonly ErrorUnderliner _errorUnderliner;
+
+        private bool _useTextHighlighting = true;
+        public bool UseTextHighlighting
+        {
+            get { return _useTextHighlighting; }
+            set
+            {
+                _useTextHighlighting = value;
+                _errorUnderliner.Enabled = value;
+            }
+        }
 
         #region Services
 
@@ -61,6 +78,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             Document.BreakpointManager.HighlightRegex = LineRegex;
 
             _textChangedTimer.Tick += textChangedTimer_Tick;
+            _updateRefsTimer.Tick += updateRefsTimer_Tick;
         }
 
         protected override void InitializeTextAreaControl(TextAreaControl newControl)
@@ -80,6 +98,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             base.Dispose(disposing);
 
             _textChangedTimer.Enabled = false;
+            _updateRefsTimer.Enabled = false;
             _errorUnderliner.Dispose();
         }
 
@@ -172,12 +191,12 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         private void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
         {
-            WabbitcodeBreakpointManager.RemoveBreakpoint(FileName, e.Breakpoint.LineNumber);
+            WabbitcodeBreakpointManager.RemoveBreakpoint(new FilePath(FileName), e.Breakpoint.LineNumber);
         }
 
         private void BreakpointManager_Added(object sender, BreakpointEventArgs e)
         {
-            WabbitcodeBreakpointManager.AddBreakpoint(FileName, e.Breakpoint.LineNumber);
+            WabbitcodeBreakpointManager.AddBreakpoint(new FilePath(FileName), e.Breakpoint.LineNumber);
         }
 
         private void TextArea_ToolTipRequest(object sender, ToolTipRequestEventArgs e)
@@ -243,19 +262,17 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             }
 
             Document.MarkerStrategy.RemoveAll(marker => marker is ReferenceMarker);
-            Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
-            if (!_isUpdatingRefs)
+            if (_updateRefsTimer.Enabled)
             {
-                _isUpdatingRefs = true;
-                string word = GetWordAtCaret();
-                var segments = Document.LineSegmentCollection;
-                Task.Factory.StartNew(() => GetHighlightReferences(word, segments));
+                _updateRefsTimer.Stop();
             }
+            
+            _updateRefsTimer.Start();
 
             _statusBarService.SetCaretPosition(ActiveTextAreaControl.Caret.Line, ActiveTextAreaControl.Caret.Column);
             UpdateCodeCountInfo();
 
-            CalcLocation label = _symbolService.ListTable.GetCalcLocation(FileName, ActiveTextAreaControl.Caret.Line + 1);
+            CalcLocation label = _symbolService.ListTable.GetCalcLocation(new FilePath(FileName), ActiveTextAreaControl.Caret.Line + 1);
             if (label == null)
             {
                 return;
@@ -265,10 +282,18 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             _statusBarService.SetText(assembledInfo);
         }
 
+        private void updateRefsTimer_Tick(object sender, EventArgs e)
+        {
+            string word = GetWordAtCaret();
+            var segments = Document.LineSegmentCollection.ToList();
+            Task.Factory.StartNew(() => GetHighlightReferences(word, segments));
+            _updateRefsTimer.Enabled = false;
+        }
+
         private void textChangedTimer_Tick(object sender, EventArgs e)
         {
             string text = Text;
-            Task.Factory.StartNew(() => _parserService.ParseFile(text.GetHashCode(), FileName, text));
+            Task.Factory.StartNew(() => _parserService.ParseFile(text.GetHashCode(), new FilePath(FileName), text));
             _backgroundAssemblerService.RequestAssemble();
             _textChangedTimer.Enabled = false;
         }
@@ -359,43 +384,41 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         public string GetWholeLinesSelected()
         {
-            int startLine;
-            int endLine;
+            LineSegment startLine;
+            LineSegment endLine;
             var selection = ActiveTextAreaControl.SelectionManager.SelectionCollection.FirstOrDefault();
             if (selection != null)
             {
-                endLine = Document.GetLineNumberForOffset(selection.EndOffset);
-                startLine = Document.GetLineNumberForOffset(selection.Offset);
-                if (startLine > endLine)
+                endLine = Document.GetLineSegmentForOffset(selection.EndOffset);
+                startLine = Document.GetLineSegmentForOffset(selection.Offset);
+                if (startLine.Offset > endLine.Offset)
                 {
-                    int temp = endLine;
+                    LineSegment temp = endLine;
                     endLine = startLine;
                     startLine = temp;
                 }
             }
             else
             {
-                endLine = ActiveTextAreaControl.Caret.Line;
+                endLine = Document.GetLineSegmentForOffset(ActiveTextAreaControl.Caret.Offset);
                 startLine = endLine;
             }
 
-            string codeInfoLines = string.Empty;
-            for (; startLine <= endLine; startLine++)
-            {
-                codeInfoLines += GetLineText(startLine) + Environment.NewLine;
-            }
+            string codeInfoLines = Document.GetText(startLine.Offset,
+                endLine.Offset + endLine.Length - startLine.Offset);
             return codeInfoLines;
         }
 
         private void GetHighlightReferences(string word, IEnumerable<LineSegment> segmentCollection)
         {
-            var options = Settings.Default.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-            if (string.IsNullOrEmpty(word) || !Settings.Default.ReferencesHighlighter)
+            if (string.IsNullOrEmpty(word) || !Settings.Default.ReferencesHighlighter || IsDisposed || Disposing)
             {
-                _isUpdatingRefs = false;
                 return;
             }
 
+            var options = Settings.Default.CaseSensitive ? 
+                StringComparison.Ordinal :
+                StringComparison.OrdinalIgnoreCase;
             var references = from segment in segmentCollection
                              from segmentWord in segment.Words
                              where string.Equals(segmentWord.Word, word, options)
@@ -404,8 +427,6 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             {
                 this.Invoke(() => AddMarkers(references));
             }
-
-            _isUpdatingRefs = false;
         }
 
         private void AddMarkers(IEnumerable<TextMarker> markers)

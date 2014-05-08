@@ -9,13 +9,13 @@ namespace Revsoft.Wabbitcode.Actions
     public class RefactorRenameAction : AbstractUiAction
     {
         private readonly IDockingService _dockingService;
-        private readonly IParserService _parserService;
+        private readonly IFileService _fileService;
         private readonly IProjectService _projectService;
 
         public RefactorRenameAction()
         {
             _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
+            _fileService = ServiceFactory.Instance.GetServiceInstance<IFileService>();
             _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
         }
 
@@ -27,7 +27,7 @@ namespace Revsoft.Wabbitcode.Actions
                 return;
             }
 
-            RefactorRenameForm renameForm = new RefactorRenameForm(editor, _parserService, _projectService);
+            RefactorRenameForm renameForm = new RefactorRenameForm(editor, _fileService, _projectService);
             bool validRename = renameForm.Initialize();
             if (validRename)
             {

@@ -550,87 +550,24 @@ namespace Revsoft.TextEditor.Document
 							
 							// highlight digits
 							if (!inSpan && (Char.IsDigit(ch) || ch == '$' || (ch == '.' && i + 1 < currentLineLength && Char.IsDigit(document.GetCharAt(currentLineOffset + i + 1)))) && currentLength == 0) {
-								bool ishex = false;
-								bool isfloatingpoint = false;
-								
-								if ((ch == '0' && i + 1 < currentLineLength && Char.ToUpper(document.GetCharAt(currentLineOffset + i + 1)) == 'X') || (i + 3 < currentLineLength && Char.ToUpper(document.GetCharAt(currentLineOffset + i + 3)) == 'H')) { // hex digits
-									const string hex = "0123456789ABCDEF";
-									++currentLength;
-									++i; // skip 'x'
-									++currentLength;
-									ishex = true;
-									while (i + 1 < currentLineLength && hex.IndexOf(Char.ToUpper(document.GetCharAt(currentLineOffset + i + 1))) != -1) {
-										++i;
-										++currentLength;
-									}
-                                }
-                                //handle hex in $9D95 form
-                                else if (ch == '$') {
+							    // handle hex
+                                if (ch == '$' || Char.IsDigit(ch)) {
                                     const string hex = "0123456789ABCDEF";
-                                    ishex = true;
+                                    bool ishex = ch == '$';
                                     currentLength++;
                                     while (i + 1 < currentLineLength && hex.IndexOf(Char.ToUpper(document.GetCharAt(currentLineOffset + i + 1))) != -1) {
                                         ++i;
                                         ++currentLength;
                                     }
-                                }
-                                else {
-                                    ++currentLength;
-                                    while (i + 1 < currentLineLength && Char.IsDigit(document.GetCharAt(currentLineOffset + i + 1)))
+
+                                    if (!ishex && i + 1 < currentLineLength && document.GetCharAt(currentLineOffset + i + 1) == 'h')
                                     {
+                                        ishex = true;
                                         ++i;
                                         ++currentLength;
                                     }
                                 }
-								if (!ishex && i + 1 < currentLineLength && document.GetCharAt(currentLineOffset + i + 1) == '.') {
-									isfloatingpoint = true;
-									++i;
-									++currentLength;
-									while (i + 1 < currentLineLength && Char.IsDigit(document.GetCharAt(currentLineOffset + i + 1))) {
-										++i;
-										++currentLength;
-									}
-								}
-								
-								if (i + 1 < currentLineLength && Char.ToUpper(document.GetCharAt(currentLineOffset + i + 1)) == 'E') {
-									isfloatingpoint = true;
-									++i;
-									++currentLength;
-									if (i + 1 < currentLineLength && (document.GetCharAt(currentLineOffset + i + 1) == '+' || document.GetCharAt(currentLine.Offset + i + 1) == '-')) {
-										++i;
-										++currentLength;
-									}
-									while (i + 1 < currentLine.Length && Char.IsDigit(document.GetCharAt(currentLineOffset + i + 1))) {
-										++i;
-										++currentLength;
-									}
-								}
-								
-								if (i + 1 < currentLine.Length) {
-									char nextch = Char.ToUpper(document.GetCharAt(currentLineOffset + i + 1));
-									if (nextch == 'F' || nextch == 'M' || nextch == 'D') {
-										isfloatingpoint = true;
-										++i;
-										++currentLength;
-									}
-								}
-								
-								if (!isfloatingpoint) {
-									bool isunsigned = false;
-									if (i + 1 < currentLineLength && Char.ToUpper(document.GetCharAt(currentLineOffset + i + 1)) == 'U') {
-										++i;
-										++currentLength;
-										isunsigned = true;
-									}
-									if (i + 1 < currentLineLength && Char.ToUpper(document.GetCharAt(currentLineOffset + i + 1)) == 'L') {
-										++i;
-										++currentLength;
-										if (!isunsigned && i + 1 < currentLineLength && Char.ToUpper(document.GetCharAt(currentLineOffset + i + 1)) == 'U') {
-											++i;
-											++currentLength;
-										}
-									}
-								}
+                                
 								
 								words.Add(new TextWord(document, currentLine, currentOffset, currentLength, DigitColor, false));
 								currentOffset += currentLength;

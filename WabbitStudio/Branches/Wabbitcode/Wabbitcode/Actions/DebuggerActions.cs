@@ -28,7 +28,7 @@ namespace Revsoft.Wabbitcode.Actions
                 return;
             }
 
-            string fileName = activeTextEditor.FileName;
+            FilePath fileName = activeTextEditor.FileName;
             int lineNum = activeTextEditor.CaretLine;
             WabbitcodeBreakpoint breakpoint = WabbitcodeBreakpointManager.Breakpoints
                 .SingleOrDefault(b => b.File == fileName && b.LineNumber == lineNum);

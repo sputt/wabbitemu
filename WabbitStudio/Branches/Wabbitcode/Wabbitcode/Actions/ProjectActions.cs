@@ -4,6 +4,7 @@ using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Actions
 {
@@ -114,7 +115,7 @@ namespace Revsoft.Wabbitcode.Actions
 
             foreach (string file in openFileDialog.FileNames)
             {
-                _projectViewer.AddExistingFile(file);
+                _projectViewer.AddExistingFile(new FilePath(file));
             }
         }
     }

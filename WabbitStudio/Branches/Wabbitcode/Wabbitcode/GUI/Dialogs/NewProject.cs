@@ -119,7 +119,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 					continue;
 				}
 
-				_projectService.Project.IncludeDirs.Add(dir);
+                _projectService.Project.IncludeDirs.Add(new FilePath(dir));
 				string dirName = Path.GetFileName(dir);
 				ProjectFolder folderAdded = _projectService.AddFolder(dirName, currentFolder);
 				GetFiles(dir, extensions, ref folderAdded);
@@ -128,7 +128,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			string[] files = Directory.GetFiles(directory);
 			foreach (string file in files.Where(file => file != null && extensions.Contains(Path.GetExtension(file))))
 			{
-				_projectService.AddFile(currentFolder, file);
+				_projectService.AddFile(currentFolder, new FilePath(file));
 			}
 		}
 
@@ -182,7 +182,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
 		private void okTemplate_Click(object sender, EventArgs e)
 		{
-			string projectDir = locTextBox.Text.Trim();
+            FilePath projectDir = new FilePath(locTextBox.Text.Trim());
 			string projectName = nameTextBox.Text.Trim();
 			var listBox = (ListBox)tabControl.SelectedTab.Controls["templatesBox"];
 			if (listBox.SelectedItem == null)
@@ -211,7 +211,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			_cancelQuit = false;
 			if (!projFromDirBox.Checked)
 			{
-				projectDir = Path.Combine(projectDir, projectName);
+				projectDir = projectDir.Combine(projectName);
 			}
 
 			string projectFile = Path.Combine(projectDir, projectName) + ".wcodeproj";
@@ -220,7 +220,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 				Directory.CreateDirectory(projectDir);
 			}
 
-			_projectService.CreateNewProject(projectFile, projectName);
+			_projectService.CreateNewProject(new FilePath(projectFile), projectName);
 
 			var folder = _projectService.Project.MainFolder;
 			if (projFromDirBox.Checked)
@@ -229,7 +229,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			}
 			else
 			{
-				string mainFile = Path.Combine(projectDir, projectName + ".asm");
+                FilePath mainFile = new FilePath(Path.Combine(projectDir, projectName + ".asm"));
 				try
 				{
 					File.Copy(item.File, mainFile);
@@ -253,8 +253,14 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 			_projectService.Project.IncludeDirs.Add(FileLocations.IncludesDir);
 			var debug = _projectService.Project.BuildSystem.BuildConfigs.Single(c => c.Name == "Debug");
 			var release = _projectService.Project.BuildSystem.BuildConfigs.Single(c => c.Name == "Release");
-			debug.Steps.Add(new InternalBuildStep(0, BuildStepType.All, Path.Combine(projectDir, projectName) + ".asm", Path.Combine(projectDir, projectName) + outputExt));
-			release.Steps.Add(new InternalBuildStep(0, BuildStepType.Assemble, Path.Combine(projectDir, projectName) + ".asm", Path.Combine(projectDir, projectName) + outputExt));
+            debug.Steps.Add(new InternalBuildStep(0,
+                BuildStepType.All,
+                projectDir.Combine(projectName + ".asm"),
+                projectDir.Combine(projectName + outputExt)));
+            release.Steps.Add(new InternalBuildStep(0, 
+                BuildStepType.Assemble,
+                projectDir.Combine(projectName + ".asm"),
+                projectDir.Combine(projectName + outputExt)));
 			_projectService.SaveProject();
 			Close();
 		}

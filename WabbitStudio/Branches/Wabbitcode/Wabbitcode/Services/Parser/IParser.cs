@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
@@ -9,6 +10,6 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
         void ParseText(ParserInformation parserInfo, string fileText);
 
-        List<Reference> FindReferences(string fileName, string fileText, string textToFind, bool caseSensitive);
+        List<Reference> FindReferences(FilePath fileName, string fileText, string textToFind, bool caseSensitive);
     }
 }

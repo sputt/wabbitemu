@@ -8,6 +8,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.Dialogs
 {
@@ -19,7 +20,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
         {
 	        _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
 	        InitializeComponent();
-	        IEnumerable<IParserData> parserData = _parserService.GetAllParserData();
+	        IEnumerable<IParserData> parserData = _parserService.GetAllParserData().ToList();
 	        foreach (IParserData data in parserData)
 	        {
 		        inputBox.AutoCompleteCustomSource.Add(data.Name);
@@ -57,8 +58,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
         private void okButton_Click(object sender, EventArgs e)
         {
             string symbolString = inputBox.Text;
-            new GotoDefinitionAction(string.Empty, symbolString, 0).Execute();
             Close();
+            new GotoDefinitionAction(new FilePath(string.Empty), symbolString, 0).Execute();
         }
     }
 }
