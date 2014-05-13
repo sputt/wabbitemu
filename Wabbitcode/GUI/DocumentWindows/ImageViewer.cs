@@ -26,7 +26,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         internal static ImageViewer OpenImage(FilePath fileName)
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             var child = dockingService.Documents.OfType<ImageViewer>()
                 .SingleOrDefault(e => e.FileName == fileName);
             if (child != null)

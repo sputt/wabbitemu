@@ -2,7 +2,7 @@
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
-    public interface IStatusBarService : IService
+    public interface IStatusBarService
     {
         /// <summary>
         /// Updates the caret position in the status bar

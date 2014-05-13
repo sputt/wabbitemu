@@ -27,7 +27,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         public DirectiveCompletionProvider(WabbitcodeTextEditor textEditor)
             : base(textEditor)
         {
-            _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
+            _parserService = DependencyFactory.Resolve<IParserService>();
         }
 
         public override ICompletionData[] GenerateCompletionData(string fileName, TextArea textArea, char charTyped)
@@ -64,7 +64,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         public CtrlSpaceCompletionProvider(WabbitcodeTextEditor textEditor)
             : base(textEditor)
         {
-            _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
+            _parserService = DependencyFactory.Resolve<IParserService>();
         }
 
         public override ICompletionData[] GenerateCompletionData(string fileName, TextArea textArea, char charTyped)

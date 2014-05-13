@@ -9,7 +9,7 @@ namespace Revsoft.Wabbitcode.Utils
 
 		public DocumentLocation(FilePath fileName, int lineNumber)
 		{
-		    if (fileName == null)
+		    if (string.IsNullOrEmpty(fileName))
 		    {
 		        throw new ArgumentNullException("fileName");
 		    }

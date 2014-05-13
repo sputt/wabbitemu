@@ -60,9 +60,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 			InitializeComponent();
 
-		    IDebuggerService debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+		    IDebuggerService debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
-            _symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
+            _symbolService = DependencyFactory.Resolve<ISymbolService>();
 		}
 
 		void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)

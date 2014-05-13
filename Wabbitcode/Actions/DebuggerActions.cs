@@ -17,7 +17,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public ToggleBreakpointAction()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
         public override void Execute()
@@ -50,8 +50,8 @@ namespace Revsoft.Wabbitcode.Actions
 
         public StartDebuggerAction()
         {
-            _assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            _assemblerService = DependencyFactory.Resolve<IAssemblerService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
         public override void Execute()
@@ -147,7 +147,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public PauseDebuggerAction()
         {
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
         public override void Execute()
@@ -174,7 +174,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public StopDebuggerAction()
         {
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
         public override void Execute()
@@ -193,7 +193,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public RestartDebuggerAction()
         {
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
         public override void Execute()
@@ -214,7 +214,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public StepDebuggerAction()
         {
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
         public override void Execute()
@@ -234,7 +234,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public StepOverDebuggerAction()
         {
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
         public override void Execute()
@@ -254,7 +254,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public StepOutDebuggerAction()
         {
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
         public override void Execute()
@@ -275,8 +275,8 @@ namespace Revsoft.Wabbitcode.Actions
 
         public SetNextStatementAction()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
         public override void Execute()

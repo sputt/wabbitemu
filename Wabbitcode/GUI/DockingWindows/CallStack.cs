@@ -31,7 +31,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 			InitializeComponent();
 
-		    IDebuggerService debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+		    IDebuggerService debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             debuggerService.OnDebuggingStarted += mainForm_OnDebuggingStarted;
 		}
 

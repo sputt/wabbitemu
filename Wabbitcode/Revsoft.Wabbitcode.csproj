@@ -592,6 +592,15 @@
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Practices.Unity">
+      <HintPath>..\packages\Unity.3.5.1404.0\lib\net45\Microsoft.Practices.Unity.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity.Configuration">
+      <HintPath>..\packages\Unity.3.5.1404.0\lib\net45\Microsoft.Practices.Unity.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity.RegistrationByConvention">
+      <HintPath>..\packages\Unity.3.5.1404.0\lib\net45\Microsoft.Practices.Unity.RegistrationByConvention.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System">
       <Name>System</Name>
@@ -702,6 +711,7 @@
     <Compile Include="GUI\ToolBars\MainToolBar.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\VS2012ColorTable.cs" />
     <Compile Include="Services\Assembler\AssemblerFactory.cs" />
@@ -730,20 +740,22 @@
     <Compile Include="Services\Interfaces\IStatusBarService.cs" />
     <Compile Include="Services\Interfaces\ISymbolService.cs" />
     <Compile Include="Services\Interfaces\IToolBarService.cs" />
+    <Compile Include="Services\Parser\IParserFactory.cs" />
     <Compile Include="Services\LoggingService.cs" />
     <Compile Include="Services\MenuService.cs" />
+    <Compile Include="Services\Parser\ParserFactory.cs" />
     <Compile Include="Services\Parser\ParserEventArgs.cs" />
     <Compile Include="Services\Parser\ParserProgressEventArgs.cs" />
     <Compile Include="Services\ParserService.cs" />
     <Compile Include="Services\Parser\IParser.cs" />
     <Compile Include="Services\Parser\Z80Parser.cs" />
     <Compile Include="Services\PluginService.cs" />
-    <Compile Include="Services\Utils\ServiceInitializedEventArgs.cs" />
     <Compile Include="Services\StatusBarService.cs" />
     <Compile Include="Services\Symbols\CalcLocation.cs" />
     <Compile Include="Services\ToolBarService.cs" />
     <Compile Include="Utils\FilePath.cs" />
     <Compile Include="Utils\FileTypeMethodFactory.cs" />
+    <Compile Include="Utils\IFileTypeMethodFactory.cs" />
     <Compile Include="Utils\WabbitcodeBreakpointManager.cs" />
     <Compile Include="Utils\DocumentLocation.cs" />
     <Compile Include="Utils\FileLocations.cs" />
@@ -771,8 +783,6 @@
     <Compile Include="Exceptions\MissingROMException.cs" />
     <Compile Include="Services\Debugger\IWabbitemuDebugger.cs" />
     <Compile Include="Services\Debugger\WabbitemuDebugger.cs" />
-    <Compile Include="Services\Interfaces\IService.cs" />
-    <Compile Include="Services\Interfaces\IServiceFactory.cs" />
     <Compile Include="Services\Debugger\IWabbitcodeDebugger.cs" />
     <Compile Include="Services\Symbols\ListTable.cs" />
     <Compile Include="Services\MacroService.cs" />
@@ -781,8 +791,7 @@
     <Compile Include="Services\AssemblerService.cs" />
     <Compile Include="Services\Symbols\SymbolTable.cs" />
     <Compile Include="Services\Debugger\WabbitcodeBreakpoint.cs" />
-    <Compile Include="Services\Utils\ServiceDependencyAttribute.cs" />
-    <Compile Include="Services\ServiceFactory.cs" />
+    <Compile Include="Services\DependencyFactory.cs" />
     <Compile Include="Services\SymbolService.cs" />
     <Compile Include="Services\Debugger\WabbitcodeDebugger.cs" />
     <Compile Include="Utils\HighlightingUtils.cs" />
@@ -1055,6 +1064,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

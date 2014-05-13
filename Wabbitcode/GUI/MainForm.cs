@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using Microsoft.Practices.Unity;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
@@ -13,6 +14,7 @@ using Revsoft.Wabbitcode.GUI.Menus;
 using Revsoft.Wabbitcode.GUI.ToolBars;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -29,6 +31,7 @@ namespace Revsoft.Wabbitcode.GUI
 	    #region Private Members
 
 	    private bool _showToolbar = true;
+	    private IFileTypeMethodFactory _fileTypeMethodFactory;
 
 		#region Services
 
@@ -52,7 +55,7 @@ namespace Revsoft.Wabbitcode.GUI
 		{
 			InitializeComponent();
 			RestoreWindow();
-			InitializeService();
+			InitializeDependencies();
 			InitializeEvents();
             InitializeMenus();
             InitializeToolbars();
@@ -157,19 +160,35 @@ namespace Revsoft.Wabbitcode.GUI
             _projectService.ProjectOpened += ProjectService_OnProjectOpened;
         }
 
-	    private void InitializeService()
+	    private void InitializeDependencies()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>(dockPanel);
-            _statusBarService = ServiceFactory.Instance.GetServiceInstance<IStatusBarService>(statusBar);
-            _menuService = ServiceFactory.Instance.GetServiceInstance<IMenuService>(toolStripContainer.TopToolStripPanel);
-            _toolBarService = ServiceFactory.Instance.GetServiceInstance<IToolBarService>(toolStripContainer.TopToolStripPanel);
-            ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
-            ServiceFactory.Instance.GetServiceInstance<IParserService>();
-            ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
-            ServiceFactory.Instance.GetServiceInstance<IFileService>();
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
-            _pluginService = ServiceFactory.Instance.GetServiceInstance<IPluginService>();
+            // services
+            DependencyFactory.RegisterType<IDockingService, DockingService>(new InjectionConstructor(dockPanel));
+            DependencyFactory.RegisterType<IStatusBarService, StatusBarService>(new InjectionConstructor(statusBar));
+            DependencyFactory.RegisterType<IMenuService, MenuService>(new InjectionConstructor(toolStripContainer.TopToolStripPanel));
+            DependencyFactory.RegisterType<IToolBarService, ToolBarService>(new InjectionConstructor(toolStripContainer.TopToolStripPanel));
+            DependencyFactory.RegisterType<IAssemblerService, AssemblerService>();
+            DependencyFactory.RegisterType<IBackgroundAssemblerService, BackgroundAssemblerService>();
+            DependencyFactory.RegisterType<IProjectService, ProjectService>();
+            DependencyFactory.RegisterType<IParserService, ParserService>();
+            DependencyFactory.RegisterType<ISymbolService, SymbolService>();
+            DependencyFactory.RegisterType<IFileService, FileService>();
+            DependencyFactory.RegisterType<IDebuggerService, DebuggerService>();
+            DependencyFactory.RegisterType<IPluginService, PluginService>();
+            DependencyFactory.RegisterType<ILoggingService, LoggingService>();
+            // factories
+            DependencyFactory.RegisterType<IAssemblerFactory, AssemblerFactory>();
+            DependencyFactory.RegisterType<IParserFactory, ParserFactory>();
+            DependencyFactory.RegisterType<IFileTypeMethodFactory, FileTypeMethodFactory>();
+	        
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
+            _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
+            _menuService = DependencyFactory.Resolve<IMenuService>();
+            _toolBarService = DependencyFactory.Resolve<IToolBarService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+            _pluginService = DependencyFactory.Resolve<IPluginService>();
+	        _fileTypeMethodFactory = DependencyFactory.Resolve<IFileTypeMethodFactory>();
         }
 
         private void InitializeToolbars()
@@ -194,14 +213,14 @@ namespace Revsoft.Wabbitcode.GUI
             }
         }
 
-        private static void RegisterFileTypes()
+        private void RegisterFileTypes()
         {
-            FileTypeMethodFactory.RegisterFileType(".asm", path => Editor.OpenDocument(path) != null);
-            FileTypeMethodFactory.RegisterFileType(".z80", path => Editor.OpenDocument(path) != null);
-            FileTypeMethodFactory.RegisterFileType(".inc", path => Editor.OpenDocument(path) != null);
-            FileTypeMethodFactory.RegisterFileType(".bmp", path => ImageViewer.OpenImage(path) != null);
-            FileTypeMethodFactory.RegisterFileType(".png", path => ImageViewer.OpenImage(path) != null);
-            FileTypeMethodFactory.RegisterDefaultHandler(path => Editor.OpenDocument(path) != null);
+            _fileTypeMethodFactory.RegisterFileType(".asm", path => Editor.OpenDocument(path) != null);
+            _fileTypeMethodFactory.RegisterFileType(".z80", path => Editor.OpenDocument(path) != null);
+            _fileTypeMethodFactory.RegisterFileType(".inc", path => Editor.OpenDocument(path) != null);
+            _fileTypeMethodFactory.RegisterFileType(".bmp", path => ImageViewer.OpenImage(path) != null);
+            _fileTypeMethodFactory.RegisterFileType(".png", path => ImageViewer.OpenImage(path) != null);
+            _fileTypeMethodFactory.RegisterDefaultHandler(path => Editor.OpenDocument(path) != null);
         }
 
         private static void HandleArgs(ICollection<string> args)
@@ -402,7 +421,7 @@ namespace Revsoft.Wabbitcode.GUI
 
 			try
 			{
-				_dockingService.DestroyService();
+				_dockingService.SavePanels();
 			}
 			catch (Exception ex)
 			{

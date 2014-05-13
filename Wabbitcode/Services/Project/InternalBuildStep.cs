@@ -15,6 +15,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 	public class InternalBuildStep : IBuildStep
 	{
+	    private readonly IAssemblerFactory _assemblerFactory;
         private FilePath _inputFile;
         private FilePath _outputFile;
 		private string _outputText = string.Empty;
@@ -28,13 +29,20 @@ namespace Revsoft.Wabbitcode.Services.Project
 		/// <param name="type">Type of internal operation to peform</param>
 		/// <param name="inputFile">File to input to spasm</param>
 		/// <param name="outputFile">File expected to be received</param>
-        public InternalBuildStep(int number, BuildStepType type, FilePath inputFile, FilePath outputFile)
+        public InternalBuildStep(int number, BuildStepType type, FilePath inputFile, FilePath outputFile) 
+            : this(number, type, inputFile, outputFile, new AssemblerFactory())
 		{
-			_stepNumber = number;
-			_stepType = type;
-			_inputFile = inputFile;
-			_outputFile = outputFile;
 		}
+
+        internal InternalBuildStep(int number, BuildStepType type, FilePath inputFile, FilePath outputFile,
+            IAssemblerFactory assemblerFactory)
+	    {
+            _stepNumber = number;
+            _stepType = type;
+            _inputFile = inputFile;
+            _outputFile = outputFile;
+            _assemblerFactory = assemblerFactory;
+	    }
 
 		public string Description
 		{
@@ -139,7 +147,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		public bool Build(IProject project)
 		{
-		    IAssembler assembler = AssemblerFactory.CreateAssembler();
+		    IAssembler assembler = _assemblerFactory.CreateAssembler();
 			AssemblerOutput output;
 		    string outputString;
 			switch (_stepType)

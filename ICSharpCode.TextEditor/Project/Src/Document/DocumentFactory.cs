@@ -6,7 +6,6 @@
 // </file>
 
 using System.Text;
-using Revsoft.TextEditor.Src.Document.TextBufferStrategy;
 
 namespace Revsoft.TextEditor.Document
 {

@@ -18,7 +18,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		public BuildSteps()
 		{
 			_currentIndex = 0;
-		    IProjectService projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+		    IProjectService projectService = DependencyFactory.Resolve<IProjectService>();
 			_project = projectService.Project;
 
 			InitializeComponent();

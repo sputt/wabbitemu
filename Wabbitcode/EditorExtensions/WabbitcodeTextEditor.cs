@@ -54,11 +54,11 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         #region Services
 
-        private readonly IBackgroundAssemblerService _backgroundAssemblerService = ServiceFactory.Instance.GetServiceInstance<IBackgroundAssemblerService>();
-        private readonly IDebuggerService _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
-        private readonly IParserService _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
-        private readonly ISymbolService _symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
-        private readonly IStatusBarService _statusBarService = ServiceFactory.Instance.GetServiceInstance<IStatusBarService>();
+        private readonly IBackgroundAssemblerService _backgroundAssemblerService = DependencyFactory.Resolve<IBackgroundAssemblerService>();
+        private readonly IDebuggerService _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+        private readonly IParserService _parserService = DependencyFactory.Resolve<IParserService>();
+        private readonly ISymbolService _symbolService = DependencyFactory.Resolve<ISymbolService>();
+        private readonly IStatusBarService _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
 
         #endregion
 
@@ -179,7 +179,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             }
             catch (Exception ex)
             {
-                LoggingService.Instance.Log("Code completion exception", ex);
+                DependencyFactory.Resolve<ILoggingService>().Log("Code completion exception", ex);
             }
             finally
             {

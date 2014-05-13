@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services
 {
+    [UsedImplicitly]
     internal class PluginService : IPluginService
     {
         private readonly List<IWabbitcodePlugin> _plugins = new List<IWabbitcodePlugin>();
@@ -27,7 +29,7 @@ namespace Revsoft.Wabbitcode.Services
             List<Assembly> assemblies = new List<Assembly>();
             assemblies.AddRange(dllFileNames.Select(AssemblyName.GetAssemblyName).Select(Assembly.Load));
 
-            Type pluginType = typeof(IWabbitcodePlugin);
+            Type pluginType = typeof (IWabbitcodePlugin);
             ICollection<Type> pluginTypes = assemblies.Where(a => a != null)
                 .Select(assembly => assembly.GetTypes())
                 .SelectMany(types => types
@@ -35,7 +37,7 @@ namespace Revsoft.Wabbitcode.Services
                 .ToList();
 
             foreach (IWabbitcodePlugin plugin in 
-                pluginTypes.Select(type => (IWabbitcodePlugin)Activator.CreateInstance(type)))
+                pluginTypes.Select(type => (IWabbitcodePlugin) Activator.CreateInstance(type)))
             {
                 try
                 {
@@ -57,15 +59,6 @@ namespace Revsoft.Wabbitcode.Services
                 plugin.Unloaded();
             }
         }
-
-        public void DestroyService()
-        {
-        }
-
-        public void InitService(params object[] objects)
-        {
-        }
-
     }
 
     public interface IWabbitcodePlugin

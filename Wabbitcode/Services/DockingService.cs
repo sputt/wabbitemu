@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.Resources;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -12,11 +13,12 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Services
 {
-	public sealed class DockingService : IDockingService
+    [UsedImplicitly]
+    public sealed class DockingService : IDockingService
 	{
 		#region Private Members
 
-		private DockPanel _dockPanel;
+		private readonly DockPanel _dockPanel;
         private readonly Dictionary<string, ToolWindow> _registeredDockingWindows = new Dictionary<string, ToolWindow>(); 
 
 		#endregion
@@ -65,7 +67,7 @@ namespace Revsoft.Wabbitcode.Services
 			sb.Append("\nReason: ");
 			sb.Append(ex.Message);
 			MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            LoggingService.Instance.Log(sb.ToString(), ex);
+            DependencyFactory.Resolve<ILoggingService>().Log(sb.ToString(), ex);
 		}
 
 		internal static DialogResult ShowMessageBox(Form parent, string text, string caption,
@@ -113,6 +115,19 @@ namespace Revsoft.Wabbitcode.Services
         }
 
 		#endregion
+
+        public DockingService(DockPanel dockPanel)
+        {
+            _dockPanel = dockPanel;
+
+            // Theme
+            _dockPanel.Theme = new VS2012LightTheme();
+            ToolStripManager.Renderer = new VS2012ToolStripRenderer();
+
+            _dockPanel.ActiveDocumentChanged += DockPanelOnActiveDocumentChanged;
+            _dockPanel.ContentAdded += DockPanel_ContentAdded;
+            _dockPanel.ContentRemoved += DockPanel_ContentRemoved;
+        }
 
         public void RegisterDockingWindow(ToolWindow dockingWindow)
         {
@@ -273,9 +288,7 @@ namespace Revsoft.Wabbitcode.Services
             RegisterDockingWindow(new ExpressionWindow());
 	    }
 
-	    #region IService
-
-		public void DestroyService()
+		public void SavePanels()
 		{
 			try
 			{
@@ -302,28 +315,5 @@ namespace Revsoft.Wabbitcode.Services
 				throw new Exception("Error saving DockPanel.config file", ex);
 			}
 		}
-
-		public void InitService(params object[] objects)
-		{
-			if (objects.Length != 1)
-			{
-				throw new ArgumentException("Invalid number of arguments");
-			}
-			_dockPanel = objects[0] as DockPanel;
-			if (_dockPanel == null)
-			{
-				throw new ArgumentException("First argument is not of type DockPanel");
-			}
-
-			// Theme
-			_dockPanel.Theme = new VS2012LightTheme();
-			ToolStripManager.Renderer = new VS2012ToolStripRenderer();
-
-			_dockPanel.ActiveDocumentChanged += DockPanelOnActiveDocumentChanged;
-            _dockPanel.ContentAdded += DockPanel_ContentAdded;
-            _dockPanel.ContentRemoved += DockPanel_ContentRemoved;
-		}
-
-	    #endregion
 	}
 }

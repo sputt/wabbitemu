@@ -1,38 +1,19 @@
-﻿using System;
-using System.Linq;
+﻿using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.GUI.ToolBars;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    internal class StatusBarService : IStatusBarService
+    [UsedImplicitly]
+    public class StatusBarService : IStatusBarService
     {
-        private WabbitcodeStatusBar _statusBar;
+        private readonly WabbitcodeStatusBar _statusBar;
 
-        #region IService
-
-        public void DestroyService()
+        public StatusBarService(WabbitcodeStatusBar statusBar)
         {
-        }
-
-        public void InitService(params object[] objects)
-        {
-            if (objects.Length != 1)
-            {
-                throw new ArgumentException("Wrong number of params for StatusBarService");
-            }
-
-            var statusBar = objects.First() as WabbitcodeStatusBar;
-            if (statusBar == null)
-            {
-                throw new ArgumentException("Expected first argument to be a status bar");
-            }
-
             _statusBar = statusBar;
         }
-
-        #endregion
 
         public void SetCaretPosition(int line, int column)
         {

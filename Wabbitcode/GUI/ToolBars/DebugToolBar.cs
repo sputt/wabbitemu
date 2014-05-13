@@ -106,7 +106,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
             _stepOverToolButton.Click += stepOverToolButton_Click;
             _stepOutToolButton.Click += stepOutToolButton_Click;
 
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
         }
 

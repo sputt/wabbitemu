@@ -2,7 +2,7 @@
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
-	public interface ISymbolService : IService
+	public interface ISymbolService
 	{
 	    SymbolTable SymbolTable { get; }
 		ListTable ListTable { get; }

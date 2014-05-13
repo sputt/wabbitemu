@@ -23,7 +23,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public SaveProjectAction()
         {
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
         public override void Execute()
@@ -38,7 +38,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public CloseProjectAction()
         {
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
         public override void Execute()

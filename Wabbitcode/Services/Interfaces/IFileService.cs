@@ -3,7 +3,7 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
-    public interface IFileService : IService
+    public interface IFileService
     {
         /// <summary>
         /// Returns the string contents of a line from a given file

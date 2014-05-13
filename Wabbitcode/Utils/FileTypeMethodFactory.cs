@@ -5,16 +5,16 @@ using System.IO;
 
 namespace Revsoft.Wabbitcode.Utils
 {
-    public static class FileTypeMethodFactory
+    public class FileTypeMethodFactory : IFileTypeMethodFactory
     {
         public delegate bool FileHandlerDelegate(FilePath fileName);
 
-        private static readonly Dictionary<string, FileHandlerDelegate> FileMethods = new Dictionary<string, FileHandlerDelegate>();
-        private static FileHandlerDelegate _defaultHandler;
+        private readonly Dictionary<string, FileHandlerDelegate> _fileMethods = new Dictionary<string, FileHandlerDelegate>();
+        private FileHandlerDelegate _defaultHandler;
 
-        public static void RegisterFileType(string extension, FileHandlerDelegate handler)
+        public void RegisterFileType(string extension, FileHandlerDelegate handler)
         {
-            if (FileMethods.ContainsKey(extension))
+            if (_fileMethods.ContainsKey(extension))
             {
                 throw new ArgumentException("File extension is already registered");
             }
@@ -24,10 +24,10 @@ namespace Revsoft.Wabbitcode.Utils
                 throw new ArgumentNullException("handler");
             }
 
-            FileMethods.Add(extension, handler);
+            _fileMethods.Add(extension, handler);
         }
 
-        public static void RegisterDefaultHandler(FileHandlerDelegate handler)
+        public void RegisterDefaultHandler(FileHandlerDelegate handler)
         {
             if (handler == null)
             {
@@ -37,7 +37,7 @@ namespace Revsoft.Wabbitcode.Utils
             _defaultHandler = handler;
         }
 
-        public static bool OpenRegisteredFile(FilePath fileName)
+        public bool OpenRegisteredFile(FilePath fileName)
         {
             string extension = Path.GetExtension(fileName);
             if (extension == null)
@@ -45,13 +45,13 @@ namespace Revsoft.Wabbitcode.Utils
                 return false;
             }
 
-            if (!FileMethods.ContainsKey(extension))
+            if (!_fileMethods.ContainsKey(extension))
             {
                 return _defaultHandler != null && _defaultHandler(fileName);
             }
 
             FileHandlerDelegate handler;
-            FileMethods.TryGetValue(extension, out handler);
+            _fileMethods.TryGetValue(extension, out handler);
             Debug.Assert(handler != null);
             return handler(fileName);
         }

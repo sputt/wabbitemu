@@ -18,7 +18,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
         public GotoSymbol()
         {
-	        _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
+	        _parserService = DependencyFactory.Resolve<IParserService>();
 	        InitializeComponent();
 	        IEnumerable<IParserData> parserData = _parserService.GetAllParserData().ToList();
 	        foreach (IParserData data in parserData)
