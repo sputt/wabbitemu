@@ -57,7 +57,7 @@ namespace Revsoft.Wabbitcode.Utils
 		        return;
 		    }
 
-		    IStatusBarService statusBarService = ServiceFactory.Instance.GetServiceInstance<IStatusBarService>();
+		    IStatusBarService statusBarService = DependencyFactory.Resolve<IStatusBarService>();
 		    statusBarService.SetText("A breakpoint could not be set at this location");
 		}
 

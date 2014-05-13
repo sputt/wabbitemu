@@ -16,7 +16,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public CreateNewDocumentAction()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
         public override void Execute()
@@ -34,6 +34,7 @@ namespace Revsoft.Wabbitcode.Actions
     public class OpenFileAction : AbstractUiAction
     {
         private IEnumerable<FilePath> _fileNames;
+        private readonly IFileTypeMethodFactory _fileTypeMethodFactory;
 
         public OpenFileAction() : this(null)
         {
@@ -42,6 +43,7 @@ namespace Revsoft.Wabbitcode.Actions
         public OpenFileAction(params FilePath[] fileNames)
         {
             _fileNames = fileNames;
+            _fileTypeMethodFactory = DependencyFactory.Resolve<IFileTypeMethodFactory>();
         }
 
         public override void Execute()
@@ -63,7 +65,7 @@ namespace Revsoft.Wabbitcode.Actions
             {
                 try
                 {
-                    if (!FileTypeMethodFactory.OpenRegisteredFile(fileName))
+                    if (!_fileTypeMethodFactory.OpenRegisteredFile(fileName))
                     {
                         throw new Exception("Opening file failed");
                     }
@@ -106,7 +108,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public OpenProjectCommand()
         {
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
         public override void Execute()
@@ -161,7 +163,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public SaveCommand()
         {
-            _editor = ServiceFactory.Instance.GetServiceInstance<IDockingService>().ActiveDocument as AbstractFileEditor;
+            _editor = DependencyFactory.Resolve<IDockingService>().ActiveDocument as AbstractFileEditor;
         }
 
         public override void Execute()
@@ -183,7 +185,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public SaveAsCommand()
         {
-            _editor = ServiceFactory.Instance.GetServiceInstance<IDockingService>().ActiveDocument as AbstractFileEditor;
+            _editor = DependencyFactory.Resolve<IDockingService>().ActiveDocument as AbstractFileEditor;
         }
 
         public override void Execute()
@@ -217,7 +219,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public SaveAllCommand()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
         public override void Execute()
@@ -235,7 +237,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public CloseCommand()
         {
-            _editor = ServiceFactory.Instance.GetServiceInstance<IDockingService>().ActiveDocument as AbstractFileEditor;
+            _editor = DependencyFactory.Resolve<IDockingService>().ActiveDocument as AbstractFileEditor;
         }
 
         public override void Execute()

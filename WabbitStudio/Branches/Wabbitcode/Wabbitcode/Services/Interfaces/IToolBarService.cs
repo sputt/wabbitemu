@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
-    public interface IToolBarService : IService
+    public interface IToolBarService
     {
         event EventHandler<ToolbarEventArgs> OnToolbarRegistered;
         event EventHandler<ToolbarVisibilityChangedEventArgs> OnToolBarVisibilityChanged;

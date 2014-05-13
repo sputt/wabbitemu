@@ -14,9 +14,9 @@ namespace Revsoft.Wabbitcode.Actions
 
         public RefactorRenameAction()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _fileService = ServiceFactory.Instance.GetServiceInstance<IFileService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
+            _fileService = DependencyFactory.Resolve<IFileService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
         public override void Execute()
@@ -47,8 +47,8 @@ namespace Revsoft.Wabbitcode.Actions
 
         public RefactorExtractMethodAction()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
         public override void Execute()

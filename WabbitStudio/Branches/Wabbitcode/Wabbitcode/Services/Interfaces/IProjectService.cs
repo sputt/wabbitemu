@@ -6,7 +6,7 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
-	public interface IProjectService : IService
+	public interface IProjectService
 	{
         event EventHandler ProjectOpened;
         event EventHandler ProjectClosed;

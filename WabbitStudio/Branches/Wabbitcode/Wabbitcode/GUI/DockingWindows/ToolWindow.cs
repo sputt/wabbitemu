@@ -29,7 +29,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 			InitializeComponent();
 
-			DockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+			DockingService = DependencyFactory.Resolve<IDockingService>();
 		}
 
         protected override string GetPersistString()

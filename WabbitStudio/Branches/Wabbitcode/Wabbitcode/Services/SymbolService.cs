@@ -1,11 +1,11 @@
-﻿using Revsoft.Wabbitcode.Services.Interfaces;
+﻿using Revsoft.Wabbitcode.Annotations;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Symbols;
-using Revsoft.Wabbitcode.Services.Utils;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    [ServiceDependency(typeof(IProjectService))]
-	public class SymbolService : ISymbolService
+    [UsedImplicitly]
+    public class SymbolService : ISymbolService
 	{
 		private readonly SymbolTable _symbolTable = new SymbolTable();
 		private readonly ListTable _listTable = new ListTable();
@@ -32,18 +32,10 @@ namespace Revsoft.Wabbitcode.Services
 			_listTable.ParseListFile(labelContents);
 		}
 
-		public void DestroyService()
-		{
-		}
-
-		public void InitService(params object[] objects)
-		{
-		    _projectService.ProjectOpened += (sender, args) => _projectDirectory = _projectService.Project.ProjectDirectory;
-		}
-
 		public SymbolService(IProjectService projectService)
 		{
-		    _projectService = projectService;        
+		    _projectService = projectService;
+            _projectService.ProjectOpened += (sender, args) => _projectDirectory = _projectService.Project.ProjectDirectory;
 		}
 	}
 }

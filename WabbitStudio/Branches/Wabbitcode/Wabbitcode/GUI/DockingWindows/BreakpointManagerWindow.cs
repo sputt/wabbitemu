@@ -31,7 +31,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 			InitializeComponent();
 
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
 		}
 
 		private void UpdateManager()

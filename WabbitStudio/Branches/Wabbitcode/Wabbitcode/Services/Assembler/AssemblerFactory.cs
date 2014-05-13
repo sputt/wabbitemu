@@ -1,8 +1,13 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Assembler
 {
-    internal static class AssemblerFactory
+    public interface IAssemblerFactory
     {
-        public static IAssembler CreateAssembler()
+        IAssembler CreateAssembler();
+    }
+
+    public class AssemblerFactory : IAssemblerFactory
+    {
+        public IAssembler CreateAssembler()
         {
             return new SpasmComAssembler();
         }

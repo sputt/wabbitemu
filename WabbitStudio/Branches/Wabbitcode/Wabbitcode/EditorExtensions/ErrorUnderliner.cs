@@ -24,7 +24,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             _editor = editor;
             _document = _editor.Document;
 
-            IBackgroundAssemblerService backgroundAssemblerService = ServiceFactory.Instance.GetServiceInstance<IBackgroundAssemblerService>();
+            IBackgroundAssemblerService backgroundAssemblerService = DependencyFactory.Resolve<IBackgroundAssemblerService>();
             backgroundAssemblerService.BackgroundAssemblerComplete += BackgroundAssemblerService_BackgroundAssemblerComplete;
         }
 

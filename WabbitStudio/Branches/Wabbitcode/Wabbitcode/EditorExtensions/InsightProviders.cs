@@ -18,7 +18,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
             string word = TextEditor.GetWordBeforeCaret();
 
-            IParserService parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
+            IParserService parserService = DependencyFactory.Resolve<IParserService>();
             var parserData = parserService.GetParserData(word, Settings.Default.CaseSensitive).ToList();
             Data.AddRange(parserData.Select(d =>
             {

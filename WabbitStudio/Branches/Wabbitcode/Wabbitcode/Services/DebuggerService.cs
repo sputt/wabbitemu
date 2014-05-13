@@ -1,15 +1,15 @@
 ﻿using System;
 using System.IO;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
-using Revsoft.Wabbitcode.Services.Utils;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    [ServiceDependency(typeof(IProjectService))]
-    internal class DebuggerService : IDebuggerService
+    [UsedImplicitly]
+    public class DebuggerService : IDebuggerService
     {
         private readonly IProjectService _projectService;
 
@@ -17,6 +17,11 @@ namespace Revsoft.Wabbitcode.Services
         public event EventHandler<DebuggingEventArgs> OnDebuggingEnded;
 
         public IWabbitcodeDebugger CurrentDebugger { get; private set; }
+
+        public DebuggerService(IProjectService projectService)
+        {
+            _projectService = projectService;
+        }
 
         public void StartDebugging()
         {
@@ -101,19 +106,6 @@ namespace Revsoft.Wabbitcode.Services
             }
 
             return createdName;
-        }
-
-        public void DestroyService()
-        {
-        }
-
-        public void InitService(params object[] objects)
-        {
-        }
-
-        public DebuggerService(IProjectService projectService)
-        {
-            _projectService = projectService;
         }
     }
 }

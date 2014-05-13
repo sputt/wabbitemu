@@ -3,19 +3,25 @@ using System.Collections.Generic;
 using System.IO;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Services.Interfaces;
-using Revsoft.Wabbitcode.Services.Utils;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    [ServiceDependency(typeof(IDockingService))]
+    [UsedImplicitly]
     public class FileService : IFileService
     {
         private readonly Dictionary<FilePath, Tuple<string, DateTime>> _cachedFiles = new Dictionary<FilePath, Tuple<string, DateTime>>();
-        private readonly Dictionary<FilePath, IDocument> _openDocuments = new Dictionary<FilePath, IDocument>(); 
+        private readonly Dictionary<FilePath, IDocument> _openDocuments = new Dictionary<FilePath, IDocument>();
+
+        public FileService(IDockingService dockingService)
+        {
+            dockingService.DocumentWindowAdded += DockingService_DocumentWindowAdded;
+            dockingService.DocumentWindowRemoved += DockingService_DocumentWindowRemoved;
+        }
 
         /// <summary>
         /// Returns the string contents of a line from a given file
@@ -150,20 +156,6 @@ namespace Revsoft.Wabbitcode.Services
                 _cachedFiles.Add(fileName, new Tuple<string, DateTime>(text, time));
             }
             return text;
-        }
-
-        public void DestroyService()
-        {   
-        }
-
-        public void InitService(params object[] objects)
-        {
-        }
-
-        public FileService(IDockingService dockingService)
-        {
-            dockingService.DocumentWindowAdded += DockingService_DocumentWindowAdded;
-            dockingService.DocumentWindowRemoved += DockingService_DocumentWindowRemoved;
         }
 
         private void DockingService_DocumentWindowRemoved(object sender, DockContentEventArgs e)

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.Dialogs
@@ -169,8 +170,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog
 			{
-				Filter = "Project Files|*.wcodeproj|All files|*.*",
-				DefaultExt = ".wcodeproj",
+				Filter = string.Format("Project Files|*{0}|All files|*.*", ProjectService.ProjectExtension),
+				DefaultExt = ProjectService.ProjectExtension,
 				FilterIndex = 0,
 				RestoreDirectory = true,
 				Title = "Open Project File",

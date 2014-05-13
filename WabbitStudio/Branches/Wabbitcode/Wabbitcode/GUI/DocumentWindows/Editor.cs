@@ -40,7 +40,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         internal static Editor OpenDocument(FilePath filename)
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             var child = dockingService.Documents.OfType<Editor>()
                 .SingleOrDefault(e => e.FileName == filename);
             if (child != null)
@@ -154,10 +154,10 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 		{
 		    InitializeComponent();
 
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
+            _parserService = DependencyFactory.Resolve<IParserService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
 
             editorBox.TextChanged += editorBox_TextChanged;
             editorBox.ContextMenu = contextMenu;

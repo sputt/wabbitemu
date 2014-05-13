@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.VisualBasic.ApplicationServices;
 using System;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI;
-using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode
 {
@@ -23,25 +20,6 @@ namespace Revsoft.Wabbitcode
 
 			// Add StartupNextInstance handler
 			StartupNextInstance += SIApp_StartupNextInstance;
-
-			IDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
-			{
-				{ typeof(IDockingService), typeof(DockingService) },
-				{ typeof(IProjectService), typeof(ProjectService) },
-				{ typeof(IAssemblerService), typeof(AssemblerService) },
-				{ typeof(ISymbolService), typeof(SymbolService) },
-				{ typeof(IParserService), typeof(ParserService) },
-				{ typeof(IBackgroundAssemblerService), typeof(BackgroundAssemblerService) },
-                { typeof(IFileService), typeof(FileService) },
-                { typeof(IStatusBarService), typeof(StatusBarService) },
-                { typeof(IToolBarService), typeof(ToolBarService) },
-                { typeof(IDebuggerService), typeof(DebuggerService) },
-                { typeof(IMenuService), typeof(MenuService) },
-                { typeof(IPluginService), typeof(PluginService) },
-			};
-
-			ServiceFactory.Instance = new ServiceFactory(dictionary);
-            LoggingService.Instance = new LoggingService();
 		}
 
 		/// <summary>

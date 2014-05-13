@@ -29,8 +29,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		public ErrorList()
 		{
 			InitializeComponent();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
-            var assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
+            var assemblerService = DependencyFactory.Resolve<IAssemblerService>();
 
 			errorGridView.ContextMenu = contextMenu1;
 			assemblerService.AssemblerFileFinished += Instance_AssemblerFileFinished;

@@ -524,11 +524,11 @@ namespace Revsoft.Wabbitcode.GUI.Menus
                 _helpMenuItem
             });
 
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
-            _statusBarService = ServiceFactory.Instance.GetServiceInstance<IStatusBarService>();
-            _toolBarService = ServiceFactory.Instance.GetServiceInstance<IToolBarService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
+            _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
+            _toolBarService = DependencyFactory.Resolve<IToolBarService>();
             EnableDocumentMenus();
 
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;

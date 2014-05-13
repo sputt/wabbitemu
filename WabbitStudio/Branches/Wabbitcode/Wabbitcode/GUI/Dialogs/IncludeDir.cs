@@ -20,7 +20,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		{
 			InitializeComponent();
 
-		    IProjectService projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+		    IProjectService projectService = DependencyFactory.Resolve<IProjectService>();
 			_project = projectService.Project;
 
 			var directories = _project.IsInternal ?

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services
 {
+    [UsedImplicitly]
     public class LoggingService : ILoggingService
     {
-        public static ILoggingService Instance { get; set; }
-
         public void Log(string message)
         {
             Debug.WriteLine(message);

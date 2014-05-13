@@ -118,9 +118,9 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
             GripStyle = ToolStripGripStyle.Hidden;
             Text = "Main Toolbar";
 
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _fileService = ServiceFactory.Instance.GetServiceInstance<IFileService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
+            _fileService = DependencyFactory.Resolve<IFileService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
 
             _newToolStripButton.Click += newToolButton_Click;
             _openToolStripButton.Click += openToolButton_Click;

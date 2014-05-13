@@ -34,7 +34,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 			InitializeComponent();
 
-            _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
+            _parserService = DependencyFactory.Resolve<IParserService>();
 
 		    _parserService.OnParserFinished += (sender, args) =>
 		    {

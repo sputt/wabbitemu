@@ -37,7 +37,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 			InitializeComponent();
 
-		    _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+		    _projectService = DependencyFactory.Resolve<IProjectService>();
 
 		    _projectService.ProjectOpened += (sender, args) => BuildProjTree();
 		    _projectService.ProjectClosed += (sender, args) => CloseProject();

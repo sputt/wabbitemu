@@ -14,7 +14,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public CutAction()
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             _activeContent = dockingService.ActiveContent as IClipboardOperation;
         }
 
@@ -33,7 +33,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public CopyAction()
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             _activeContent = dockingService.ActiveContent as IClipboardOperation;
         }
 
@@ -52,7 +52,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public PasteAction()
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             _activeContent = dockingService.ActiveContent as IClipboardOperation;
         }
 
@@ -71,7 +71,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public SelectAllAction()
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             _activeContent = dockingService.ActiveContent as ISelectable;
         }
 
@@ -90,7 +90,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public UndoAction()
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             _activeContent = dockingService.ActiveContent as IUndoable;
         }
 
@@ -109,7 +109,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public RedoAction()
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             _activeContent = dockingService.ActiveContent as IUndoable;
         }
 
@@ -126,7 +126,7 @@ namespace Revsoft.Wabbitcode.Actions
     {
         public override void Execute()
         {
-            var dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
             {
@@ -141,7 +141,7 @@ namespace Revsoft.Wabbitcode.Actions
     {
         public override void Execute()
         {
-            var dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
             {
@@ -158,7 +158,7 @@ namespace Revsoft.Wabbitcode.Actions
     {
         public override void Execute()
         {
-            var dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
             {
@@ -173,7 +173,7 @@ namespace Revsoft.Wabbitcode.Actions
     {
         public override void Execute()
         {
-            var dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            var dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
             {
@@ -195,8 +195,8 @@ namespace Revsoft.Wabbitcode.Actions
 
         public FindAllReferencesAction()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
             _activeTextEditor = _dockingService.ActiveDocument as ITextEditor;
             _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
         }
@@ -230,7 +230,7 @@ namespace Revsoft.Wabbitcode.Actions
     {
         public override void Execute()
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
             {
@@ -245,7 +245,7 @@ namespace Revsoft.Wabbitcode.Actions
     {
         public override void Execute()
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
             {
@@ -260,7 +260,7 @@ namespace Revsoft.Wabbitcode.Actions
     {
         public override void Execute()
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
             {
@@ -275,7 +275,7 @@ namespace Revsoft.Wabbitcode.Actions
     {
         public override void Execute()
         {
-            IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
             {
@@ -293,7 +293,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public FixCaseAction(string newCase)
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
             _newCase = newCase;
         }
 
@@ -314,7 +314,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public FormatDocumentAction()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
         public override void Execute()
@@ -335,7 +335,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public ConvertSpacesToTabsAction()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
         public override void Execute()
@@ -356,7 +356,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public ToggleBookmark()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
         public override void Execute()
@@ -377,7 +377,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public GotoNextBookmark()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
         public override void Execute()
@@ -398,7 +398,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public GotoPreviousBookmark()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
         public override void Execute()

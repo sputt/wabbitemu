@@ -1,19 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    class ToolBarService : IToolBarService
+    [UsedImplicitly]
+    public class ToolBarService : IToolBarService
     {
         private readonly Dictionary<string, ToolStrip> _toolBars = new Dictionary<string, ToolStrip>();
-        private ToolStripPanel _panel;
+        private readonly ToolStripPanel _panel;
 
         public event EventHandler<ToolbarEventArgs> OnToolbarRegistered;
         public event EventHandler<ToolbarVisibilityChangedEventArgs> OnToolBarVisibilityChanged;
+
+        public ToolBarService(ToolStripPanel panel)
+        {
+            _panel = panel;
+        }
 
         public void RegisterToolbar(string toolBarName, ToolStrip toolBar)
         {
@@ -82,26 +88,6 @@ namespace Revsoft.Wabbitcode.Services
             {
                 OnToolBarVisibilityChanged(this, new ToolbarVisibilityChangedEventArgs(toolbarName, true));
             }
-        }
-
-        public void DestroyService()
-        {
-        }
-
-        public void InitService(params object[] objects)
-        {
-            if (objects.Length != 1)
-            {
-                throw new ArgumentException("Toolabar service expects exactly one param");
-            }
-
-            ToolStripPanel container = objects.First() as ToolStripPanel;
-            if (container == null)
-            {
-                throw new ArgumentException("Expected first argumet to be a ToolStripPanel");
-            }
-
-            _panel = container;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
     public delegate void ParserProgressHandler(object sender, ParserProgressEventArgs e);
     public delegate void ParserFinishedHandler(object sender, ParserEventArgs e);
 
-	public interface IParserService : IService
+	public interface IParserService
 	{
 		event ParserProgressHandler OnParserProgress;
         event ParserFinishedHandler OnParserFinished;

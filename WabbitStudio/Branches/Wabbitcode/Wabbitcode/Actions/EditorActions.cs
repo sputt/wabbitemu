@@ -31,10 +31,10 @@ namespace Revsoft.Wabbitcode.Actions
             _fileName = fileName;
             _text = text;
             _currentLine = currentLine;
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _fileService = ServiceFactory.Instance.GetServiceInstance<IFileService>();
-            _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
+            _fileService = DependencyFactory.Resolve<IFileService>();
+            _parserService = DependencyFactory.Resolve<IParserService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
             _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
         }
 
@@ -127,7 +127,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public GotoLineAction()
         {
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
         public GotoLineAction(DocumentLocation location) : this()

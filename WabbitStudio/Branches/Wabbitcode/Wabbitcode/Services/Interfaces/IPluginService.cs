@@ -1,6 +1,6 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Interfaces
 {
-    public interface IPluginService : IService
+    public interface IPluginService
     {
         void LoadPlugins();
 

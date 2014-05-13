@@ -42,7 +42,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 			iyBox.ContextMenu = contextMenu1;
 			pcBox.ContextMenu = contextMenu1;
 			spBox.ContextMenu = contextMenu1;
-		    IDebuggerService debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
+		    IDebuggerService debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
 		}
 

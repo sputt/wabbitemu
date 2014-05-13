@@ -16,10 +16,10 @@ namespace Revsoft.Wabbitcode.Actions
 
         public BuildAction()
         {
-            _assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
-            _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
-            _statusBarService = ServiceFactory.Instance.GetServiceInstance<IStatusBarService>();
+            _assemblerService = DependencyFactory.Resolve<IAssemblerService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
+            _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
         }
         public override void Execute()
         {

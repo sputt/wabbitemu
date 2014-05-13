@@ -25,7 +25,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 		{
 		    InitializeComponent();
 
-		    IAssemblerService assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
+		    IAssemblerService assemblerService = DependencyFactory.Resolve<IAssemblerService>();
 
 			outputWindowBox.ContextMenu = contextMenu1;
             Settings.Default.SettingChanging += Default_SettingChanging;

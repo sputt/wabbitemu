@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 using System.Collections.Generic;
 using System.Linq;
-using Revsoft.Wabbitcode.Services.Utils;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services
 {
-	[ServiceDependency(typeof(IParserService))]
-    [ServiceDependency(typeof(IStatusBarService))]
-	public class ProjectService : IProjectService
+    [UsedImplicitly]
+    public class ProjectService : IProjectService
     {
+        public const string ProjectExtension = ".wcodeproj";
+
         #region Events
 
         public event EventHandler ProjectOpened;
@@ -40,11 +41,13 @@ namespace Revsoft.Wabbitcode.Services
 
 		public IProject Project { get; private set; }
 
-		public ProjectService(IParserService parserService, IStatusBarService statusBarService)
-		{
-		    _parserService = parserService;
-		    _statusBarService = statusBarService;
-		}
+        public ProjectService(IParserService parserService, IStatusBarService statusBarService, 
+            IFileTypeMethodFactory fileTypeMethodFactory)
+        {
+            _parserService = parserService;
+            _statusBarService = statusBarService;
+            fileTypeMethodFactory.RegisterFileType(ProjectExtension, OpenProject);
+        }
 
 		public bool OpenProject(FilePath fileName)
 		{
@@ -227,18 +230,5 @@ namespace Revsoft.Wabbitcode.Services
 
 			return refsList;
 		}
-
-
-		#region IService
-		public void DestroyService()
-		{
-			
-		}
-
-		public void InitService(params object[] objects)
-		{
-            FileTypeMethodFactory.RegisterFileType(".wcodeproj", OpenProject);
-		}
-		#endregion
 	}
 }

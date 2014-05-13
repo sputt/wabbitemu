@@ -6,7 +6,7 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
-	public interface IAssemblerService : IService
+	public interface IAssemblerService
 	{
         event EventHandler<AssemblyFinishFileEventArgs> AssemblerFileFinished;
         event EventHandler<AssemblyFinishProjectEventArgs> AssemblerProjectFinished;

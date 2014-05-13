@@ -5,7 +5,7 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
-	public interface IDockingService : IService
+	public interface IDockingService
 	{
         event EventHandler ActiveDocumentChanged;
         event EventHandler<DockContentEventArgs> DocumentWindowAdded;
@@ -28,5 +28,7 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
         void ShowDockPanel(string panelName, string beforeContentName, DockAlignment alignment);
 		void LoadConfig(DeserializeDockContent dockContent);
 	    void InitPanels();
+
+	    void SavePanels();
 	}
 }

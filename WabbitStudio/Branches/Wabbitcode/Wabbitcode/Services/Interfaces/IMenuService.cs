@@ -2,7 +2,7 @@
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
-    public interface IMenuService : IService
+    public interface IMenuService
     {
         void RegisterMenu(string menuName, MenuStrip menu);
 

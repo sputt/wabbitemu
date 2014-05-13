@@ -47,8 +47,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
 	    private FindAndReplaceForm()
 		{
-            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>();
-            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _dockingService = DependencyFactory.Resolve<IDockingService>();
+            _projectService = DependencyFactory.Resolve<IProjectService>();
             _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
 
             _results = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
@@ -115,7 +115,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 		public void ShowFor(Form owner, WabbitcodeTextEditor editor, SearchMode mode)
 		{
 		    _editor = editor;
-            IFileService fileService = ServiceFactory.Instance.GetServiceInstance<IFileService>();
+            IFileService fileService = DependencyFactory.Resolve<IFileService>();
             string fileText = editor == null ? string.Empty : fileService.GetFileText(new FilePath(editor.FileName));
             _search = new TextEditorSearcher(fileText);
 

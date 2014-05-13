@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
-using Revsoft.Wabbitcode.Services.Utils;
 
 namespace Revsoft.Wabbitcode.Services
 {
-	[ServiceDependency(typeof(IProjectService))]
-	[ServiceDependency(typeof(IAssemblerService))]
-    [ServiceDependency(typeof(IStatusBarService))]
-	public class BackgroundAssemblerService : IBackgroundAssemblerService
+    [UsedImplicitly]
+    public class BackgroundAssemblerService : IBackgroundAssemblerService
 	{
 		#region Private Members
 
@@ -26,6 +24,14 @@ namespace Revsoft.Wabbitcode.Services
 		public event EventHandler<AssemblyFinishEventArgs> BackgroundAssemblerComplete;
 
 		#endregion
+
+        public BackgroundAssemblerService(IAssemblerService assemblerService, IProjectService projectService,
+            IStatusBarService statusBarService)
+        {
+            _projectService = projectService;
+            _assemblerService = assemblerService;
+            _statusBarService = statusBarService;
+        }
 
 		#region Public Methods
 
@@ -77,27 +83,5 @@ namespace Revsoft.Wabbitcode.Services
 		        BackgroundAssemblerComplete(sender, e);
 		    }
 		}
-
-		#region IService
-
-		public BackgroundAssemblerService(IAssemblerService assemblerService, IProjectService projectService, 
-            IStatusBarService statusBarService)
-		{
-			_projectService = projectService;
-			_assemblerService = assemblerService;
-		    _statusBarService = statusBarService;
-		}
-
-		public void DestroyService()
-		{
-			_assemblerService.DestroyService();
-		}
-
-		public void InitService(params object[] objects)
-		{
-
-		}
-
-		#endregion
 	}
 }

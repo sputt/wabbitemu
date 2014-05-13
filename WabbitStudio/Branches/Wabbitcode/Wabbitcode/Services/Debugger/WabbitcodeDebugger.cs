@@ -81,9 +81,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 		{
 		    _disposed = false;
 
-		    _debuggerService = ServiceFactory.Instance.GetServiceInstance<IDebuggerService>();
-		    _fileService = ServiceFactory.Instance.GetServiceInstance<IFileService>();
-			_symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
+		    _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+		    _fileService = DependencyFactory.Resolve<IFileService>();
+			_symbolService = DependencyFactory.Resolve<ISymbolService>();
 
             WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
             WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;

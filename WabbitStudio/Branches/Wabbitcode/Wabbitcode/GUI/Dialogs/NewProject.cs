@@ -19,7 +19,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
 		public NewProjectDialog()
 		{
-		    _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+		    _projectService = DependencyFactory.Resolve<IProjectService>();
 
 			InitializeComponent();
 			CreateTemplates();
