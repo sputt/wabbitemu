@@ -53,30 +53,24 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 
         public string Assemble()
         {
-            string output = string.Empty;
-            string includeDir = _includeDirs.Count > 0 ? "-I " : string.Empty;
-            includeDir = _includeDirs.Aggregate(includeDir, (current, dir) => current + (Quote + dir + Quote + ";"));
-
-            string caseString = _caseSensitive ? " -A " : " ";
-            _wabbitspasm.StartInfo.Arguments = includeDir + caseString + _flagsString + Quote + _inputFile + Quote + " " + Quote + _outputFile + Quote;
-            _wabbitspasm.OutputDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
-            _wabbitspasm.ErrorDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
-            _wabbitspasm.Start();
-            _wabbitspasm.BeginOutputReadLine();
-            _wabbitspasm.BeginErrorReadLine();
-            _wabbitspasm.WaitForExit();
-
-            return output;
+            string arguments = Quote + _inputFile + Quote + " " + Quote + _outputFile + Quote;
+            return SetupRunAssemble(arguments);
         }
 
         public string Assemble(string code)
+        {
+            string arguments = Quote + code + Quote;
+            return SetupRunAssemble(arguments);
+        }
+
+        private string SetupRunAssemble(string arguments)
         {
             string output = string.Empty;
             string includeDir = _includeDirs.Count > 0 ? "-I " : string.Empty;
             includeDir = _includeDirs.Aggregate(includeDir, (current, dir) => current + (Quote + dir + Quote + ";"));
 
             string caseString = _caseSensitive ? " -A " : " ";
-            _wabbitspasm.StartInfo.Arguments = includeDir + caseString + _flagsString + Quote + code + Quote;
+            _wabbitspasm.StartInfo.Arguments = includeDir + caseString + _flagsString + arguments;
             _wabbitspasm.OutputDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
             _wabbitspasm.ErrorDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
             _wabbitspasm.Start();

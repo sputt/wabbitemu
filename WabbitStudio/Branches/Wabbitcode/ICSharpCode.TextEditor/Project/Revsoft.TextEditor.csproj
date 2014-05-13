@@ -511,6 +511,7 @@
     <Compile Include="Src\Document\BreakpointManager\Breakpoint.cs" />
     <Compile Include="Src\Document\BreakpointManager\BreakpointEventHandler.cs" />
     <Compile Include="Src\Document\BreakpointManager\BreakpointManagerMemento.cs" />
+    <Compile Include="Src\Document\BreakpointManager\AbstractMarginIcon.cs" />
     <Compile Include="Src\Document\DefaultDocument.cs" />
     <Compile Include="Src\Document\DocumentEventArgs.cs" />
     <Compile Include="Src\Document\DocumentFactory.cs" />
