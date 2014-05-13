@@ -16,12 +16,10 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
     public partial class StackViewer : ToolWindow
     {
         public const string WindowIdentifier = "Stack Viewer";
+
         public override string WindowName
         {
-            get
-            {
-                return WindowIdentifier;
-            }
+            get { return WindowIdentifier; }
         }
 
         private IWabbitcodeDebugger _debugger;
@@ -36,7 +34,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             debuggerService.OnDebuggingEnded += mainForm_OnDebuggingEnded;
         }
 
-        void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
+        private void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
             _debugger = e.Debugger;
             _debugger.DebuggerStep += (o, args) =>
@@ -51,7 +49,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             };
         }
 
-        void mainForm_OnDebuggingEnded(object sender, DebuggingEventArgs e)
+        private void mainForm_OnDebuggingEnded(object sender, DebuggingEventArgs e)
         {
             _debugger = null;
         }
@@ -63,7 +61,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             foreach (var data in _debugger.MachineStack.Reverse())
             {
                 var row = new DataGridViewRow();
-                row.CreateCells(stackView, data.Address.ToString("X").PadLeft(4, '0'), 
+                row.CreateCells(stackView, data.Address.ToString("X").PadLeft(4, '0'),
                     data.Data.ToString("X").PadLeft(4, '0'));
                 rowData.Add(row);
             }

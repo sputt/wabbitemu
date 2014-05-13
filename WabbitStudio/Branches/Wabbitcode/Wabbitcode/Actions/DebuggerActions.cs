@@ -83,7 +83,7 @@ namespace Revsoft.Wabbitcode.Actions
             {
                 _debuggerService.StartDebugging();
             }
-            catch (MissingROMException)
+            catch (MissingRomException)
             {
                 bool hasRom = PromptForRomFile();
                 if (hasRom)
@@ -104,7 +104,7 @@ namespace Revsoft.Wabbitcode.Actions
                 CheckFileExists = true,
                 DefaultExt = "*.rom",
                 Filter = "All Know File Types | *.rom; *.sav; |ROM Files (*.rom)|*.rom|" +
-                            "Savestate Files (*.sav)|*.sav|All Files(*.*)|*.*",
+                         "Savestate Files (*.sav)|*.sav|All Files(*.*)|*.*",
                 FilterIndex = 0,
                 Multiselect = true,
                 RestoreDirectory = true,

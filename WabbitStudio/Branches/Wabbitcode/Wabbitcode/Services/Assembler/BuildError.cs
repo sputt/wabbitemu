@@ -12,28 +12,12 @@ namespace Revsoft.Wabbitcode.Services.Assembler
             IsWarning = isWarning;
         }
 
-        public string Description
-        {
-            get;
-            set;
-        }
+        public string Description { get; set; }
 
-        public FilePath File
-        {
-            get;
-            private set;
-        }
+        public FilePath File { get; private set; }
 
-        public bool IsWarning
-        {
-            get;
-            private set;
-        }
+        public bool IsWarning { get; private set; }
 
-        public int LineNumber
-        {
-            get;
-            private set;
-        }
+        public int LineNumber { get; private set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Revsoft.Wabbitcode.Annotations;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
@@ -8,22 +8,22 @@ namespace Revsoft.Wabbitcode.Services
 {
     [UsedImplicitly]
     public class BackgroundAssemblerService : IBackgroundAssemblerService
-	{
-		#region Private Members
+    {
+        #region Private Members
 
-		private volatile bool _isAssembling;
-		private volatile bool _restartAssembling;
-		private readonly IAssemblerService _assemblerService;
-		private readonly IProjectService _projectService;
-	    private readonly IStatusBarService _statusBarService;
+        private volatile bool _isAssembling;
+        private volatile bool _restartAssembling;
+        private readonly IAssemblerService _assemblerService;
+        private readonly IProjectService _projectService;
+        private readonly IStatusBarService _statusBarService;
 
-		#endregion
+        #endregion
 
-		#region Events
+        #region Events
 
-		public event EventHandler<AssemblyFinishEventArgs> BackgroundAssemblerComplete;
+        public event EventHandler<AssemblyFinishEventArgs> BackgroundAssemblerComplete;
 
-		#endregion
+        #endregion
 
         public BackgroundAssemblerService(IAssemblerService assemblerService, IProjectService projectService,
             IStatusBarService statusBarService)
@@ -33,55 +33,55 @@ namespace Revsoft.Wabbitcode.Services
             _statusBarService = statusBarService;
         }
 
-		#region Public Methods
+        #region Public Methods
 
-		public void RequestAssemble()
-		{
-			if (_isAssembling)
-			{
-				_restartAssembling = true;
-				return;
-			}
+        public void RequestAssemble()
+        {
+            if (_isAssembling)
+            {
+                _restartAssembling = true;
+                return;
+            }
 
-			_isAssembling = true;
-			Task.Factory.StartNew(() =>
-			{
-				if (_projectService.Project == null || _projectService.Project.IsInternal)
-				{
-					return;
-				}
-				_assemblerService.AssemblerProjectFinished += AssemblerFinished;
-				_assemblerService.AssembleProject(_projectService.Project);
+            _isAssembling = true;
+            Task.Factory.StartNew(() =>
+            {
+                if (_projectService.Project == null || _projectService.Project.IsInternal)
+                {
+                    return;
+                }
+                _assemblerService.AssemblerProjectFinished += AssemblerFinished;
+                _assemblerService.AssembleProject(_projectService.Project);
 
-				_isAssembling = false;
+                _isAssembling = false;
 
-				if (!_restartAssembling)
-				{
-					return;
-				}
+                if (!_restartAssembling)
+                {
+                    return;
+                }
 
-				_restartAssembling = false;
-				RequestAssemble();
-			});
-		}
+                _restartAssembling = false;
+                RequestAssemble();
+            });
+        }
 
-	    public void CountCode(string codeInfoLines)
-	    {
-	        Task.Factory.StartNew(() =>
-	        {
-	            var info = _assemblerService.CountCode(codeInfoLines);
-	            _statusBarService.SetCodeCountInfo(info);
-	        });
-	    }
+        public void CountCode(string codeInfoLines)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                var info = _assemblerService.CountCode(codeInfoLines);
+                _statusBarService.SetCodeCountInfo(info);
+            });
+        }
 
-		#endregion
+        #endregion
 
-		private void AssemblerFinished(object sender, AssemblyFinishEventArgs e)
-		{
-		    if (BackgroundAssemblerComplete != null)
-		    {
-		        BackgroundAssemblerComplete(sender, e);
-		    }
-		}
-	}
+        private void AssemblerFinished(object sender, AssemblyFinishEventArgs e)
+        {
+            if (BackgroundAssemblerComplete != null)
+            {
+                BackgroundAssemblerComplete(sender, e);
+            }
+        }
+    }
 }

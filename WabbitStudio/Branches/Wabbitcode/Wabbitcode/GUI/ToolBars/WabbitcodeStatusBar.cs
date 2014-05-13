@@ -24,12 +24,14 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
 
         public WabbitcodeStatusBar()
         {
-            Items.AddRange(new ToolStripItem[] {
-            _statusLabel,
-            _progressBar,
-            _lineCodeInfo,
-            _lineStatusLabel,
-            _colStatusLabel});
+            Items.AddRange(new ToolStripItem[]
+            {
+                _statusLabel,
+                _progressBar,
+                _lineCodeInfo,
+                _lineStatusLabel,
+                _colStatusLabel
+            });
             Name = "statusBar";
         }
 

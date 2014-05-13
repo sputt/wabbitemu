@@ -14,25 +14,25 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.Dialogs
 {
-	public sealed partial class RefactorRenameForm : Form
-	{
-		private const int PreviewHeight = 400;
-	    private readonly ITextEditor _editor;
+    public sealed partial class RefactorRenameForm : Form
+    {
+        private const int PreviewHeight = 400;
+        private readonly ITextEditor _editor;
         private readonly IProjectService _projectService;
         private readonly IFileService _fileService;
         private readonly Dictionary<string, TextEditorControl> _editors = new Dictionary<string, TextEditorControl>();
-        private readonly Timer _updateTimer = new Timer { Interval = 2000 };
+        private readonly Timer _updateTimer = new Timer {Interval = 2000};
 
         private string _selectedText;
         private List<List<Reference>> _references;
-	    private bool _hasBeenInited;
-	    private int _lastLength;
+        private bool _hasBeenInited;
+        private int _lastLength;
 
-	    public RefactorRenameForm(ITextEditor editor, IFileService fileService, IProjectService projectService)
-	    {
-	        _fileService = fileService;
+        public RefactorRenameForm(ITextEditor editor, IFileService fileService, IProjectService projectService)
+        {
+            _fileService = fileService;
             _projectService = projectService;
-	        _editor = editor;
+            _editor = editor;
             _updateTimer.Tick += updateTimer_Tick;
         }
 
@@ -40,8 +40,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
         /// Sets up rename form based on inputs
         /// </summary>
         /// <returns>True if word at caret is valid for rename, false otherwise</returns>
-	    public bool Initialize()
-	    {
+        public bool Initialize()
+        {
             _selectedText = _editor.GetWordAtCaret();
 
             _references = _projectService.FindAllReferences(_selectedText).ToList();
@@ -53,8 +53,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             SetupPreview();
             UpdateEditorReferences();
 
-	        return true;
-	    }
+            return true;
+        }
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
@@ -115,7 +115,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                     UseTextHighlighting = false,
                 };
                 editor.LoadFile(fileName);
-                
+
                 tab.Controls.Add(editor);
                 _editors.Add(fileName, editor);
 
@@ -202,11 +202,11 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             textArea.SetDesiredColumn();
         }
 
-	    private void updateTimer_Tick(object sender, EventArgs e)
-	    {
+        private void updateTimer_Tick(object sender, EventArgs e)
+        {
             UpdateEditorReferences();
             _lastLength = nameBox.TextLength;
-	    }
+        }
 
         private void nameBox_TextChanged(object sender, EventArgs e)
         {
@@ -222,5 +222,5 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
             _updateTimer.Start();
         }
-	}
+    }
 }

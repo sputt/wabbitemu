@@ -15,10 +15,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         public ImageList ImageList
         {
-            get
-            {
-                return new ImageList();
-            }
+            get { return new ImageList(); }
         }
 
         public string PreSelection
@@ -34,10 +31,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         public int DefaultIndex
         {
-            get
-            {
-                return -1;
-            }
+            get { return -1; }
         }
 
         public CompletionDataProviderKeyResult ProcessKey(char key)

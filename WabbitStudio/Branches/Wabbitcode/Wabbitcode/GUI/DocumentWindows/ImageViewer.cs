@@ -12,9 +12,9 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 {
     public sealed class ImageViewer : AbstractFileEditor
     {
-        const double ConstZoomFactor = 1.4;
-        const double MaxZoom = 16.0;
-        const double MinZoom = .125;
+        private const double ConstZoomFactor = 1.4;
+        private const double MaxZoom = 16.0;
+        private const double MinZoom = .125;
 
         private Bitmap _originalImage;
         private double _currentZoom = 1.0;
@@ -88,8 +88,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 _pictureBox.Image.Dispose();
             }
 
-            int height = (int) (_originalImage.Height*_currentZoom);
-            int width = (int) (_originalImage.Width*_currentZoom);
+            int height = (int) (_originalImage.Height * _currentZoom);
+            int width = (int) (_originalImage.Width * _currentZoom);
             _pictureBox.Image = _originalImage.ResizeImage(width, height);
         }
 
@@ -100,8 +100,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             base.OpenFile(fileName);
 
             _originalImage = new Bitmap(fileName);
-            if ((_originalImage.Size.Width < Size.Width/4) || 
-                (_originalImage.Size.Height < Size.Height/4))
+            if ((_originalImage.Size.Width < Size.Width / 4) ||
+                (_originalImage.Size.Height < Size.Height / 4))
             {
                 _currentZoom = 4.0;
             }
@@ -125,7 +125,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         }
 
         public override void Undo()
-        {   
+        {
         }
 
         public override void Redo()

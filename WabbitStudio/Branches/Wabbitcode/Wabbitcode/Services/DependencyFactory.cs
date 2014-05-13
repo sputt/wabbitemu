@@ -2,17 +2,17 @@
 
 namespace Revsoft.Wabbitcode.Services
 {
-	public static class DependencyFactory
-	{
-	    private static readonly UnityContainer UnityContainer = new UnityContainer();
+    public static class DependencyFactory
+    {
+        private static readonly UnityContainer UnityContainer = new UnityContainer();
 
-		/// <summary>
-		/// Creates and initializes an instance of type T
-		/// </summary>
-		/// <typeparam name="T">Type of service to initialize</typeparam>
-		/// <returns>Instance of the service created</returns>
-		public static T Resolve<T>()
-		{
+        /// <summary>
+        /// Creates and initializes an instance of type T
+        /// </summary>
+        /// <typeparam name="T">Type of service to initialize</typeparam>
+        /// <returns>Instance of the service created</returns>
+        public static T Resolve<T>()
+        {
             T ret = default(T);
 
             if (UnityContainer.IsRegistered(typeof(T)))
@@ -21,7 +21,7 @@ namespace Revsoft.Wabbitcode.Services
             }
 
             return ret;
-		}
+        }
 
         public static void RegisterType<TFrom, TTo>() where TTo : TFrom
         {
@@ -29,8 +29,8 @@ namespace Revsoft.Wabbitcode.Services
         }
 
         public static void RegisterType<TFrom, TTo>(InjectionConstructor injectionConstructor) where TTo : TFrom
-	    {
+        {
             UnityContainer.RegisterType<TFrom, TTo>(new ContainerControlledLifetimeManager(), injectionConstructor);
-	    }
-	}
+        }
+    }
 }

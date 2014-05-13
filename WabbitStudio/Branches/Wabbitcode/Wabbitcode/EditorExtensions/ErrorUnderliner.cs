@@ -47,7 +47,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             }
 
             _document.MarkerStrategy.RemoveAll(m => m is ErrorMarker);
-            var options = Settings.Default.CaseSensitive ? 
+            var options = Settings.Default.CaseSensitive ?
                 StringComparison.Ordinal :
                 StringComparison.OrdinalIgnoreCase;
             foreach (BuildError error in parsedErrors.Where(
@@ -61,9 +61,9 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                 int length;
                 if (match.Success)
                 {
-                     word = segment.Words.FirstOrDefault(
-                         s => s.Word.Equals(match.Groups["error"].Value, options)) ??
-                         segment.Words.FirstOrDefault(w => !w.IsWhiteSpace);
+                    word = segment.Words.FirstOrDefault(
+                        s => s.Word.Equals(match.Groups["error"].Value, options)) ??
+                           segment.Words.FirstOrDefault(w => !w.IsWhiteSpace);
 
                     length = match.Groups["error"].Length;
                 }

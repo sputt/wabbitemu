@@ -2,8 +2,7 @@
 
 namespace Revsoft.Wabbitcode.GUI.ToolBars
 {
-    class EditorToolBar : ToolStrip
+    internal class EditorToolBar : ToolStrip
     {
-
     }
 }

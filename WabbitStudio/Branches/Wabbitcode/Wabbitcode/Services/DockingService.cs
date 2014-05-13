@@ -1,6 +1,6 @@
 ﻿using System.Linq;
-using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Resources;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -15,88 +15,82 @@ namespace Revsoft.Wabbitcode.Services
 {
     [UsedImplicitly]
     public sealed class DockingService : IDockingService
-	{
-		#region Private Members
+    {
+        #region Private Members
 
-		private readonly DockPanel _dockPanel;
-        private readonly Dictionary<string, ToolWindow> _registeredDockingWindows = new Dictionary<string, ToolWindow>(); 
+        private readonly DockPanel _dockPanel;
+        private readonly Dictionary<string, ToolWindow> _registeredDockingWindows = new Dictionary<string, ToolWindow>();
 
-		#endregion
+        #endregion
 
-		#region Public Properties
+        #region Public Properties
 
-	    public IDockContent ActiveContent
-		{
-			get
-			{
-				return _dockPanel == null ? null : _dockPanel.ActiveContent;
-			}
-		}
+        public IDockContent ActiveContent
+        {
+            get { return _dockPanel == null ? null : _dockPanel.ActiveContent; }
+        }
 
-		public IDockContent ActiveDocument
-		{
-			get
-			{
-			    return _dockPanel.ActiveDocument;
-			}
-		}
+        public IDockContent ActiveDocument
+        {
+            get { return _dockPanel.ActiveDocument; }
+        }
 
-		public IEnumerable<IDockContent> Documents
-		{
-			get
-			{
-				lock (_dockPanel.Documents)
-				{
-				    return _dockPanel.Documents;
-				}
-			}
-		}
+        public IEnumerable<IDockContent> Documents
+        {
+            get
+            {
+                lock (_dockPanel.Documents)
+                {
+                    return _dockPanel.Documents;
+                }
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region Static Methods
+        #region Static Methods
 
-		public static void ShowError(string error)
-		{
-			MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-		}
+        public static void ShowError(string error)
+        {
+            MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
 
-		public static void ShowError(string error, Exception ex)
-		{
-			StringBuilder sb = new StringBuilder(error);
-			sb.Append("\nReason: ");
-			sb.Append(ex.Message);
-			MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        public static void ShowError(string error, Exception ex)
+        {
+            StringBuilder sb = new StringBuilder(error);
+            sb.Append("\nReason: ");
+            sb.Append(ex.Message);
+            MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             DependencyFactory.Resolve<ILoggingService>().Log(sb.ToString(), ex);
-		}
+        }
 
-		internal static DialogResult ShowMessageBox(Form parent, string text, string caption,
-						MessageBoxButtons messageBoxButtons, MessageBoxIcon messageBoxIcon)
-		{
-		    if (parent == null || !parent.InvokeRequired)
-		    {
-		        return MessageBox.Show(parent, text, caption, messageBoxButtons, messageBoxIcon);
-		    }
+        internal static DialogResult ShowMessageBox(Form parent, string text, string caption,
+            MessageBoxButtons messageBoxButtons, MessageBoxIcon messageBoxIcon)
+        {
+            if (parent == null || !parent.InvokeRequired)
+            {
+                return MessageBox.Show(parent, text, caption, messageBoxButtons, messageBoxIcon);
+            }
 
-		    Func<DialogResult> invokeBox = () => ShowMessageBox(parent, text, caption, messageBoxButtons, messageBoxIcon);
-		    return (DialogResult)parent.Invoke(invokeBox);
-		}
+            Func<DialogResult> invokeBox = () => ShowMessageBox(parent, text, caption, messageBoxButtons, messageBoxIcon);
+            return (DialogResult) parent.Invoke(invokeBox);
+        }
 
-		#endregion
+        #endregion
 
-		#region Events
+        #region Events
 
-		public event EventHandler ActiveDocumentChanged;
+        public event EventHandler ActiveDocumentChanged;
         public event EventHandler<DockContentEventArgs> DocumentWindowAdded;
         public event EventHandler<DockContentEventArgs> DocumentWindowRemoved;
 
-		private void DockPanelOnActiveDocumentChanged(object sender, EventArgs eventArgs)
-		{
-			if (ActiveDocumentChanged != null)
-			{
-				ActiveDocumentChanged(sender, eventArgs);
-			}
-		}
+        private void DockPanelOnActiveDocumentChanged(object sender, EventArgs eventArgs)
+        {
+            if (ActiveDocumentChanged != null)
+            {
+                ActiveDocumentChanged(sender, eventArgs);
+            }
+        }
 
         private void DockPanel_ContentRemoved(object sender, DockContentEventArgs e)
         {
@@ -114,7 +108,7 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
-		#endregion
+        #endregion
 
         public DockingService(DockPanel dockPanel)
         {
@@ -151,18 +145,18 @@ namespace Revsoft.Wabbitcode.Services
             return window;
         }
 
-		public void HideDockPanel(DockContent panel)
-		{
-			if (panel == null)
-			{
-				return;
-			}
+        public void HideDockPanel(DockContent panel)
+        {
+            if (panel == null)
+            {
+                return;
+            }
 
-			panel.Hide();
-		}
+            panel.Hide();
+        }
 
-	    public void HideDockPanel(string panelName)
-	    {
+        public void HideDockPanel(string panelName)
+        {
             if (string.IsNullOrEmpty(panelName))
             {
                 return;
@@ -175,17 +169,17 @@ namespace Revsoft.Wabbitcode.Services
             {
                 window.Hide();
             }
-	    }
+        }
 
-	    public void ShowDockPanel(DockContent panel)
-		{
-			if (panel == null)
-			{
-				return;
-			}
+        public void ShowDockPanel(DockContent panel)
+        {
+            if (panel == null)
+            {
+                return;
+            }
 
-			panel.Show(_dockPanel);
-		}
+            panel.Show(_dockPanel);
+        }
 
         public void ShowDockPanel(DockContent panel, IDockContent beforeContent)
         {
@@ -197,15 +191,15 @@ namespace Revsoft.Wabbitcode.Services
             panel.Show(beforeContent.DockHandler.Pane, beforeContent);
         }
 
-	    public void ShowDockPanel(DockContent panel, IDockContent beforeContent, DockAlignment alignment)
-	    {
+        public void ShowDockPanel(DockContent panel, IDockContent beforeContent, DockAlignment alignment)
+        {
             if (panel == null || beforeContent == null)
             {
                 return;
             }
 
-	        panel.Show(beforeContent.DockHandler.Pane, alignment, .5);
-	    }
+            panel.Show(beforeContent.DockHandler.Pane, alignment, .5);
+        }
 
         public void ShowDockPanel(string panelName)
         {
@@ -257,23 +251,23 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
-		public void LoadConfig(DeserializeDockContent dockContent)
-		{
+        public void LoadConfig(DeserializeDockContent dockContent)
+        {
             //try
             //{
-				if (File.Exists(FileLocations.ConfigFile))
-				{
-					_dockPanel.LoadFromXml(FileLocations.ConfigFile, dockContent);
-				}
+            if (File.Exists(FileLocations.ConfigFile))
+            {
+                _dockPanel.LoadFromXml(FileLocations.ConfigFile, dockContent);
+            }
             //}
             //catch (Exception ex)
             //{
             //    ShowError("Error Loading the DockPanel Config File", ex);
             //}
-		}
+        }
 
-	    public void InitPanels()
-	    {
+        public void InitPanels()
+        {
             RegisterDockingWindow(new ProjectViewer());
             RegisterDockingWindow(new ErrorList());
             RegisterDockingWindow(new TrackingWindow());
@@ -286,34 +280,34 @@ namespace Revsoft.Wabbitcode.Services
             RegisterDockingWindow(new BreakpointManagerWindow());
             RegisterDockingWindow(new StackViewer());
             RegisterDockingWindow(new ExpressionWindow());
-	    }
+        }
 
-		public void SavePanels()
-		{
-			try
-			{
-				string dir = Path.GetDirectoryName(FileLocations.ConfigFile);
-				if (dir != null && !Directory.Exists(dir))
-				{
-					if (MessageBox.Show("Directory '" + dir + "' does not exist. Would you like to create it?", "Directory does not exist", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
-					{
-						Properties.Settings.Default.ConfigLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DockPanel.config");
-					}
-				}
+        public void SavePanels()
+        {
+            try
+            {
+                string dir = Path.GetDirectoryName(FileLocations.ConfigFile);
+                if (dir != null && !Directory.Exists(dir))
+                {
+                    if (MessageBox.Show("Directory '" + dir + "' does not exist. Would you like to create it?", "Directory does not exist", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
+                    {
+                        Properties.Settings.Default.ConfigLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DockPanel.config");
+                    }
+                }
 
-				if (File.Exists(FileLocations.ConfigFile))
-				{
-					File.Delete(FileLocations.ConfigFile);
-				}
+                if (File.Exists(FileLocations.ConfigFile))
+                {
+                    File.Delete(FileLocations.ConfigFile);
+                }
 
-				_dockPanel.SaveAsXml(FileLocations.ConfigFile);
+                _dockPanel.SaveAsXml(FileLocations.ConfigFile);
 
                 _dockPanel.Documents.OfType<Form>().ToList().ForEach(f => f.Close());
-			}
-			catch (Exception ex)
-			{
-				throw new Exception("Error saving DockPanel.config file", ex);
-			}
-		}
-	}
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error saving DockPanel.config file", ex);
+            }
+        }
+    }
 }

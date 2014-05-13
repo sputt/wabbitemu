@@ -8,34 +8,34 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Symbols
 {
-	public class ListTable
-	{
-		private Dictionary<CalcLocation, DocumentLocation> _calcToFile;
-		private Dictionary<DocumentLocation, CalcLocation> _fileToCalc;
+    public class ListTable
+    {
+        private Dictionary<CalcLocation, DocumentLocation> _calcToFile;
+        private Dictionary<DocumentLocation, CalcLocation> _fileToCalc;
 
-		public ListTable()
-		{
-			_calcToFile = new Dictionary<CalcLocation, DocumentLocation>();
-			_fileToCalc = new Dictionary<DocumentLocation, CalcLocation>();
-		}
+        public ListTable()
+        {
+            _calcToFile = new Dictionary<CalcLocation, DocumentLocation>();
+            _fileToCalc = new Dictionary<DocumentLocation, CalcLocation>();
+        }
 
-		public void ParseListFile(string listFileContents)
-		{
+        public void ParseListFile(string listFileContents)
+        {
             var calcToFile = new Dictionary<CalcLocation, DocumentLocation>(700000);
             var fileToCalc = new Dictionary<DocumentLocation, CalcLocation>(700000);
-		    StreamWriter writer = null;
+            StreamWriter writer = null;
             Regex fileRegex = new Regex("Listing for (built\\-in|file) (\"(?<file>.+)\"|(?<file>.+))", RegexOptions.Compiled);
             Regex listingRegex = new Regex(@"(?<lineNum>[\d| ]{5}) (?<page>[0-9A-F]{2}):(?<addr>[0-9A-F]{4}) (?<byte1>[0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) (?<line>.*)", RegexOptions.Compiled);
-			FilePath currentFile = new FilePath(string.Empty);
-			string[] lines = listFileContents.Split('\n');
+            FilePath currentFile = new FilePath(string.Empty);
+            string[] lines = listFileContents.Split('\n');
             Dictionary<FilePath, int> fcreateForFile = new Dictionary<FilePath, int>();
-			foreach (string line in lines.Where(line => !string.IsNullOrWhiteSpace(line)))
-			{
-			    Match fileMatch = fileRegex.Match(line);
-			    Match listingMatch = listingRegex.Match(line);
-				if (fileMatch.Success)
-				{
-				    string file = fileMatch.Groups["file"].Value.Trim();
+            foreach (string line in lines.Where(line => !string.IsNullOrWhiteSpace(line)))
+            {
+                Match fileMatch = fileRegex.Match(line);
+                Match listingMatch = listingRegex.Match(line);
+                if (fileMatch.Success)
+                {
+                    string file = fileMatch.Groups["file"].Value.Trim();
                     if (file == "fcreate")
                     {
                         int fcreateNum;
@@ -47,10 +47,10 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                         {
                             fcreateForFile[currentFile] = ++fcreateNum;
                         }
-						currentFile = new FilePath(currentFile + fcreateNum + ".fcreate");
+                        currentFile = new FilePath(currentFile + fcreateNum + ".fcreate");
                         writer = new StreamWriter(currentFile);
                     }
-					else
+                    else
                     {
                         currentFile = new FilePath(file);
                         if (writer != null)
@@ -60,10 +60,10 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                         }
                         writer = null;
                     }
-				} 
+                }
                 else if (listingMatch.Success)
                 {
-			        string stringLineNumber = listingMatch.Groups["lineNum"].Value.Trim();
+                    string stringLineNumber = listingMatch.Groups["lineNum"].Value.Trim();
                     int lineNumber = Convert.ToInt32(stringLineNumber);
                     ushort address = ushort.Parse(listingMatch.Groups["addr"].Value, NumberStyles.HexNumber);
                     byte page = byte.Parse(listingMatch.Groups["page"].Value, NumberStyles.HexNumber);
@@ -96,7 +96,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                         fileToCalc.Add(key, value);
                     }
                 }
-			}
+            }
 
             if (writer != null)
             {
@@ -104,79 +104,79 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                 writer.Close();
             }
 
-		    _fileToCalc = fileToCalc;
-		    _calcToFile = calcToFile;
-		}
+            _fileToCalc = fileToCalc;
+            _calcToFile = calcToFile;
+        }
 
-		/// <summary>
-		/// Maps a filename and line number to a page and address
-		/// </summary>
-		/// <param name="filename">The absolute path of the file</param>
-		/// <param name="lineNumber">The 1-indexed line number</param>
-		/// <returns>The absolute location on the calculator the file and line number map to. Returns null 
-		/// if the file line number combination do not map to a location on the calc</returns>
-		public CalcLocation GetCalcLocation(FilePath filename, int lineNumber)
-		{
-		    if (string.IsNullOrEmpty(filename))
-		    {
-		        return null;
-		    }
+        /// <summary>
+        /// Maps a filename and line number to a page and address
+        /// </summary>
+        /// <param name="filename">The absolute path of the file</param>
+        /// <param name="lineNumber">The 1-indexed line number</param>
+        /// <returns>The absolute location on the calculator the file and line number map to. Returns null 
+        /// if the file line number combination do not map to a location on the calc</returns>
+        public CalcLocation GetCalcLocation(FilePath filename, int lineNumber)
+        {
+            if (string.IsNullOrEmpty(filename))
+            {
+                return null;
+            }
 
-			CalcLocation value;
-			DocumentLocation key = new DocumentLocation(filename, lineNumber);
-			_fileToCalc.TryGetValue(key, out value);
-			return value;
-		}
+            CalcLocation value;
+            DocumentLocation key = new DocumentLocation(filename, lineNumber);
+            _fileToCalc.TryGetValue(key, out value);
+            return value;
+        }
 
-		public DocumentLocation GetFileLocation(int page, int address, bool isRam)
-		{
-			CalcLocation value = new CalcLocation((ushort)address, (byte)page, isRam);
-			DocumentLocation key;
-			_calcToFile.TryGetValue(value, out key);
-			return key;
-		}
+        public DocumentLocation GetFileLocation(int page, int address, bool isRam)
+        {
+            CalcLocation value = new CalcLocation((ushort) address, (byte) page, isRam);
+            DocumentLocation key;
+            _calcToFile.TryGetValue(value, out key);
+            return key;
+        }
 
-		/// <summary>
-		/// Maps a filename and line number to a page and address greater than the GetCalcLocation mapping
-		/// </summary>
-		/// <param name="fileName">The absolute path of the file</param>
-		/// <param name="lineNumber">The 1-indexed line number</param>
-		/// <returns>The absolute location on the calculator the file and line number map to. If
-		/// it does not map absolutely, it returns the next closest location. Returns null if
-		/// the file never maps to a location on calc</returns>
-		public CalcLocation GetNextNearestCalcLocation(FilePath fileName, int lineNumber)
-		{
-			var initialListing = _fileToCalc.Where(s => s.Key.FileName == fileName);
-			// we shouldn't ever call this when we are adding more, but just to be sure,
-			// we'll avoid multiple enumeration
-		    var listInFile = initialListing.ToList();
-			var smallerListings = listInFile.Where(s => s.Key.LineNumber < lineNumber).ToList();
-			var largerListings = listInFile.Where(s => s.Key.LineNumber >= lineNumber).ToList();
-			if (largerListings.Any())
-			{
-				int min = largerListings.Min(s => s.Key.LineNumber);
-				return largerListings.Single(s => s.Key.LineNumber == min).Value;
-			}
+        /// <summary>
+        /// Maps a filename and line number to a page and address greater than the GetCalcLocation mapping
+        /// </summary>
+        /// <param name="fileName">The absolute path of the file</param>
+        /// <param name="lineNumber">The 1-indexed line number</param>
+        /// <returns>The absolute location on the calculator the file and line number map to. If
+        /// it does not map absolutely, it returns the next closest location. Returns null if
+        /// the file never maps to a location on calc</returns>
+        public CalcLocation GetNextNearestCalcLocation(FilePath fileName, int lineNumber)
+        {
+            var initialListing = _fileToCalc.Where(s => s.Key.FileName == fileName);
+            // we shouldn't ever call this when we are adding more, but just to be sure,
+            // we'll avoid multiple enumeration
+            var listInFile = initialListing.ToList();
+            var smallerListings = listInFile.Where(s => s.Key.LineNumber < lineNumber).ToList();
+            var largerListings = listInFile.Where(s => s.Key.LineNumber >= lineNumber).ToList();
+            if (largerListings.Any())
+            {
+                int min = largerListings.Min(s => s.Key.LineNumber);
+                return largerListings.Single(s => s.Key.LineNumber == min).Value;
+            }
 
-		    if (!smallerListings.Any())
-		    {
+            if (!smallerListings.Any())
+            {
                 // no listing in this file
-		        return null;
-		    }
+                return null;
+            }
 
-		    int max = smallerListings.Max(s => s.Key.LineNumber);
-		    CalcLocation smallerLocation = smallerListings.Single(s => s.Key.LineNumber == max).Value;
-		    ushort address = smallerLocation.Address;
-		    do
-		    {
-		        address++;
-		        if ((address % 0x4000) == 0)
-		        {
-		            // crossing page boundaries means we have no clue where its going
-		            return null;
-		        }
-		    } while (GetFileLocation(smallerLocation.Page, address, smallerLocation.IsRam) == null);
-		    return new CalcLocation(address, smallerLocation.Page, smallerLocation.IsRam);
-		}
-	}
+            int max = smallerListings.Max(s => s.Key.LineNumber);
+            CalcLocation smallerLocation = smallerListings.Single(s => s.Key.LineNumber == max).Value;
+            ushort address = smallerLocation.Address;
+            do
+            {
+                address++;
+                if ((address % 0x4000) == 0)
+                {
+                    // crossing page boundaries means we have no clue where its going
+                    return null;
+                }
+            } while (GetFileLocation(smallerLocation.Page, address, smallerLocation.IsRam) == null);
+            return new CalcLocation(address, smallerLocation.Page, smallerLocation.IsRam);
+        }
+    }
 }

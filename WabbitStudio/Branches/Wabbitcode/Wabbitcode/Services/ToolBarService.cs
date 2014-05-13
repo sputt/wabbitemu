@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 

@@ -6,8 +6,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 {
     public class ProjectFile
     {
-	    private FilePath _filePath;
-	    private readonly FilePath _projectDir;
+        private FilePath _filePath;
+        private readonly FilePath _projectDir;
         private ProjectFolder _folder;
         private readonly ProjectFolder _parentFolder;
 
@@ -15,58 +15,43 @@ namespace Revsoft.Wabbitcode.Services.Project
         {
             _parentFolder = projectFolder;
             _filePath = fullPath;
-	        _projectDir = projectDir;
+            _projectDir = projectDir;
         }
 
-	    public string FileFoldings { get; set; }
+        public string FileFoldings { get; set; }
 
-	    public FilePath FileFullPath
+        public FilePath FileFullPath
         {
             get
             {
-	            return Path.IsPathRooted(_filePath) ? 
+                return Path.IsPathRooted(_filePath) ?
                     _filePath :
                     _projectDir.GetAbsolutePath(_filePath);
             }
 
-		    set
-            {
-                _filePath = value;
-            }
+            set { _filePath = value; }
         }
 
         public FilePath FileRelativePath
         {
             get
             {
-				return Path.IsPathRooted(_filePath) ?
-                    new FilePath(FileOperations.GetRelativePath(_projectDir, _filePath)) : 
+                return Path.IsPathRooted(_filePath) ?
+                    new FilePath(FileOperations.GetRelativePath(_projectDir, _filePath)) :
                     _filePath;
             }
-	        set
-            {
-                _filePath = value;
-            }
+            set { _filePath = value; }
         }
 
         public ProjectFolder Folder
         {
-            get
-            {
-                return _folder;
-            }
-            set
-            {
-                _folder = value;
-            }
+            get { return _folder; }
+            set { _folder = value; }
         }
 
         public ProjectFolder ParentFolder
         {
-            get
-            {
-                return _parentFolder;
-            }
+            get { return _parentFolder; }
         }
 
         public override string ToString()

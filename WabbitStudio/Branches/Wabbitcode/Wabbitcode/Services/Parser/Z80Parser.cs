@@ -91,8 +91,8 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
                         if (_tokensEnumerator.Current == "#")
                         {
-                            if (_tokensEnumerator.MoveNext()) 
-                            { 
+                            if (_tokensEnumerator.MoveNext())
+                            {
                                 switch (_tokensEnumerator.Current.ToLower())
                                 {
                                     case IncludeString:
@@ -317,7 +317,6 @@ namespace Revsoft.Wabbitcode.Services.Parser
             description = GetDescription();
             Define defineToAdd = new Define(new DocLocation(_lineIndex, 0), defineName, contents.Trim(), description, _parserInfo, 0);
             _parserInfo.DefinesList.Add(defineToAdd);
-
         }
 
         private void HandleInclude()
@@ -519,7 +518,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
         {
             bool hasNext = true;
             while (hasNext && (_tokensEnumerator.Current == " " || _tokensEnumerator.Current == "\t" ||
-                _tokensEnumerator.Current == "\r"))
+                               _tokensEnumerator.Current == "\r"))
             {
                 hasNext = _tokensEnumerator.MoveNext();
             }
@@ -530,7 +529,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
         private bool IsEndOfCodeLine()
         {
             return _tokensEnumerator.Current == EndOfLineChar.ToString() || _tokensEnumerator.Current == CommentChar.ToString() ||
-                _tokensEnumerator.Current == "\n";
+                   _tokensEnumerator.Current == "\n";
         }
 
         private bool IsEndOfLine()
@@ -616,7 +615,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
         private static bool IsValidNameChar(char ch)
         {
             return IsValidLabelChar(ch) || ch == '_' || ch == '[' ||
-                ch == ']' || ch == '!' || ch == '?' || ch == '.';
+                   ch == ']' || ch == '!' || ch == '?' || ch == '.';
         }
     }
 }

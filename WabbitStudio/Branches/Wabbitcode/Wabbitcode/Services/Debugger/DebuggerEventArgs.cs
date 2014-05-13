@@ -2,7 +2,7 @@ using System;
 
 namespace Revsoft.Wabbitcode.Services.Debugger
 {
-	public class DebuggerEventArgs : EventArgs
-	{
-	}
+    public class DebuggerEventArgs : EventArgs
+    {
+    }
 }

@@ -1,5 +1,5 @@
-﻿using Revsoft.Wabbitcode.Annotations;
-using Revsoft.Wabbitcode.GUI.ToolBars;
+﻿using Revsoft.Wabbitcode.GUI.ToolBars;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 

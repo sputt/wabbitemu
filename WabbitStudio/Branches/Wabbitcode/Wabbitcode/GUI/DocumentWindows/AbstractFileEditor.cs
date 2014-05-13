@@ -15,10 +15,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         /// </summary>
         public FilePath FileName
         {
-            get
-            {
-                return _fileName;
-            }
+            get { return _fileName; }
             set
             {
                 Text = value;

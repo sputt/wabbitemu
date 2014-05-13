@@ -6,16 +6,16 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
-	public interface IAssemblerService
-	{
+    public interface IAssemblerService
+    {
         event EventHandler<AssemblyFinishFileEventArgs> AssemblerFileFinished;
         event EventHandler<AssemblyFinishProjectEventArgs> AssemblerProjectFinished;
 
         AssemblerOutput AssembleFile(FilePath inputFile, FilePath outputFile, FilePath originalDir,
             IEnumerable<FilePath> includeDirs, AssemblyFlags flags = AssemblyFlags.Normal);
 
-		void AssembleProject(IProject project);
-		CodeCountInfo CountCode(string lines);
-		string GetExtension(int outputFile);
-	}
+        void AssembleProject(IProject project);
+        CodeCountInfo CountCode(string lines);
+        string GetExtension(int outputFile);
+    }
 }

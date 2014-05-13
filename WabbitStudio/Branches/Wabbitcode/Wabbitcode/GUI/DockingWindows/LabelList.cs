@@ -13,44 +13,42 @@ using Label = Revsoft.Wabbitcode.Services.Parser.Label;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
-	public partial class LabelList : ToolWindow
-	{
-	    public const string WindowIdentifier = "Label List";
+    public partial class LabelList : ToolWindow
+    {
+        public const string WindowIdentifier = "Label List";
+
         public override string WindowName
         {
-            get
-            {
-                return WindowIdentifier;
-            }
+            get { return WindowIdentifier; }
         }
 
-		#region Private Properties
+        #region Private Properties
 
-	    private readonly IParserService _parserService;
+        private readonly IParserService _parserService;
 
-		#endregion
+        #endregion
 
-		public LabelList()
-		{
-			InitializeComponent();
+        public LabelList()
+        {
+            InitializeComponent();
 
             _parserService = DependencyFactory.Resolve<IParserService>();
 
-		    _parserService.OnParserFinished += (sender, args) =>
-		    {
-		        var document = DockingService.ActiveDocument as AbstractFileEditor;
-		        if (document == null || string.IsNullOrEmpty(document.FileName) ||
+            _parserService.OnParserFinished += (sender, args) =>
+            {
+                var document = DockingService.ActiveDocument as AbstractFileEditor;
+                if (document == null || string.IsNullOrEmpty(document.FileName) ||
                     args.FileName != document.FileName || !IsHandleCreated)
-		        {
-		            return;
-		        }
+                {
+                    return;
+                }
 
-		        this.Invoke(UpdateLabelBox);
-		    };
+                this.Invoke(UpdateLabelBox);
+            };
             DockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
-		}
+        }
 
-        void DockingServiceActiveDocumentChanged(object sender, EventArgs e)
+        private void DockingServiceActiveDocumentChanged(object sender, EventArgs e)
         {
             if (DockingService.ActiveDocument != null)
             {
@@ -62,13 +60,13 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             }
         }
 
-		public override void Copy()
-		{
-			Clipboard.SetDataObject(labelsBox.SelectedItem.ToString());
-		}
+        public override void Copy()
+        {
+            Clipboard.SetDataObject(labelsBox.SelectedItem.ToString());
+        }
 
-		private void AddLabels()
-		{
+        private void AddLabels()
+        {
             var fileEditor = DockingService.ActiveDocument as AbstractFileEditor;
             if (fileEditor == null)
             {
@@ -76,89 +74,89 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             }
 
             FilePath fileName = fileEditor.FileName;
-			if (fileName == null)
-			{
-				return;
-			}
+            if (fileName == null)
+            {
+                return;
+            }
 
-			ParserInformation info = _parserService.GetParserInfo(fileName);
-			if (info == null)
-			{
+            ParserInformation info = _parserService.GetParserInfo(fileName);
+            if (info == null)
+            {
                 ClearLabels();
-				return;
-			}
+                return;
+            }
 
-			bool showEquates = includeEquatesBox.Checked;
-			ListBox.ObjectCollection labelsToAdd = new ListBox.ObjectCollection(labelsBox);
+            bool showEquates = includeEquatesBox.Checked;
+            ListBox.ObjectCollection labelsToAdd = new ListBox.ObjectCollection(labelsBox);
 
-		    var labels = info.Where(d => (d is Label && !((Label) d).IsReusable) || 
-		                                      ((d is Equate || d is Define || d is Macro) && showEquates))
-                                              .Cast<object>().ToArray();
+            var labels = info.Where(d => (d is Label && !((Label) d).IsReusable) ||
+                                         ((d is Equate || d is Define || d is Macro) && showEquates))
+                .Cast<object>().ToArray();
             labelsToAdd.AddRange(labels);
 
-			labelsBox.Items.Clear();
-			labelsBox.Items.AddRange(labelsToAdd);
-		}
+            labelsBox.Items.Clear();
+            labelsBox.Items.AddRange(labelsToAdd);
+        }
 
-		private void ClearLabels()
-		{
-			labelsBox.Items.Clear();
-		}
+        private void ClearLabels()
+        {
+            labelsBox.Items.Clear();
+        }
 
-	    private void EnableLabelBox()
-		{
-			labelsBox.Enabled = true;
-			alphaBox.Enabled = true;
-			includeEquatesBox.Enabled = true;
-		}
+        private void EnableLabelBox()
+        {
+            labelsBox.Enabled = true;
+            alphaBox.Enabled = true;
+            includeEquatesBox.Enabled = true;
+        }
 
-		private void alphaBox_CheckedChanged(object sender, EventArgs e)
-		{
-			Settings.Default.AlphabetizeLabels = alphaBox.Checked;
-			labelsBox.Sorted = alphaBox.Checked;
-			UpdateLabelBox();
-		}
+        private void alphaBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.Default.AlphabetizeLabels = alphaBox.Checked;
+            labelsBox.Sorted = alphaBox.Checked;
+            UpdateLabelBox();
+        }
 
-	    private void UpdateLabelBox()
-		{
-			EnableLabelBox();
-			AddLabels();
-		}
+        private void UpdateLabelBox()
+        {
+            EnableLabelBox();
+            AddLabels();
+        }
 
-		private void includeEquatesBox_CheckedChanged(object sender, EventArgs e)
-		{
-			Settings.Default.ShowEquates = includeEquatesBox.Checked;
-			UpdateLabelBox();
-		}
+        private void includeEquatesBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.Default.ShowEquates = includeEquatesBox.Checked;
+            UpdateLabelBox();
+        }
 
-		private void labelsBox_DoubleClick(object sender, EventArgs e)
-		{
-			if (labelsBox.SelectedItem == null)
-			{
-				return;
-			}
+        private void labelsBox_DoubleClick(object sender, EventArgs e)
+        {
+            if (labelsBox.SelectedItem == null)
+            {
+                return;
+            }
 
-		    GotoLabel((IParserData) labelsBox.SelectedItem);
-		}
+            GotoLabel((IParserData) labelsBox.SelectedItem);
+        }
 
-	    private void labelsBox_KeyPress(object sender, KeyPressEventArgs e)
-		{
-			if (e.KeyChar != (char)Keys.Enter)
-			{
-				return;
-			}
+        private void labelsBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar != (char) Keys.Enter)
+            {
+                return;
+            }
 
-			GotoLabel((ILabel)labelsBox.SelectedItem);
-		    var activeForm = DockingService.ActiveDocument as Form;
-		    if (activeForm != null)
-		    {
-		        activeForm.Focus();
-		    }
-		}
+            GotoLabel((ILabel) labelsBox.SelectedItem);
+            var activeForm = DockingService.ActiveDocument as Form;
+            if (activeForm != null)
+            {
+                activeForm.Focus();
+            }
+        }
 
         private static void GotoLabel(IParserData parserData)
         {
             new GotoLabelAction(parserData).Execute();
         }
-	}
+    }
 }

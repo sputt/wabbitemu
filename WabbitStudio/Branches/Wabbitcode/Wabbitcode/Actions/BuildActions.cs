@@ -21,6 +21,7 @@ namespace Revsoft.Wabbitcode.Actions
             _projectService = DependencyFactory.Resolve<IProjectService>();
             _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
         }
+
         public override void Execute()
         {
             if (_debuggerService.CurrentDebugger != null)

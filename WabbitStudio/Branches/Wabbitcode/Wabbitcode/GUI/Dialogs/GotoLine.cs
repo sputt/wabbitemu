@@ -31,32 +31,32 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
         private void ValidateInput()
         {
-	        string errorString = string.Format("A number between (1, {0}) is required", _maxLineNum);
+            string errorString = string.Format("A number between (1, {0}) is required", _maxLineNum);
             int line;
             if (int.TryParse(inputBox.Text, out line))
             {
-	            if (line <= 0 || line > _maxLineNum)
-	            {
-					SetInputError(errorString);
-		            return;
-	            }
+                if (line <= 0 || line > _maxLineNum)
+                {
+                    SetInputError(errorString);
+                    return;
+                }
 
-	            SetInputError(string.Empty);
-	            return;
+                SetInputError(string.Empty);
+                return;
             }
 
             SetInputError(errorString);
         }
 
-		/// <summary>
-		/// Sets the error string of the error provider. An empty string provided means there is no
-		/// error.
-		/// </summary>
-		/// <param name="errorString">The error string to show</param>
-	    private void SetInputError(string errorString)
-	    {
-		    okButton.Enabled = string.IsNullOrEmpty(errorString);
-		    errorProvider.SetError(inputBox, errorString);
-	    }
+        /// <summary>
+        /// Sets the error string of the error provider. An empty string provided means there is no
+        /// error.
+        /// </summary>
+        /// <param name="errorString">The error string to show</param>
+        private void SetInputError(string errorString)
+        {
+            okButton.Enabled = string.IsNullOrEmpty(errorString);
+            errorProvider.SetError(inputBox, errorString);
+        }
     }
 }

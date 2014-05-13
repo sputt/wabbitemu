@@ -4,9 +4,6 @@
 
     public interface IMacro : IDefine
     {
-        IList<string> Arguments
-        {
-            get;
-        }
+        IList<string> Arguments { get; }
     }
 }

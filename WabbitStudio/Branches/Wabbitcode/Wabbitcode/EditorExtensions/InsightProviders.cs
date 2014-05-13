@@ -55,7 +55,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
                 return null;
             })
-            .Where(d => d != null));
+                .Where(d => d != null));
         }
     }
 
@@ -420,18 +420,12 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         public int InsightDataCount
         {
-            get
-            {
-                return Data.Count;
-            }
+            get { return Data.Count; }
         }
 
         public int DefaultIndex
         {
-            get
-            {
-                return 0;
-            }
+            get { return 0; }
         }
 
         public virtual void SetupDataProvider(string fileName, TextArea textArea)

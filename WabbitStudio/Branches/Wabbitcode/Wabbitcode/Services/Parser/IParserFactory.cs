@@ -1,7 +1,6 @@
 using System;
-using Revsoft.Wabbitcode.Services.Parser;
 
-namespace Revsoft.Wabbitcode.Services
+namespace Revsoft.Wabbitcode.Services.Parser
 {
     public interface IParserFactory
     {

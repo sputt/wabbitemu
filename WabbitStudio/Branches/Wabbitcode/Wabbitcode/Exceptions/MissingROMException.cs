@@ -3,15 +3,10 @@
 namespace Revsoft.Wabbitcode.Exceptions
 {
     [Serializable]
-    public class MissingROMException : Exception
+    public class MissingRomException : Exception
     {
-        public MissingROMException()
-        : base()
-        {
-        }
-
-        public MissingROMException(string message)
-        : base(message)
+        public MissingRomException(string message)
+            : base(message)
         {
         }
     }

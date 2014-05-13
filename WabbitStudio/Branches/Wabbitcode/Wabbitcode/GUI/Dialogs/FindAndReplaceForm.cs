@@ -24,39 +24,40 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
         FindInFiles,
     }
 
-	public partial class FindAndReplaceForm : Form
-	{
-	    private static FindAndReplaceForm _instance;
-	    public static FindAndReplaceForm Instance
-	    {
-	        get { return _instance ?? (_instance = new FindAndReplaceForm()); }
-	    }
+    public partial class FindAndReplaceForm : Form
+    {
+        private static FindAndReplaceForm _instance;
+
+        public static FindAndReplaceForm Instance
+        {
+            get { return _instance ?? (_instance = new FindAndReplaceForm()); }
+        }
 
         private const int FindTabIndex = 0;
         private const int ReplaceTabIndex = 1;
         private const int FindFilesTabIndex = 2;
 
-		private bool _lastSearchLoopedAround;
-		private bool _lastSearchWasBackward;
+        private bool _lastSearchLoopedAround;
+        private bool _lastSearchWasBackward;
 
-	    private readonly FindResultsWindow _results;
-		private WabbitcodeTextEditor _editor;
-		private TextEditorSearcher _search;
-		private readonly IDockingService _dockingService;
-		private readonly IProjectService _projectService;
+        private readonly FindResultsWindow _results;
+        private WabbitcodeTextEditor _editor;
+        private TextEditorSearcher _search;
+        private readonly IDockingService _dockingService;
+        private readonly IProjectService _projectService;
 
-	    private FindAndReplaceForm()
-		{
+        private FindAndReplaceForm()
+        {
             _dockingService = DependencyFactory.Resolve<IDockingService>();
             _projectService = DependencyFactory.Resolve<IProjectService>();
             _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
 
             _results = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
 
-			InitializeComponent();
-		}
+            InitializeComponent();
+        }
 
-        void DockingServiceActiveDocumentChanged(object sender, EventArgs e)
+        private void DockingServiceActiveDocumentChanged(object sender, EventArgs e)
         {
             ITextEditor textEditor = _dockingService.ActiveDocument as ITextEditor;
             if (textEditor == null || Visible == false)
@@ -78,99 +79,99 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             }
         }
 
-	    private TextRange FindNext(string text, bool matchCase, bool matchWholeWord, bool searchBackward, string messageIfNotFound)
-		{
-			if (string.IsNullOrEmpty(text))
-			{
-				MessageBox.Show("No string specified to look for!");
-				return null;
-			}
-
-	        if (_editor == null)
-	        {
-	            MessageBox.Show("No open document");
+        private TextRange FindNext(string text, bool matchCase, bool matchWholeWord, bool searchBackward, string messageIfNotFound)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                MessageBox.Show("No string specified to look for!");
                 return null;
-	        }
+            }
 
-			_lastSearchWasBackward = searchBackward;
-			_search.LookFor = text;
-			_search.MatchCase = matchCase;
-	        _search.MatchWholeWordOnly = matchWholeWord;
+            if (_editor == null)
+            {
+                MessageBox.Show("No open document");
+                return null;
+            }
 
-			var caret = _editor.ActiveTextAreaControl.Caret;
-			int startFrom = caret.Offset - (searchBackward ? 1 : 0);
-			TextRange range = _search.FindNext(startFrom, searchBackward, out _lastSearchLoopedAround);
-			if (range != null)
-			{
-				SelectResult(range);
-			}
-			else if (!string.IsNullOrEmpty(messageIfNotFound))
-			{
-				MessageBox.Show(messageIfNotFound);
-			}
+            _lastSearchWasBackward = searchBackward;
+            _search.LookFor = text;
+            _search.MatchCase = matchCase;
+            _search.MatchWholeWordOnly = matchWholeWord;
 
-			return range;
-		}
+            var caret = _editor.ActiveTextAreaControl.Caret;
+            int startFrom = caret.Offset - (searchBackward ? 1 : 0);
+            TextRange range = _search.FindNext(startFrom, searchBackward, out _lastSearchLoopedAround);
+            if (range != null)
+            {
+                SelectResult(range);
+            }
+            else if (!string.IsNullOrEmpty(messageIfNotFound))
+            {
+                MessageBox.Show(messageIfNotFound);
+            }
 
-		public void ShowFor(Form owner, WabbitcodeTextEditor editor, SearchMode mode)
-		{
-		    _editor = editor;
+            return range;
+        }
+
+        public void ShowFor(Form owner, WabbitcodeTextEditor editor, SearchMode mode)
+        {
+            _editor = editor;
             IFileService fileService = DependencyFactory.Resolve<IFileService>();
             string fileText = editor == null ? string.Empty : fileService.GetFileText(new FilePath(editor.FileName));
             _search = new TextEditorSearcher(fileText);
 
-		    Owner = owner;
-			Show();
+            Owner = owner;
+            Show();
 
-			findNextFindButton.Focus();
-			findFindBox.SelectAll();
-			findFindBox.Focus();
-		    string word = string.Empty;
-		    if (editor != null)
-		    {
-		        word = editor.ActiveTextAreaControl.SelectionManager.HasSomethingSelected ?
+            findNextFindButton.Focus();
+            findFindBox.SelectAll();
+            findFindBox.Focus();
+            string word = string.Empty;
+            if (editor != null)
+            {
+                word = editor.ActiveTextAreaControl.SelectionManager.HasSomethingSelected ?
                     editor.ActiveTextAreaControl.SelectionManager.SelectedText :
                     editor.GetWordAtCaret();
-		    }
+            }
 
-		    switch (mode)
-		    {
+            switch (mode)
+            {
                 case SearchMode.Find:
                     findTabs.SelectTab(findPage);
-		            findFindBox.Text = word;
-		            findFindBox.Focus();
+                    findFindBox.Text = word;
+                    findFindBox.Focus();
                     findFindBox.SelectAll();
-		            break;
+                    break;
                 case SearchMode.Replace:
                     findTabs.SelectTab(replacePage);
-		            replaceFindBox.Text = word;
+                    replaceFindBox.Text = word;
                     replaceFindBox.Focus();
                     replaceFindBox.SelectAll();
                     break;
                 case SearchMode.FindInFiles:
                     findTabs.SelectTab(findInFilesPage);
-		            findFilesBox.Text = word;
+                    findFilesBox.Text = word;
                     findFilesBox.Focus();
                     findFilesBox.SelectAll();
                     break;
-		    }
-		}
+            }
+        }
 
-		private void findNextFindButton_Click(object sender, EventArgs e)
-		{
-            bool matchCase = matchCaseFindCheckbox.Checked;
-            bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
-		    string text = findFindBox.Text;
-            FindNext(text, matchCase, matchWholeWord, false, "Text not found");
-		}
-
-		private void findPrevFindButton_Click(object sender, EventArgs e)
-		{
+        private void findNextFindButton_Click(object sender, EventArgs e)
+        {
             bool matchCase = matchCaseFindCheckbox.Checked;
             bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
             string text = findFindBox.Text;
-			FindNext(text, matchCase, matchWholeWord, true, "Text not found");
-		}
+            FindNext(text, matchCase, matchWholeWord, false, "Text not found");
+        }
+
+        private void findPrevFindButton_Click(object sender, EventArgs e)
+        {
+            bool matchCase = matchCaseFindCheckbox.Checked;
+            bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
+            string text = findFindBox.Text;
+            FindNext(text, matchCase, matchWholeWord, true, "Text not found");
+        }
 
         private void replaceNextFindButton_Click(object sender, EventArgs e)
         {
@@ -188,8 +189,8 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             FindNext(text, matchCase, matchWholeWord, true, "Text not found");
         }
 
-	    private void FindInFiles(string textToFind, bool matchCase, bool matchWholeWord)
-	    {
+        private void FindInFiles(string textToFind, bool matchCase, bool matchWholeWord)
+        {
             IProject project = _projectService.Project;
             if (!project.IsInternal)
             {
@@ -209,75 +210,75 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
             _results.DoneSearching();
             _dockingService.ShowDockPanel(_results);
-	    }
+        }
 
-		private void FindTextInFile(string fileName, string fileText, string textToFind, bool matchWholeWord, bool matchCase)
-		{
-			string pattern = string.Format("^(?<line>.*?{1}{0}{1}.*?)$", Regex.Escape(textToFind), matchWholeWord ? "\\b" : String.Empty);
-			RegexOptions options = matchCase ? RegexOptions.None : RegexOptions.IgnoreCase;
-			MatchCollection matches = Regex.Matches(fileText, pattern, RegexOptions.Compiled | RegexOptions.Multiline | options);
-			foreach (Match match in matches)
-			{
-				int lineNumber = fileText.Substring(0, match.Index).Count(c => c == '\n');
-				_results.AddFindResult(fileName, lineNumber, match.Groups["line"].Value);
-			}
-		}
+        private void FindTextInFile(string fileName, string fileText, string textToFind, bool matchWholeWord, bool matchCase)
+        {
+            string pattern = string.Format("^(?<line>.*?{1}{0}{1}.*?)$", Regex.Escape(textToFind), matchWholeWord ? "\\b" : String.Empty);
+            RegexOptions options = matchCase ? RegexOptions.None : RegexOptions.IgnoreCase;
+            MatchCollection matches = Regex.Matches(fileText, pattern, RegexOptions.Compiled | RegexOptions.Multiline | options);
+            foreach (Match match in matches)
+            {
+                int lineNumber = fileText.Substring(0, match.Index).Count(c => c == '\n');
+                _results.AddFindResult(fileName, lineNumber, match.Groups["line"].Value);
+            }
+        }
 
-		private static string GetTextForFile(IProject project, ProjectFile file)
-		{
-			string fileText = string.Empty;
-			try
-			{
-				using (StreamReader reader = new StreamReader(Path.Combine(project.ProjectDirectory, file.FileFullPath)))
-				{
-					fileText = reader.ReadToEnd();
-				}
-			}
-			catch (IOException)
-			{
-				Debug.WriteLine("Failed to open file {0}, while searching in all files", file.FileFullPath);
-			}
-			return fileText;
-		}
+        private static string GetTextForFile(IProject project, ProjectFile file)
+        {
+            string fileText = string.Empty;
+            try
+            {
+                using (StreamReader reader = new StreamReader(Path.Combine(project.ProjectDirectory, file.FileFullPath)))
+                {
+                    fileText = reader.ReadToEnd();
+                }
+            }
+            catch (IOException)
+            {
+                Debug.WriteLine("Failed to open file {0}, while searching in all files", file.FileFullPath);
+            }
+            return fileText;
+        }
 
-		private void InsertText(string text)
-		{
-			var textArea = _editor.ActiveTextAreaControl.TextArea;
-			textArea.Document.UndoStack.StartUndoGroup();
-			try
-			{
-				if (textArea.SelectionManager.HasSomethingSelected)
-				{
-					textArea.Caret.Position = textArea.SelectionManager.SelectionCollection[0].StartPosition;
-					textArea.SelectionManager.RemoveSelectedText();
-				}
+        private void InsertText(string text)
+        {
+            var textArea = _editor.ActiveTextAreaControl.TextArea;
+            textArea.Document.UndoStack.StartUndoGroup();
+            try
+            {
+                if (textArea.SelectionManager.HasSomethingSelected)
+                {
+                    textArea.Caret.Position = textArea.SelectionManager.SelectionCollection[0].StartPosition;
+                    textArea.SelectionManager.RemoveSelectedText();
+                }
 
-				textArea.InsertString(text);
-			}
-			finally
-			{
-				textArea.Document.UndoStack.EndUndoGroup();
-			}
+                textArea.InsertString(text);
+            }
+            finally
+            {
+                textArea.Document.UndoStack.EndUndoGroup();
+            }
 
             _search = new TextEditorSearcher(textArea.MotherTextEditorControl.Text);
-		}
+        }
 
-		private void SelectResult(TextRange range)
-		{
-			TextLocation p1 = _editor.Document.OffsetToPosition(range.Offset);
-			TextLocation p2 = _editor.Document.OffsetToPosition(range.Offset + range.Length);
-			_editor.ActiveTextAreaControl.SelectionManager.SetSelection(p1, p2);
-			_editor.ActiveTextAreaControl.ScrollTo(p1.Line, p1.Column);
+        private void SelectResult(TextRange range)
+        {
+            TextLocation p1 = _editor.Document.OffsetToPosition(range.Offset);
+            TextLocation p2 = _editor.Document.OffsetToPosition(range.Offset + range.Length);
+            _editor.ActiveTextAreaControl.SelectionManager.SetSelection(p1, p2);
+            _editor.ActiveTextAreaControl.ScrollTo(p1.Line, p1.Column);
 
-			// Also move the caret to the end of the selection, because when the user
-			// presses F3, the caret is where we start searching next time.
-			_editor.ActiveTextAreaControl.Caret.Position =
-				_editor.Document.OffsetToPosition(range.Offset + range.Length);
-		}
+            // Also move the caret to the end of the selection, because when the user
+            // presses F3, the caret is where we start searching next time.
+            _editor.ActiveTextAreaControl.Caret.Position =
+                _editor.Document.OffsetToPosition(range.Offset + range.Length);
+        }
 
-		private void txtLookFor_TextChanged(object sender, EventArgs e)
-		{
-		}
+        private void txtLookFor_TextChanged(object sender, EventArgs e)
+        {
+        }
 
         private void findInFilesButton_Click(object sender, EventArgs e)
         {
@@ -373,7 +374,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
             if (Owner != null)
             {
-                Owner.Select();    // prevent another app from being activated instead
+                Owner.Select(); // prevent another app from being activated instead
             }
 
             e.Cancel = true;
@@ -389,14 +390,14 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
         {
             Close();
         }
-	}
+    }
 
-	public class TextRange : AbstractSegment
-	{
-		public TextRange(int offset, int length)
-		{
-			this.offset = offset;
-			this.length = length;
-		}
-	}
+    public class TextRange : AbstractSegment
+    {
+        public TextRange(int offset, int length)
+        {
+            this.offset = offset;
+            this.length = length;
+        }
+    }
 }

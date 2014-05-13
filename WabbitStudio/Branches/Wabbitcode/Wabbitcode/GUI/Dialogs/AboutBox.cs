@@ -17,69 +17,66 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             textBoxDescription.Text = AssemblyDescription;
         }
 
-	    public override sealed string Text
-	    {
-		    get { return base.Text; }
-		    set { base.Text = value; }
-	    }
+        public override sealed string Text
+        {
+            get { return base.Text; }
+            set { base.Text = value; }
+        }
 
-	    private static string AssemblyCompany
+        private static string AssemblyCompany
         {
             get
             {
                 object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCompanyAttribute), false);
-                return attributes.Length == 0 ? string.Empty : ((AssemblyCompanyAttribute)attributes[0]).Company;
+                return attributes.Length == 0 ? string.Empty : ((AssemblyCompanyAttribute) attributes[0]).Company;
             }
         }
 
-	    private static string AssemblyCopyright
+        private static string AssemblyCopyright
         {
             get
             {
                 object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
-                return attributes.Length == 0 ? string.Empty : ((AssemblyCopyrightAttribute)attributes[0]).Copyright;
+                return attributes.Length == 0 ? string.Empty : ((AssemblyCopyrightAttribute) attributes[0]).Copyright;
             }
         }
 
-	    private static string AssemblyDescription
+        private static string AssemblyDescription
         {
             get
             {
                 object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false);
-                return attributes.Length == 0 ? string.Empty : ((AssemblyDescriptionAttribute)attributes[0]).Description;
+                return attributes.Length == 0 ? string.Empty : ((AssemblyDescriptionAttribute) attributes[0]).Description;
             }
         }
 
-	    private static string AssemblyProduct
+        private static string AssemblyProduct
         {
             get
             {
                 object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute), false);
-                return attributes.Length == 0 ? string.Empty : ((AssemblyProductAttribute)attributes[0]).Product;
+                return attributes.Length == 0 ? string.Empty : ((AssemblyProductAttribute) attributes[0]).Product;
             }
         }
 
-	    private static string AssemblyTitle
+        private static string AssemblyTitle
         {
             get
             {
                 object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
-	            if (attributes.Length <= 0)
-	            {
-		            return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
-	            }
+                if (attributes.Length <= 0)
+                {
+                    return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+                }
 
-	            AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributes[0];
-	            return !string.IsNullOrEmpty(titleAttribute.Title) ? titleAttribute.Title : Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+                AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute) attributes[0];
+                return !string.IsNullOrEmpty(titleAttribute.Title) ? titleAttribute.Title : Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
             }
         }
 
-	    private static string AssemblyVersion
+        private static string AssemblyVersion
         {
-            get
-            {
-                return Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            }
+            get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); }
         }
     }
 }

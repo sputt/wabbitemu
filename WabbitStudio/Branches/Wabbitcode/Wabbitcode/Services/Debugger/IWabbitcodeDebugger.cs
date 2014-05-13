@@ -35,6 +35,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
     }
 
     public delegate void DebuggerRunning(object sender, DebuggerRunningEventArgs e);
+
     public delegate void DebuggerStep(object sender, DebuggerStepEventArgs e);
 
     public interface IWabbitcodeDebugger : IDisposable
@@ -47,7 +48,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         Stack<CallStackEntry> CallStack { get; }
         IZ80 CPU { get; }
         Image ScreenImage { get; }
-        
+
         void StartDebug();
         void EndDebug();
 

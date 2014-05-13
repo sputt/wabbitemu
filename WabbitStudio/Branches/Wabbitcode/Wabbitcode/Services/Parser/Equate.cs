@@ -1,68 +1,41 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Parser
 {
-
     internal class Equate : ILabel
     {
         public Equate(DocLocation loc, string labelName, string value, string description, ParserInformation parent)
         {
-            this.LabelName = labelName;
-            this.Location = loc;
-            this.Description = description;
-            this.Parent = parent;
-            this.Value = value;
+            LabelName = labelName;
+            Location = loc;
+            Description = description;
+            Parent = parent;
+            Value = value;
         }
 
-        public string Description
-        {
-            get;
-            set;
-        }
+        public string Description { get; set; }
 
         public bool IsReusable
         {
-            get
-            {
-                return this.LabelName == "_";
-            }
+            get { return LabelName == "_"; }
         }
 
-        public string LabelName
-        {
-            get;
-            set;
-        }
+        public string LabelName { get; set; }
 
-        public DocLocation Location
-        {
-            get;
-            set;
-        }
+        public DocLocation Location { get; set; }
 
         public string Name
         {
-            get
-            {
-                return this.LabelName;
-            }
+            get { return LabelName; }
         }
 
-        public ParserInformation Parent
-        {
-            get;
-            set;
-        }
+        public ParserInformation Parent { get; set; }
 
-        public string Value
-        {
-            get;
-            set;
-        }
+        public string Value { get; set; }
 
         public static bool operator !=(Equate label1, Equate label2)
         {
-            if ((object)label1 == null || (object)label2 == null)
+            if ((object) label1 == null || (object) label2 == null)
             {
-                if ((object)label1 != null && (object)label2 != null)
+                if ((object) label1 != null && (object) label2 != null)
                 {
                     return false;
                 }
@@ -76,9 +49,9 @@
 
         public static bool operator ==(Equate label1, Equate label2)
         {
-            if ((object)label1 == null || (object)label2 == null)
+            if ((object) label1 == null || (object) label2 == null)
             {
-                if ((object)label1 == null && (object)label2 == null)
+                if ((object) label1 == null && (object) label2 == null)
                 {
                     return true;
                 }
@@ -97,7 +70,7 @@
                 return base.Equals(obj);
             }
             Equate label2 = obj as Equate;
-            return this.Location.Offset == label2.Location.Offset && this.LabelName == label2.LabelName;
+            return Location.Offset == label2.Location.Offset && LabelName == label2.LabelName;
         }
 
         public override int GetHashCode()
@@ -107,7 +80,7 @@
 
         public override string ToString()
         {
-            return this.LabelName;
+            return LabelName;
         }
     }
 }
