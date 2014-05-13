@@ -2,7 +2,7 @@
 
 namespace Revsoft.Wabbitcode.Services.Assembler
 {
-    class SpasmComAssembler : IAssembler
+    internal class SpasmComAssembler : IAssembler
     {
         private static SPASM.Z80Assembler _spasm;
 

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Annotations;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services
@@ -29,7 +29,7 @@ namespace Revsoft.Wabbitcode.Services
             List<Assembly> assemblies = new List<Assembly>();
             assemblies.AddRange(dllFileNames.Select(AssemblyName.GetAssemblyName).Select(Assembly.Load));
 
-            Type pluginType = typeof (IWabbitcodePlugin);
+            Type pluginType = typeof(IWabbitcodePlugin);
             ICollection<Type> pluginTypes = assemblies.Where(a => a != null)
                 .Select(assembly => assembly.GetTypes())
                 .SelectMany(types => types

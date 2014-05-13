@@ -16,75 +16,88 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
     public sealed class MainToolBar : ToolStrip
     {
         private static readonly ComponentResourceManager Resources = new ComponentResourceManager(typeof(MainToolBar));
+
         private readonly ToolStripButton _newToolStripButton = new ToolStripButton
         {
             Text = "&New",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("newToolStripButton.Image")))
-
+            Image = ((Image) (Resources.GetObject("newToolStripButton.Image")))
         };
+
         private readonly ToolStripButton _openToolStripButton = new ToolStripButton
         {
             Text = "&Open",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("openToolStripButton.Image")))
+            Image = ((Image) (Resources.GetObject("openToolStripButton.Image")))
         };
+
         private readonly ToolStripButton _saveToolStripButton = new ToolStripButton
         {
             Text = "&Save",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("saveToolStripButton.Image"))),
+            Image = ((Image) (Resources.GetObject("saveToolStripButton.Image"))),
             Enabled = false
         };
+
         private readonly ToolStripButton _saveAllToolButton = new ToolStripButton
         {
             Text = "Save All",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("saveAllToolButton.Image"))),
+            Image = ((Image) (Resources.GetObject("saveAllToolButton.Image"))),
             Enabled = false
         };
+
         private readonly ToolStripButton _printToolStripButton = new ToolStripButton
         {
             Text = "&Print",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("printToolStripButton.Image"))),
+            Image = ((Image) (Resources.GetObject("printToolStripButton.Image"))),
             Enabled = false
         };
+
         private readonly ToolStripSeparator _toolStripSeparator = new ToolStripSeparator();
+
         private readonly ToolStripButton _cutToolStripButton = new ToolStripButton
         {
             Text = "C&ut",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("cutToolStripButton.Image"))),
+            Image = ((Image) (Resources.GetObject("cutToolStripButton.Image"))),
             Enabled = false
         };
+
         private readonly ToolStripButton _copyToolStripButton = new ToolStripButton
         {
             Text = "&Copy",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("copyToolStripButton.Image"))),
+            Image = ((Image) (Resources.GetObject("copyToolStripButton.Image"))),
             Enabled = false
         };
+
         private readonly ToolStripButton _pasteToolStripButton = new ToolStripButton
         {
             Text = "&Paste",
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("pasteToolStripButton.Image"))),
+            Image = ((Image) (Resources.GetObject("pasteToolStripButton.Image"))),
             Enabled = false
         };
+
         private readonly ToolStripSeparator _toolStripSeparator3 = new ToolStripSeparator();
+
         private readonly ToolStripComboBox _findBox = new ToolStripComboBox
         {
             AutoCompleteSource = AutoCompleteSource.CustomSource,
             FlatStyle = FlatStyle.Flat
         };
+
         private readonly ToolStripSeparator _toolStripSeparator2 = new ToolStripSeparator();
+
         private readonly ToolStripButton _runToolButton = new ToolStripButton
         {
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            Image = ((Image)(Resources.GetObject("runToolButton.Image"))),
+            Image = ((Image) (Resources.GetObject("runToolButton.Image"))),
             Text = "Start Debug"
         };
+
         private readonly ToolStripComboBox _configBox = new ToolStripComboBox
         {
             AutoCompleteSource = AutoCompleteSource.CustomSource,
@@ -98,21 +111,23 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
         public MainToolBar()
         {
             AllowItemReorder = true;
-            Items.AddRange(new ToolStripItem[] {
-            _newToolStripButton,
-            _openToolStripButton,
-            _saveToolStripButton,
-            _saveAllToolButton,
-            _printToolStripButton,
-            _toolStripSeparator,
-            _cutToolStripButton,
-            _copyToolStripButton,
-            _pasteToolStripButton,
-            _toolStripSeparator3,
-            _findBox,
-            _toolStripSeparator2,
-            _runToolButton,
-            _configBox});
+            Items.AddRange(new ToolStripItem[]
+            {
+                _newToolStripButton,
+                _openToolStripButton,
+                _saveToolStripButton,
+                _saveAllToolButton,
+                _printToolStripButton,
+                _toolStripSeparator,
+                _cutToolStripButton,
+                _copyToolStripButton,
+                _pasteToolStripButton,
+                _toolStripSeparator3,
+                _findBox,
+                _toolStripSeparator2,
+                _runToolButton,
+                _configBox
+            });
             Dock = DockStyle.Left;
             RenderMode = ToolStripRenderMode.System;
             GripStyle = ToolStripGripStyle.Hidden;
@@ -145,27 +160,27 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
         {
             bool enabled = _dockingService.Documents.Any();
             _saveToolStripButton.Enabled = enabled;
-			_saveAllToolButton.Enabled = enabled;
-			_cutToolStripButton.Enabled = enabled;
-			_copyToolStripButton.Enabled = enabled;
-			_pasteToolStripButton.Enabled = enabled;
+            _saveAllToolButton.Enabled = enabled;
+            _cutToolStripButton.Enabled = enabled;
+            _copyToolStripButton.Enabled = enabled;
+            _pasteToolStripButton.Enabled = enabled;
             _findBox.Enabled = enabled;
         }
 
         private void ProjectService_ProjectOpened(object sender, EventArgs e)
         {
-			IProject project = _projectService.Project;
-			if (project.IsInternal)
-			{
-				return;
-			}
+            IProject project = _projectService.Project;
+            if (project.IsInternal)
+            {
+                return;
+            }
 
-			foreach (var config in _projectService.Project.BuildSystem.BuildConfigs)
-			{
-				_configBox.Items.Add(config);
-			}
+            foreach (var config in _projectService.Project.BuildSystem.BuildConfigs)
+            {
+                _configBox.Items.Add(config);
+            }
 
-			_configBox.SelectedIndex = _projectService.Project.BuildSystem.CurrentConfigIndex;
+            _configBox.SelectedIndex = _projectService.Project.BuildSystem.CurrentConfigIndex;
         }
 
         private static void newToolButton_Click(object sender, EventArgs e)
@@ -215,7 +230,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
 
         private void findBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (e.KeyChar != (char)Keys.Enter)
+            if (e.KeyChar != (char) Keys.Enter)
             {
                 return;
             }

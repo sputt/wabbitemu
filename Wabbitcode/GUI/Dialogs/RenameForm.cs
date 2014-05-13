@@ -11,10 +11,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
         public string NewText
         {
-            get
-            {
-                return textBox.Text;
-            }
+            get { return textBox.Text; }
         }
     }
 }

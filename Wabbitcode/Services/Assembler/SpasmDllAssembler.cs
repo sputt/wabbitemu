@@ -2,7 +2,7 @@ using System;
 
 namespace Revsoft.Wabbitcode.Services.Assembler
 {
-	internal class SpasmDllAssembler : IAssembler
+    internal class SpasmDllAssembler : IAssembler
     {
         /*AssemblerClass Assembler = new AssemblerClass();
             string originalDir = filePath.Substring(0, filePath.LastIndexOf('\\'));
@@ -38,6 +38,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
                 builder.Append(line);
                 builder.Append("\n");
             } while (line != null);*/
+
         public void AddDefine(string name, string value)
         {
             throw new NotImplementedException();

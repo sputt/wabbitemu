@@ -27,6 +27,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         private CodeCompletionWindow _codeCompletionWindow;
         private bool _inHandleKeyPress;
         private static readonly Regex LineRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|\%|'|\\|\<|\>]*?)\s*(;.*)?$", RegexOptions.Compiled);
+
         private readonly Timer _textChangedTimer = new Timer
         {
             Interval = 5000,
@@ -42,6 +43,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         private readonly ErrorUnderliner _errorUnderliner;
 
         private bool _useTextHighlighting = true;
+
         public bool UseTextHighlighting
         {
             get { return _useTextHighlighting; }
@@ -126,7 +128,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
         private void TextArea_MouseWheel(object sender, MouseEventArgs e)
         {
-            TextAreaControl textAreaControl = (TextAreaControl)sender;
+            TextAreaControl textAreaControl = (TextAreaControl) sender;
             if (_insightWindow != null && !_insightWindow.IsDisposed && _insightWindow.Visible)
             {
                 _insightWindow.HandleMouseWheel(e);
@@ -266,7 +268,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             {
                 _updateRefsTimer.Stop();
             }
-            
+
             _updateRefsTimer.Start();
 
             _statusBarService.SetCaretPosition(ActiveTextAreaControl.Caret.Line, ActiveTextAreaControl.Caret.Column);
@@ -416,13 +418,13 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                 return;
             }
 
-            var options = Settings.Default.CaseSensitive ? 
+            var options = Settings.Default.CaseSensitive ?
                 StringComparison.Ordinal :
                 StringComparison.OrdinalIgnoreCase;
             var references = from segment in segmentCollection
-                             from segmentWord in segment.Words
-                             where string.Equals(segmentWord.Word, word, options)
-                             select new ReferenceMarker(segment.Offset + segmentWord.Offset, segmentWord.Length);
+                from segmentWord in segment.Words
+                where string.Equals(segmentWord.Word, word, options)
+                select new ReferenceMarker(segment.Offset + segmentWord.Offset, segmentWord.Length);
             if (InvokeRequired && !IsDisposed)
             {
                 this.Invoke(() => AddMarkers(references));
@@ -529,7 +531,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
     public static class CodeCompletionFactory
     {
         private static readonly Dictionary<string, List<ICodeCompletionBinding>> Bindings =
-            new Dictionary<string, List<ICodeCompletionBinding>>(); 
+            new Dictionary<string, List<ICodeCompletionBinding>>();
 
         public static void RegisterCodeCompletionBinding(string extension, ICodeCompletionBinding binding)
         {

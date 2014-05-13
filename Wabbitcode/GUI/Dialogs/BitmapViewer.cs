@@ -17,7 +17,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             pictureBox.Size = image.Size;
             pictureBox.BackColor = Color.White;
             pictureBox.Location = new Point(18 + vertRuler.Width, 18 + horzRuler.Height);
-            button1.Location = new Point(Width/2 - button1.Width/2, Height - (button1.Height + button1.Height/2));
+            button1.Location = new Point(Width / 2 - button1.Width / 2, Height - (button1.Height + button1.Height / 2));
             DrawGridLines();
         }
 

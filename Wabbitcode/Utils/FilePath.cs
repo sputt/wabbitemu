@@ -25,9 +25,9 @@ namespace Revsoft.Wabbitcode.Utils
 
         public static bool operator ==(FilePath path1, FilePath path2)
         {
-            if ((object)path1 == null || (object)path2 == null)
+            if ((object) path1 == null || (object) path2 == null)
             {
-                return (object)path1 == null && (object)path2 == null;
+                return (object) path1 == null && (object) path2 == null;
             }
 
             return path1.Equals(path2);

@@ -17,78 +17,79 @@ using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.GUI
 {
-	public partial class MainForm : Form
-	{
-	    private const string MainMenuName = "Main Menu";
-	    private const string DebugToolBarName = "Debug Toolbar";
-	    private const string MainToolBarName = "Main Toolbar";
+    public partial class MainForm : Form
+    {
+        private const string MainMenuName = "Main Menu";
+        private const string DebugToolBarName = "Debug Toolbar";
+        private const string MainToolBarName = "Main Toolbar";
 
-	    #region Private Members
+        #region Private Members
 
-	    private bool _showToolbar = true;
-	    private IFileTypeMethodFactory _fileTypeMethodFactory;
+        private bool _showToolbar = true;
+        private IFileTypeMethodFactory _fileTypeMethodFactory;
 
-		#region Services
+        #region Services
 
-	    private IDockingService _dockingService;
-		private IProjectService _projectService;
-	    private IStatusBarService _statusBarService;
-	    private IToolBarService _toolBarService;
-	    private IMenuService _menuService;
-	    private IDebuggerService _debuggerService;
-	    private IPluginService _pluginService;
+        private IDockingService _dockingService;
+        private IProjectService _projectService;
+        private IStatusBarService _statusBarService;
+        private IToolBarService _toolBarService;
+        private IMenuService _menuService;
+        private IDebuggerService _debuggerService;
+        private IPluginService _pluginService;
 
-	    #endregion
+        #endregion
 
-		#endregion
+        #endregion
 
-		#region Events
+        #region Events
 
-		#endregion
+        #endregion
 
-		public MainForm(ICollection<string> args)
-		{
-			InitializeComponent();
-			RestoreWindow();
-			InitializeDependencies();
-			InitializeEvents();
+        public MainForm(ICollection<string> args)
+        {
+            InitializeComponent();
+            RestoreWindow();
+            InitializeDependencies();
+            InitializeEvents();
             InitializeMenus();
             InitializeToolbars();
-		    RegisterFileTypes();
+            RegisterFileTypes();
 
-		    _dockingService.InitPanels();
-			_dockingService.LoadConfig(GetContentFromPersistString);
+            _dockingService.InitPanels();
+            _dockingService.LoadConfig(GetContentFromPersistString);
 
-		    InitializePlugins();
+            InitializePlugins();
 
-			if (args.Count == 0)
-			{
-				LoadStartupProject();
-			}
+            if (args.Count == 0)
+            {
+                LoadStartupProject();
+            }
 
-			if (_projectService.Project == null)
-			{
-				_projectService.CreateInternalProject();
-			}
+            if (_projectService.Project == null)
+            {
+                _projectService.CreateInternalProject();
+            }
 
-			HandleArgs(args);
-		}
+            HandleArgs(args);
+        }
 
-	    private IDockContent GetContentFromPersistString(string persistString)
+        private IDockContent GetContentFromPersistString(string persistString)
         {
             ToolWindow window = _dockingService.GetDockingWindow(persistString);
-	        if (window != null)
-	        {
-	            return window;
-	        }
+            if (window != null)
+            {
+                return window;
+            }
 
             string[] parsedStrings = persistString.Split(';');
-	        Type type = Type.GetType(parsedStrings[0]);
+            Type type = Type.GetType(parsedStrings[0]);
             if (parsedStrings.Length < 3 || type == null || type.IsAssignableFrom(typeof(AbstractFileEditor)))
             {
                 return null;
@@ -101,54 +102,54 @@ namespace Revsoft.Wabbitcode.GUI
             }
 
             new OpenFileAction(fileName).Execute();
-	        var doc = _dockingService.Documents.OfType<AbstractFileEditor>()
+            var doc = _dockingService.Documents.OfType<AbstractFileEditor>()
                 .FirstOrDefault(d => fileName == d.FileName);
-	        if (doc == null)
-	        {
-	            return null;
-	        }
+            if (doc == null)
+            {
+                return null;
+            }
 
-	        doc.PersistStringLoad(parsedStrings);
+            doc.PersistStringLoad(parsedStrings);
             return doc;
         }
 
-	    /// <summary>
-		/// Updates the title of the app with the filename.
-		/// </summary>
-		private void UpdateTitle()
-		{
-			string debugString = string.Empty;
-			if (_debuggerService.CurrentDebugger != null)
-			{
-				debugString = " (Debugging)";
-			}
+        /// <summary>
+        /// Updates the title of the app with the filename.
+        /// </summary>
+        private void UpdateTitle()
+        {
+            string debugString = string.Empty;
+            if (_debuggerService.CurrentDebugger != null)
+            {
+                debugString = " (Debugging)";
+            }
 
-		    var activeFileEditor = _dockingService.ActiveDocument as AbstractFileEditor;
-			if (activeFileEditor != null && !string.IsNullOrEmpty(activeFileEditor.FileName))
-			{
-				Text = Path.GetFileName(activeFileEditor.FileName) + debugString + " - Wabbitcode";
-			}
-			else
-			{
-				Text = "Wabbitcode" + debugString;
-			}
-		}
+            var activeFileEditor = _dockingService.ActiveDocument as AbstractFileEditor;
+            if (activeFileEditor != null && !string.IsNullOrEmpty(activeFileEditor.FileName))
+            {
+                Text = Path.GetFileName(activeFileEditor.FileName) + debugString + " - Wabbitcode";
+            }
+            else
+            {
+                Text = "Wabbitcode" + debugString;
+            }
+        }
 
-	    private void DockingServiceActiveDocumentChanged(object sender, EventArgs eventArgs)
-		{
-			if (Disposing)
-			{
-				return;
-			}
+        private void DockingServiceActiveDocumentChanged(object sender, EventArgs eventArgs)
+        {
+            if (Disposing)
+            {
+                return;
+            }
 
-		    if (_dockingService.ActiveDocument == null)
-		    {
-		        _statusBarService.SetCaretPosition(-1, -1);
+            if (_dockingService.ActiveDocument == null)
+            {
+                _statusBarService.SetCaretPosition(-1, -1);
                 _statusBarService.SetCodeCountInfo(null);
-		    }
+            }
 
-			UpdateTitle();
-		}
+            UpdateTitle();
+        }
 
         #region Initalization
 
@@ -160,7 +161,7 @@ namespace Revsoft.Wabbitcode.GUI
             _projectService.ProjectOpened += ProjectService_OnProjectOpened;
         }
 
-	    private void InitializeDependencies()
+        private void InitializeDependencies()
         {
             // services
             DependencyFactory.RegisterType<IDockingService, DockingService>(new InjectionConstructor(dockPanel));
@@ -180,7 +181,7 @@ namespace Revsoft.Wabbitcode.GUI
             DependencyFactory.RegisterType<IAssemblerFactory, AssemblerFactory>();
             DependencyFactory.RegisterType<IParserFactory, ParserFactory>();
             DependencyFactory.RegisterType<IFileTypeMethodFactory, FileTypeMethodFactory>();
-	        
+
             _dockingService = DependencyFactory.Resolve<IDockingService>();
             _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
             _menuService = DependencyFactory.Resolve<IMenuService>();
@@ -188,7 +189,7 @@ namespace Revsoft.Wabbitcode.GUI
             _projectService = DependencyFactory.Resolve<IProjectService>();
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             _pluginService = DependencyFactory.Resolve<IPluginService>();
-	        _fileTypeMethodFactory = DependencyFactory.Resolve<IFileTypeMethodFactory>();
+            _fileTypeMethodFactory = DependencyFactory.Resolve<IFileTypeMethodFactory>();
         }
 
         private void InitializeToolbars()
@@ -197,10 +198,10 @@ namespace Revsoft.Wabbitcode.GUI
             _toolBarService.RegisterToolbar(MainToolBarName, new MainToolBar());
         }
 
-	    private void InitializeMenus()
-	    {
-	        _menuService.RegisterMenu(MainMenuName, new MainMenuStrip());
-	    }
+        private void InitializeMenus()
+        {
+            _menuService.RegisterMenu(MainMenuName, new MainMenuStrip());
+        }
 
         private void InitializePlugins()
         {
@@ -296,10 +297,10 @@ namespace Revsoft.Wabbitcode.GUI
             {
                 _projectService.CreateInternalProject();
                 var result = MessageBox.Show(
-                                 "There was an error loading the startup project, would you like to remove it?\n" + ex,
-                                 "Error",
-                                 MessageBoxButtons.YesNo,
-                                 MessageBoxIcon.Error);
+                    "There was an error loading the startup project, would you like to remove it?\n" + ex,
+                    "Error",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Error);
                 if (result == DialogResult.Yes)
                 {
                     Settings.Default.StartupProject = string.Empty;
@@ -321,9 +322,9 @@ namespace Revsoft.Wabbitcode.GUI
             }
 
             if (MessageBox.Show(this, "Would you like to make this your default project?",
-                    "Startup Project",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question) == DialogResult.Yes)
+                "Startup Project",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 Settings.Default.StartupProject = _projectService.Project.ProjectFile;
             }
@@ -382,7 +383,7 @@ namespace Revsoft.Wabbitcode.GUI
             _dockingService.HideDockPanel(ExpressionWindow.WindowIdentifier);
         }
 
-	    #endregion
+        #endregion
 
         #region Form Events
 
@@ -397,47 +398,47 @@ namespace Revsoft.Wabbitcode.GUI
         }
 
         private void MainFormRedone_FormClosing(object sender, FormClosingEventArgs e)
-		{
-			if (_debuggerService.CurrentDebugger != null)
-			{
-				new StopDebuggerAction().Execute();
-			}
+        {
+            if (_debuggerService.CurrentDebugger != null)
+            {
+                new StopDebuggerAction().Execute();
+            }
 
-			if (!_projectService.Project.IsInternal)
-			{
-				new CloseProjectAction().Execute();
-			}
+            if (!_projectService.Project.IsInternal)
+            {
+                new CloseProjectAction().Execute();
+            }
 
             _pluginService.UnloadPlugins();
 
-			try
-			{
-				SaveWindow();
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Error saving window location", ex);
-			}
+            try
+            {
+                SaveWindow();
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error saving window location", ex);
+            }
 
-			try
-			{
-				_dockingService.SavePanels();
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Error destroying DockService", ex);
-			}
+            try
+            {
+                _dockingService.SavePanels();
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error destroying DockService", ex);
+            }
 
-			try
-			{
-				Settings.Default.Save();
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Error saving configuration file", ex);
-			}
-		}
+            try
+            {
+                Settings.Default.Save();
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error saving configuration file", ex);
+            }
+        }
 
         #endregion
-	}
+    }
 }

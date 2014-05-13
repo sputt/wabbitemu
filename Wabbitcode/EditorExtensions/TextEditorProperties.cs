@@ -15,7 +15,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         {
             ShowVerticalRuler = false;
             Encoding = Encoding.UTF8;
-		    BracketMatchingStyle = BracketMatchingStyle.After;
+            BracketMatchingStyle = BracketMatchingStyle.After;
             IndentationSize = 4;
             DocumentSelectionMode = DocumentSelectionMode.Normal;
             AllowCaretBeyondEOL = false;
@@ -44,7 +44,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             get { return Settings.Default.IconBar; }
             set { Settings.Default.IconBar = value; }
         }
-        
+
         public bool AllowCaretBeyondEOL { get; set; }
         public bool ShowMatchingBracket { get; set; }
         public bool CutCopyWholeLine { get; set; }
@@ -117,10 +117,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         public Font Font
         {
             get { return Settings.Default.EditorFont; }
-            set
-            {
-                Settings.Default.EditorFont = value;
-            }
+            set { Settings.Default.EditorFont = value; }
         }
 
         public FontContainer FontContainer

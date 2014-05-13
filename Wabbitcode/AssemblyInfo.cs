@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
+
 [assembly: AssemblyTitle("Wabbitcode")]
 [assembly: AssemblyDescription("A Z80 assembly IDE.")]
 [assembly: AssemblyConfiguration("")]
@@ -22,6 +23,7 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
+
 [assembly: AssemblyVersion("0.5.5.6")]
 
 // In order to sign your assembly you must specify a key to use. Refer to the
@@ -47,6 +49,7 @@ using System.Runtime.InteropServices;
 //       attribute as [assembly: AssemblyKeyFile("..\\..\\mykey.snk")]
 //   (*) Delay Signing is an advanced option - see the Microsoft .NET Framework
 //       documentation for more information on this.
+
 [assembly: AssemblyDelaySign(false)]
 [assembly: AssemblyKeyFile("")]
 [assembly: AssemblyKeyName("")]

@@ -267,7 +267,7 @@ namespace Revsoft.Wabbitcode.Actions
                 return;
             }
 
-            string[] files = (string[])_dataObject.GetData(DataFormats.FileDrop);
+            string[] files = (string[]) _dataObject.GetData(DataFormats.FileDrop);
             new OpenFileAction(files.Select(p => new FilePath(p)).ToArray()).Execute();
         }
     }

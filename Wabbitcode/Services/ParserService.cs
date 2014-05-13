@@ -1,5 +1,4 @@
-﻿using Revsoft.Wabbitcode.Annotations;
-using Revsoft.Wabbitcode.Properties;
+﻿using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using System;

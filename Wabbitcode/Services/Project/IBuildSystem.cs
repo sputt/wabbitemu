@@ -5,65 +5,32 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
-	public interface IBuildSystem
-	{
-		IAssemblerService AssemblerService
-		{
-			get;
-			set;
-		}
+    public interface IBuildSystem
+    {
+        IAssemblerService AssemblerService { get; set; }
 
-		IList<BuildConfig> BuildConfigs
-		{
-			get;
-		}
+        IList<BuildConfig> BuildConfigs { get; }
 
-		BuildConfig CurrentConfig
-		{
-			get;
-			set;
-		}
+        BuildConfig CurrentConfig { get; set; }
 
-		int CurrentConfigIndex
-		{
-			get;
-			set;
-		}
+        int CurrentConfigIndex { get; set; }
 
-        FilePath MainFile
-		{
-			get;
-		}
+        FilePath MainFile { get; }
 
-		string OutputText
-		{
-			get;
-		}
+        string OutputText { get; }
 
-        FilePath ProjectOutput
-		{
-			get;
-			set;
-		}
+        FilePath ProjectOutput { get; set; }
 
-		FilePath LabelOutput
-		{
-			get;
-			set;
-		}
+        FilePath LabelOutput { get; set; }
 
-        FilePath ListOutput
-		{
-			get;
-			set;
-		}
+        FilePath ListOutput { get; set; }
 
-		void CreateDefaultConfigs();
+        void CreateDefaultConfigs();
 
-		bool Build();
+        bool Build();
 
-		void ReadXML(XmlTextReader reader);
+        void ReadXML(XmlTextReader reader);
 
-		void WriteXML(XmlTextWriter writer);
-	}
+        void WriteXML(XmlTextWriter writer);
+    }
 }

@@ -14,6 +14,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
     internal sealed partial class DebugToolBar : ToolStrip
     {
         private static readonly ComponentResourceManager Resources = new ComponentResourceManager(typeof(DebugToolBar));
+
         private readonly ToolStripButton _runDebuggerToolButton = new ToolStripButton
         {
             DisplayStyle = ToolStripItemDisplayStyle.Image,
@@ -33,7 +34,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
         {
             DisplayStyle = ToolStripItemDisplayStyle.Image,
             Enabled = false,
-            Image = ((Image)(Resources.GetObject("stopToolButton"))),
+            Image = ((Image) (Resources.GetObject("stopToolButton"))),
             Text = "Stop"
         };
 
@@ -85,16 +86,18 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
         {
             AllowItemReorder = true;
             GripStyle = ToolStripGripStyle.Hidden;
-            Items.AddRange(new ToolStripItem[] {
-            _runDebuggerToolButton,
-            _pauseToolButton,
-            _stopDebugToolButton,
-            _restartToolStripButton,
-            _toolStripSeparator1,
-            _gotoCurrentToolButton,
-            _stepToolButton,
-            _stepOverToolButton,
-            _stepOutToolButton});
+            Items.AddRange(new ToolStripItem[]
+            {
+                _runDebuggerToolButton,
+                _pauseToolButton,
+                _stopDebugToolButton,
+                _restartToolStripButton,
+                _toolStripSeparator1,
+                _gotoCurrentToolButton,
+                _stepToolButton,
+                _stepOverToolButton,
+                _stepOutToolButton
+            });
             RenderMode = ToolStripRenderMode.System;
 
             _runDebuggerToolButton.Click += runDebuggerToolButton_Click;
@@ -180,6 +183,5 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
             DocumentLocation location = debugger.GetAddressLocation(debugger.CPU.PC);
             new GotoLineAction(location).Execute();
         }
-
     }
 }

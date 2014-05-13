@@ -14,22 +14,20 @@ using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
-	public partial class TrackingWindow : ToolWindow
-	{
-	    public const string WindowIdentifier = "Tracking Window";
+    public partial class TrackingWindow : ToolWindow
+    {
+        public const string WindowIdentifier = "Tracking Window";
+
         public override string WindowName
         {
-            get
-            {
-                return WindowIdentifier;
-            }
+            get { return WindowIdentifier; }
         }
 
-	    private const int AddressIndex = 1;
-	    private const int NumBytesIndex = 2;
-	    private const int VarTypeIndex = 3;
-	    private const int VarDisplayMethodIndex = 4;
-	    private const int VarValueIndex = 5;
+        private const int AddressIndex = 1;
+        private const int NumBytesIndex = 2;
+        private const int VarTypeIndex = 3;
+        private const int VarDisplayMethodIndex = 4;
+        private const int VarValueIndex = 5;
 
         private enum VariableDisplayMethod
         {
@@ -50,55 +48,55 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             String,
         }
 
-		private readonly List<BitmapViewer> _openBitmaps = new List<BitmapViewer>();
+        private readonly List<BitmapViewer> _openBitmaps = new List<BitmapViewer>();
         private readonly Dictionary<int, Image> _imageList = new Dictionary<int, Image>();
-		private IWabbitcodeDebugger _debugger;
-		private readonly ISymbolService _symbolService;
-	    private VariableType _lastVariableType;
+        private IWabbitcodeDebugger _debugger;
+        private readonly ISymbolService _symbolService;
+        private VariableType _lastVariableType;
 
-		public TrackingWindow()
-		{
-			InitializeComponent();
+        public TrackingWindow()
+        {
+            InitializeComponent();
 
-		    IDebuggerService debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+            IDebuggerService debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
             _symbolService = DependencyFactory.Resolve<ISymbolService>();
-		}
+        }
 
-		void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
-		{
-			_debugger = e.Debugger;
-		    _debugger.DebuggerStep += (o, args) =>
-		    {
-		        UpdateAllRows();
+        private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
+        {
+            _debugger = e.Debugger;
+            _debugger.DebuggerStep += (o, args) =>
+            {
+                UpdateAllRows();
                 EnablePanel(true);
-		    };
-		    _debugger.DebuggerRunningChanged += (o, args) => EnablePanel(!args.Running);
-		}
+            };
+            _debugger.DebuggerRunningChanged += (o, args) => EnablePanel(!args.Running);
+        }
 
         #region Clipboard Operation
 
         public override void Copy()
-		{
-		    if (variablesDataView == null)
-		    {
-		        return;
-		    }
+        {
+            if (variablesDataView == null)
+            {
+                return;
+            }
 
-		    var dataObject = variablesDataView.GetClipboardContent();
-		    if (dataObject != null)
-		    {
-		        Clipboard.SetDataObject(dataObject);
-		    }
-		}
+            var dataObject = variablesDataView.GetClipboardContent();
+            if (dataObject != null)
+            {
+                Clipboard.SetDataObject(dataObject);
+            }
+        }
 
-		public override void Paste()
-		{
-			if (variablesDataView.EditingControl != null)
-			{
-				variablesDataView.EditingControl.Text = Clipboard.GetData(DataFormats.Text).ToString();
-			}
-		}
+        public override void Paste()
+        {
+            if (variablesDataView.EditingControl != null)
+            {
+                variablesDataView.EditingControl.Text = Clipboard.GetData(DataFormats.Text).ToString();
+            }
+        }
 
         #endregion
 
@@ -108,10 +106,10 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         {
             const string opString = "(+-*/%";
 
-            int[] precedence = { 0, 12, 12, 13, 13, 13 };
+            int[] precedence = {0, 12, 12, 13, 13, 13};
 
-            int firstPoint = opString.IndexOf(firstOperator);
-            int secondPoint = opString.IndexOf(secondOperator);
+            int firstPoint = opString.IndexOf(firstOperator, StringComparison.Ordinal);
+            int secondPoint = opString.IndexOf(secondOperator, StringComparison.Ordinal);
 
             return precedence[firstPoint] >= precedence[secondPoint];
         }
@@ -173,12 +171,12 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             return new Stack<string>(postfix);
         }
 
-	    private int EvaluateElement(string element)
-	    {
-	        if (!Settings.Default.CaseSensitive)
-	        {
-	            element = element.ToUpper();
-	        }
+        private int EvaluateElement(string element)
+        {
+            if (!Settings.Default.CaseSensitive)
+            {
+                element = element.ToUpper();
+            }
 
             int value;
             if (int.TryParse(element, out value))
@@ -186,16 +184,16 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 return value;
             }
 
-	        string label = _symbolService.SymbolTable.GetAddressFromLabel(element);
-	        if (label != null)
-	        {
-	            return int.Parse(label, NumberStyles.HexNumber);
-	        }
+            string label = _symbolService.SymbolTable.GetAddressFromLabel(element);
+            if (label != null)
+            {
+                return int.Parse(label, NumberStyles.HexNumber);
+            }
 
-	        switch (element)
-	        {
+            switch (element)
+            {
                 case "$A":
-	                return _debugger.CPU.A;
+                    return _debugger.CPU.A;
                 case "$F":
                     return _debugger.CPU.F;
                 case "$B":
@@ -229,7 +227,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 case "$IX":
                     return _debugger.CPU.IX;
                 case "$IY":
-	                return _debugger.CPU.IY;
+                    return _debugger.CPU.IY;
                 case "$PC":
                     return _debugger.CPU.PC;
                 case "$SP":
@@ -244,30 +242,30 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                         }
                         return value;
                     }
-	                break;
-	        }
-	        throw new FormatException(string.Format("Can't recognize symbol {0}", element));
-	    }
+                    break;
+            }
+            throw new FormatException(string.Format("Can't recognize symbol {0}", element));
+        }
 
-	    private int EvaluateElements(string right, string left, string op)
-	    {
-	        int leftVal = EvaluateElement(right);
-	        int rightVal = EvaluateElement(left);
-	        switch (op)
-	        {
+        private int EvaluateElements(string right, string left, string op)
+        {
+            int leftVal = EvaluateElement(right);
+            int rightVal = EvaluateElement(left);
+            switch (op)
+            {
                 case "+":
-	                return leftVal + rightVal;
+                    return leftVal + rightVal;
                 case "-":
-	                return leftVal - rightVal;
+                    return leftVal - rightVal;
                 case "*":
-	                return leftVal * rightVal;
+                    return leftVal * rightVal;
                 case "/":
-	                return leftVal / rightVal;
+                    return leftVal / rightVal;
                 case "%":
-	                return leftVal % rightVal;
-	        }
+                    return leftVal % rightVal;
+            }
             throw new Exception("Invalid operator");
-	    }
+        }
 
         private int EvalPostfix(IEnumerable<string> postFix)
         {
@@ -316,7 +314,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private static VariableType GetRowVarType(DataGridViewRow row)
         {
-            DataGridViewComboBoxCell cell = (DataGridViewComboBoxCell)row.Cells[VarTypeIndex];
+            DataGridViewComboBoxCell cell = (DataGridViewComboBoxCell) row.Cells[VarTypeIndex];
             if (cell.Value == null)
             {
                 cell.Items.Clear();
@@ -332,11 +330,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private VariableDisplayMethod GetRowVarDisplayMethod(DataGridViewRow row)
         {
-            DataGridViewComboBoxCell cell = (DataGridViewComboBoxCell)row.Cells[VarDisplayMethodIndex];
+            DataGridViewComboBoxCell cell = (DataGridViewComboBoxCell) row.Cells[VarDisplayMethodIndex];
             VariableType type = GetRowVarType(row);
-            if (cell.Value == null || type != _lastVariableType && 
+            if (cell.Value == null || type != _lastVariableType &&
                 !((type == VariableType.Byte && _lastVariableType == VariableType.Word) ||
-                (type == VariableType.Word && _lastVariableType == VariableType.Byte)))
+                  (type == VariableType.Word && _lastVariableType == VariableType.Byte)))
             {
                 cell.Items.Clear();
                 switch (type)
@@ -364,7 +362,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 _lastVariableType = type;
             }
 
-            return (VariableDisplayMethod)Enum.Parse(typeof(VariableDisplayMethod), cell.Value.ToString());
+            return (VariableDisplayMethod) Enum.Parse(typeof(VariableDisplayMethod), cell.Value.ToString());
         }
 
         private void SetRowValue(DataGridViewRow row, object cellData)
@@ -379,13 +377,13 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         #endregion
 
-	    private void UpdateAllRows()
-	    {
-	        foreach (DataGridViewRow row in variablesDataView.Rows)
-	        {
-	            UpdateRowValue(row);
-	        }
-	    }
+        private void UpdateAllRows()
+        {
+            foreach (DataGridViewRow row in variablesDataView.Rows)
+            {
+                UpdateRowValue(row);
+            }
+        }
 
         private int GetAddressValue(string address)
         {
@@ -401,241 +399,241 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             return value;
         }
 
-	    private void UpdateRowValue(DataGridViewRow row)
-	    {
-	        int address;
-	        try
-	        {
-	            address = GetAddressValue(GetRowAddress(row));
-	        }
-	        catch (FormatException ex)
-	        {
-	            row.Cells[5].Value = string.Format("Error: {0}", ex.Message);
-	            return;
-	        }
+        private void UpdateRowValue(DataGridViewRow row)
+        {
+            int address;
+            try
+            {
+                address = GetAddressValue(GetRowAddress(row));
+            }
+            catch (FormatException ex)
+            {
+                row.Cells[5].Value = string.Format("Error: {0}", ex.Message);
+                return;
+            }
 
-	        string numBytesString = GetRowNumBytes(row);
+            string numBytesString = GetRowNumBytes(row);
             VariableType valueTypeEntry = GetRowVarType(row);
             VariableDisplayMethod valueMethod = GetRowVarDisplayMethod(row);
 
             object value = GetValue(address, numBytesString, valueTypeEntry, valueMethod);
             SetRowValue(row, value);
-	    }
+        }
 
-	    private object GetValue(int address, string numBytesString,
+        private object GetValue(int address, string numBytesString,
             VariableType valueTypeEntry, VariableDisplayMethod varMethod)
-	    {
-	        string outputValue;
-	        int numBytes;
-	        bool numBytesError = int.TryParse(numBytesString, out numBytes);
-			switch (valueTypeEntry)
-			{
-				case VariableType.Image:
-			        return GetVarImage(address, numBytesString, varMethod);
-			    case VariableType.String:
-			        outputValue = GetVarString(address, numBytes);
-			        break;
-			    case VariableType.Word:
-			        if (!numBytesError)
-			        {
-			            return "Error: missing number of bytes";
-			        }
-			        outputValue = GetVarWord(address, varMethod, numBytes);
-
-			        break;
-				default:
+        {
+            string outputValue;
+            int numBytes;
+            bool numBytesError = int.TryParse(numBytesString, out numBytes);
+            switch (valueTypeEntry)
+            {
+                case VariableType.Image:
+                    return GetVarImage(address, numBytesString, varMethod);
+                case VariableType.String:
+                    outputValue = GetVarString(address, numBytes);
+                    break;
+                case VariableType.Word:
                     if (!numBytesError)
                     {
                         return "Error: missing number of bytes";
                     }
-					outputValue = GetVarByte(address, varMethod, numBytes);
-			        break;
-			}
+                    outputValue = GetVarWord(address, varMethod, numBytes);
 
-			return outputValue;
-		}
+                    break;
+                default:
+                    if (!numBytesError)
+                    {
+                        return "Error: missing number of bytes";
+                    }
+                    outputValue = GetVarByte(address, varMethod, numBytes);
+                    break;
+            }
 
-	    private string GetVarByte(int address, VariableDisplayMethod varMethod, int numBytes)
-	    {
-	        string outputValue = string.Empty;
+            return outputValue;
+        }
+
+        private string GetVarByte(int address, VariableDisplayMethod varMethod, int numBytes)
+        {
+            string outputValue = string.Empty;
             int convertMethod = GetConvertBase(varMethod);
 
-	        for (int i = 0; i < numBytes; i++)
-	        {
-	            byte baseValue = _debugger.ReadByte((ushort) (address + i));
-	            switch (varMethod)
-	            {
-	                case VariableDisplayMethod.Decimal:
-	                    outputValue += Convert.ToString(baseValue, convertMethod);
-	                    break;
-	                case VariableDisplayMethod.Binary:
+            for (int i = 0; i < numBytes; i++)
+            {
+                byte baseValue = _debugger.ReadByte((ushort) (address + i));
+                switch (varMethod)
+                {
+                    case VariableDisplayMethod.Decimal:
+                        outputValue += Convert.ToString(baseValue, convertMethod);
+                        break;
+                    case VariableDisplayMethod.Binary:
                         outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(16, '0');
-	                    break;
-	                case VariableDisplayMethod.Octal:
+                        break;
+                    case VariableDisplayMethod.Octal:
                         outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(8, '0');
-	                    break;
-	                default:
+                        break;
+                    default:
                         outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(4, '0');
-	                    break;
-	            }
-	            outputValue += " ";
-	        }
-	        return outputValue;
-	    }
-
-	    private string GetVarWord(int address, VariableDisplayMethod varMethod, int numBytes)
-	    {
-	        string outputValue = string.Empty;
-	        int convertMethod = GetConvertBase(varMethod);
-
-	        for (int i = 0; i < numBytes * 2; i += 2)
-	        {
-	            ushort baseValue = _debugger.ReadShort((ushort) (address + i));
-	            switch (varMethod)
-	            {
-	                case VariableDisplayMethod.Decimal:
-	                    outputValue += Convert.ToString(baseValue, convertMethod);
-	                    break;
-	                case VariableDisplayMethod.Binary:
-                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(16, '0');
-	                    break;
-	                case VariableDisplayMethod.Octal:
-                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(8, '0');
-	                    break;
-	                default:
-                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(4, '0');
-	                    break;
-	            }
+                        break;
+                }
                 outputValue += " ";
-	        }
-	        return outputValue;
-	    }
+            }
+            return outputValue;
+        }
 
-	    private static int GetConvertBase(VariableDisplayMethod varMethod)
-	    {
-	        int convertMethod;
-	        switch (varMethod)
-	        {
-	            case VariableDisplayMethod.Decimal:
-	                convertMethod = 10;
-	                break;
-	            case VariableDisplayMethod.Binary:
-	                convertMethod = 2;
-	                break;
-	            case VariableDisplayMethod.Octal:
-	                convertMethod = 8;
-	                break;
-	            case VariableDisplayMethod.Hexadecimal:
-	                convertMethod = 16;
-	                break;
-	            default:
-	                throw new Exception("Invalid display method");
-	        }
-	        return convertMethod;
-	    }
+        private string GetVarWord(int address, VariableDisplayMethod varMethod, int numBytes)
+        {
+            string outputValue = string.Empty;
+            int convertMethod = GetConvertBase(varMethod);
 
-	    private string GetVarString(int address, int numBytes)
-	    {
-	        string outputValue = string.Empty;
-	        if (numBytes == -1)
-	        {
-	            int i = 0;
-	            char charToAdd;
-	            do
-	            {
-	                charToAdd = (char) _debugger.ReadByte((ushort) (address + i));
-	                outputValue += charToAdd.ToString();
-	                i++;
-	            } while (charToAdd != '\0');
-	        }
-	        else
-	        {
-	            for (int i = 0; i < numBytes; i++)
-	            {
-	                outputValue += ((char) _debugger.ReadByte((ushort) (address + i))).ToString();
-	            }
-	        }
+            for (int i = 0; i < numBytes * 2; i += 2)
+            {
+                ushort baseValue = _debugger.ReadShort((ushort) (address + i));
+                switch (varMethod)
+                {
+                    case VariableDisplayMethod.Decimal:
+                        outputValue += Convert.ToString(baseValue, convertMethod);
+                        break;
+                    case VariableDisplayMethod.Binary:
+                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(16, '0');
+                        break;
+                    case VariableDisplayMethod.Octal:
+                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(8, '0');
+                        break;
+                    default:
+                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(4, '0');
+                        break;
+                }
+                outputValue += " ";
+            }
+            return outputValue;
+        }
 
-	        return outputValue;
-	    }
+        private static int GetConvertBase(VariableDisplayMethod varMethod)
+        {
+            int convertMethod;
+            switch (varMethod)
+            {
+                case VariableDisplayMethod.Decimal:
+                    convertMethod = 10;
+                    break;
+                case VariableDisplayMethod.Binary:
+                    convertMethod = 2;
+                    break;
+                case VariableDisplayMethod.Octal:
+                    convertMethod = 8;
+                    break;
+                case VariableDisplayMethod.Hexadecimal:
+                    convertMethod = 16;
+                    break;
+                default:
+                    throw new Exception("Invalid display method");
+            }
+            return convertMethod;
+        }
 
-	    private object GetVarImage(int address, string numBytesString, VariableDisplayMethod varMethod)
-	    {
-	        bool isGrayscale = varMethod == VariableDisplayMethod.GrayscaleImage;
-	        Match match = Regex.Match(numBytesString, @"(?<width>\d+)\s*x\s*(?<height>\d+)");
-	        int width = int.Parse(match.Groups["width"].Value);
-	        int height = int.Parse(match.Groups["height"].Value);
+        private string GetVarString(int address, int numBytes)
+        {
+            string outputValue = string.Empty;
+            if (numBytes == -1)
+            {
+                int i = 0;
+                char charToAdd;
+                do
+                {
+                    charToAdd = (char) _debugger.ReadByte((ushort) (address + i));
+                    outputValue += charToAdd.ToString();
+                    i++;
+                } while (charToAdd != '\0');
+            }
+            else
+            {
+                for (int i = 0; i < numBytes; i++)
+                {
+                    outputValue += ((char) _debugger.ReadByte((ushort) (address + i))).ToString();
+                }
+            }
 
-	        Bitmap screen = new Bitmap(width, height);
-	        int row = 0, col = 0, grayscale = (width/8)*height;
-	        if (width%8 != 0)
-	        {
-	            return "Width is not a multiple of 8!";
-	        }
+            return outputValue;
+        }
 
-	        for (int i = 0; i < width/8*height; i++)
-	        {
-	            int anotherbyte = 0;
-	            int abyte = _debugger.ReadByte((ushort) (address + i));
-	            if (isGrayscale)
-	            {
-	                anotherbyte = _debugger.ReadByte((ushort) (address + grayscale + i));
-	            }
-	            for (int bit = 128; bit > 0; bit /= 2)
-	            {
-	                if (isGrayscale)
-	                {
-	                    if ((abyte & bit) != 0 && (anotherbyte & bit) != 0)
-	                    {
-	                        screen.SetPixel(col, row, Color.Black);
-	                    }
-	                    else if ((abyte & bit) != 0 && (anotherbyte & bit) == 0)
-	                    {
-	                        screen.SetPixel(col, row, Color.DarkGray);
-	                    }
-	                    else if ((abyte & bit) == 0 && (anotherbyte & bit) != 0)
-	                    {
-	                        screen.SetPixel(col, row, Color.LightGray);
-	                    }
-	                }
-	                else if ((abyte & bit) != 0)
-	                {
-	                    screen.SetPixel(col, row, Color.Black);
-	                }
-	                col++;
-	            }
+        private object GetVarImage(int address, string numBytesString, VariableDisplayMethod varMethod)
+        {
+            bool isGrayscale = varMethod == VariableDisplayMethod.GrayscaleImage;
+            Match match = Regex.Match(numBytesString, @"(?<width>\d+)\s*x\s*(?<height>\d+)");
+            int width = int.Parse(match.Groups["width"].Value);
+            int height = int.Parse(match.Groups["height"].Value);
 
-	            if (col < width)
-	            {
-	                continue;
-	            }
-	            col = 0;
-	            row++;
-	        }
+            Bitmap screen = new Bitmap(width, height);
+            int row = 0, col = 0, grayscale = (width / 8) * height;
+            if (width % 8 != 0)
+            {
+                return "Width is not a multiple of 8!";
+            }
 
-	        return screen.ResizeImage(width*2, height*2);
-	    }
+            for (int i = 0; i < width / 8 * height; i++)
+            {
+                int anotherbyte = 0;
+                int abyte = _debugger.ReadByte((ushort) (address + i));
+                if (isGrayscale)
+                {
+                    anotherbyte = _debugger.ReadByte((ushort) (address + grayscale + i));
+                }
+                for (int bit = 128; bit > 0; bit /= 2)
+                {
+                    if (isGrayscale)
+                    {
+                        if ((abyte & bit) != 0 && (anotherbyte & bit) != 0)
+                        {
+                            screen.SetPixel(col, row, Color.Black);
+                        }
+                        else if ((abyte & bit) != 0 && (anotherbyte & bit) == 0)
+                        {
+                            screen.SetPixel(col, row, Color.DarkGray);
+                        }
+                        else if ((abyte & bit) == 0 && (anotherbyte & bit) != 0)
+                        {
+                            screen.SetPixel(col, row, Color.LightGray);
+                        }
+                    }
+                    else if ((abyte & bit) != 0)
+                    {
+                        screen.SetPixel(col, row, Color.Black);
+                    }
+                    col++;
+                }
 
-	    private void temp_FormClosed(object sender, FormClosedEventArgs e)
-		{
-		    foreach (BitmapViewer test in _openBitmaps.Where(test => test.Tag == ((Form)sender).Tag))
-		    {
-		        _openBitmaps.Remove(test);
-		        break;
-		    }
-		}
+                if (col < width)
+                {
+                    continue;
+                }
+                col = 0;
+                row++;
+            }
 
-	    private void variablesDataView_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
-		{
-			if (e.ColumnIndex != 5 || !variablesDataView[e.ColumnIndex, e.RowIndex].Value.ToString().Contains("Double click"))
-			{
-				return;
-			}
+            return screen.ResizeImage(width * 2, height * 2);
+        }
 
-			if (_openBitmaps.Any(test => (int) test.Tag == e.RowIndex))
-			{
-				return;
-			}
+        private void temp_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            foreach (BitmapViewer test in _openBitmaps.Where(test => test.Tag == ((Form) sender).Tag))
+            {
+                _openBitmaps.Remove(test);
+                break;
+            }
+        }
+
+        private void variablesDataView_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex != 5 || !variablesDataView[e.ColumnIndex, e.RowIndex].Value.ToString().Contains("Double click"))
+            {
+                return;
+            }
+
+            if (_openBitmaps.Any(test => (int) test.Tag == e.RowIndex))
+            {
+                return;
+            }
 
             BitmapViewer temp = new BitmapViewer(_imageList[e.RowIndex])
             {
@@ -644,24 +642,24 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             temp.Show();
             _openBitmaps.Add(temp);
             temp.FormClosed += temp_FormClosed;
-		}
+        }
 
-		private void variablesDataView_CellEndEdit(object sender, DataGridViewCellEventArgs e)
-		{
-			this.Invoke(() => UpdateRowValue(variablesDataView.Rows[e.RowIndex]));
-		}
+        private void variablesDataView_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            this.Invoke(() => UpdateRowValue(variablesDataView.Rows[e.RowIndex]));
+        }
 
-	    private void variablesDataView_CellEnter(object sender, DataGridViewCellEventArgs e)
-		{
-			if (variablesDataView[e.ColumnIndex, e.RowIndex] is DataGridViewComboBoxCell)
-			{
-				SendKeys.Send("{F4}");
-			}
-		}
+        private void variablesDataView_CellEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (variablesDataView[e.ColumnIndex, e.RowIndex] is DataGridViewComboBoxCell)
+            {
+                SendKeys.Send("{F4}");
+            }
+        }
 
         private void variablesDataView_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
         {
             variablesDataView.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Enabled ? Color.Black : Color.Gray;
         }
-	}
+    }
 }

@@ -306,6 +306,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
         {
             ShortcutKeys = Keys.Control | Keys.B
         };
+
         private static readonly ToolStripMenuItem CleanProjectMenuItem = new ToolStripMenuItem("Clean Project");
         private static readonly ToolStripMenuItem ProjStatsMenuItem = new ToolStripMenuItem("Project Statistics");
 
@@ -317,32 +318,41 @@ namespace Revsoft.Wabbitcode.GUI.Menus
         {
             ShortcutKeys = Keys.F5
         };
+
         private static readonly ToolStripMenuItem StartWithoutDebugMenuItem = new ToolStripMenuItem("Start Without Debugging")
         {
             ShortcutKeys = Keys.Control | Keys.F5
         };
+
         private static readonly ToolStripMenuItem StopDebugMenuItem = new ToolStripMenuItem("Stop Debugging");
         private static readonly ToolStripMenuItem RunMenuItem = new ToolStripMenuItem("Run");
+
         private static readonly ToolStripMenuItem StepMenuItem = new ToolStripMenuItem("Step")
         {
             ShortcutKeys = Keys.F7
         };
+
         private static readonly ToolStripMenuItem StepOverMenuItem = new ToolStripMenuItem("Step Over")
         {
             ShortcutKeys = Keys.F8
         };
+
         private static readonly ToolStripMenuItem StepOutMenuItem = new ToolStripMenuItem("Step Out")
         {
             ShortcutKeys = Keys.Shift | Keys.F8
         };
+
         private static readonly ToolStripMenuItem NewBreakpointMenuItem = new ToolStripMenuItem("New Breakpoint");
         private static readonly ToolStripMenuItem NewDataBreakpointMenuItem = new ToolStripMenuItem("New Data Breakpoint");
+
         private static readonly ToolStripMenuItem ToggleBreakpointMenuItem = new ToolStripMenuItem("Toggle Breakpoint")
         {
             ShortcutKeys = Keys.F9
         };
+
         private static readonly ToolStripMenuItem DeleteAllBreakpointsMenuItem = new ToolStripMenuItem("Delete All Breakpoints");
         private static readonly ToolStripMenuItem DisableAllBreakpointsMenuItem = new ToolStripMenuItem("Disable All Breakpoints");
+
         private static readonly ToolStripMenuItem BreakpointMenuItem = new ToolStripMenuItem("Breakpoint", null, new ToolStripItem[]
         {
             NewBreakpointMenuItem,

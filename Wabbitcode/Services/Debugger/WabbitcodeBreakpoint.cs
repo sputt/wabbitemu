@@ -6,191 +6,189 @@ using WabbitemuLib;
 
 namespace Revsoft.Wabbitcode.Services.Debugger
 {
-	public enum HitCountEnum
-	{
-		BreakAlways = 0,
-		BreakEqualTo = 1,
-		BreakMultipleOf = 2,
-		BreakGreaterThanEqualTo = 4
-	}
+    public enum HitCountEnum
+    {
+        BreakAlways = 0,
+        BreakEqualTo = 1,
+        BreakMultipleOf = 2,
+        BreakGreaterThanEqualTo = 4
+    }
 
-	public class BreakCondition
-	{
-		public int A { get; set; }
-		public int B { get; set; }
-		public int C { get; set; }
-		public byte CFlag { get; set; }
-		public int D { get; set; }
-		public int E { get; set; }
-		public int H { get; set; }
-		public byte HFlag { get; set; }
-		public int IX { get; set; }
-		public int IY { get; set; }
-		public int L { get; set; }
-		public byte NFlag { get; set; }
-		public byte PVFlag { get; set; }
-		public byte SFlag { get; set; }
-		public int SP { get; set; }
-		public byte ZFlag { get; set; }
-	}
+    public class BreakCondition
+    {
+        public int A { get; set; }
+        public int B { get; set; }
+        public int C { get; set; }
+        public byte CFlag { get; set; }
+        public int D { get; set; }
+        public int E { get; set; }
+        public int H { get; set; }
+        public byte HFlag { get; set; }
+        public int IX { get; set; }
+        public int IY { get; set; }
+        public int L { get; set; }
+        public byte NFlag { get; set; }
+        public byte PVFlag { get; set; }
+        public byte SFlag { get; set; }
+        public int SP { get; set; }
+        public byte ZFlag { get; set; }
+    }
 
-	public class WabbitcodeBreakpoint
-	{
-		private readonly List<BreakCondition> _breakConditions = new List<BreakCondition>();
+    public class WabbitcodeBreakpoint
+    {
+        private readonly List<BreakCondition> _breakConditions = new List<BreakCondition>();
 
-		public ushort Address { get; set; }
-		public bool Enabled { get; set; }
-		public FilePath File { get; set; }
-		public HitCountEnum HitCountCondition { get; set; }
-		public int HitCountConditionNumber { get; set; }
-		public bool IsRam { get; set; }
-	    public List<BreakCondition> BreakConditions
-	    {
-	        get
-	        {
-	            return _breakConditions;
-	        }
-	    }
+        public ushort Address { get; set; }
+        public bool Enabled { get; set; }
+        public FilePath File { get; set; }
+        public HitCountEnum HitCountCondition { get; set; }
+        public int HitCountConditionNumber { get; set; }
+        public bool IsRam { get; set; }
 
-	    public readonly int LineNumber;
-		public int NumberOfTimesHit;
-		public byte Page;
-		public IBreakpoint WabbitemuBreakpoint;
+        public List<BreakCondition> BreakConditions
+        {
+            get { return _breakConditions; }
+        }
 
-	    private WabbitcodeBreakpoint()
-		{
-			HitCountCondition = HitCountEnum.BreakAlways;
-			HitCountConditionNumber = 0;
-			Enabled = true;
-		}
+        public readonly int LineNumber;
+        public int NumberOfTimesHit;
+        public byte Page;
+        public IBreakpoint WabbitemuBreakpoint;
 
-		public WabbitcodeBreakpoint(FilePath file, int lineNumber) : this()
-		{
-			File = file;
-			LineNumber = lineNumber;
-		}
+        private WabbitcodeBreakpoint()
+        {
+            HitCountCondition = HitCountEnum.BreakAlways;
+            HitCountConditionNumber = 0;
+            Enabled = true;
+        }
 
-	    public static bool operator !=(WabbitcodeBreakpoint break1, WabbitcodeBreakpoint break2)
-		{
-			if ((object)break1 == null || (object)break2 == null)
-			{
-				return (object)break1 != null || (object)break2 != null;
-			}
-			return !break1.Equals(break2);
-		}
+        public WabbitcodeBreakpoint(FilePath file, int lineNumber) : this()
+        {
+            File = file;
+            LineNumber = lineNumber;
+        }
 
-		public static bool operator ==(WabbitcodeBreakpoint break1, WabbitcodeBreakpoint break2)
-		{
-			if ((object)break1 == null || (object)break2 == null)
-			{
-				return (object)break1 == null && (object)break2 == null;
-			}
+        public static bool operator !=(WabbitcodeBreakpoint break1, WabbitcodeBreakpoint break2)
+        {
+            if ((object) break1 == null || (object) break2 == null)
+            {
+                return (object) break1 != null || (object) break2 != null;
+            }
+            return !break1.Equals(break2);
+        }
 
-			return break1.Equals(break2);
-		}
+        public static bool operator ==(WabbitcodeBreakpoint break1, WabbitcodeBreakpoint break2)
+        {
+            if ((object) break1 == null || (object) break2 == null)
+            {
+                return (object) break1 == null && (object) break2 == null;
+            }
 
-		public override bool Equals(object obj)
-		{
-			if (!(obj is WabbitcodeBreakpoint))
-			{
-				return false;
-			}
+            return break1.Equals(break2);
+        }
 
-			WabbitcodeBreakpoint break2 = obj as WabbitcodeBreakpoint;
-			return (Address == break2.Address && Page == break2.Page && IsRam == break2.IsRam) ||
-				   (string.Equals(File, break2.File, StringComparison.OrdinalIgnoreCase) && LineNumber == break2.LineNumber);
-		}
+        public override bool Equals(object obj)
+        {
+            if (!(obj is WabbitcodeBreakpoint))
+            {
+                return false;
+            }
 
-	    public bool EvalulateAllConditions(IZ80 cpu)
-	    {
-	        return _breakConditions.All(condition => EvalConditions(cpu, condition));
-	    }
+            WabbitcodeBreakpoint break2 = obj as WabbitcodeBreakpoint;
+            return (Address == break2.Address && Page == break2.Page && IsRam == break2.IsRam) ||
+                   (string.Equals(File, break2.File, StringComparison.OrdinalIgnoreCase) && LineNumber == break2.LineNumber);
+        }
 
-	    private static bool EvalConditions(IZ80 cpu, BreakCondition condition)
-		{
-			bool isTrue = true;
+        public bool EvalulateAllConditions(IZ80 cpu)
+        {
+            return _breakConditions.All(condition => EvalConditions(cpu, condition));
+        }
 
-			if (condition.A >= 0xFFFF)
-			{
-				isTrue &= (cpu.AF >> 16) == (ushort)(condition.A >> 8);
-			}
+        private static bool EvalConditions(IZ80 cpu, BreakCondition condition)
+        {
+            bool isTrue = true;
 
-			if (condition.B >= 0xFFFF)
-			{
-				isTrue &= (cpu.BC >> 16) == (ushort)(condition.B >> 8);
-			}
+            if (condition.A >= 0xFFFF)
+            {
+                isTrue &= (cpu.AF >> 16) == (ushort) (condition.A >> 8);
+            }
 
-			if (condition.C >= 0xFFFF)
-			{
-				isTrue &= (cpu.BC & 0xFF) == (ushort)(condition.C >> 16);
-			}
+            if (condition.B >= 0xFFFF)
+            {
+                isTrue &= (cpu.BC >> 16) == (ushort) (condition.B >> 8);
+            }
 
-			if (condition.D >= 0xFFFF)
-			{
-				isTrue &= (cpu.DE >> 16) == (ushort)(condition.D >> 8);
-			}
+            if (condition.C >= 0xFFFF)
+            {
+                isTrue &= (cpu.BC & 0xFF) == (ushort) (condition.C >> 16);
+            }
 
-			if (condition.E >= 0xFFFF)
-			{
-				isTrue &= (cpu.DE & 0xFF) == (ushort)(condition.E >> 16);
-			}
+            if (condition.D >= 0xFFFF)
+            {
+                isTrue &= (cpu.DE >> 16) == (ushort) (condition.D >> 8);
+            }
 
-			if (condition.H >= 0xFFFF)
-			{
-				isTrue &= cpu.HL >> 8 == (ushort)(condition.H >> 16);
-			}
+            if (condition.E >= 0xFFFF)
+            {
+                isTrue &= (cpu.DE & 0xFF) == (ushort) (condition.E >> 16);
+            }
 
-			if (condition.L >= 0xFFFF)
-			{
-				isTrue &= (cpu.HL & 0xFF) == (ushort)(condition.L >> 16);
-			}
+            if (condition.H >= 0xFFFF)
+            {
+                isTrue &= cpu.HL >> 8 == (ushort) (condition.H >> 16);
+            }
 
-			if (condition.IX >= 0xFFFF)
-			{
-				isTrue &= cpu.IX == (ushort)condition.IX;
-			}
+            if (condition.L >= 0xFFFF)
+            {
+                isTrue &= (cpu.HL & 0xFF) == (ushort) (condition.L >> 16);
+            }
 
-			if (condition.IY >= 0xFFFF)
-			{
-				isTrue &= cpu.IY == (ushort)(condition.IY >> 16);
-			}
+            if (condition.IX >= 0xFFFF)
+            {
+                isTrue &= cpu.IX == (ushort) condition.IX;
+            }
 
-			if (condition.SP >= 0xFFFF)
-			{
-				isTrue &= cpu.SP == (ushort)(condition.SP >> 16);
-			}
+            if (condition.IY >= 0xFFFF)
+            {
+                isTrue &= cpu.IY == (ushort) (condition.IY >> 16);
+            }
 
-			if (condition.CFlag > 2)
-			{
-				isTrue &= (cpu.AF & 1) == condition.CFlag;
-			}
+            if (condition.SP >= 0xFFFF)
+            {
+                isTrue &= cpu.SP == (ushort) (condition.SP >> 16);
+            }
 
-			if (condition.NFlag >= 2)
-			{
-				isTrue &= (cpu.AF & 2) == condition.NFlag;
-			}
+            if (condition.CFlag > 2)
+            {
+                isTrue &= (cpu.AF & 1) == condition.CFlag;
+            }
 
-			if (condition.PVFlag >= 2)
-			{
-				isTrue &= (cpu.AF & 4) == condition.PVFlag;
-			}
+            if (condition.NFlag >= 2)
+            {
+                isTrue &= (cpu.AF & 2) == condition.NFlag;
+            }
 
-			if (condition.HFlag >= 2)
-			{
-				isTrue &= (cpu.AF & 16) == condition.HFlag;
-			}
+            if (condition.PVFlag >= 2)
+            {
+                isTrue &= (cpu.AF & 4) == condition.PVFlag;
+            }
 
-			if (condition.ZFlag >= 2)
-			{
-				isTrue &= (cpu.AF & 64) == condition.ZFlag;
-			}
+            if (condition.HFlag >= 2)
+            {
+                isTrue &= (cpu.AF & 16) == condition.HFlag;
+            }
 
-			if (condition.SFlag >= 2)
-			{
-				isTrue &= (cpu.AF & 128) == condition.SFlag;
-			}
+            if (condition.ZFlag >= 2)
+            {
+                isTrue &= (cpu.AF & 64) == condition.ZFlag;
+            }
 
-			return isTrue;
-		}
-	}
+            if (condition.SFlag >= 2)
+            {
+                isTrue &= (cpu.AF & 128) == condition.SFlag;
+            }
+
+            return isTrue;
+        }
+    }
 }

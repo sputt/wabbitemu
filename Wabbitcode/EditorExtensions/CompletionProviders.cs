@@ -33,10 +33,10 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         public override ICompletionData[] GenerateCompletionData(string fileName, TextArea textArea, char charTyped)
         {
             var dotCommands = _parserService.GetAllParserData().Where(s => (s is IMacro || s is IDefine)
-                        && s.Name.StartsWith("."));
+                                                                           && s.Name.StartsWith("."));
             return StaticCompletionData.Directives.Concat(dotCommands.Select(m =>
-                            new CodeCompletionData(m.Name, CodeCompletionType.Define, m.Description)))
-                            .ToArray();
+                new CodeCompletionData(m.Name, CodeCompletionType.Define, m.Description)))
+                .ToArray();
         }
     }
 
@@ -162,23 +162,23 @@ namespace Revsoft.Wabbitcode.EditorExtensions
     internal static class StaticCompletionData
     {
         public static readonly ICompletionData[] Directives =
-		{
-			new CodeCompletionData(".db", CodeCompletionType.Directive),
-			new CodeCompletionData(".dw", CodeCompletionType.Directive),
-			new CodeCompletionData(".end", CodeCompletionType.Directive),
-			new CodeCompletionData(".or", CodeCompletionType.Directive),
-			new CodeCompletionData(".byte", CodeCompletionType.Directive),
-			new CodeCompletionData(".word", CodeCompletionType.Directive),
-			new CodeCompletionData(".fill", CodeCompletionType.Directive),
-			new CodeCompletionData(".block", CodeCompletionType.Directive),
-			new CodeCompletionData(".addinstr", CodeCompletionType.Directive),
-			new CodeCompletionData(".echo", CodeCompletionType.Directive),
-			new CodeCompletionData(".error", CodeCompletionType.Directive),
-			new CodeCompletionData(".list", CodeCompletionType.Directive),
-			new CodeCompletionData(".nolist", CodeCompletionType.Directive),
-			new CodeCompletionData(".equ", CodeCompletionType.Directive),
-			new CodeCompletionData(".option", CodeCompletionType.Directive)
-		};
+        {
+            new CodeCompletionData(".db", CodeCompletionType.Directive),
+            new CodeCompletionData(".dw", CodeCompletionType.Directive),
+            new CodeCompletionData(".end", CodeCompletionType.Directive),
+            new CodeCompletionData(".or", CodeCompletionType.Directive),
+            new CodeCompletionData(".byte", CodeCompletionType.Directive),
+            new CodeCompletionData(".word", CodeCompletionType.Directive),
+            new CodeCompletionData(".fill", CodeCompletionType.Directive),
+            new CodeCompletionData(".block", CodeCompletionType.Directive),
+            new CodeCompletionData(".addinstr", CodeCompletionType.Directive),
+            new CodeCompletionData(".echo", CodeCompletionType.Directive),
+            new CodeCompletionData(".error", CodeCompletionType.Directive),
+            new CodeCompletionData(".list", CodeCompletionType.Directive),
+            new CodeCompletionData(".nolist", CodeCompletionType.Directive),
+            new CodeCompletionData(".equ", CodeCompletionType.Directive),
+            new CodeCompletionData(".option", CodeCompletionType.Directive)
+        };
 
         public static readonly ICompletionData[] Preprocessors =
         {

@@ -12,78 +12,78 @@ using WabbitemuLib;
 
 namespace Revsoft.Wabbitcode.Services.Debugger
 {
-	public sealed class WabbitcodeDebugger : IWabbitcodeDebugger
+    public sealed class WabbitcodeDebugger : IWabbitcodeDebugger
     {
         #region Private Fields
 
-	    private byte _appPage;
-	    private ushort _oldSP;
-		private IWabbitemuDebugger _debugger;
-	    private bool _disposed;
-		private readonly List<KeyValuePair<ushort, ushort>> _memoryAllocations;
-		
+        private byte _appPage;
+        private ushort _oldSP;
+        private IWabbitemuDebugger _debugger;
+        private bool _disposed;
+        private readonly List<KeyValuePair<ushort, ushort>> _memoryAllocations;
+
         private IBreakpoint _stepOverBreakpoint;
         private IBreakpoint _stepOutBreakpoint;
-		private IBreakpoint _jforceBreakpoint;
-		private IBreakpoint _ramClearBreakpoint;
-		private IBreakpoint _insertMemBreakpoint;
-		private IBreakpoint _delMemBreakpoint;
+        private IBreakpoint _jforceBreakpoint;
+        private IBreakpoint _ramClearBreakpoint;
+        private IBreakpoint _insertMemBreakpoint;
+        private IBreakpoint _delMemBreakpoint;
 
-		private readonly ISymbolService _symbolService;
+        private readonly ISymbolService _symbolService;
         private readonly IFileService _fileService;
-	    private readonly IDebuggerService _debuggerService;
+        private readonly IDebuggerService _debuggerService;
 
-	    #endregion
+        #endregion
 
         #region Constants
 
         private const ushort RamCode = 0x8100;
-	    private const ushort TopStackApp = 0xFFDF;
-	    private const ushort MachineStackBottom = 0xFE66;
+        private const ushort TopStackApp = 0xFFDF;
+        private const ushort MachineStackBottom = 0xFE66;
 
-	    #endregion
+        #endregion
 
         #region Public Properties
 
-	    private string CurrentDebuggingFile { get; set; }
+        private string CurrentDebuggingFile { get; set; }
 
         public IZ80 CPU
-		{
-			get { return _debugger.CPU; }
-		}
+        {
+            get { return _debugger.CPU; }
+        }
 
         public Image ScreenImage
         {
             get { return _debugger.GetScreenImage(); }
         }
 
-	    private bool IsAnApp { get; set; }
+        private bool IsAnApp { get; set; }
 
-	    public bool IsRunning
-		{
-			get { return _debugger != null && _debugger.Running; }
-		}
+        public bool IsRunning
+        {
+            get { return _debugger != null && _debugger.Running; }
+        }
 
-	    public Stack<StackEntry> MachineStack { get; private set; }
+        public Stack<StackEntry> MachineStack { get; private set; }
 
         public Stack<CallStackEntry> CallStack { get; private set; }
 
-	    #endregion
+        #endregion
 
-		#region Events
+        #region Events
 
-	    public event DebuggerRunning DebuggerRunningChanged;
-	    public event DebuggerStep DebuggerStep;
+        public event DebuggerRunning DebuggerRunningChanged;
+        public event DebuggerStep DebuggerStep;
 
-		#endregion
+        #endregion
 
-		public WabbitcodeDebugger(string outputFile)
-		{
-		    _disposed = false;
+        public WabbitcodeDebugger(string outputFile)
+        {
+            _disposed = false;
 
-		    _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
-		    _fileService = DependencyFactory.Resolve<IFileService>();
-			_symbolService = DependencyFactory.Resolve<ISymbolService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+            _fileService = DependencyFactory.Resolve<IFileService>();
+            _symbolService = DependencyFactory.Resolve<ISymbolService>();
 
             WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
             WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
@@ -99,9 +99,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _memoryAllocations = new List<KeyValuePair<ushort, ushort>>();
             CallStack = new Stack<CallStackEntry>();
             MachineStack = new Stack<StackEntry>();
-            _oldSP = IsAnApp ? TopStackApp : (ushort)0xFFFF;
+            _oldSP = IsAnApp ? TopStackApp : (ushort) 0xFFFF;
             SetupInternalBreakpoints();
-		}
+        }
 
         #region Memory and Paging
 
@@ -115,27 +115,27 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             return _debugger.Memory.ReadWord(address);
         }
 
-	    public ushort? GetRegisterValue(string wordHovered)
-	    {
-	        if (_debugger == null)
-	        {
-	            return null;
-	        }
+        public ushort? GetRegisterValue(string wordHovered)
+        {
+            if (_debugger == null)
+            {
+                return null;
+            }
 
-	        switch (wordHovered.Trim().ToLower())
-	        {
+            switch (wordHovered.Trim().ToLower())
+            {
                 case "a":
-	                return _debugger.CPU.A;
+                    return _debugger.CPU.A;
                 case "f":
-	                return _debugger.CPU.F;
+                    return _debugger.CPU.F;
                 case "b":
-	                return _debugger.CPU.B;
+                    return _debugger.CPU.B;
                 case "c":
-	                return _debugger.CPU.C;
+                    return _debugger.CPU.C;
                 case "d":
-	                return _debugger.CPU.D;
+                    return _debugger.CPU.D;
                 case "e":
-	                return _debugger.CPU.E;
+                    return _debugger.CPU.E;
                 case "h":
                     return _debugger.CPU.H;
                 case "l":
@@ -165,27 +165,27 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 case "pc":
                     return _debugger.CPU.PC;
                 default:
-	                return null;
-	        }
-	    }
+                    return null;
+            }
+        }
 
-	    private byte GetRelativePageNum(ushort address)
-		{
-			IPage bank = _debugger.Memory.Bank[address >> 14];
-			int page = bank.Index;
-			if (bank.IsFlash)
-			{
-				page = _appPage - page;
-			}
-			return (byte)page;
-		}
+        private byte GetRelativePageNum(ushort address)
+        {
+            IPage bank = _debugger.Memory.Bank[address >> 14];
+            int page = bank.Index;
+            if (bank.IsFlash)
+            {
+                page = _appPage - page;
+            }
+            return (byte) page;
+        }
 
-		private byte GetAbsolutePageNum(ushort address)
-		{
-			IPage bank = _debugger.Memory.Bank[address >> 14];
-			int page = bank.Index;
-			return (byte)page;
-		}
+        private byte GetAbsolutePageNum(ushort address)
+        {
+            IPage bank = _debugger.Memory.Bank[address >> 14];
+            int page = bank.Index;
+            return (byte) page;
+        }
 
         public DocumentLocation GetAddressLocation(ushort address)
         {
@@ -215,7 +215,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _debuggerService.EndDebugging();
         }
 
-
         #endregion
 
         #region Running
@@ -236,30 +235,30 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             }
         }
 
-		public void Pause()
-		{
-			_debugger.Running = false;
-			ushort currentPC = _debugger.CPU.PC;
-			int maxStep = 500;
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(currentPC, GetRelativePageNum(currentPC), currentPC >= 0x8000);
-			while (key == null && maxStep >= 0)
-			{
-				_debugger.Step();
-				currentPC = _debugger.CPU.PC;
-				key = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(currentPC), currentPC, currentPC >= 0x8000);
-				maxStep--;
-			}
+        public void Pause()
+        {
+            _debugger.Running = false;
+            ushort currentPC = _debugger.CPU.PC;
+            int maxStep = 500;
+            DocumentLocation key = _symbolService.ListTable.GetFileLocation(currentPC, GetRelativePageNum(currentPC), currentPC >= 0x8000);
+            while (key == null && maxStep >= 0)
+            {
+                _debugger.Step();
+                currentPC = _debugger.CPU.PC;
+                key = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(currentPC), currentPC, currentPC >= 0x8000);
+                maxStep--;
+            }
 
-			if (maxStep < 0)
-			{
-				throw new DebuggingException("Unable to pause here");
-			}
+            if (maxStep < 0)
+            {
+                throw new DebuggingException("Unable to pause here");
+            }
 
-			if (DebuggerRunningChanged != null)
-			{
-				DebuggerRunningChanged(this, new DebuggerRunningEventArgs(key, false));
-			}
-		}
+            if (DebuggerRunningChanged != null)
+            {
+                DebuggerRunningChanged(this, new DebuggerRunningEventArgs(key, false));
+            }
+        }
 
         public void SetPCToSelect(FilePath fileName, int lineNumber)
         {
@@ -273,7 +272,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             byte page = value.Page;
             if (IsAnApp)
             {
-                page = (byte)(_appPage - page);
+                page = (byte) (_appPage - page);
                 _debugger.Memory.Bank[1] = _debugger.Memory.Flash[page];
             }
             else
@@ -287,9 +286,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             }
         }
 
-	    public void StartDebug()
-	    {
-	        var app = VerifyApp(CurrentDebuggingFile);
+        public void StartDebug()
+        {
+            var app = VerifyApp(CurrentDebuggingFile);
             // once we have the app we can add breakpoints
             var breakpoints = WabbitcodeBreakpointManager.Breakpoints.ToList();
             foreach (WabbitcodeBreakpoint breakpoint in breakpoints)
@@ -297,35 +296,35 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 SetBreakpoint(breakpoint);
             }
 
-	        if (app != null)
-	        {
-	            LaunchApp(app.Name);
-	        }
-	    }
+            if (app != null)
+            {
+                LaunchApp(app.Name);
+            }
+        }
 
-	    public void Step()
-	    {
-	        // need to clear the old breakpoint so lets save it
-	        ushort currentPC = _debugger.CPU.PC;
-	        byte oldPage = GetRelativePageNum(currentPC);
-	        DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
-	        DocumentLocation newKey = key;
-	        while (newKey == null || newKey.LineNumber == key.LineNumber)
-	        {
-	            _debugger.Step();
-	            newKey = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(_debugger.CPU.PC), _debugger.CPU.PC, _debugger.CPU.PC >= 0x8000);
-	            // we are safe to check this here, because we are stepping one at a time meaning if the stack did change, it can't have changed much
-	            if (_oldSP != _debugger.CPU.SP)
-	            {
-	                UpdateStack();
-	            }
-	        }
+        public void Step()
+        {
+            // need to clear the old breakpoint so lets save it
+            ushort currentPC = _debugger.CPU.PC;
+            byte oldPage = GetRelativePageNum(currentPC);
+            DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
+            DocumentLocation newKey = key;
+            while (newKey == null || newKey.LineNumber == key.LineNumber)
+            {
+                _debugger.Step();
+                newKey = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(_debugger.CPU.PC), _debugger.CPU.PC, _debugger.CPU.PC >= 0x8000);
+                // we are safe to check this here, because we are stepping one at a time meaning if the stack did change, it can't have changed much
+                if (_oldSP != _debugger.CPU.SP)
+                {
+                    UpdateStack();
+                }
+            }
 
-	        ushort address = _debugger.CPU.PC;
-	        byte page = GetRelativePageNum(address);
-	        key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
+            ushort address = _debugger.CPU.PC;
+            byte page = GetRelativePageNum(address);
+            key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
 
-	        if (DebuggerStep != null)
+            if (DebuggerStep != null)
             {
                 DebuggerStep(this, new DebuggerStepEventArgs(key));
             }
@@ -348,15 +347,15 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _debugger.Running = true;
         }
 
-	    private void StepOutBreakpointEvent(object sender, BreakpointEventArgs breakpointEventArgs)
-	    {
+        private void StepOutBreakpointEvent(object sender, BreakpointEventArgs breakpointEventArgs)
+        {
             if (_debugger == null)
             {
                 return;
             }
 
             _debugger.ClearBreakpoint(_stepOutBreakpoint);
-	        int page = GetRelativePageNum(_stepOutBreakpoint.Address.Address);
+            int page = GetRelativePageNum(_stepOutBreakpoint.Address.Address);
             DocumentLocation key = _symbolService.ListTable.GetFileLocation(page,
                 _stepOutBreakpoint.Address.Address,
                 !_stepOutBreakpoint.Address.Page.IsFlash);
@@ -368,9 +367,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             {
                 DebuggerStep(this, new DebuggerStepEventArgs(key));
             }
-	    }
+        }
 
-	    public void StepOver()
+        public void StepOver()
         {
             // need to clear the old breakpoint so lets save it
             ushort currentPC = _debugger.CPU.PC;
@@ -387,7 +386,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
             // if the line contains a special commmand (i.e. one that will go to who knows where)
             // we just want to step over it
-            string[] specialCommands = { "jp", "jr", "ret", "djnz" };
+            string[] specialCommands = {"jp", "jr", "ret", "djnz"};
             if (specialCommands.Any(s => line.Contains(s)))
             {
                 Step();
@@ -440,22 +439,22 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         {
             CallStack = new Stack<CallStackEntry>(
                 MachineStack.Where(s => s.CallStackEntry != null)
-                .Select(s => s.CallStackEntry).Reverse());
+                    .Select(s => s.CallStackEntry).Reverse());
         }
 
-	    private CallStackEntry CheckValidCall(int currentSP)
-	    {
-	        DocumentLocation location;
-	        Match match = CheckValidCall(ReadShort((ushort) currentSP), out location);
-	        if (match == null)
-	        {
-	            return null;
-	        }
+        private CallStackEntry CheckValidCall(int currentSP)
+        {
+            DocumentLocation location;
+            Match match = CheckValidCall(ReadShort((ushort) currentSP), out location);
+            if (match == null)
+            {
+                return null;
+            }
 
-	        string callTypeString = match.Groups["command"].Value + " " + match.Groups["condition"].Value;
-	        string nameString = match.Groups["call"].Value;
-	        return new CallStackEntry(callTypeString, nameString, location);
-	    }
+            string callTypeString = match.Groups["command"].Value + " " + match.Groups["condition"].Value;
+            string nameString = match.Groups["call"].Value;
+            return new CallStackEntry(callTypeString, nameString, location);
+        }
 
         private Match CheckValidCall(ushort stackData, out DocumentLocation location)
         {
@@ -490,9 +489,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             return match;
         }
 
-	    private void UpdateStack()
-	    {
-	        var oldStackList = MachineStack.Reverse().ToList();
+        private void UpdateStack()
+        {
+            var oldStackList = MachineStack.Reverse().ToList();
             MachineStack.Clear();
             int currentSP = _debugger.CPU.SP;
             ushort topStack = IsAnApp ? TopStackApp : (ushort) 0xFFFF;
@@ -503,80 +502,80 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 topStack = (ushort) (currentSP + maxStackSize);
             }
 
-	        if ((currentSP < _oldSP) || (currentSP < topStack && oldStackList.Count == 0))
-	        {
+            if ((currentSP < _oldSP) || (currentSP < topStack && oldStackList.Count == 0))
+            {
                 // new stack entries to add
-	            while (currentSP != _oldSP && currentSP <= topStack)
-	            {
+                while (currentSP != _oldSP && currentSP <= topStack)
+                {
                     CallStackEntry callStackEntry = CheckValidCall(currentSP);
                     MachineStack.Push(new StackEntry((ushort) currentSP, ReadShort((ushort) currentSP), callStackEntry));
-	                currentSP += 2;
-	            }
-	        }
-	        else if (currentSP > _oldSP)
-	        {
-	            // stack entries to remove
-	            oldStackList.RemoveAll(s => s.Address < currentSP);
-	        }
+                    currentSP += 2;
+                }
+            }
+            else if (currentSP > _oldSP)
+            {
+                // stack entries to remove
+                oldStackList.RemoveAll(s => s.Address < currentSP);
+            }
 
-	        foreach (StackEntry stackEntry in oldStackList)
-	        {
-	            int data = ReadShort((ushort) currentSP);
-	            if (stackEntry.Data != data)
-	            {
-	                CallStackEntry callStackEntry = CheckValidCall(currentSP);
+            foreach (StackEntry stackEntry in oldStackList)
+            {
+                int data = ReadShort((ushort) currentSP);
+                if (stackEntry.Data != data)
+                {
+                    CallStackEntry callStackEntry = CheckValidCall(currentSP);
                     MachineStack.Push(new StackEntry((ushort) currentSP, (ushort) data, callStackEntry));
-	            }
-	            else
-	            {
-	                MachineStack.Push(stackEntry);
-	            }
+                }
+                else
+                {
+                    MachineStack.Push(stackEntry);
+                }
                 currentSP += 2;
-	        }
+            }
             _oldSP = _debugger.CPU.SP;
 
             UpdateCallstack();
-	    }
+        }
 
-	    #endregion
+        #endregion
 
         #region Breakpoints
 
         public bool SetBreakpoint(WabbitcodeBreakpoint newBreakpoint)
-		{
-			if (_debugger == null || newBreakpoint == null)
-			{
-				return false;
-			}
+        {
+            if (_debugger == null || newBreakpoint == null)
+            {
+                return false;
+            }
 
-			CalcLocation location = _symbolService.ListTable.GetCalcLocation(newBreakpoint.File, newBreakpoint.LineNumber + 1);
-			if (location == null)
-			{
-				// move the breakpoint to the nearest location
+            CalcLocation location = _symbolService.ListTable.GetCalcLocation(newBreakpoint.File, newBreakpoint.LineNumber + 1);
+            if (location == null)
+            {
+                // move the breakpoint to the nearest location
                 FilePath fileName = newBreakpoint.File;
-				int lineNumber = newBreakpoint.LineNumber;
-				CalcLocation value = _symbolService.ListTable.GetNextNearestCalcLocation(fileName, lineNumber + 1);
-				DocumentLocation newLocation = _symbolService.ListTable.GetFileLocation(value.Page, value.Address, value.IsRam);
-			    WabbitcodeBreakpointManager.RemoveBreakpoint(fileName, lineNumber);
-			    WabbitcodeBreakpointManager.AddBreakpoint(newLocation.FileName, newLocation.LineNumber - 1);
-				return true;
-			}
+                int lineNumber = newBreakpoint.LineNumber;
+                CalcLocation value = _symbolService.ListTable.GetNextNearestCalcLocation(fileName, lineNumber + 1);
+                DocumentLocation newLocation = _symbolService.ListTable.GetFileLocation(value.Page, value.Address, value.IsRam);
+                WabbitcodeBreakpointManager.RemoveBreakpoint(fileName, lineNumber);
+                WabbitcodeBreakpointManager.AddBreakpoint(newLocation.FileName, newLocation.LineNumber - 1);
+                return true;
+            }
 
-			newBreakpoint.Page = location.Page;
-			newBreakpoint.Address = location.Address;
-			newBreakpoint.IsRam = location.IsRam;
-			newBreakpoint.WabbitemuBreakpoint = _debugger.SetBreakpoint(newBreakpoint.IsRam,
-				(byte) (_appPage - newBreakpoint.Page), newBreakpoint.Address);
-		    return false;
-		}
+            newBreakpoint.Page = location.Page;
+            newBreakpoint.Address = location.Address;
+            newBreakpoint.IsRam = location.IsRam;
+            newBreakpoint.WabbitemuBreakpoint = _debugger.SetBreakpoint(newBreakpoint.IsRam,
+                (byte) (_appPage - newBreakpoint.Page), newBreakpoint.Address);
+            return false;
+        }
 
-		public void ClearBreakpoint(WabbitcodeBreakpoint newBreakpoint)
-		{
+        public void ClearBreakpoint(WabbitcodeBreakpoint newBreakpoint)
+        {
             if (_debugger != null && newBreakpoint != null && newBreakpoint.WabbitemuBreakpoint != null)
-			{
-				_debugger.ClearBreakpoint(newBreakpoint.WabbitemuBreakpoint);
-			}
-		}
+            {
+                _debugger.ClearBreakpoint(newBreakpoint.WabbitemuBreakpoint);
+            }
+        }
 
         private void BreakpointHit(object sender, BreakpointEventArgs e)
         {
@@ -607,7 +606,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             ushort address = breakEvent.Address.Address;
             int relativePage = GetRelativePageNum(address);
             WabbitcodeBreakpoint breakpoint = WabbitcodeBreakpointManager.Breakpoints.FirstOrDefault(
-                b => b.Address == address && b.Page == (byte)relativePage && b.IsRam == address >= 0x8000);
+                b => b.Address == address && b.Page == (byte) relativePage && b.IsRam == address >= 0x8000);
             if (breakpoint == null)
             {
                 return;
@@ -658,7 +657,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             }
         }
 
-	    private void SetupInternalBreakpoints()
+        private void SetupInternalBreakpoints()
         {
             if (_debugger == null)
             {
@@ -681,12 +680,12 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _delMemBreakpoint = _debugger.SetBreakpoint(location.IsRam, location.Page, location.Address);
         }
 
-	    private void WabbitcodeBreakpointManager_OnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
+        private void WabbitcodeBreakpointManager_OnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
         {
             ClearBreakpoint(e.Breakpoint);
         }
 
-        void WabbitcodeBreakpointManager_OnBreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e)
+        private void WabbitcodeBreakpointManager_OnBreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e)
         {
             e.Cancel = SetBreakpoint(e.Breakpoint);
         }
@@ -696,101 +695,101 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         #region TIOS Specifics
 
         /// <summary>
-		/// Returns the location of the actual code a bcall will execute.
-		/// This is what TIOS does when you do a bcall.
-		/// </summary>
-		/// <param name="bcallAddress">The address of the bcall to map</param>
-		/// <returns>The address the bcall code is located at</returns>
-		private CalcLocation LookupBcallAddress(int bcallAddress)
-		{
-			int page;
-			if ((bcallAddress & (1 << 15)) != 0)
-			{
-				bcallAddress &= ~(1 << 15);
-				switch (_debugger.Model)
-				{
-					case CalcModel.TI_73:
-					case CalcModel.TI_83P:
-						page = 0x1F;
-						break;
-					case CalcModel.TI_83PSE:
-					case CalcModel.TI_84PSE:
-						page = 0x7F;
-						break;
-					case CalcModel.TI_84P:
-						page = 0x3F;
-						break;
-					default:
-						throw new InvalidOperationException("Invalid model");
-				}
-			}
-			else if ((bcallAddress & (1 << 14)) != 0)
-			{
-				bcallAddress &= ~(1 << 14);
-				switch (_debugger.Model)
-				{
-					case CalcModel.TI_73:
-					case CalcModel.TI_83P:
-						page = 0x1B;
-						break;
-					case CalcModel.TI_83PSE:
-					case CalcModel.TI_84PSE:
-						page = 0x7B;
-						break;
-					case CalcModel.TI_84P:
-						page = 0x3B;
-						break;
-					default:
-						throw new InvalidOperationException("Invalid model");
-				}
-			}
-			else
-			{
-				throw new InvalidOperationException("Tried looking up a local bcall");
-			}
+        /// Returns the location of the actual code a bcall will execute.
+        /// This is what TIOS does when you do a bcall.
+        /// </summary>
+        /// <param name="bcallAddress">The address of the bcall to map</param>
+        /// <returns>The address the bcall code is located at</returns>
+        private CalcLocation LookupBcallAddress(int bcallAddress)
+        {
+            int page;
+            if ((bcallAddress & (1 << 15)) != 0)
+            {
+                bcallAddress &= ~(1 << 15);
+                switch (_debugger.Model)
+                {
+                    case CalcModel.TI_73:
+                    case CalcModel.TI_83P:
+                        page = 0x1F;
+                        break;
+                    case CalcModel.TI_83PSE:
+                    case CalcModel.TI_84PSE:
+                        page = 0x7F;
+                        break;
+                    case CalcModel.TI_84P:
+                        page = 0x3F;
+                        break;
+                    default:
+                        throw new InvalidOperationException("Invalid model");
+                }
+            }
+            else if ((bcallAddress & (1 << 14)) != 0)
+            {
+                bcallAddress &= ~(1 << 14);
+                switch (_debugger.Model)
+                {
+                    case CalcModel.TI_73:
+                    case CalcModel.TI_83P:
+                        page = 0x1B;
+                        break;
+                    case CalcModel.TI_83PSE:
+                    case CalcModel.TI_84PSE:
+                        page = 0x7B;
+                        break;
+                    case CalcModel.TI_84P:
+                        page = 0x3B;
+                        break;
+                    default:
+                        throw new InvalidOperationException("Invalid model");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Tried looking up a local bcall");
+            }
 
-			bcallAddress += 0x4000;
-			ushort realAddress = _debugger.Memory.Flash[page].ReadWord((ushort)bcallAddress);
-			byte realPage = _debugger.Memory.Flash[page].ReadByte((ushort)(bcallAddress + 2));
-			return new CalcLocation(realAddress, realPage, false);
-		}
+            bcallAddress += 0x4000;
+            ushort realAddress = _debugger.Memory.Flash[page].ReadWord((ushort) bcallAddress);
+            byte realPage = _debugger.Memory.Flash[page].ReadByte((ushort) (bcallAddress + 2));
+            return new CalcLocation(realAddress, realPage, false);
+        }
 
-	    private ITIApplication VerifyApp(string createdName)
-		{
-			if (_debugger == null || _debugger.Apps.Count == 0)
-			{
-				throw new DebuggingException("Application not found on calculator");
-			}
+        private ITIApplication VerifyApp(string createdName)
+        {
+            if (_debugger == null || _debugger.Apps.Count == 0)
+            {
+                throw new DebuggingException("Application not found on calculator");
+            }
 
-			char[] buffer = new char[8];
-	        using (StreamReader appReader = new StreamReader(createdName))
-	        {
-	            for (int i = 0; i < 17; i++)
-	            {
-	                appReader.Read();
-	            }
+            char[] buffer = new char[8];
+            using (StreamReader appReader = new StreamReader(createdName))
+            {
+                for (int i = 0; i < 17; i++)
+                {
+                    appReader.Read();
+                }
 
-	            appReader.ReadBlock(buffer, 0, 8);
-	        }
+                appReader.ReadBlock(buffer, 0, 8);
+            }
 
-	        string appName = new string(buffer);
-			ITIApplication app = _debugger.Apps.Cast<ITIApplication>().SingleOrDefault(a => a.Name == appName);
-			if (app == null || string.IsNullOrEmpty(app.Name))
-			{
-				throw new DebuggingException("Application not found on calculator");
-			}
+            string appName = new string(buffer);
+            ITIApplication app = _debugger.Apps.Cast<ITIApplication>().SingleOrDefault(a => a.Name == appName);
+            if (app == null || string.IsNullOrEmpty(app.Name))
+            {
+                throw new DebuggingException("Application not found on calculator");
+            }
 
-			_appPage = (byte)app.Page.Index;
-			return app;
-		}
+            _appPage = (byte) app.Page.Index;
+            return app;
+        }
 
-	    private void LaunchApp(string createdName)
-		{
-			const ushort progToEdit = 0x84BF;
-			// this is code to do
+        private void LaunchApp(string createdName)
+        {
+            const ushort progToEdit = 0x84BF;
+            // this is code to do
             // bcall(_CloseEditBuf)
             // bcall(_ExecuteApp)
-	        byte[] launchAppCode = {0xEF, 0xD3, 0x48, 0xEF, 0x51, 0x4C};
+            byte[] launchAppCode = {0xEF, 0xD3, 0x48, 0xEF, 0x51, 0x4C};
             byte[] createdNameBytes = System.Text.Encoding.ASCII.GetBytes(createdName);
             // _ExecuteApp expects the name of the app to launch in progToEdit
             _debugger.Running = false;
@@ -799,30 +798,30 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _debugger.CPU.Halt = false;
             _debugger.CPU.PC = RamCode;
             _debugger.Running = true;
-		}
+        }
 
-	    #endregion
+        #endregion
 
         #region IDisposable
 
         public void Dispose()
-		{
-			Dispose(true);
-		}
+        {
+            Dispose(true);
+        }
 
-		private void Dispose(bool disposing)
-		{
-			if (!_disposed)
-			{
-				if (disposing)
-				{
+        private void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
                     if (_debugger != null)
                     {
                         _debugger.Dispose();
                     }
-				}
-			}
-			_disposed = true;
+                }
+            }
+            _disposed = true;
         }
 
         #endregion

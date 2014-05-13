@@ -20,123 +20,96 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         {
             var romFile = GetRomFile();
 
-	        if (romFile == null || !File.Exists(romFile))
-			{
-				throw new MissingROMException("Could not load Wabbitemu ROM");
-			}
+            if (romFile == null || !File.Exists(romFile))
+            {
+                throw new MissingRomException("Could not load Wabbitemu ROM");
+            }
 
             _debugger = new Wabbitemu();
             _debugger.LoadFile(romFile);
             _debugger.Breakpoint += debugger_Breakpoint;
-			_debugger.Close += debugger_Close;
+            _debugger.Close += debugger_Close;
         }
 
         private static string GetRomFile()
-	    {
-		    RegistryKey romKey = null;
-		    string romFile = null;
-		    try
-		    {
-			    romKey = Registry.CurrentUser.OpenSubKey("Software\\Wabbitemu");
-			    if (romKey != null)
-			    {
-				    romFile = romKey.GetValue("rom_path").ToString();
-			    }
-		    }
-		    catch (Exception)
-		    {
-			    throw new MissingROMException("Could not load Wabbitemu ROM");
-		    }
-		    finally
-		    {
-			    if (romKey != null)
-			    {
-				    romKey.Close();
-			    }
-		    }
-		    return romFile;
-	    }
+        {
+            RegistryKey romKey = null;
+            string romFile = null;
+            try
+            {
+                romKey = Registry.CurrentUser.OpenSubKey("Software\\Wabbitemu");
+                if (romKey != null)
+                {
+                    romFile = romKey.GetValue("rom_path").ToString();
+                }
+            }
+            catch (Exception)
+            {
+                throw new MissingRomException("Could not load Wabbitemu ROM");
+            }
+            finally
+            {
+                if (romKey != null)
+                {
+                    romKey.Close();
+                }
+            }
+            return romFile;
+        }
 
-	    public event BreakpointEventHandler OnBreakpoint;
-	    public event CloseEventHandler OnClose;
+        public event BreakpointEventHandler OnBreakpoint;
+        public event CloseEventHandler OnClose;
 
         public ITIApplicationCollection Apps
         {
-            get
-            {
-                return _debugger.Apps;
-            }
+            get { return _debugger.Apps; }
         }
 
         public ITISymbolCollection Symbols
         {
-            get
-            {
-                return _debugger.Symbols;
-            }
+            get { return _debugger.Symbols; }
         }
 
         public IZ80 CPU
         {
-            get
-            {
-                return _debugger.CPU;
-            }
+            get { return _debugger.CPU; }
         }
 
         public IKeypad Keypad
         {
-            get
-            {
-                return _debugger.Keypad;
-            }
+            get { return _debugger.Keypad; }
         }
 
         public ILCD LCD
         {
-            get
-            {
-                return _debugger.LCD;
-            }
+            get { return _debugger.LCD; }
         }
 
         public IMemoryContext Memory
         {
-            get
-            {
-                return _debugger.Memory;
-            }
+            get { return _debugger.Memory; }
         }
 
         public bool Running
         {
-            get
-            {
-                return _debugger.Running;
-            }
+            get { return _debugger.Running; }
             set
             {
                 if (value)
                 {
-					_debugger.Run();
+                    _debugger.Run();
                 }
                 else
                 {
-					_debugger.Break();
+                    _debugger.Break();
                 }
             }
         }
 
         public bool Visible
         {
-            get
-            {
-                return _debugger.Visible;
-            }
-            set
-            {
-                _debugger.Visible = value;
-            }
+            get { return _debugger.Visible; }
+            set { _debugger.Visible = value; }
         }
 
         public void ClearBreakpoint(IBreakpoint breakpoint)
@@ -144,38 +117,38 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _debugger.Breakpoints.Remove(breakpoint);
         }
 
-	    public CalcModel Model
-	    {
-		    get { return _debugger.Model; }
-	    }
+        public CalcModel Model
+        {
+            get { return _debugger.Model; }
+        }
 
-	    public void LoadFile(string fileName)
+        public void LoadFile(string fileName)
         {
             _debugger.LoadFile(fileName);
         }
 
         public byte ReadByte(bool isRam, byte page, ushort address)
         {
-	        IPage calcPage = GetCalcPage(isRam, page);
+            IPage calcPage = GetCalcPage(isRam, page);
 
-	        return calcPage.ReadByte(address);
+            return calcPage.ReadByte(address);
         }
 
-	    public ushort ReadShort(bool isRam, byte page, ushort address)
+        public ushort ReadShort(bool isRam, byte page, ushort address)
         {
-			IPage calcPage = GetCalcPage(isRam, page);
+            IPage calcPage = GetCalcPage(isRam, page);
 
-	        return calcPage.ReadByte(address);
+            return calcPage.ReadByte(address);
         }
 
-	    public byte[] Read(bool isRam, byte page, ushort address, int count)
+        public byte[] Read(bool isRam, byte page, ushort address, int count)
         {
-			IPage calcPage = GetCalcPage(isRam, page);
+            IPage calcPage = GetCalcPage(isRam, page);
 
-	        return (byte []) calcPage.Read(address, (ushort) count);
+            return (byte[]) calcPage.Read(address, (ushort) count);
         }
 
-	    public byte ReadByte(CalcAddress address)
+        public byte ReadByte(CalcAddress address)
         {
             return address == null ? (byte) 0 : address.Page.ReadByte(address.Address);
         }
@@ -192,7 +165,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 return null;
             }
 
-            return (byte []) address.Page.Read(address.Address, (ushort) count);
+            return (byte[]) address.Page.Read(address.Address, (ushort) count);
         }
 
         public IBreakpoint SetBreakpoint(CalcAddress address)
@@ -203,7 +176,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         public IBreakpoint SetBreakpoint(bool isRam, byte page, ushort address)
         {
             CalcAddress calcAddr = new CalcAddress();
-	        IPage calcPage = GetCalcPage(isRam, page);
+            IPage calcPage = GetCalcPage(isRam, page);
 
             calcAddr.Initialize(calcPage, address);
             return _debugger.Breakpoints.Add(calcAddr);
@@ -227,50 +200,50 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 return;
             }
 
-	        address.Page.WriteByte(address.Address, value);
+            address.Page.WriteByte(address.Address, value);
         }
 
-		public void Write(bool isRam, byte page, ushort address, ushort value)
-		{
-			IPage calcPage = isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
-			calcPage.WriteWord(address, value);
-		}
+        public void Write(bool isRam, byte page, ushort address, ushort value)
+        {
+            IPage calcPage = isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
+            calcPage.WriteWord(address, value);
+        }
 
-		public void Write(CalcAddress address, ushort value)
-		{
+        public void Write(CalcAddress address, ushort value)
+        {
             if (address == null)
             {
                 return;
             }
 
-			address.Page.WriteWord(address.Address, value);
-		}
+            address.Page.WriteWord(address.Address, value);
+        }
 
-		public void Write(bool isRam, byte page, ushort address, byte[] value)
-		{
-			IPage calcPage = isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
-			calcPage.Write(address, value);
-		}
+        public void Write(bool isRam, byte page, ushort address, byte[] value)
+        {
+            IPage calcPage = isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
+            calcPage.Write(address, value);
+        }
 
-		public void Write(CalcAddress address, byte[] value)
-		{
-		    if (address == null)
-		    {
-		        return;
-		    }
+        public void Write(CalcAddress address, byte[] value)
+        {
+            if (address == null)
+            {
+                return;
+            }
 
-			address.Page.Write(address.Address, value);
-		}
+            address.Page.Write(address.Address, value);
+        }
 
         public Image GetScreenImage()
         {
-            Marshal.Copy((byte[])_debugger.LCD.Display, 0, _scan0, 128 * 64);
+            Marshal.Copy((byte[]) _debugger.LCD.Display, 0, _scan0, 128 * 64);
             using (Bitmap calcBitmap = new Bitmap(128, 64, 128, PixelFormat.Format8bppIndexed, _scan0))
             {
                 var palette = calcBitmap.Palette;
                 for (int i = 0; i < 255; i++)
                 {
-                    palette.Entries[i] = Color.FromArgb(0x9e*(256 - i)/255, (0xAB*(256 - i))/255, (0x88*(256 - i))/255);
+                    palette.Entries[i] = Color.FromArgb(0x9e * (256 - i) / 255, (0xAB * (256 - i)) / 255, (0x88 * (256 - i)) / 255);
                 }
 
                 Rectangle rect = new Rectangle(0, 0, _debugger.LCD.Width, _debugger.LCD.Height);
@@ -280,27 +253,27 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             }
         }
 
-	    public void EndDebug()
-	    {
-		    if (_debugger == null)
-		    {
-			    return;
-		    }
-		    try
-		    {
-			    _debugger.Break();
-			    _debugger.Visible = false;
-			    _debugger.Breakpoint -= debugger_Breakpoint;
-			    _debugger.Close -= debugger_Close;
-		    }
-		    catch (InvalidCastException)
-		    {
-				Debug.WriteLine("COM exception canceling debug");
-		    }
-		    _debugger = null;
-	    }
+        public void EndDebug()
+        {
+            if (_debugger == null)
+            {
+                return;
+            }
+            try
+            {
+                _debugger.Break();
+                _debugger.Visible = false;
+                _debugger.Breakpoint -= debugger_Breakpoint;
+                _debugger.Close -= debugger_Close;
+            }
+            catch (InvalidCastException)
+            {
+                Debug.WriteLine("COM exception canceling debug");
+            }
+            _debugger = null;
+        }
 
-	    private void debugger_Breakpoint(IWabbitemu debugger, IBreakpoint breakpoint)
+        private void debugger_Breakpoint(IWabbitemu debugger, IBreakpoint breakpoint)
         {
             if (OnBreakpoint != null)
             {
@@ -308,18 +281,18 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             }
         }
 
-		private void debugger_Close(Wabbitemu calc)
-		{
-			if (OnClose != null)
-			{
-				OnClose(calc, EventArgs.Empty);
-			}
-		}
+        private void debugger_Close(Wabbitemu calc)
+        {
+            if (OnClose != null)
+            {
+                OnClose(calc, EventArgs.Empty);
+            }
+        }
 
-		private IPage GetCalcPage(bool isRam, byte page)
-		{
-			return isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
-		}
+        private IPage GetCalcPage(bool isRam, byte page)
+        {
+            return isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
+        }
 
         ~WabbitemuDebugger()
         {
@@ -332,13 +305,12 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             GC.SuppressFinalize(this);
         }
 
-	    private void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!_disposed)
             {
                 if (disposing)
                 {
-
                 }
 
                 Marshal.FreeHGlobal(_scan0);

@@ -9,21 +9,21 @@ namespace Revsoft.Wabbitcode.Services.Parser
             File = file;
             Line = line;
             Col = col;
-	        Offset = offset;
+            Offset = offset;
             ReferenceString = reference;
             LineContents = lineContents;
         }
 
-	    public int Col { get; private set; }
+        public int Col { get; private set; }
 
         public FilePath File { get; private set; }
 
-	    public int Line { get; private set; }
+        public int Line { get; private set; }
 
         public int Offset { get; private set; }
 
-	    public string LineContents { get; private set; }
+        public string LineContents { get; private set; }
 
-	    public string ReferenceString { get; private set; }
+        public string ReferenceString { get; private set; }
     }
 }

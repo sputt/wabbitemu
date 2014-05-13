@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Annotations;
 
-namespace Revsoft.Wabbitcode.Services
+namespace Revsoft.Wabbitcode.Services.Parser
 {
+    [UsedImplicitly]
     public class ParserFactory : IParserFactory
     {
         private static readonly Dictionary<string, Type> ParserDictionary = new Dictionary<string, Type>();

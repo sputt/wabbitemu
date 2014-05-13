@@ -30,9 +30,9 @@ using ToggleBookmark = Revsoft.TextEditor.Actions.ToggleBookmark;
 namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 {
     /// <summary>
-	/// Summary description for frmDocument.
-	/// </summary>
-	public partial class Editor : ITextEditor, IBookmarkable
+    /// Summary description for frmDocument.
+    /// </summary>
+    public partial class Editor : ITextEditor, IBookmarkable
     {
         #region Static Members
 
@@ -70,38 +70,30 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         #endregion
 
-		#region Private Memebers
+        #region Private Memebers
 
         private readonly IDebuggerService _debuggerService;
-		private readonly IDockingService _dockingService;
+        private readonly IDockingService _dockingService;
         private readonly IParserService _parserService;
-		private readonly IProjectService _projectService;
+        private readonly IProjectService _projectService;
         private int _stackTop;
         private volatile bool _wasExternallyModified;
         private bool _documentChanged;
-		#endregion
 
-		#region Properties
+        #endregion
+
+        #region Properties
 
         protected override bool DocumentChanged
         {
-            get
-            {
-                return _stackTop != editorBox.Document.UndoStack.UndoItemCount || _documentChanged;
-            }
-            set
-            {
-                _documentChanged = value;
-            }
+            get { return _stackTop != editorBox.Document.UndoStack.UndoItemCount || _documentChanged; }
+            set { _documentChanged = value; }
         }
 
 
         public int CaretLine
         {
-            get
-            {
-                return editorBox.ActiveTextAreaControl.Caret.Line;
-            }
+            get { return editorBox.ActiveTextAreaControl.Caret.Line; }
             set
             {
                 editorBox.ActiveTextAreaControl.Caret.Line = value;
@@ -111,22 +103,13 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         public int CaretColumn
         {
-            get
-            {
-                return editorBox.ActiveTextAreaControl.Caret.Column;
-            }
-            set
-            {
-                editorBox.ActiveTextAreaControl.Caret.Column = value;
-            }
+            get { return editorBox.ActiveTextAreaControl.Caret.Column; }
+            set { editorBox.ActiveTextAreaControl.Caret.Column = value; }
         }
 
         public int CaretOffset
         {
-            get
-            {
-                return editorBox.ActiveTextAreaControl.Caret.Offset;
-            }
+            get { return editorBox.ActiveTextAreaControl.Caret.Offset; }
             set
             {
                 var segment = editorBox.Document.GetLineSegmentForOffset(value);
@@ -137,10 +120,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         public int TotalLines
         {
-            get
-            {
-                return editorBox.Document.TotalNumberOfLines;
-            }
+            get { return editorBox.Document.TotalNumberOfLines; }
         }
 
         public IDocument Document
@@ -150,9 +130,9 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         #endregion
 
-		public Editor()
-		{
-		    InitializeComponent();
+        public Editor()
+        {
+            InitializeComponent();
 
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             _dockingService = DependencyFactory.Resolve<IDockingService>();
@@ -163,34 +143,34 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             editorBox.ContextMenu = contextMenu;
             contextMenu.Popup += contextMenu_Popup;
 
-			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
-			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
+            WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
+            WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
             _debuggerService.OnDebuggingStarted += (sender, e) => SetDebugging(true);
             _debuggerService.OnDebuggingEnded += (sender, e) => SetDebugging(false);
 
             if (_debuggerService.CurrentDebugger != null)
-		    {
+            {
                 SetDebugging(true);
-		    }
+            }
 
-		    if (_projectService.Project != null)
-		    {
-		        _projectService.Project.FileModifiedExternally += Project_FileModifiedExternally;
-		    }
+            if (_projectService.Project != null)
+            {
+                _projectService.Project.FileModifiedExternally += Project_FileModifiedExternally;
+            }
             _projectService.ProjectOpened += (sender, args) => _projectService.Project.FileModifiedExternally += Project_FileModifiedExternally;
 
-		    if (_bindingsRegistered)
-		    {
-		        return;
-		    }
+            if (_bindingsRegistered)
+            {
+                return;
+            }
 
             // TODO: fix
             //CodeCompletionFactory.RegisterCodeCompletionBinding(".asm", new Z80CodeCompletionBinding());
             //CodeCompletionFactory.RegisterCodeCompletionBinding(".z80", new Z80CodeCompletionBinding());
             //CodeCompletionFactory.RegisterCodeCompletionBinding(".inc", new Z80CodeCompletionBinding());
 
-		    _bindingsRegistered = true;
-		}
+            _bindingsRegistered = true;
+        }
 
         private void Project_FileModifiedExternally(object sender, FileModifiedEventArgs e)
         {
@@ -332,7 +312,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         private void UpdateDebugHighlight()
         {
             IWabbitcodeDebugger debugger = _debuggerService.CurrentDebugger;
-            if (debugger == null) 
+            if (debugger == null)
             {
                 return;
             }
@@ -347,15 +327,15 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         }
 
         protected override string GetPersistString()
-		{
-			// Add extra information into the persist string for this document
-			// so that it is available when deserialized.
-			return base.GetPersistString() + ";" +
-				   editorBox.ActiveTextAreaControl.Caret.Line + ";" +
-				   editorBox.ActiveTextAreaControl.Caret.Column + ";" +
+        {
+            // Add extra information into the persist string for this document
+            // so that it is available when deserialized.
+            return base.GetPersistString() + ";" +
+                   editorBox.ActiveTextAreaControl.Caret.Line + ";" +
+                   editorBox.ActiveTextAreaControl.Caret.Column + ";" +
                    editorBox.ActiveTextAreaControl.VScrollBar.Value + ";" +
-			       editorBox.ActiveTextAreaControl.HScrollBar.Value;
-		}
+                   editorBox.ActiveTextAreaControl.HScrollBar.Value;
+        }
 
         private void Debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
         {
@@ -412,35 +392,35 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         }
 
         private void editor_FormClosing(object sender, CancelEventArgs e)
-		{
-			editorBox.Document.MarkerStrategy.RemoveAll(s => true);
+        {
+            editorBox.Document.MarkerStrategy.RemoveAll(s => true);
 
             AddFoldings();
 
             WabbitcodeBreakpointManager.OnBreakpointAdded -= WabbitcodeBreakpointManager_OnBreakpointAdded;
             WabbitcodeBreakpointManager.OnBreakpointRemoved -= WabbitcodeBreakpointManager_OnBreakpointRemoved;
 
-			if (!DocumentChanged)
-			{
-				return;
-			}
+            if (!DocumentChanged)
+            {
+                return;
+            }
 
-			if (string.IsNullOrEmpty(FileName))
-			{
-				FileName = new FilePath("New Document");
-			}
+            if (string.IsNullOrEmpty(FileName))
+            {
+                FileName = new FilePath("New Document");
+            }
 
-			DialogResult dlg = MessageBox.Show(this, "Document '" + FileName + "' has changed. Save changes?", "Wabbitcode", MessageBoxButtons.YesNoCancel);
-			switch (dlg)
-			{
-				case DialogResult.Cancel:
-					e.Cancel = true;
-					break;
-				case DialogResult.Yes:
-					SaveFile();
-					break;
-			}
-		}
+            DialogResult dlg = MessageBox.Show(this, "Document '" + FileName + "' has changed. Save changes?", "Wabbitcode", MessageBoxButtons.YesNoCancel);
+            switch (dlg)
+            {
+                case DialogResult.Cancel:
+                    e.Cancel = true;
+                    break;
+                case DialogResult.Yes:
+                    SaveFile();
+                    break;
+            }
+        }
 
         #region Folding
 
@@ -485,251 +465,252 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         #endregion
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-		{
-			if (keyData == Keys.F3)
-			{
-				//_dockingService.FindForm.FindNext(true, false, "Text not found");
-			}
+        {
+            if (keyData == Keys.F3)
+            {
+                //_dockingService.FindForm.FindNext(true, false, "Text not found");
+            }
 
-			if (MacroService.IsRecording)
-			{
-				MacroService.RecordKeyData(keyData);
-			}
-			return base.ProcessCmdKey(ref msg, keyData);
-		}
+            if (MacroService.IsRecording)
+            {
+                MacroService.RecordKeyData(keyData);
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
 
-		#region Breakpoints
+        #region Breakpoints
 
-		private void AddBreakpoint(int lineNum)
-		{
-			IDocument document = editorBox.Document;
-			if (document.BreakpointManager.IsMarked(lineNum))
-			{
-				return;
-			}
+        private void AddBreakpoint(int lineNum)
+        {
+            IDocument document = editorBox.Document;
+            if (document.BreakpointManager.IsMarked(lineNum))
+            {
+                return;
+            }
 
-			document.BreakpointManager.AddMark(new Breakpoint(document, new TextLocation(0,lineNum)));
+            document.BreakpointManager.AddMark(new Breakpoint(document, new TextLocation(0, lineNum)));
             UpdateDocument(lineNum);
-		    Refresh();
-		}
+            Refresh();
+        }
 
-		private void RemoveBreakpoint(int lineNum)
-		{
-			IDocument document = editorBox.Document;
-			Breakpoint breakpoint = document.BreakpointManager.GetFirstMark(s => s.Anchor.LineNumber == lineNum);
-		    if (breakpoint == null)
-		    {
-		        return;
-		    }
+        private void RemoveBreakpoint(int lineNum)
+        {
+            IDocument document = editorBox.Document;
+            Breakpoint breakpoint = document.BreakpointManager.GetFirstMark(s => s.Anchor.LineNumber == lineNum);
+            if (breakpoint == null)
+            {
+                return;
+            }
 
-		    document.BreakpointManager.RemoveMark(breakpoint);
-		    UpdateDocument(lineNum);
-		}
+            document.BreakpointManager.RemoveMark(breakpoint);
+            UpdateDocument(lineNum);
+        }
 
-		#region Breakpoint Manager
+        #region Breakpoint Manager
 
-		void WabbitcodeBreakpointManager_OnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
-		{
-			if (e.Breakpoint.File != FileName)
-			{
-				return;
-			}
+        private void WabbitcodeBreakpointManager_OnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
+        {
+            if (e.Breakpoint.File != FileName)
+            {
+                return;
+            }
 
-			RemoveBreakpoint(e.Breakpoint.LineNumber);
-		}
+            RemoveBreakpoint(e.Breakpoint.LineNumber);
+        }
 
-		void WabbitcodeBreakpointManager_OnBreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e)
-		{
-			if (e.Breakpoint.File != FileName)
-			{
-				return;
-			}
+        private void WabbitcodeBreakpointManager_OnBreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e)
+        {
+            if (e.Breakpoint.File != FileName)
+            {
+                return;
+            }
 
-			AddBreakpoint(e.Breakpoint.LineNumber);
-		}
+            AddBreakpoint(e.Breakpoint.LineNumber);
+        }
 
-		#endregion
+        #endregion
 
-		#endregion
+        #endregion
 
-		#region Context Menu
+        #region Context Menu
 
-		private void cutContext_Click(object sender, EventArgs e)
-		{
-			Cut();
-		}
+        private void cutContext_Click(object sender, EventArgs e)
+        {
+            Cut();
+        }
 
-		private void copyContext_Click(object sender, EventArgs e)
-		{
-			Copy();
-		}
+        private void copyContext_Click(object sender, EventArgs e)
+        {
+            Copy();
+        }
 
-		private void pasteContext_Click(object sender, EventArgs e)
-		{
-			Paste();
-		}
+        private void pasteContext_Click(object sender, EventArgs e)
+        {
+            Paste();
+        }
 
-		private void selectAllContext_Click(object sender, EventArgs e)
-		{
-			SelectAll();
-		}
+        private void selectAllContext_Click(object sender, EventArgs e)
+        {
+            SelectAll();
+        }
 
         private void setNextStateMenuItem_Click(object sender, EventArgs e)
         {
             _debuggerService.CurrentDebugger.SetPCToSelect(FileName, CaretLine + 1);
         }
 
-		private void bgotoButton_Click(object sender, EventArgs e)
-		{
-			// no need to make a stricter regex, as we own the inputs here
-			Match match = Regex.Match(bgotoButton.Text, "(?<action>.*?) (?<name>.*)");
-		    string action = match.Groups["action"].Value;
+        private void bgotoButton_Click(object sender, EventArgs e)
+        {
+            // no need to make a stricter regex, as we own the inputs here
+            Match match = Regex.Match(bgotoButton.Text, "(?<action>.*?) (?<name>.*)");
+            string action = match.Groups["action"].Value;
             FilePath text = new FilePath(match.Groups["name"].Value);
 
-			if (action == "Goto")
-			{
-			    new GotoDefinitionAction(FileName, text, editorBox.ActiveTextAreaControl.Caret.Line).Execute();
-			}
-			else
-			{
-                FilePath fileFullPath = Path.IsPathRooted(text) ? text : 
+            if (action == "Goto")
+            {
+                new GotoDefinitionAction(FileName, text, editorBox.ActiveTextAreaControl.Caret.Line).Execute();
+            }
+            else
+            {
+                FilePath fileFullPath = Path.IsPathRooted(text) ? text :
                     _projectService.Project.GetFilePathFromRelativePath(text).NormalizePath();
                 new GotoFileAction(fileFullPath).Execute();
-			}
-		}
-		#endregion
+            }
+        }
 
-		#region Drag and Drop
+        #endregion
 
-		private void editor_DragEnter(object sender, DragEventArgs e)
-		{
+        #region Drag and Drop
+
+        private void editor_DragEnter(object sender, DragEventArgs e)
+        {
             e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
-		}
+        }
 
-		private void editor_DragDrop(object sender, DragEventArgs e)
-		{
+        private void editor_DragDrop(object sender, DragEventArgs e)
+        {
             new DragDropCommand(e.Data).Execute();
-		}
+        }
 
-		#endregion
+        #endregion
 
         private void editorBox_TextChanged(object sender, EventArgs e)
-		{
+        {
             UpdateTabText();
-		}
+        }
 
-		private void UpdateTabText()
-		{
-			string changedString = DocumentChanged ? "*" : string.Empty;
-			if (!string.IsNullOrEmpty(FileName))
-			{
-				TabText = Path.GetFileName(FileName) + changedString;
-			}
-			else
-			{
-				TabText = "New Document" + changedString;
-			}
-		}
+        private void UpdateTabText()
+        {
+            string changedString = DocumentChanged ? "*" : string.Empty;
+            if (!string.IsNullOrEmpty(FileName))
+            {
+                TabText = Path.GetFileName(FileName) + changedString;
+            }
+            else
+            {
+                TabText = "New Document" + changedString;
+            }
+        }
 
-		private void fixCaseContext_Click(object sender, EventArgs e)
-		{
-			MenuItem item = sender as MenuItem;
-			if (item == null)
-			{
-				return;
-			}
+        private void fixCaseContext_Click(object sender, EventArgs e)
+        {
+            MenuItem item = sender as MenuItem;
+            if (item == null)
+            {
+                return;
+            }
 
             var caret = editorBox.ActiveTextAreaControl.Caret;
             var segment = editorBox.Document.GetLineSegment(caret.Line);
             var word = segment.GetWord(caret.Column);
-			editorBox.Document.Replace(segment.Offset + word.Offset, item.Text.Length, item.Text);
-		}
+            editorBox.Document.Replace(segment.Offset + word.Offset, item.Text.Length, item.Text);
+        }
 
-		private void findRefContext_Click(object sender, EventArgs e)
-		{
-			new FindAllReferencesAction().Execute();
-		}
+        private void findRefContext_Click(object sender, EventArgs e)
+        {
+            new FindAllReferencesAction().Execute();
+        }
 
         private void renameContext_Click(object sender, EventArgs e)
-		{
-			new RefactorRenameAction().Execute();
-		}
+        {
+            new RefactorRenameAction().Execute();
+        }
 
-	    private void extractMethodContext_Click(object sender, EventArgs e)
-	    {
+        private void extractMethodContext_Click(object sender, EventArgs e)
+        {
             new RefactorExtractMethodAction().Execute();
-	    }
+        }
 
-		private bool FindFileIncludes(string gotoLabel)
-		{
-			return !string.IsNullOrEmpty(_projectService.Project.GetFilePathFromRelativePath(gotoLabel));
-		}
+        private bool FindFileIncludes(string gotoLabel)
+        {
+            return !string.IsNullOrEmpty(_projectService.Project.GetFilePathFromRelativePath(gotoLabel));
+        }
 
-		#region TitleBarContext
+        #region TitleBarContext
 
-		private void saveMenuItem_Click(object sender, EventArgs e)
-		{
-			SaveFile();
-		}
+        private void saveMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFile();
+        }
 
-		private void closeMenuItem_Click(object sender, EventArgs e)
-		{
-			Close();
-		}
+        private void closeMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
 
-		private void closeAllOtherMenuItem_Click(object sender, EventArgs e)
-		{
+        private void closeAllOtherMenuItem_Click(object sender, EventArgs e)
+        {
             var array = _dockingService.Documents.OfType<DockContent>().Where(child => child != this).ToArray();
-			foreach (DockContent child in array)
-			{
-				child.Close();
-			}
-		}
+            foreach (DockContent child in array)
+            {
+                child.Close();
+            }
+        }
 
-		private void closeAllMenuItem_Click(object sender, EventArgs e)
-		{
-			var array = _dockingService.Documents.OfType<DockContent>().ToArray();
-			foreach (DockContent child in array)
-			{
-				child.Close();
-			}
-		}
+        private void closeAllMenuItem_Click(object sender, EventArgs e)
+        {
+            var array = _dockingService.Documents.OfType<DockContent>().ToArray();
+            foreach (DockContent child in array)
+            {
+                child.Close();
+            }
+        }
 
-		private void copyPathMenuItem_Click(object sender, EventArgs e)
-		{
-			Clipboard.SetText(FileName);
-		}
+        private void copyPathMenuItem_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(FileName);
+        }
 
-		private void openFolderMenuItem_Click(object sender, EventArgs e)
-		{
+        private void openFolderMenuItem_Click(object sender, EventArgs e)
+        {
             if (string.IsNullOrEmpty(FileName))
-		    {
-		        return;
-		    }
+            {
+                return;
+            }
 
-		    string dir = Path.GetDirectoryName(FileName);
-		    if (string.IsNullOrEmpty(dir))
-		    {
-		        return;
-		    }
+            string dir = Path.GetDirectoryName(FileName);
+            if (string.IsNullOrEmpty(dir))
+            {
+                return;
+            }
 
-			Process explorer = new Process
-			{
-				StartInfo = { FileName = dir }
-			};
-			explorer.Start();
-		}
+            Process explorer = new Process
+            {
+                StartInfo = {FileName = dir}
+            };
+            explorer.Start();
+        }
 
-		#endregion
+        #endregion
 
-		public void GotoLine(int line)
-		{
-			editorBox.ActiveTextAreaControl.ScrollTo(line);
+        public void GotoLine(int line)
+        {
+            editorBox.ActiveTextAreaControl.ScrollTo(line);
             editorBox.ActiveTextAreaControl.Caret.Line = line;
             editorBox.ActiveTextAreaControl.Caret.Column = 0;
-		}
+        }
 
-		#region Modify Selected Text
+        #region Modify Selected Text
 
         public string GetSelection()
         {
@@ -747,113 +728,117 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         }
 
         public void SelectedTextToLower()
-		{
+        {
             var action = new ToLowerCase();
             action.Execute(editorBox.ActiveTextAreaControl.TextArea);
-		}
+        }
 
         public void SelectedTextToUpper()
-		{
+        {
             var action = new ToUpperCase();
             action.Execute(editorBox.ActiveTextAreaControl.TextArea);
-		}
+        }
 
         public void SelectedTextInvertCase()
-		{
+        {
             var action = new InvertCaseAction();
             action.Execute(editorBox.ActiveTextAreaControl.TextArea);
-		}
+        }
 
         public void SelectedTextToSentenceCase()
-		{
+        {
             var action = new CapitalizeAction();
             action.Execute(editorBox.ActiveTextAreaControl.TextArea);
-		}
+        }
 
         public void FormatLines()
-		{
-			string[] lines = editorBox.Text.Split('\n');
-			const string indent = "\t";
-			string currentIndent = indent;
-			for (int i = 0; i < lines.Length; i++)
-			{
-				string line = lines[i];
-				string comment = string.Empty;
-				if (line.Trim().Length == 0)
-					continue;
+        {
+            string[] lines = editorBox.Text.Split('\n');
+            const string indent = "\t";
+            string currentIndent = indent;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i];
+                string comment = string.Empty;
+                if (line.Trim().Length == 0)
+                {
+                    continue;
+                }
 
-				if (line.IndexOf(';') != -1)
-				{
-					comment = line.Substring(line.IndexOf(';'));
-					line = line.Remove(line.IndexOf(';'));
-				}
-				bool islabel = !string.IsNullOrEmpty(line) && (!char.IsWhiteSpace(line[0]) || line[0] == '_');
-				line = line.Trim();
-				if (line.StartsWith("push"))
-					currentIndent += indent;
-				if ((line.StartsWith("pop") || line.StartsWith("ret")) && currentIndent.Length > 1)
-				{
-					currentIndent = currentIndent.Remove(currentIndent.Length - 1);
-				}
-				if (!islabel)
-				{
-					line = currentIndent + line;
-				}
-				lines[i] = line + comment;
-			}
-			StringBuilder newText = new StringBuilder();
-		    foreach (string line in lines)
-		    {
-		        newText.AppendLine(line);
-		    }
+                if (line.IndexOf(';') != -1)
+                {
+                    comment = line.Substring(line.IndexOf(';'));
+                    line = line.Remove(line.IndexOf(';'));
+                }
+                bool islabel = !string.IsNullOrEmpty(line) && (!char.IsWhiteSpace(line[0]) || line[0] == '_');
+                line = line.Trim();
+                if (line.StartsWith("push"))
+                {
+                    currentIndent += indent;
+                }
+                if ((line.StartsWith("pop") || line.StartsWith("ret")) && currentIndent.Length > 1)
+                {
+                    currentIndent = currentIndent.Remove(currentIndent.Length - 1);
+                }
+                if (!islabel)
+                {
+                    line = currentIndent + line;
+                }
+                lines[i] = line + comment;
+            }
+            StringBuilder newText = new StringBuilder();
+            foreach (string line in lines)
+            {
+                newText.AppendLine(line);
+            }
 
-		    editorBox.Document.TextContent = newText.ToString();
-		}
+            editorBox.Document.TextContent = newText.ToString();
+        }
 
-		#endregion
+        #endregion
 
-	    #region Bookmarks
+        #region Bookmarks
 
-		public void GotoNextBookmark()
-		{
-			GotoNextBookmark next = new GotoNextBookmark(bookmark => true);
-			next.Execute(editorBox.ActiveTextAreaControl.TextArea);
-		}
+        public void GotoNextBookmark()
+        {
+            GotoNextBookmark next = new GotoNextBookmark(bookmark => true);
+            next.Execute(editorBox.ActiveTextAreaControl.TextArea);
+        }
 
-		public void GotoPrevBookmark()
-		{
-			GotoPrevBookmark next = new GotoPrevBookmark(bookmark => true);
-			next.Execute(editorBox.ActiveTextAreaControl.TextArea);
-		}
+        public void GotoPrevBookmark()
+        {
+            GotoPrevBookmark next = new GotoPrevBookmark(bookmark => true);
+            next.Execute(editorBox.ActiveTextAreaControl.TextArea);
+        }
 
-		public void ToggleBookmark()
-		{
-			ToggleBookmark toggle = new ToggleBookmark();
-			toggle.Execute(editorBox.ActiveTextAreaControl.TextArea);
-		}
+        public void ToggleBookmark()
+        {
+            ToggleBookmark toggle = new ToggleBookmark();
+            toggle.Execute(editorBox.ActiveTextAreaControl.TextArea);
+        }
 
-		#endregion
+        #endregion
 
         private void UpdateDocument(int line)
-		{
-			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
-		}
+        {
+            editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
+        }
 
         public void ConvertSpacesToTabs()
-		{
+        {
             var action = new ConvertSpacesToTabs();
             action.Execute(editorBox.ActiveTextAreaControl.TextArea);
-		}
+        }
 
         public string GetWordAtCaret()
         {
             return editorBox.GetWordAtCaret();
         }
 
-	    public void ShowFindForm(Form owner, SearchMode mode)
-	    {
-	        FindAndReplaceForm.Instance.ShowFor(owner, editorBox, mode);
-	    }
+        public void ShowFindForm(Form owner, SearchMode mode)
+        {
+            FindAndReplaceForm.Instance.ShowFor(owner, editorBox, mode);
+        }
 
         public override void OpenFile(FilePath fileName)
         {

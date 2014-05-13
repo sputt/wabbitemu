@@ -3,15 +3,10 @@
 namespace Revsoft.Wabbitcode.Exceptions
 {
     [Serializable]
-    class DebuggingException : Exception
+    internal class DebuggingException : Exception
     {
-        public DebuggingException()
-        : base()
-        {
-        }
-
         public DebuggingException(string message)
-        : base(message)
+            : base(message)
         {
         }
     }

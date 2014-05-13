@@ -57,7 +57,7 @@ namespace Revsoft.Wabbitcode.Actions
                 }
 
                 int index = reusableLabels.IndexOf(currentLabel) + steps;
-                parserData = new List<IParserData> { reusableLabels[index] };
+                parserData = new List<IParserData> {reusableLabels[index]};
             }
             else
             {
@@ -185,6 +185,7 @@ namespace Revsoft.Wabbitcode.Actions
     public class ShowCodeCompletion : IEditAction
     {
         public Keys[] Keys { get; set; }
+
         public void Execute(TextArea textArea)
         {
             // TODO

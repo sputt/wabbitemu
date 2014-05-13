@@ -5,53 +5,31 @@ using WabbitemuLib;
 namespace Revsoft.Wabbitcode.Services.Debugger
 {
     public delegate void BreakpointEventHandler(object sender, BreakpointEventArgs e);
-	public delegate void CloseEventHandler(object sender, EventArgs e);
+
+    public delegate void CloseEventHandler(object sender, EventArgs e);
 
     public interface IWabbitemuDebugger : IDisposable
     {
         event BreakpointEventHandler OnBreakpoint;
-		event CloseEventHandler OnClose;
+        event CloseEventHandler OnClose;
 
-        ITIApplicationCollection Apps
-        {
-            get;
-        }
+        ITIApplicationCollection Apps { get; }
 
-        IZ80 CPU
-        {
-            get;
-        }
+        IZ80 CPU { get; }
 
-        IKeypad Keypad
-        {
-            get;
-        }
+        IKeypad Keypad { get; }
 
-        ILCD LCD
-        {
-            get;
-        }
+        ILCD LCD { get; }
 
-        IMemoryContext Memory
-        {
-            get;
-        }
+        IMemoryContext Memory { get; }
 
-        bool Running
-        {
-            get;
-            set;
-        }
+        bool Running { get; set; }
 
-        bool Visible
-        {
-            get;
-            set;
-        }
+        bool Visible { get; set; }
 
-	    CalcModel Model { get; }
+        CalcModel Model { get; }
 
-	    void LoadFile(string fileName);
+        void LoadFile(string fileName);
 
         byte ReadByte(CalcAddress address);
         ushort ReadShort(CalcAddress address);
@@ -60,12 +38,12 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         ushort ReadShort(bool isRam, byte page, ushort address);
         byte[] Read(bool isRam, byte page, ushort address, int count);
 
-	    void Write(bool isRam, byte page, ushort address, byte value);
-	    void Write(CalcAddress address, byte value);
-		void Write(bool isRam, byte page, ushort address, ushort value);
-		void Write(CalcAddress address, ushort value);
-		void Write(bool isRam, byte page, ushort address, byte[] value);
-		void Write(CalcAddress address, byte[] value);
+        void Write(bool isRam, byte page, ushort address, byte value);
+        void Write(CalcAddress address, byte value);
+        void Write(bool isRam, byte page, ushort address, ushort value);
+        void Write(CalcAddress address, ushort value);
+        void Write(bool isRam, byte page, ushort address, byte[] value);
+        void Write(CalcAddress address, byte[] value);
 
         void ClearBreakpoint(IBreakpoint breakpoint);
         IBreakpoint SetBreakpoint(CalcAddress address);
@@ -74,6 +52,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         void Step();
 
         Image GetScreenImage();
-	    void EndDebug();
+        void EndDebug();
     }
 }
