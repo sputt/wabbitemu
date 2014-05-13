@@ -53,34 +53,37 @@ namespace Revsoft.TextEditor
 			g.DrawLine(SystemPens.ControlDark, drawingPosition.Right - 1, rect.Top, drawingPosition.Right - 1, rect.Bottom);
 			
 			// paint icons
-			foreach (Bookmark mark in textArea.Document.BookmarkManager.Marks) {
-				int lineNumber = textArea.Document.GetVisibleLine(mark.LineNumber);
-				int lineHeight = textArea.TextView.FontHeight;
-				int yPos = lineNumber * lineHeight - textArea.VirtualTop.Y;
-			    if (!IsLineInsideRegion(yPos, yPos + lineHeight, rect.Y, rect.Bottom)) continue;
-			    if (lineNumber == textArea.Document.GetVisibleLine(mark.LineNumber - 1)) {
-			        // marker is inside folded region, do not draw it
-			        continue;
-			    }
-			    mark.Draw(this, g, new Point(0, yPos));
+			foreach (Bookmark mark in textArea.Document.BookmarkManager.Marks)
+            {
+				PaintAbstractMarginIcon(g, rect, mark);
 			}
 
             foreach (Breakpoint mark in textArea.Document.BreakpointManager.Marks)
             {
-                int lineNumber = textArea.Document.GetVisibleLine(mark.LineNumber);
-                int lineHeight = textArea.TextView.FontHeight;
-                int yPos = lineNumber * lineHeight - textArea.VirtualTop.Y;
-                if (!IsLineInsideRegion(yPos, yPos + lineHeight, rect.Y, rect.Bottom)) continue;
-                if (lineNumber == textArea.Document.GetVisibleLine(mark.LineNumber - 1))
-                    // marker is inside folded region, do not draw it
-                    continue;
-                mark.Draw(this, g, new Point(0, yPos));
+                PaintAbstractMarginIcon(g, rect, mark);
             }
 
 		    base.Paint(g, rect);
 		}
 
-		public override void HandleMouseDown(Point mousePos, MouseButtons mouseButtons)
+	    private void PaintAbstractMarginIcon(Graphics g, Rectangle rect, AbstractMarginIcon mark)
+	    {
+	        int lineNumber = textArea.Document.GetVisibleLine(mark.LineNumber);
+	        int lineHeight = textArea.TextView.FontHeight;
+	        int yPos = lineNumber * lineHeight - textArea.VirtualTop.Y;
+	        if (!IsLineInsideRegion(yPos, yPos + lineHeight, rect.Y, rect.Bottom))
+	        {
+	            return;
+	        }
+	        if (lineNumber == textArea.Document.GetVisibleLine(mark.LineNumber - 1))
+	        {
+	            // marker is inside folded region, do not draw it
+	            return;
+	        }
+	        mark.Draw(this, g, new Point(0, yPos));
+	    }
+
+	    public override void HandleMouseDown(Point mousePos, MouseButtons mouseButtons)
 		{
 			int clickedVisibleLine = (mousePos.Y + textArea.VirtualTop.Y) / textArea.TextView.FontHeight;
 			int lineNumber = textArea.Document.GetFirstLogicalLine(clickedVisibleLine);
