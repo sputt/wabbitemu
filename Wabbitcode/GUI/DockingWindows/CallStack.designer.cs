@@ -114,8 +114,8 @@
             this.Name = "CallStack";
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;
             this.TabPageContextMenu = this.contextMenu;
-            this.TabText = WindowIdentifier;
-            this.Text = WindowIdentifier;
+            this.TabText = "Call Stack";
+            this.Text = "Call Stack";
             ((System.ComponentModel.ISupportInitialize)(this.callStackView)).EndInit();
             this.ResumeLayout(false);
 

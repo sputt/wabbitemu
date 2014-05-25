@@ -15,13 +15,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class LabelList : ToolWindow
     {
-        public const string WindowIdentifier = "Label List";
-
-        public override string WindowName
-        {
-            get { return WindowIdentifier; }
-        }
-
         #region Private Properties
 
         private readonly IParserService _parserService;

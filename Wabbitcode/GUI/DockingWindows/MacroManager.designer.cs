@@ -104,8 +104,8 @@
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, (byte)0);
             this.HideOnClose = true;
             this.Name = "MacroManager";
-            this.Text = WindowIdentifier;
-            this.TabText = WindowIdentifier;
+            this.Text = "Macro Manager";
+            this.TabText = "Macro Manager";
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.ResumeLayout(false);

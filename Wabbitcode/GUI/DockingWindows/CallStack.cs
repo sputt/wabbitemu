@@ -14,13 +14,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class CallStack : ToolWindow
     {
-        public const string WindowIdentifier = "Call Stack";
-
-        public override string WindowName
-        {
-            get { return WindowIdentifier; }
-        }
-
         private IWabbitcodeDebugger _debugger;
 
         private readonly List<DocumentLocation> _callLocations = new List<DocumentLocation>();

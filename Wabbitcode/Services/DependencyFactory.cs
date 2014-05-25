@@ -32,5 +32,10 @@ namespace Revsoft.Wabbitcode.Services
         {
             UnityContainer.RegisterType<TFrom, TTo>(new ContainerControlledLifetimeManager(), injectionConstructor);
         }
+
+        public static void RegisterType<TFrom, TTo>(LifetimeManager lifetimeManager) where TTo : TFrom
+        {
+            UnityContainer.RegisterType<TFrom, TTo>(lifetimeManager);
+        }
     }
 }

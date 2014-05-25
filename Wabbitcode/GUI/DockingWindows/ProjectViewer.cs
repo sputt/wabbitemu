@@ -18,13 +18,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class ProjectViewer : ToolWindow
     {
-        public const string WindowIdentifier = "Project Viewer";
-
-        public override string WindowName
-        {
-            get { return WindowIdentifier; }
-        }
-
         #region Private Members
 
         private readonly IProjectService _projectService;

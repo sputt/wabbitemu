@@ -11,18 +11,13 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
     {
         #region Events
 
-        public static event EventHandler OnDockStateChanged;
+        public new static event EventHandler OnDockStateChanged;
 
         #endregion
 
         protected readonly IDockingService DockingService;
 
-        public virtual string WindowName
-        {
-            get { return "ToolWindow"; }
-        }
-
-        public ToolWindow()
+        protected ToolWindow()
         {
             InitializeComponent();
 
@@ -31,7 +26,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         protected override string GetPersistString()
         {
-            return WindowName;
+            return GetType().FullName;
         }
 
         public virtual void Copy()

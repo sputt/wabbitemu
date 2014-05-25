@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services
@@ -21,8 +21,6 @@ namespace Revsoft.Wabbitcode.Services
             {
                 return;
             }
-
-            return;
 
             string[] dllFileNames = Directory.GetFiles(dir, "*.dll");
 

@@ -346,7 +346,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
 
             editorBox.RemoveDebugHighlight();
-            new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1).Execute();
+            AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
 
             if (e.Location.FileName != FileName)
             {
@@ -386,7 +386,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 }
 
                 Activate();
-                new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1).Execute();
+                AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
                 editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
             }
         }
@@ -568,13 +568,13 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
             if (action == "Goto")
             {
-                new GotoDefinitionAction(FileName, text, editorBox.ActiveTextAreaControl.Caret.Line).Execute();
+                AbstractUiAction.RunCommand(new GotoDefinitionAction(FileName, text, editorBox.ActiveTextAreaControl.Caret.Line));
             }
             else
             {
                 FilePath fileFullPath = Path.IsPathRooted(text) ? text :
                     _projectService.Project.GetFilePathFromRelativePath(text).NormalizePath();
-                new GotoFileAction(fileFullPath).Execute();
+                AbstractUiAction.RunCommand(new GotoFileAction(fileFullPath));
             }
         }
 
@@ -589,7 +589,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         private void editor_DragDrop(object sender, DragEventArgs e)
         {
-            new DragDropCommand(e.Data).Execute();
+            AbstractUiAction.RunCommand(new DragDropCommand(e.Data));
         }
 
         #endregion
@@ -620,25 +620,22 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 return;
             }
 
-            var caret = editorBox.ActiveTextAreaControl.Caret;
-            var segment = editorBox.Document.GetLineSegment(caret.Line);
-            var word = segment.GetWord(caret.Column);
-            editorBox.Document.Replace(segment.Offset + word.Offset, item.Text.Length, item.Text);
+            AbstractUiAction.RunCommand(new FixCaseAction(item.Text));
         }
 
         private void findRefContext_Click(object sender, EventArgs e)
         {
-            new FindAllReferencesAction().Execute();
+            AbstractUiAction.RunCommand(new FindAllReferencesAction());
         }
 
         private void renameContext_Click(object sender, EventArgs e)
         {
-            new RefactorRenameAction().Execute();
+            AbstractUiAction.RunCommand(new RefactorRenameAction());
         }
 
         private void extractMethodContext_Click(object sender, EventArgs e)
         {
-            new RefactorExtractMethodAction().Execute();
+            AbstractUiAction.RunCommand(new RefactorExtractMethodAction());
         }
 
         private bool FindFileIncludes(string gotoLabel)
@@ -855,7 +852,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             _projectService.Project.EnableFileWatcher(false);
             if (string.IsNullOrEmpty(FileName))
             {
-                new SaveAsCommand().Execute();
+                AbstractUiAction.RunCommand(new SaveAsCommand());
                 return;
             }
 

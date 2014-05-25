@@ -1,28 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
-using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class TrackingWindow : ToolWindow
     {
-        public const string WindowIdentifier = "Tracking Window";
-
-        public override string WindowName
-        {
-            get { return WindowIdentifier; }
-        }
-
         private const int AddressIndex = 1;
         private const int NumBytesIndex = 2;
         private const int VarTypeIndex = 3;
@@ -50,8 +42,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private readonly List<BitmapViewer> _openBitmaps = new List<BitmapViewer>();
         private readonly Dictionary<int, Image> _imageList = new Dictionary<int, Image>();
+        private readonly ExpressionEvaluator _expressionEvaluator;
         private IWabbitcodeDebugger _debugger;
-        private readonly ISymbolService _symbolService;
         private VariableType _lastVariableType;
 
         public TrackingWindow()
@@ -59,8 +51,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             InitializeComponent();
 
             IDebuggerService debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+            ISymbolService symbolService = DependencyFactory.Resolve<ISymbolService>();
             debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
-            _symbolService = DependencyFactory.Resolve<ISymbolService>();
+            _expressionEvaluator = new ExpressionEvaluator(symbolService, debuggerService);
         }
 
         private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
@@ -96,201 +89,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             {
                 variablesDataView.EditingControl.Text = Clipboard.GetData(DataFormats.Text).ToString();
             }
-        }
-
-        #endregion
-
-        #region Parsing
-
-        private static bool Predecessor(string firstOperator, string secondOperator)
-        {
-            const string opString = "(+-*/%";
-
-            int[] precedence = {0, 12, 12, 13, 13, 13};
-
-            int firstPoint = opString.IndexOf(firstOperator, StringComparison.Ordinal);
-            int secondPoint = opString.IndexOf(secondOperator, StringComparison.Ordinal);
-
-            return precedence[firstPoint] >= precedence[secondPoint];
-        }
-
-        private static IEnumerable<string> InfixToPostfix(IEnumerable<string> infixArray)
-        {
-            var stack = new Stack<string>();
-            var postfix = new Stack<string>();
-
-            foreach (string op in infixArray)
-            {
-                if (!("()*/+-%".Contains(op)))
-                {
-                    postfix.Push(op);
-                }
-                else
-                {
-                    if (op.Equals("("))
-                    {
-                        stack.Push("(");
-                    }
-                    else
-                    {
-                        string st;
-                        if (op.Equals(")"))
-                        {
-                            st = stack.Pop();
-                            while (!(st.Equals("(")))
-                            {
-                                postfix.Push(st);
-                                st = stack.Pop();
-                            }
-                        }
-                        else
-                        {
-                            while (stack.Count > 0)
-                            {
-                                st = stack.Pop();
-                                if (Predecessor(st, op))
-                                {
-                                    postfix.Push(st);
-                                }
-                                else
-                                {
-                                    stack.Push(st);
-                                    break;
-                                }
-                            }
-                            stack.Push(op);
-                        }
-                    }
-                }
-            }
-            while (stack.Count > 0)
-            {
-                postfix.Push(stack.Pop());
-            }
-
-            return new Stack<string>(postfix);
-        }
-
-        private int EvaluateElement(string element)
-        {
-            if (!Settings.Default.CaseSensitive)
-            {
-                element = element.ToUpper();
-            }
-
-            int value;
-            if (int.TryParse(element, out value))
-            {
-                return value;
-            }
-
-            string label = _symbolService.SymbolTable.GetAddressFromLabel(element);
-            if (label != null)
-            {
-                return int.Parse(label, NumberStyles.HexNumber);
-            }
-
-            switch (element)
-            {
-                case "$A":
-                    return _debugger.CPU.A;
-                case "$F":
-                    return _debugger.CPU.F;
-                case "$B":
-                    return _debugger.CPU.B;
-                case "$C":
-                    return _debugger.CPU.C;
-                case "$D":
-                    return _debugger.CPU.D;
-                case "$E":
-                    return _debugger.CPU.E;
-                case "$H":
-                    return _debugger.CPU.H;
-                case "$L":
-                    return _debugger.CPU.L;
-                case "$IXH":
-                    return _debugger.CPU.IXH;
-                case "$IXL":
-                    return _debugger.CPU.IXL;
-                case "$IYH":
-                    return _debugger.CPU.IYH;
-                case "$IYL":
-                    return _debugger.CPU.IYL;
-                case "$AF":
-                    return _debugger.CPU.AF;
-                case "$BC":
-                    return _debugger.CPU.BC;
-                case "$DE":
-                    return _debugger.CPU.DE;
-                case "$HL":
-                    return _debugger.CPU.HL;
-                case "$IX":
-                    return _debugger.CPU.IX;
-                case "$IY":
-                    return _debugger.CPU.IY;
-                case "$PC":
-                    return _debugger.CPU.PC;
-                case "$SP":
-                    return _debugger.CPU.SP;
-                default:
-                    if (element.StartsWith("$") || element.EndsWith("h"))
-                    {
-                        element = element.Replace('$', ' ').Replace('h', ' ').Trim();
-                        if (!int.TryParse(element, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value))
-                        {
-                            break;
-                        }
-                        return value;
-                    }
-                    break;
-            }
-            throw new FormatException(string.Format("Can't recognize symbol {0}", element));
-        }
-
-        private int EvaluateElements(string right, string left, string op)
-        {
-            int leftVal = EvaluateElement(right);
-            int rightVal = EvaluateElement(left);
-            switch (op)
-            {
-                case "+":
-                    return leftVal + rightVal;
-                case "-":
-                    return leftVal - rightVal;
-                case "*":
-                    return leftVal * rightVal;
-                case "/":
-                    return leftVal / rightVal;
-                case "%":
-                    return leftVal % rightVal;
-            }
-            throw new Exception("Invalid operator");
-        }
-
-        private int EvalPostfix(IEnumerable<string> postFix)
-        {
-            Stack<string> parseStack = new Stack<string>();
-            foreach (string element in postFix)
-            {
-                if (element == "+" || element == "-" || element == "*" || element == "/")
-                {
-                    if (parseStack.Count < 2)
-                    {
-                        throw new FormatException("Invalid syntax");
-                    }
-
-                    string left = parseStack.Pop();
-                    string right = parseStack.Pop();
-                    int eval = EvaluateElements(right, left, element);
-                    parseStack.Push(eval.ToString());
-                }
-                else
-                {
-                    parseStack.Push(element);
-                }
-            }
-
-            return EvaluateElement(parseStack.Pop());
         }
 
         #endregion
@@ -387,15 +185,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private int GetAddressValue(string address)
         {
-            Regex re = new Regex(@"([\+\-\*\(\)\^\/\ ])", RegexOptions.Compiled);
-            if (string.IsNullOrEmpty(address))
-            {
-                throw new FormatException("Missing address value");
-            }
-
-            var tokenList = re.Split(address).Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t));
-            var postFix = InfixToPostfix(tokenList);
-            int value = EvalPostfix(postFix);
+            IEnumerable<string> tokenList = ExpressionEvaluator.CreateTokenList(address);
+            var postFix = ExpressionEvaluator.InfixToPostfix(tokenList);
+            int value = _expressionEvaluator.EvalPostfix(postFix);
             return value;
         }
 

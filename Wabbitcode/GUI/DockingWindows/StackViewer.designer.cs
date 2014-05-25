@@ -114,8 +114,8 @@
             this.Name = "StackViewer";
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;
             this.TabPageContextMenu = this.contextMenu;
-            this.TabText = WindowIdentifier;
-            this.Text = WindowIdentifier;
+            this.TabText = "Stack Viewer";
+            this.Text = "Stack Viewer";
             ((System.ComponentModel.ISupportInitialize)(this.stackView)).EndInit();
             this.ResumeLayout(false);
 

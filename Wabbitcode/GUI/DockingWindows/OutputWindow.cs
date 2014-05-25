@@ -14,13 +14,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class OutputWindow : ToolWindow, ISelectable
     {
-        public const string WindowIdentifier = "Output";
-
-        public override string WindowName
-        {
-            get { return WindowIdentifier; }
-        }
-
         public OutputWindow()
         {
             InitializeComponent();

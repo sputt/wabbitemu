@@ -54,13 +54,14 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             }
         }
 
-        #region Services
+        #region DI Members
 
         private readonly IBackgroundAssemblerService _backgroundAssemblerService = DependencyFactory.Resolve<IBackgroundAssemblerService>();
         private readonly IDebuggerService _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         private readonly IParserService _parserService = DependencyFactory.Resolve<IParserService>();
         private readonly ISymbolService _symbolService = DependencyFactory.Resolve<ISymbolService>();
         private readonly IStatusBarService _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
+        private readonly ICodeCompletionFactory _codeCompletionFactory = DependencyFactory.Resolve<ICodeCompletionFactory>();
 
         #endregion
 
@@ -172,7 +173,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
                 if (Settings.Default.EnableAutoComplete)
                 {
                     string extension = string.IsNullOrEmpty(FileName) ? ".asm" : Path.GetExtension(FileName);
-                    if (CodeCompletionFactory.GetBindingForExtension(extension)
+                    if (_codeCompletionFactory.GetBindingForExtension(extension)
                         .Any(ccBinding => ccBinding.HandleKeyPress(this, ch)))
                     {
                         return false;
@@ -451,7 +452,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         public void StartCtrlSpaceCompletion()
         {
             string extension = string.IsNullOrEmpty(FileName) ? ".asm" : Path.GetExtension(FileName);
-            var bindings = CodeCompletionFactory.GetBindingForExtension(extension);
+            var bindings = _codeCompletionFactory.GetBindingForExtension(extension);
             bindings.ForEach(ccBinding => ccBinding.CtrlSpace(this));
         }
 
@@ -526,28 +527,5 @@ namespace Revsoft.Wabbitcode.EditorExtensions
     {
         bool HandleKeyPress(WabbitcodeTextEditor editor, char ch);
         bool CtrlSpace(WabbitcodeTextEditor editor);
-    }
-
-    public static class CodeCompletionFactory
-    {
-        private static readonly Dictionary<string, List<ICodeCompletionBinding>> Bindings =
-            new Dictionary<string, List<ICodeCompletionBinding>>();
-
-        public static void RegisterCodeCompletionBinding(string extension, ICodeCompletionBinding binding)
-        {
-            if (!Bindings.ContainsKey(extension))
-            {
-                Bindings.Add(extension, new List<ICodeCompletionBinding>());
-            }
-
-            Bindings[extension].Add(binding);
-        }
-
-        public static IEnumerable<ICodeCompletionBinding> GetBindingForExtension(string extension)
-        {
-            List<ICodeCompletionBinding> bindings;
-            Bindings.TryGetValue(extension, out bindings);
-            return bindings ?? new List<ICodeCompletionBinding>();
-        }
     }
 }

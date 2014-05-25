@@ -185,47 +185,42 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
 
         private static void newToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new CreateNewDocumentAction());
+            AbstractUiAction.RunCommand(new CreateNewDocumentAction());
         }
 
         private static void openToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new OpenFileAction());
+            AbstractUiAction.RunCommand(new OpenFileAction());
         }
 
-        private void saveToolButton_Click(object sender, EventArgs e)
+        private static void saveToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new SaveCommand());
+            AbstractUiAction.RunCommand(new SaveCommand());
         }
 
         private static void saveAllToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new SaveAllCommand());
+            AbstractUiAction.RunCommand(new SaveAllCommand());
         }
 
-        private void cutToolButton_Click(object sender, EventArgs e)
+        private static void cutToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new CutAction());
+            AbstractUiAction.RunCommand(new CutAction());
         }
 
-        private void copyToolButton_Click(object sender, EventArgs e)
+        private static void copyToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new CopyAction());
+            AbstractUiAction.RunCommand(new CopyAction());
         }
 
-        private void pasteToolButton_Click(object sender, EventArgs e)
+        private static void pasteToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new PasteAction());
+            AbstractUiAction.RunCommand(new PasteAction());
         }
 
         private static void RunToolButton_Click(object sender, EventArgs e)
         {
-            RunCommand(new StartDebuggerAction());
-        }
-
-        private static void RunCommand(AbstractUiAction action)
-        {
-            action.Execute();
+            AbstractUiAction.RunCommand(new StartDebuggerAction());
         }
 
         private void findBox_KeyPress(object sender, KeyPressEventArgs e)

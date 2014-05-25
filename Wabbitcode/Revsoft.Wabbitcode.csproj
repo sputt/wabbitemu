@@ -611,11 +611,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Annotations\Annotations.cs" />
     <Compile Include="EditorExtensions\AsmFormattingStrategy.cs" />
     <Compile Include="EditorExtensions\CodeCompletion.cs" />
+    <Compile Include="EditorExtensions\CodeCompletionFactory.cs" />
     <Compile Include="EditorExtensions\CompletionProviderBase.cs" />
     <Compile Include="EditorExtensions\CompletionProviders.cs" />
     <Compile Include="EditorExtensions\ErrorUnderliner.cs" />
+    <Compile Include="EditorExtensions\ICodeCompletionFactory.cs" />
     <Compile Include="EditorExtensions\InsightProviders.cs" />
     <Compile Include="EditorExtensions\Markers\ErrorMarker.cs" />
     <Compile Include="EditorExtensions\Markers\ReferenceMarker.cs" />
@@ -704,8 +707,6 @@
     <Compile Include="GUI\ToolBars\MainToolBar.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Properties\Annotations.cs" />
-    <Compile Include="Properties\Annotations1.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\VS2012ColorTable.cs" />
     <Compile Include="Services\Assembler\AssemblerFactory.cs" />
@@ -747,6 +748,7 @@
     <Compile Include="Services\StatusBarService.cs" />
     <Compile Include="Services\Symbols\CalcLocation.cs" />
     <Compile Include="Services\ToolBarService.cs" />
+    <Compile Include="Utils\ExpressionEvaluator.cs" />
     <Compile Include="Utils\FilePath.cs" />
     <Compile Include="Utils\FileTypeMethodFactory.cs" />
     <Compile Include="Utils\IFileTypeMethodFactory.cs" />
