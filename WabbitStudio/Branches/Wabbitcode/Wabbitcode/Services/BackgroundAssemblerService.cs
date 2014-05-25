@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 

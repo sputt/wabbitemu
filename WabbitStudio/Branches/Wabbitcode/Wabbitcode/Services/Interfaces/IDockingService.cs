@@ -11,24 +11,34 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
         event EventHandler<DockContentEventArgs> DocumentWindowAdded;
         event EventHandler<DockContentEventArgs> DocumentWindowRemoved;
 
-        void RegisterDockingWindow(ToolWindow dockingWindow);
-        ToolWindow GetDockingWindow(string name);
+        void RegisterDockingWindow<T>() where T : ToolWindow;
+        ToolWindow GetDockingWindow(Type windowType);
+        T GetDockingWindow<T>() where T : ToolWindow;
 
         IDockContent ActiveContent { get; }
         IDockContent ActiveDocument { get; }
         IEnumerable<IDockContent> Documents { get; }
 
         void HideDockPanel(DockContent panel);
-        void HideDockPanel(string panelName);
+        void HideDockPanel<T>() where T : ToolWindow;
+        void HideDockPanel(Type panelType);
         void ShowDockPanel(DockContent panel);
-        void ShowDockPanel(string panelName);
+        void ShowDockPanel<T>() where T : ToolWindow;
+        void ShowDockPanel(Type panelType);
         void ShowDockPanel(DockContent panel, IDockContent beforeContent);
-        void ShowDockPanel(string panelName, string beforeContentName);
+
+        void ShowDockPanel<T, TBefore>()
+            where T : ToolWindow
+            where TBefore : ToolWindow;
         void ShowDockPanel(DockContent panel, IDockContent beforeContent, DockAlignment alignment);
-        void ShowDockPanel(string panelName, string beforeContentName, DockAlignment alignment);
+        void ShowDockPanel<T, TBefore>(DockAlignment alignment)
+            where T : ToolWindow
+            where TBefore : ToolWindow;
         void LoadConfig(DeserializeDockContent dockContent);
         void InitPanels();
 
         void SavePanels();
+
+        
     }
 }

@@ -1,27 +1,22 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class ExpressionWindow : ToolWindow
     {
-        public const string WindowIdentifier = "Expression Window";
-
-        public override string WindowName
-        {
-            get { return WindowIdentifier; }
-        }
-
         private int _lineStartIndex;
         private string _currentLine;
-        private readonly SpasmComAssembler _assembler;
+        private readonly IAssemblerFactory _assemblerFactory = DependencyFactory.Resolve<IAssemblerFactory>();
+        private readonly IAssembler _assembler;
 
         public ExpressionWindow()
         {
             InitializeComponent();
-            _assembler = new SpasmComAssembler();
+            _assembler = _assemblerFactory.CreateAssembler();
             _currentLine = string.Empty;
             DisplayLineStart();
         }

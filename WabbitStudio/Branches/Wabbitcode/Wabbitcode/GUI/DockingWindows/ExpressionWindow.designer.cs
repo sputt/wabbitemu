@@ -52,8 +52,8 @@
             this.Name = "ExpressionWindow";
             this.Padding = new System.Windows.Forms.Padding(0, 2, 0, 2);
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;
-            this.TabText = WindowIdentifier;
-            this.Text = WindowIdentifier;
+            this.TabText = "Expression Window";
+            this.Text = "Expression Window";
             this.ResumeLayout(false);
 
         }

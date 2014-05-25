@@ -526,8 +526,8 @@
             this.MinimumSize = new System.Drawing.Size(266, 38);
             this.Name = "DebugPanel";
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockRight;
-            this.TabText = WindowIdentifier;
-            this.Text = WindowIdentifier;
+            this.TabText = "Debug Panel";
+            this.Text = "Debug Panel";
             this.panel.ResumeLayout(false);
             this.screenBox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)this.screenPicBox).EndInit();

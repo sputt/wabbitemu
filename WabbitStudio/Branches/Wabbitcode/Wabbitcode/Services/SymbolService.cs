@@ -1,4 +1,4 @@
-﻿using Revsoft.Wabbitcode.Properties;
+﻿using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Symbols;
 

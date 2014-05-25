@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using Microsoft.Practices.Unity;
 using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.GUI.DocumentWindows;
@@ -82,14 +83,20 @@ namespace Revsoft.Wabbitcode.GUI
 
         private IDockContent GetContentFromPersistString(string persistString)
         {
-            ToolWindow window = _dockingService.GetDockingWindow(persistString);
+            Type type = Type.GetType(persistString);
+            if (type == null)
+            {
+                return null;
+            }
+
+            ToolWindow window = _dockingService.GetDockingWindow(type);
             if (window != null)
             {
                 return window;
             }
 
             string[] parsedStrings = persistString.Split(';');
-            Type type = Type.GetType(parsedStrings[0]);
+            type = Type.GetType(parsedStrings[0]);
             if (parsedStrings.Length < 3 || type == null || type.IsAssignableFrom(typeof(AbstractFileEditor)))
             {
                 return null;
@@ -168,8 +175,8 @@ namespace Revsoft.Wabbitcode.GUI
             DependencyFactory.RegisterType<IStatusBarService, StatusBarService>(new InjectionConstructor(statusBar));
             DependencyFactory.RegisterType<IMenuService, MenuService>(new InjectionConstructor(toolStripContainer.TopToolStripPanel));
             DependencyFactory.RegisterType<IToolBarService, ToolBarService>(new InjectionConstructor(toolStripContainer.TopToolStripPanel));
-            DependencyFactory.RegisterType<IAssemblerService, AssemblerService>();
-            DependencyFactory.RegisterType<IBackgroundAssemblerService, BackgroundAssemblerService>();
+            DependencyFactory.RegisterType<IAssemblerService, AssemblerService>(new PerResolveLifetimeManager());
+            DependencyFactory.RegisterType<IBackgroundAssemblerService, BackgroundAssemblerService>(new PerResolveLifetimeManager());
             DependencyFactory.RegisterType<IProjectService, ProjectService>();
             DependencyFactory.RegisterType<IParserService, ParserService>();
             DependencyFactory.RegisterType<ISymbolService, SymbolService>();
@@ -181,6 +188,7 @@ namespace Revsoft.Wabbitcode.GUI
             DependencyFactory.RegisterType<IAssemblerFactory, AssemblerFactory>();
             DependencyFactory.RegisterType<IParserFactory, ParserFactory>();
             DependencyFactory.RegisterType<IFileTypeMethodFactory, FileTypeMethodFactory>();
+            DependencyFactory.RegisterType<ICodeCompletionFactory, CodeCompletionFactory>();
 
             _dockingService = DependencyFactory.Resolve<IDockingService>();
             _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
@@ -360,11 +368,11 @@ namespace Revsoft.Wabbitcode.GUI
                 _toolBarService.ShowToolBar(DebugToolBarName);
             }
 
-            _dockingService.ShowDockPanel(DebugPanel.WindowIdentifier);
-            _dockingService.ShowDockPanel(StackViewer.WindowIdentifier);
-            _dockingService.ShowDockPanel(ExpressionWindow.WindowIdentifier, StackViewer.WindowIdentifier, DockAlignment.Left);
-            _dockingService.ShowDockPanel(CallStack.WindowIdentifier, StackViewer.WindowIdentifier);
-            _dockingService.ShowDockPanel(TrackingWindow.WindowIdentifier, ExpressionWindow.WindowIdentifier);
+            _dockingService.ShowDockPanel<DebugPanel>();
+            _dockingService.ShowDockPanel<StackViewer>();
+            _dockingService.ShowDockPanel<ExpressionWindow, StackViewer>(DockAlignment.Left);
+            _dockingService.ShowDockPanel<CallStack, StackViewer>();
+            _dockingService.ShowDockPanel<TrackingWindow, ExpressionWindow>();
             UpdateTitle();
         }
 
@@ -376,11 +384,11 @@ namespace Revsoft.Wabbitcode.GUI
                 _toolBarService.HideToolBar(DebugToolBarName);
             }
 
-            _dockingService.HideDockPanel(DebugPanel.WindowIdentifier);
-            _dockingService.HideDockPanel(TrackingWindow.WindowIdentifier);
-            _dockingService.HideDockPanel(CallStack.WindowIdentifier);
-            _dockingService.HideDockPanel(StackViewer.WindowIdentifier);
-            _dockingService.HideDockPanel(ExpressionWindow.WindowIdentifier);
+            _dockingService.HideDockPanel<DebugPanel>();
+            _dockingService.HideDockPanel<TrackingWindow>();
+            _dockingService.HideDockPanel<CallStack>();
+            _dockingService.HideDockPanel<StackViewer>();
+            _dockingService.HideDockPanel<ExpressionWindow>();
         }
 
         #endregion

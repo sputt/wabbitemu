@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Exceptions;
-using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;

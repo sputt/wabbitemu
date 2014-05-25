@@ -372,8 +372,8 @@
             this.Name = "BreakpointManagerWindow";
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;
             this.TabPageContextMenu = this.contextMenu;
-            this.TabText = WindowIdentifier;
-            this.Text = WindowIdentifier;
+            this.TabText = "Breakpoints";
+            this.Text = "Breakpoints";
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)this.breakpointGridView).EndInit();

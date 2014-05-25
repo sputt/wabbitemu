@@ -13,13 +13,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class BreakpointManagerWindow : ToolWindow
     {
-        public const string WindowIdentifier = "Breakpoint Manager";
-
-        public override string WindowName
-        {
-            get { return WindowIdentifier; }
-        }
-
         // TODO: this entire class looks nasty
         private readonly IProjectService _projectService;
 

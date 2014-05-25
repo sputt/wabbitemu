@@ -35,7 +35,7 @@ namespace Revsoft.Wabbitcode.Actions
             _fileService = DependencyFactory.Resolve<IFileService>();
             _parserService = DependencyFactory.Resolve<IParserService>();
             _projectService = DependencyFactory.Resolve<IProjectService>();
-            _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
+            _findResults = _dockingService.GetDockingWindow<FindResultsWindow>();
         }
 
         public override void Execute()
@@ -57,7 +57,7 @@ namespace Revsoft.Wabbitcode.Actions
                 }
 
                 int index = reusableLabels.IndexOf(currentLabel) + steps;
-                parserData = new List<IParserData> {reusableLabels[index]};
+                parserData = new List<IParserData> { reusableLabels[index] };
             }
             else
             {

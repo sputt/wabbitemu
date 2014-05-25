@@ -1,6 +1,6 @@
 ﻿using System.Linq;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
-using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Resources;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -19,7 +19,7 @@ namespace Revsoft.Wabbitcode.Services
         #region Private Members
 
         private readonly DockPanel _dockPanel;
-        private readonly Dictionary<string, ToolWindow> _registeredDockingWindows = new Dictionary<string, ToolWindow>();
+        private readonly Dictionary<Type, ToolWindow> _registeredDockingWindows = new Dictionary<Type, ToolWindow>();
 
         #endregion
 
@@ -123,26 +123,51 @@ namespace Revsoft.Wabbitcode.Services
             _dockPanel.ContentRemoved += DockPanel_ContentRemoved;
         }
 
-        public void RegisterDockingWindow(ToolWindow dockingWindow)
+        public void RegisterDockingWindow<T>() where T : ToolWindow
         {
-            if (dockingWindow == null)
+            if (_registeredDockingWindows.ContainsKey(typeof(T)))
             {
-                throw new ArgumentNullException("dockingWindow");
+                throw new ArgumentException("This docking window type is already registered");
             }
 
-            if (_registeredDockingWindows.ContainsKey(dockingWindow.WindowName))
-            {
-                throw new ArgumentException("This docking window name is already registered");
-            }
-
-            _registeredDockingWindows.Add(dockingWindow.WindowName, dockingWindow);
+            _registeredDockingWindows.Add(typeof(T), null);
         }
 
-        public ToolWindow GetDockingWindow(string name)
+        public ToolWindow GetDockingWindow(Type panelType)
+        {
+            if (!(typeof(ToolWindow).IsAssignableFrom(panelType)))
+            {
+                throw new ArgumentException("Not type of ToolWindow");
+            }
+
+            ToolWindow window;
+            _registeredDockingWindows.TryGetValue(panelType, out window);
+            if (window != null)
+            {
+                return window;
+            }
+
+            ToolWindow newWindow = (ToolWindow) Activator.CreateInstance(panelType);
+            _registeredDockingWindows.Remove(panelType);
+            _registeredDockingWindows.Add(panelType, newWindow);
+
+            return newWindow;
+        }
+
+        public T GetDockingWindow<T>() where T : ToolWindow
         {
             ToolWindow window;
-            _registeredDockingWindows.TryGetValue(name, out window);
-            return window;
+            _registeredDockingWindows.TryGetValue(typeof(T), out window);
+            if (window != null)
+            {
+                return window as T;
+            }
+
+            T newWindow = Activator.CreateInstance<T>();
+            _registeredDockingWindows.Remove(typeof(T));
+            _registeredDockingWindows.Add(typeof(T), newWindow);
+
+            return newWindow;
         }
 
         public void HideDockPanel(DockContent panel)
@@ -155,15 +180,20 @@ namespace Revsoft.Wabbitcode.Services
             panel.Hide();
         }
 
-        public void HideDockPanel(string panelName)
+        public void HideDockPanel<T>() where T : ToolWindow
         {
-            if (string.IsNullOrEmpty(panelName))
+            HideDockPanel(typeof(T));
+        }
+
+        public void HideDockPanel(Type panelType)
+        {
+            if (!(typeof(ToolWindow).IsAssignableFrom(panelType)))
             {
-                return;
+                throw new ArgumentException("Not type of ToolWindow");
             }
 
             ToolWindow window;
-            _registeredDockingWindows.TryGetValue(panelName, out window);
+            _registeredDockingWindows.TryGetValue(panelType, out window);
 
             if (window != null)
             {
@@ -179,6 +209,20 @@ namespace Revsoft.Wabbitcode.Services
             }
 
             panel.Show(_dockPanel);
+        }
+
+        public void ShowDockPanel(Type panelType)
+        {
+            if (!(typeof(ToolWindow).IsAssignableFrom(panelType)))
+            {
+                throw new ArgumentException("Not type of ToolWindow");
+            }
+
+            ToolWindow window = GetDockingWindow(panelType);
+            if (window != null)
+            {
+                window.Show(_dockPanel);
+            }
         }
 
         public void ShowDockPanel(DockContent panel, IDockContent beforeContent)
@@ -201,50 +245,29 @@ namespace Revsoft.Wabbitcode.Services
             panel.Show(beforeContent.DockHandler.Pane, alignment, .5);
         }
 
-        public void ShowDockPanel(string panelName)
+        public void ShowDockPanel<T>() where T : ToolWindow
         {
-            if (string.IsNullOrEmpty(panelName))
-            {
-                return;
-            }
-
-            ToolWindow window;
-            _registeredDockingWindows.TryGetValue(panelName, out window);
-
-            if (window != null)
-            {
-                window.Show(_dockPanel);
-            }
+            ShowDockPanel(typeof(T));
         }
 
-        public void ShowDockPanel(string panelName, string beforeContentName)
+        public void ShowDockPanel<T, TBefore>() 
+            where T : ToolWindow 
+            where TBefore : ToolWindow
         {
-            if (string.IsNullOrEmpty(panelName) || string.IsNullOrEmpty(beforeContentName))
-            {
-                return;
-            }
-
-            ToolWindow window, beforeContent;
-            _registeredDockingWindows.TryGetValue(panelName, out window);
-            _registeredDockingWindows.TryGetValue(beforeContentName, out beforeContent);
-
+            ToolWindow window = GetDockingWindow<T>();
+            ToolWindow beforeContent = GetDockingWindow<TBefore>();
             if (window != null && beforeContent != null)
             {
                 window.Show(beforeContent.DockHandler.Pane, beforeContent);
             }
         }
 
-        public void ShowDockPanel(string panelName, string beforeContentName, DockAlignment alignment)
+        public void ShowDockPanel<T, TBefore>(DockAlignment alignment)
+            where T : ToolWindow 
+            where TBefore : ToolWindow
         {
-            if (string.IsNullOrEmpty(panelName) || string.IsNullOrEmpty(beforeContentName))
-            {
-                return;
-            }
-
-            ToolWindow window, beforeContent;
-            _registeredDockingWindows.TryGetValue(panelName, out window);
-            _registeredDockingWindows.TryGetValue(beforeContentName, out beforeContent);
-
+            ToolWindow window = GetDockingWindow<T>();
+            ToolWindow beforeContent = GetDockingWindow<TBefore>();
             if (window != null && beforeContent != null)
             {
                 window.Show(beforeContent.DockHandler.Pane, alignment, .5);
@@ -268,18 +291,18 @@ namespace Revsoft.Wabbitcode.Services
 
         public void InitPanels()
         {
-            RegisterDockingWindow(new ProjectViewer());
-            RegisterDockingWindow(new ErrorList());
-            RegisterDockingWindow(new TrackingWindow());
-            RegisterDockingWindow(new DebugPanel());
-            RegisterDockingWindow(new CallStack());
-            RegisterDockingWindow(new LabelList());
-            RegisterDockingWindow(new OutputWindow());
-            RegisterDockingWindow(new FindResultsWindow());
-            RegisterDockingWindow(new MacroManager());
-            RegisterDockingWindow(new BreakpointManagerWindow());
-            RegisterDockingWindow(new StackViewer());
-            RegisterDockingWindow(new ExpressionWindow());
+            RegisterDockingWindow<ProjectViewer>();
+            RegisterDockingWindow<ErrorList>();
+            RegisterDockingWindow<TrackingWindow>();
+            RegisterDockingWindow<DebugPanel>();
+            RegisterDockingWindow<CallStack>();
+            RegisterDockingWindow<LabelList>();
+            RegisterDockingWindow<OutputWindow>();
+            RegisterDockingWindow<FindResultsWindow>();
+            RegisterDockingWindow<MacroManager>();
+            RegisterDockingWindow<BreakpointManagerWindow>();
+            RegisterDockingWindow<StackViewer>();
+            RegisterDockingWindow<ExpressionWindow>();
         }
 
         public void SavePanels()

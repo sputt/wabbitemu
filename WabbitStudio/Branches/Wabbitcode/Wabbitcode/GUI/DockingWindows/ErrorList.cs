@@ -15,13 +15,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class ErrorList : ToolWindow
     {
-        public const string WindowIdentifier = "Error List";
-
-        public override string WindowName
-        {
-            get { return WindowIdentifier; }
-        }
-
         private const string FcreateFile = "Built-in fcreate";
         private int _errors;
         private int _warnings;

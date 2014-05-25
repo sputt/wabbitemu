@@ -25,9 +25,9 @@ namespace Revsoft.Wabbitcode.Utils
 
         public static bool operator ==(FilePath path1, FilePath path2)
         {
-            if ((object) path1 == null || (object) path2 == null)
+            if (((object) path1) == null || ((object) path2) == null)
             {
-                return (object) path1 == null && (object) path2 == null;
+                return ((object) path1) == null && ((object) path2) == null;
             }
 
             return path1.Equals(path2);
@@ -104,15 +104,17 @@ namespace Revsoft.Wabbitcode.Utils
                     break;
                 }
 
-                if (_path[i] == ':')
+                if (_path[i] != ':')
                 {
-                    if (i > 1)
-                    {
-                        isWeb = true;
-                    }
-
-                    break;
+                    continue;
                 }
+
+                if (i > 1)
+                {
+                    isWeb = true;
+                }
+
+                break;
             }
 
             char outputSeparator = isWeb ? '/' : Path.DirectorySeparatorChar;
@@ -132,77 +134,81 @@ namespace Revsoft.Wabbitcode.Utils
 
             for (; i <= _path.Length; i++)
             {
-                if (i == _path.Length || _path[i] == '/' || _path[i] == '\\')
+                if (i != _path.Length && _path[i] != '/' && _path[i] != '\\')
                 {
-                    int segmentLength = i - segmentStartPos;
-                    switch (segmentLength)
-                    {
-                        case 0:
-                            // ignore empty segment (if not in web mode)
-                            // On unix, don't ignore empty segment if i==0
-                            if (isWeb || (i == 0 && Environment.OSVersion.Platform == PlatformID.Unix))
-                            {
-                                result.Append(outputSeparator);
-                            }
+                    continue;
+                }
 
-                            break;
-                        case 1:
-                            // ignore /./ segment, but append other one-letter segments
-                            if (_path[segmentStartPos] != '.')
-                            {
-                                if (result.Length > 0)
-                                {
-                                    result.Append(outputSeparator);
-                                }
+                int segmentLength = i - segmentStartPos;
+                switch (segmentLength)
+                {
+                    case 0:
+                        // ignore empty segment (if not in web mode)
+                        // On unix, don't ignore empty segment if i==0
+                        if (isWeb || (i == 0 && Environment.OSVersion.Platform == PlatformID.Unix))
+                        {
+                            result.Append(outputSeparator);
+                        }
 
-                                result.Append(_path[segmentStartPos]);
-                            }
-
-                            break;
-                        case 2:
-                            if (_path[segmentStartPos] == '.' && _path[segmentStartPos + 1] == '.')
-                            {
-                                // remove previous segment
-                                int j;
-                                for (j = result.Length - 1; j >= 0 && result[j] != outputSeparator; j--)
-                                {
-                                }
-
-                                if (j > 0)
-                                {
-                                    result.Length = j;
-                                }
-
-                                break;
-                            }
-                            // append normal segment
-                            goto default;
-
-                        default:
+                        break;
+                    case 1:
+                        // ignore /./ segment, but append other one-letter segments
+                        if (_path[segmentStartPos] != '.')
+                        {
                             if (result.Length > 0)
                             {
                                 result.Append(outputSeparator);
                             }
 
-                            result.Append(_path, segmentStartPos, segmentLength);
-                            break;
-                    }
+                            result.Append(_path[segmentStartPos]);
+                        }
 
-                    segmentStartPos = i + 1; // remember start position for next segment
+                        break;
+                    case 2:
+                        if (_path[segmentStartPos] == '.' && _path[segmentStartPos + 1] == '.')
+                        {
+                            // remove previous segment
+                            int j;
+                            for (j = result.Length - 1; j >= 0 && result[j] != outputSeparator; j--)
+                            {
+                            }
+
+                            if (j > 0)
+                            {
+                                result.Length = j;
+                            }
+
+                            break;
+                        }
+                        // append normal segment
+                        goto default;
+
+                    default:
+                        if (result.Length > 0)
+                        {
+                            result.Append(outputSeparator);
+                        }
+
+                        result.Append(_path, segmentStartPos, segmentLength);
+                        break;
                 }
+
+                segmentStartPos = i + 1; // remember start position for next segment
             }
 
-            if (isWeb == false)
+            if (isWeb)
             {
-                if (result.Length > 0 && result[result.Length - 1] == outputSeparator)
-                {
-                    result.Length -= 1;
-                }
+                return new FilePath(result.ToString());
+            }
 
-                if (result.Length == 2 && result[1] == ':')
-                {
-                    result.Append(outputSeparator);
-                }
+            if (result.Length > 0 && result[result.Length - 1] == outputSeparator)
+            {
+                result.Length -= 1;
+            }
+
+            if (result.Length == 2 && result[1] == ':')
+            {
+                result.Append(outputSeparator);
             }
 
             return new FilePath(result.ToString());

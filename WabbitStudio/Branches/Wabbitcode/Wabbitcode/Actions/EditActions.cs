@@ -198,7 +198,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dockingService = DependencyFactory.Resolve<IDockingService>();
             _projectService = DependencyFactory.Resolve<IProjectService>();
             _activeTextEditor = _dockingService.ActiveDocument as ITextEditor;
-            _findResults = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
+            _findResults = _dockingService.GetDockingWindow<FindResultsWindow>();
         }
 
         public override void Execute()
@@ -288,7 +288,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class FixCaseAction : AbstractUiAction
     {
-        private string _newCase;
+        private readonly string _newCase;
         private readonly IDockingService _dockingService;
 
         public FixCaseAction(string newCase)
@@ -300,11 +300,14 @@ namespace Revsoft.Wabbitcode.Actions
         public override void Execute()
         {
             ITextEditor editor = _dockingService.ActiveDocument as ITextEditor;
+            if (editor == null)
+            {
+                return;
+            }
 
-            // TODO
-            //var segment = editorBox.Document.GetLineSegment(editor.CaretLine);
-            //var word = segment.GetWord(caret.Column);
-            //editorBox.Document.Replace(segment.Offset + word.Offset, item.Text.Length, item.Text);
+            var segment = editor.Document.GetLineSegment(editor.CaretLine);
+            var word = segment.GetWord(editor.CaretColumn);
+            editor.Document.Replace(segment.Offset + word.Offset, _newCase.Length, _newCase);
         }
     }
 

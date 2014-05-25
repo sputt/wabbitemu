@@ -167,8 +167,8 @@
             this.Name = "TrackingWindow";
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;
             this.TabPageContextMenu = this.contextMenu;
-            this.TabText = WindowIdentifier;
-            this.Text = WindowIdentifier;
+            this.TabText = "Watches";
+            this.Text = "Watches";
             ((System.ComponentModel.ISupportInitialize)(this.variablesDataView)).EndInit();
             this.ResumeLayout(false);
 

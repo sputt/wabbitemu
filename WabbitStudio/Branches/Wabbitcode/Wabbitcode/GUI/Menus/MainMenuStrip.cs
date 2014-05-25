@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
@@ -210,44 +209,52 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static readonly ToolStripMenuItem ToolBarMenuItem = new ToolStripMenuItem("Toolbars");
 
-        private static readonly ToolStripMenuItem LabelListMenuItem = new ToolStripMenuItem(LabelList.WindowIdentifier)
+        private static readonly ToolStripMenuItem LabelListMenuItem = new ToolStripMenuItem("Label List")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(LabelList)
         };
 
-        private static readonly ToolStripMenuItem ProjViewMenuItem = new ToolStripMenuItem(ProjectViewer.WindowIdentifier)
+        private static readonly ToolStripMenuItem ProjViewMenuItem = new ToolStripMenuItem("Project Viewer")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(ProjectViewer)
         };
 
-        private static readonly ToolStripMenuItem MacroManagerMenuItem = new ToolStripMenuItem(MacroManager.WindowIdentifier)
+        private static readonly ToolStripMenuItem MacroManagerMenuItem = new ToolStripMenuItem("Macro Manager")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(MacroManager)
         };
 
-        private static readonly ToolStripMenuItem DebugPanelMenuItem = new ToolStripMenuItem(DebugPanel.WindowIdentifier)
+        private static readonly ToolStripMenuItem DebugPanelMenuItem = new ToolStripMenuItem("Debug Panel")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(DebugPanel)
         };
 
-        private static readonly ToolStripMenuItem CallStackMenuItem = new ToolStripMenuItem(CallStack.WindowIdentifier)
+        private static readonly ToolStripMenuItem CallStackMenuItem = new ToolStripMenuItem("Call Stack")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(CallStack)
         };
 
-        private static readonly ToolStripMenuItem StackViewerMenuItem = new ToolStripMenuItem(StackViewer.WindowIdentifier)
+        private static readonly ToolStripMenuItem StackViewerMenuItem = new ToolStripMenuItem("Stack Viewer")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(StackViewer)
         };
 
-        private static readonly ToolStripMenuItem VarTrackMenuItem = new ToolStripMenuItem(TrackingWindow.WindowIdentifier)
+        private static readonly ToolStripMenuItem VarTrackMenuItem = new ToolStripMenuItem("Watches")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(TrackingWindow)
         };
 
-        private static readonly ToolStripMenuItem BreakManagerMenuItem = new ToolStripMenuItem(BreakpointManagerWindow.WindowIdentifier)
+        private static readonly ToolStripMenuItem BreakManagerMenuItem = new ToolStripMenuItem("Breakpoints")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(BreakpointManagerWindow)
         };
 
         private static readonly ToolStripMenuItem DebugPanelsMenuItem = new ToolStripMenuItem("Debug", null,
@@ -257,19 +264,22 @@ namespace Revsoft.Wabbitcode.GUI.Menus
                 VarTrackMenuItem, BreakManagerMenuItem
             });
 
-        private static readonly ToolStripMenuItem OutputWindowMenuItem = new ToolStripMenuItem(OutputWindow.WindowIdentifier)
+        private static readonly ToolStripMenuItem OutputWindowMenuItem = new ToolStripMenuItem("Output Window")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(OutputWindow)
         };
 
-        private static readonly ToolStripMenuItem ErrorListMenuItem = new ToolStripMenuItem(ErrorList.WindowIdentifier)
+        private static readonly ToolStripMenuItem ErrorListMenuItem = new ToolStripMenuItem("Error List")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(ErrorList)
         };
 
-        private static readonly ToolStripMenuItem FindResultsMenuItem = new ToolStripMenuItem(FindResultsWindow.WindowIdentifier)
+        private static readonly ToolStripMenuItem FindResultsMenuItem = new ToolStripMenuItem("Find Results")
         {
-            CheckOnClick = true
+            CheckOnClick = true,
+            Tag = typeof(FindResultsWindow)
         };
 
         private static readonly ToolStripMenuItem StatusBarMenuItem = new ToolStripMenuItem("Status Bar")
@@ -685,47 +695,47 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static void newFileMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new CreateNewDocumentAction());
+            AbstractUiAction.RunCommand(new CreateNewDocumentAction());
         }
 
         private static void newProjectMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new CreateNewProjectAction());
+            AbstractUiAction.RunCommand(new CreateNewProjectAction());
         }
 
         private static void openFileMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new OpenFileAction());
+            AbstractUiAction.RunCommand(new OpenFileAction());
         }
 
         private static void openProjectMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new OpenProjectCommand());
+            AbstractUiAction.RunCommand(new OpenProjectCommand());
         }
 
         private static void saveMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new SaveCommand());
+            AbstractUiAction.RunCommand(new SaveCommand());
         }
 
         private static void saveAsMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new SaveAsCommand());
+            AbstractUiAction.RunCommand(new SaveAsCommand());
         }
 
         private static void saveAllMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new SaveAllCommand());
+            AbstractUiAction.RunCommand(new SaveAllCommand());
         }
 
         private static void saveProjectMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new SaveProjectAction());
+            AbstractUiAction.RunCommand(new SaveProjectAction());
         }
 
         private static void closeMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new CloseCommand());
+            AbstractUiAction.RunCommand(new CloseCommand());
         }
 
         /// <summary>
@@ -771,117 +781,117 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static void undoMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new UndoAction());
+            AbstractUiAction.RunCommand(new UndoAction());
         }
 
         private static void redoMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new RedoAction());
+            AbstractUiAction.RunCommand(new RedoAction());
         }
 
         private static void cutMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new CutAction());
+            AbstractUiAction.RunCommand(new CutAction());
         }
 
         private static void copyMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new CopyAction());
+            AbstractUiAction.RunCommand(new CopyAction());
         }
 
         private static void pasteMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new PasteAction());
+            AbstractUiAction.RunCommand(new PasteAction());
         }
 
         private static void selectAllMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new SelectAllAction());
+            AbstractUiAction.RunCommand(new SelectAllAction());
         }
 
         private static void findMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new FindAction());
+            AbstractUiAction.RunCommand(new FindAction());
         }
 
         private static void findInFilesMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new FindInFilesAction());
+            AbstractUiAction.RunCommand(new FindInFilesAction());
         }
 
         private static void replaceMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new ReplaceAction());
+            AbstractUiAction.RunCommand(new ReplaceAction());
         }
 
         private static void replaceInFilesMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new ReplaceInFilesAction());
+            AbstractUiAction.RunCommand(new ReplaceInFilesAction());
         }
 
         private static void findAllRefsMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new FindAllReferencesAction());
+            AbstractUiAction.RunCommand(new FindAllReferencesAction());
         }
 
         private static void makeUpperMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new ToUpperAction());
+            AbstractUiAction.RunCommand(new ToUpperAction());
         }
 
         private static void makeLowerMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new ToLowerAction());
+            AbstractUiAction.RunCommand(new ToLowerAction());
         }
 
         private static void invertCaseMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new InvertCaseAction());
+            AbstractUiAction.RunCommand(new InvertCaseAction());
         }
 
         private static void sentenceCaseMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new ToSentenceCaseAction());
+            AbstractUiAction.RunCommand(new ToSentenceCaseAction());
         }
 
         private static void formatDocMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new FormatDocumentAction());
+            AbstractUiAction.RunCommand(new FormatDocumentAction());
         }
 
         private static void convertSpacesToTabsMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new ConvertSpacesToTabsAction());
+            AbstractUiAction.RunCommand(new ConvertSpacesToTabsAction());
         }
 
         private static void prevBookmarkMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new GotoPreviousBookmark());
+            AbstractUiAction.RunCommand(new GotoPreviousBookmark());
         }
 
         private static void nextBookmarkMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new GotoNextBookmark());
+            AbstractUiAction.RunCommand(new GotoNextBookmark());
         }
 
         private void toggleBookmarkMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new ToggleBookmark());
+            AbstractUiAction.RunCommand(new ToggleBookmark());
         }
 
         private static void gLineMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new GotoLineAction());
+            AbstractUiAction.RunCommand(new GotoLineAction());
         }
 
-        private void gLabelMenuItem_Click(object sender, EventArgs e)
+        private static void gLabelMenuItem_Click(object sender, EventArgs e)
         {
             GotoDefinitionAction.FromDialog();
         }
 
         private static void prefsMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new EditPreferencesAction());
+            AbstractUiAction.RunCommand(new EditPreferencesAction());
         }
 
         #endregion
@@ -896,14 +906,17 @@ namespace Revsoft.Wabbitcode.GUI.Menus
                 return;
             }
 
-            var menuItem = _viewMenuItem.DropDownItems.OfType<ToolStripMenuItem>().FirstOrDefault(i => i.Text == window.TabText);
+            var viewToolItems = _viewMenuItem.DropDownItems.OfType<ToolStripMenuItem>();
+            var debugViewToolItems = DebugPanelsMenuItem.DropDownItems.OfType<ToolStripMenuItem>();
+            var menuItem = viewToolItems.Concat(debugViewToolItems).FirstOrDefault(i =>
+            {
+                var type = i.Tag as Type;
+                return type != null && type.IsInstanceOfType(window);
+            });
+
             if (menuItem == null)
             {
-                menuItem = DebugPanelsMenuItem.DropDownItems.OfType<ToolStripMenuItem>().FirstOrDefault(i => i.Text == window.TabText);
-                if (menuItem == null)
-                {
-                    return;
-                }
+                return;
             }
 
             menuItem.Checked = window.VisibleState != DockState.Hidden && !window.IsHidden;
@@ -920,10 +933,11 @@ namespace Revsoft.Wabbitcode.GUI.Menus
             {
                 CheckOnClick = true
             };
+
             item.Click += (o, args) =>
             {
-                ToolStripMenuItem menuItem = o as ToolStripMenuItem;
-                Debug.Assert(menuItem != null);
+                ToolStripMenuItem menuItem = (ToolStripMenuItem) o;
+
                 if (menuItem.Checked)
                 {
                     _toolBarService.ShowToolBar(menuItem.Text);
@@ -954,13 +968,19 @@ namespace Revsoft.Wabbitcode.GUI.Menus
                 return;
             }
 
+            Type panelType = menuItem.Tag as Type;
+            if (panelType == null)
+            {
+                throw new InvalidOperationException("Panel item tag does not contain panel type");
+            }
+
             if (menuItem.Checked)
             {
-                _dockingService.ShowDockPanel(menuItem.Text);
+                _dockingService.ShowDockPanel(panelType);
             }
             else
             {
-                _dockingService.HideDockPanel(menuItem.Text);
+                _dockingService.HideDockPanel(panelType);
             }
         }
 
@@ -982,12 +1002,12 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static void renameMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new RefactorRenameAction());
+            AbstractUiAction.RunCommand(new RefactorRenameAction());
         }
 
         private static void extractMethodMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new RefactorExtractMethodAction());
+            AbstractUiAction.RunCommand(new RefactorExtractMethodAction());
         }
 
         #endregion
@@ -1011,14 +1031,14 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private void addNewFileMenuItem_Click(object sender, EventArgs e)
         {
-            ProjectViewer projectViewer = _dockingService.GetDockingWindow(ProjectViewer.WindowIdentifier) as ProjectViewer;
-            RunCommand(new AddNewFileAction(projectViewer));
+            ProjectViewer projectViewer = _dockingService.GetDockingWindow<ProjectViewer>();
+            AbstractUiAction.RunCommand(new AddNewFileAction(projectViewer));
         }
 
         private void existingFileMenuItem_Click(object sender, EventArgs e)
         {
-            ProjectViewer projectViewer = _dockingService.GetDockingWindow(ProjectViewer.WindowIdentifier) as ProjectViewer;
-            RunCommand(new AddExistingFileAction(projectViewer));
+            ProjectViewer projectViewer = _dockingService.GetDockingWindow<ProjectViewer>();
+            AbstractUiAction.RunCommand(new AddExistingFileAction(projectViewer));
         }
 
         private static void buildOrderButton_Click(object sender, EventArgs e)
@@ -1038,7 +1058,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static void closeProjMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new CloseProjectAction());
+            AbstractUiAction.RunCommand(new CloseProjectAction());
         }
 
         #endregion
@@ -1047,7 +1067,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static void buildMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new BuildAction());
+            AbstractUiAction.RunCommand(new BuildAction());
         }
 
         #endregion
@@ -1087,7 +1107,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static void startDebugMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new StartDebuggerAction());
+            AbstractUiAction.RunCommand(new StartDebuggerAction());
         }
 
         private static void startWithoutDebugMenuItem_Click(object sender, EventArgs e)
@@ -1098,27 +1118,27 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static void stopDebugMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new StopDebuggerAction());
+            AbstractUiAction.RunCommand(new StopDebuggerAction());
         }
 
         private static void runMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new StartDebuggerAction());
+            AbstractUiAction.RunCommand(new StartDebuggerAction());
         }
 
         private static void stepMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new StepDebuggerAction());
+            AbstractUiAction.RunCommand(new StepDebuggerAction());
         }
 
         private static void stepOverMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new StepOverDebuggerAction());
+            AbstractUiAction.RunCommand(new StepOverDebuggerAction());
         }
 
         private static void stepOutMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new StepOutDebuggerAction());
+            AbstractUiAction.RunCommand(new StepOutDebuggerAction());
         }
 
         private static void newBreakpointMenuItem_Click(object sender, EventArgs e)
@@ -1130,7 +1150,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static void toggleBreakpointMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new ToggleBreakpointAction());
+            AbstractUiAction.RunCommand(new ToggleBreakpointAction());
         }
 
         #endregion
@@ -1139,19 +1159,14 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private static void updateMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new CheckForUpdateAction());
+            AbstractUiAction.RunCommand(new CheckForUpdateAction());
         }
 
         private static void aboutMenuItem_Click(object sender, EventArgs e)
         {
-            RunCommand(new AboutDialogAction());
+            AbstractUiAction.RunCommand(new AboutDialogAction());
         }
 
         #endregion
-
-        private static void RunCommand(AbstractUiAction action)
-        {
-            action.Execute();
-        }
     }
 }

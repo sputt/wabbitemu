@@ -12,7 +12,7 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
-    public class WabbitcodeProject : IProject
+    public class WabbitcodeProject : IProject, IDisposable
     {
         private const string ProjectFileVersion = "1.0";
 
@@ -331,5 +331,18 @@ namespace Revsoft.Wabbitcode.Services.Project
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _watcher.Dispose();
+            }
+        }
     }
 }

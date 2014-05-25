@@ -52,7 +52,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             _projectService = DependencyFactory.Resolve<IProjectService>();
             _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
 
-            _results = _dockingService.GetDockingWindow(FindResultsWindow.WindowIdentifier) as FindResultsWindow;
+            _results = _dockingService.GetDockingWindow<FindResultsWindow>();
 
             InitializeComponent();
         }
