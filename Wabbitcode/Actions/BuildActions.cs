@@ -1,14 +1,18 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Actions
 {
     public class BuildAction : AbstractUiAction
     {
+        public event EventHandler<AssemblyFinishEventArgs> BuildFinished;
+
         private readonly IAssemblerService _assemblerService;
         private readonly IDebuggerService _debuggerService;
         private readonly IProjectService _projectService;
@@ -44,6 +48,11 @@ namespace Revsoft.Wabbitcode.Actions
             _assemblerService.AssemblerProjectFinished -= AssemblerService_AssemblerProjectFinished;
             string statusText = e.Output.Succeeded ? "Build Succeeded" : "Build Failed";
             _statusBarService.SetText(statusText);
+
+            if (BuildFinished != null)
+            {
+                BuildFinished(this, e);
+            }
         }
     }
 }

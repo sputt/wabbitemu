@@ -53,5 +53,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         Image GetScreenImage();
         void EndDebug();
+        void TurnCalcOn();
     }
 }

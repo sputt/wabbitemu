@@ -273,6 +273,11 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _debugger = null;
         }
 
+        public void TurnCalcOn()
+        {
+            _debugger.TurnCalcOn();
+        }
+
         private void debugger_Breakpoint(IWabbitemu debugger, IBreakpoint breakpoint)
         {
             if (OnBreakpoint != null)

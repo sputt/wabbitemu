@@ -43,7 +43,7 @@ namespace Revsoft.Wabbitcode.Services
         {
             if (string.IsNullOrEmpty(file))
             {
-                System.Diagnostics.Debug.WriteLine("No file name specified");
+                Logger.Log("No file name specified");
                 return new List<Reference>();
             }
 

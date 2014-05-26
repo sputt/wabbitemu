@@ -727,7 +727,6 @@
     <Compile Include="Services\Interfaces\IDebuggerService.cs" />
     <Compile Include="Services\Interfaces\IDockingService.cs" />
     <Compile Include="Services\Interfaces\IFileService.cs" />
-    <Compile Include="Services\Interfaces\ILoggingService.cs" />
     <Compile Include="Services\Interfaces\IMenuService.cs" />
     <Compile Include="Services\Interfaces\IParserService.cs" />
     <Compile Include="Services\Interfaces\IPluginService.cs" />
@@ -736,7 +735,7 @@
     <Compile Include="Services\Interfaces\ISymbolService.cs" />
     <Compile Include="Services\Interfaces\IToolBarService.cs" />
     <Compile Include="Services\Parser\IParserFactory.cs" />
-    <Compile Include="Services\LoggingService.cs" />
+    <Compile Include="Utils\Logger.cs" />
     <Compile Include="Services\MenuService.cs" />
     <Compile Include="Services\Parser\ParserFactory.cs" />
     <Compile Include="Services\Parser\ParserEventArgs.cs" />
@@ -787,7 +786,7 @@
     <Compile Include="Services\AssemblerService.cs" />
     <Compile Include="Services\Symbols\SymbolTable.cs" />
     <Compile Include="Services\Debugger\WabbitcodeBreakpoint.cs" />
-    <Compile Include="Services\DependencyFactory.cs" />
+    <Compile Include="Utils\DependencyFactory.cs" />
     <Compile Include="Services\SymbolService.cs" />
     <Compile Include="Services\Debugger\WabbitcodeDebugger.cs" />
     <Compile Include="Utils\HighlightingUtils.cs" />

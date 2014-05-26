@@ -5,6 +5,7 @@ using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Actions
 {

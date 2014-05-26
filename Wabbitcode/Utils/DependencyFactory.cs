@@ -1,6 +1,6 @@
 ﻿using Microsoft.Practices.Unity;
 
-namespace Revsoft.Wabbitcode.Services
+namespace Revsoft.Wabbitcode.Utils
 {
     public static class DependencyFactory
     {
