@@ -11,7 +11,7 @@ using Revsoft.Wabbitcode.Utils;
 namespace Revsoft.Wabbitcode.Services
 {
     [UsedImplicitly]
-    public sealed class AssemblerService : IAssemblerService, IDisposable
+    public sealed class AssemblerService : IAssemblerService
     {
         #region Events
 
@@ -24,9 +24,6 @@ namespace Revsoft.Wabbitcode.Services
                                                           "Assembling {1}" + Environment.NewLine + "{2}";
 
         private static readonly object AssemblyLock = new object();
-
-        private bool _disposed;
-        private IAssembler _assembler;
 
         private readonly ISymbolService _symbolService;
         private readonly IFileService _fileService;
@@ -43,10 +40,10 @@ namespace Revsoft.Wabbitcode.Services
         public AssemblerOutput AssembleFile(FilePath inputFile, FilePath outputFile, FilePath originalDir,
             IEnumerable<FilePath> includeDirs, AssemblyFlags flags = AssemblyFlags.Normal)
         {
-            _assembler = _assemblerFactory.CreateAssembler();
+            IAssembler assembler = _assemblerFactory.CreateAssembler();
 
-            AssemblerHelper.SetupAssembler(_assembler, inputFile, outputFile, originalDir, includeDirs, flags);
-            string rawOutput = _assembler.Assemble();
+            AssemblerHelper.SetupAssembler(assembler, inputFile, outputFile, originalDir, includeDirs, flags);
+            string rawOutput = assembler.Assemble();
 
             // lets write it to the output window so the user knows whats happening
             string outputText = string.Format(OutputFormatting, Path.GetFileName(inputFile), inputFile, rawOutput);
@@ -85,12 +82,12 @@ namespace Revsoft.Wabbitcode.Services
             int size;
             int min;
             int max;
-            _assembler = _assemblerFactory.CreateAssembler();
+            IAssembler assembler = _assemblerFactory.CreateAssembler();
             string outputLines = null;
             if (!string.IsNullOrEmpty(lines))
             {
-                _assembler.SetFlags(AssemblyFlags.CodeCounter | AssemblyFlags.Commandline);
-                outputLines = _assembler.Assemble(lines);
+                assembler.SetFlags(AssemblyFlags.CodeCounter | AssemblyFlags.Commandline);
+                outputLines = assembler.Assemble(lines);
             }
 
             if (string.IsNullOrEmpty(outputLines))
@@ -167,29 +164,6 @@ namespace Revsoft.Wabbitcode.Services
             {
                 AssemblerProjectFinished(sender, e);
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                if (_assembler != null)
-                {
-                    _assembler.Dispose();
-                }
-            }
-
-            _disposed = true;
         }
     }
 }

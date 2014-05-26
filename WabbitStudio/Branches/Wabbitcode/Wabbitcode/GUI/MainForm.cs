@@ -175,7 +175,7 @@ namespace Revsoft.Wabbitcode.GUI
             DependencyFactory.RegisterType<IStatusBarService, StatusBarService>(new InjectionConstructor(statusBar));
             DependencyFactory.RegisterType<IMenuService, MenuService>(new InjectionConstructor(toolStripContainer.TopToolStripPanel));
             DependencyFactory.RegisterType<IToolBarService, ToolBarService>(new InjectionConstructor(toolStripContainer.TopToolStripPanel));
-            DependencyFactory.RegisterType<IAssemblerService, AssemblerService>(new PerResolveLifetimeManager());
+            DependencyFactory.RegisterType<IAssemblerService, AssemblerService>();
             DependencyFactory.RegisterType<IBackgroundAssemblerService, BackgroundAssemblerService>(new PerResolveLifetimeManager());
             DependencyFactory.RegisterType<IProjectService, ProjectService>();
             DependencyFactory.RegisterType<IParserService, ParserService>();
@@ -183,7 +183,6 @@ namespace Revsoft.Wabbitcode.GUI
             DependencyFactory.RegisterType<IFileService, FileService>();
             DependencyFactory.RegisterType<IDebuggerService, DebuggerService>();
             DependencyFactory.RegisterType<IPluginService, PluginService>();
-            DependencyFactory.RegisterType<ILoggingService, LoggingService>();
             // factories
             DependencyFactory.RegisterType<IAssemblerFactory, AssemblerFactory>();
             DependencyFactory.RegisterType<IParserFactory, ParserFactory>();

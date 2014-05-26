@@ -288,6 +288,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         public void StartDebug()
         {
+            _debugger.TurnCalcOn();
             var app = VerifyApp(CurrentDebuggingFile);
             // once we have the app we can add breakpoints
             var breakpoints = WabbitcodeBreakpointManager.Breakpoints.ToList();
@@ -789,7 +790,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             // this is code to do
             // bcall(_CloseEditBuf)
             // bcall(_ExecuteApp)
-            byte[] launchAppCode = {0xEF, 0xD3, 0x48, 0xEF, 0x51, 0x4C};
+            byte[] launchAppCode = { 0xEF, 0xD3, 0x48, 0xEF, 0x51, 0x4C };
             byte[] createdNameBytes = System.Text.Encoding.ASCII.GetBytes(createdName);
             // _ExecuteApp expects the name of the app to launch in progToEdit
             _debugger.Running = false;

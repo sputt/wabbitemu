@@ -26,11 +26,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         private void UpdateManager()
         {
             breakpointGridView.Rows.Clear();
+            IProject project = _projectService.Project;
             var breakpoints = WabbitcodeBreakpointManager.Breakpoints.ToArray();
             foreach (var breakpoint in breakpoints)
             {
                 int index = breakpointGridView.Rows.Add(new DataGridViewRow());
-                IProject project = _projectService.Project;
                 breakpointGridView.Rows[index].Cells[0].Value = breakpoint.Enabled;
                 if (!project.IsInternal)
                 {

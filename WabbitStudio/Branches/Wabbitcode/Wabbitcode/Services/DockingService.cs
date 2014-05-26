@@ -61,7 +61,7 @@ namespace Revsoft.Wabbitcode.Services
             sb.Append("\nReason: ");
             sb.Append(ex.Message);
             MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            DependencyFactory.Resolve<ILoggingService>().Log(sb.ToString(), ex);
+            Logger.Log(sb.ToString(), ex);
         }
 
         internal static DialogResult ShowMessageBox(Form parent, string text, string caption,

@@ -7,6 +7,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.EditorExtensions
 {

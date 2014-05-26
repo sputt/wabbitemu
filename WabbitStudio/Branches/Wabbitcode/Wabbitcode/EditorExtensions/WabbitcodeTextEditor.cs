@@ -182,7 +182,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             }
             catch (Exception ex)
             {
-                DependencyFactory.Resolve<ILoggingService>().Log("Code completion exception", ex);
+                Logger.Log("Code completion exception", ex);
             }
             finally
             {

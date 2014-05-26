@@ -81,13 +81,20 @@ namespace Revsoft.TextEditor.Document
 		{
 			int endOffset = offset + length - 1;
 			List<TextMarker> markers = new List<TextMarker>();
-		    int startIndex = textMarker.BinarySearch(new TextMarker(offset, 1, TextMarkerType.SolidBlock));
+		    if (textMarker.Count == 0)
+		    {
+		        return markers;
+		    }
+
+		    int startIndex = textMarker.BinarySearch(new TextMarker(offset, 1, TextMarkerType.SolidBlock),
+                new StartMarkerComparer());
 		    if (startIndex < 0)
 		    {
 		        startIndex = ~startIndex;
 		    }
 
-            int endIndex = textMarker.BinarySearch(new TextMarker(endOffset, 1, TextMarkerType.SolidBlock));
+            int endIndex = textMarker.BinarySearch(new TextMarker(endOffset, 1, TextMarkerType.SolidBlock),
+                new EndMarkerComparer());
 		    if (endIndex < 0)
 		    {
 		        endIndex = ~endIndex;
@@ -127,4 +134,35 @@ namespace Revsoft.TextEditor.Document
 			document.UpdateSegmentListOnDocumentChange(textMarker, e);
 		}
 	}
+
+    public class StartMarkerComparer : IComparer<TextMarker>
+    {
+        public int Compare(TextMarker x, TextMarker y)
+        {
+            if (y.Offset >= x.Offset && y.Offset <= x.EndOffset)
+            {
+                return 0;
+            }
+
+            if (y.Offset < x.Offset)
+            {
+                return 1;
+            }
+            
+            return -1;
+        }
+    }
+
+    public class EndMarkerComparer : IComparer<TextMarker>
+    {
+        public int Compare(TextMarker x, TextMarker y)
+        {
+            if (y.EndOffset >= x.Offset)
+            {
+                return -1;
+            }
+
+            return 1;
+        }
+    }
 }

@@ -45,21 +45,21 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class StartDebuggerAction : AbstractUiAction
     {
-        private readonly IAssemblerService _assemblerService;
         private readonly IDebuggerService _debuggerService;
+        private readonly BuildAction _buildAction;
 
         public StartDebuggerAction()
         {
-            _assemblerService = DependencyFactory.Resolve<IAssemblerService>();
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+            _buildAction = new BuildAction();
         }
 
         public override void Execute()
         {
             if (_debuggerService.CurrentDebugger == null)
             {
-                _assemblerService.AssemblerProjectFinished += AssemblerService_AssemblerProjectFinished;
-                new BuildAction().Execute();
+                _buildAction.BuildFinished += BuildAction_BuildFinished;
+                RunCommand(_buildAction);
             }
             else
             {
@@ -67,9 +67,8 @@ namespace Revsoft.Wabbitcode.Actions
             }
         }
 
-        private void AssemblerService_AssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
+        private void BuildAction_BuildFinished(object sender, AssemblyFinishEventArgs e)
         {
-            _assemblerService.AssemblerProjectFinished -= AssemblerService_AssemblerProjectFinished;
             if (!e.Output.Succeeded)
             {
                 if (DockingService.ShowMessageBox(null, "There were errors assembling. Would you like to continue and try to debug?",
