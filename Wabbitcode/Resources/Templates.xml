@@ -3,26 +3,26 @@
 <templates>
   <!--All file paths based from "%HOMEPATH%\My Documents\Wabbitcode\Templates-->
   <model name="Binary">
-    <template name="Binary" ext=".bin">default.asm</template>
-    <template name="ROM File" ext=".rom">default.asm</template>
+    <template name="Binary" ext=".bin">Default.asm</template>
+    <template name="ROM File" ext=".rom">Rom.asm</template>
   </model>
   <model name="TI-82">
-    <template name="CRaSH" ext=".82p">crash.asm</template>
+    <template name="CRaSH" ext=".82p">CrASH.asm</template>
   </model>
   <model name="TI-83">
-    <template name="AShell Program" ext=".83p">ashell.asm</template>
-    <template name="Ion Program" ext=".83p">ion83.asm</template>
-    <template name="Nostub Program" ext=".83p">nostub83.asm</template>
-    <template name="Venus Program" ext=".83p">venus.asm</template>
+    <template name="AShell Program" ext=".83p">AShell.asm</template>
+    <template name="Ion Program" ext=".83p">Ion.asm</template>
+    <template name="Nostub Program" ext=".83p">NoStub.asm</template>
+    <template name="Venus Program" ext=".83p">Venus.asm</template>
   </model>
   <model name="TI-83 Plus">
-    <template name="Application" ext=".8xk">app.asm</template>
-    <template name="DoorsCS Program" ext=".8xp">dcs.asm</template>
-    <template name="Ion Program" ext=".8xp">ion83p.asm</template>
-    <template name="MirageOS Program" ext=".8xp">mirage.asm</template>
-    <template name="Nostub Program" ext=".8xp">nostub83p.asm</template>
+    <template name="Application" ext=".8xk">App.asm</template>
+    <template name="DoorsCS Program" ext=".8xp" usesicon="true">DoorsCS.asm</template>
+    <template name="Ion Program" ext=".8xp">Ion.asm</template>
+    <template name="MirageOS Program" ext=".8xp" usesicon="true">Mirage.asm</template>
+    <template name="Nostub Program" ext=".8xp">NoStub.asm</template>
   </model>
   <model name="TI-86">
-    <template name="Nostub Program" ext=".86p">nostub86.asm</template>
+    <template name="Nostub Program" ext=".86p">NoStub.asm</template>
   </model>
 </templates>

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Utils;
@@ -30,10 +28,12 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
         private void actionBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             InternalBuildStep step = (InternalBuildStep) buildSeqList.SelectedItem;
-            _currentConfig.Steps.Remove(step);
+            _currentConfig.RemoveStep(step);
+
             step.StepType = (BuildStepType) actionBox.SelectedIndex;
             buildSeqList.Items[buildSeqList.SelectedIndex] = step;
-            _currentConfig.Steps.Add(step);
+            _currentConfig.AddStep(step);
+
             UpdateStepOptions();
             _needsSave = true;
         }
@@ -191,14 +191,10 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                 return;
             }
 
-            // TODO: fix
-            _currentConfig.Steps.ElementAt(index).StepNumber++;
-            for (int i = 0; i < _currentConfig.Steps.Count; i++)
+            _currentConfig.Steps[index].StepNumber += 2;
+            foreach (IBuildStep t in _currentConfig.Steps)
             {
-                if (i != index)
-                {
-                    _currentConfig.Steps.ElementAt(i).StepNumber--;
-                }
+                t.StepNumber--;
             }
 
             index++;
@@ -217,14 +213,10 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                 return;
             }
 
-            // TODO: fix
-            _currentConfig.Steps.ElementAt(index).StepNumber--;
-            for (int i = 0; i < _currentConfig.Steps.Count(); i++)
+            _currentConfig.Steps[index].StepNumber -= 2;
+            foreach (IBuildStep step in _currentConfig.Steps)
             {
-                if (i != index)
-                {
-                    _currentConfig.Steps.ElementAt(i).StepNumber++;
-                }
+                step.StepNumber++;
             }
 
             index--;

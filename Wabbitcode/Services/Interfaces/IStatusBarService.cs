@@ -1,9 +1,12 @@
-﻿using Revsoft.Wabbitcode.Services.Assembler;
+﻿using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services.Assembler;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces
 {
     public interface IStatusBarService
     {
+        StatusStrip StatusBar { get; }
+
         /// <summary>
         /// Updates the caret position in the status bar
         /// </summary>

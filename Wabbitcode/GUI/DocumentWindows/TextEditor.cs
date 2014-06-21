@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.Interfaces;
@@ -20,7 +22,6 @@ using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
-using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 using GotoNextBookmark = Revsoft.TextEditor.Actions.GotoNextBookmark;
@@ -32,16 +33,16 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
     /// <summary>
     /// Summary description for frmDocument.
     /// </summary>
-    public partial class Editor : ITextEditor, IBookmarkable
+    public partial class TextEditor : AbstractFileEditor, ITextEditor, IBookmarkable
     {
         #region Static Members
 
         private static bool _bindingsRegistered;
 
-        internal static Editor OpenDocument(FilePath filename)
+        internal static TextEditor OpenDocument(FilePath filename)
         {
             IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
-            var child = dockingService.Documents.OfType<Editor>()
+            var child = dockingService.Documents.OfType<TextEditor>()
                 .SingleOrDefault(e => e.FileName == filename);
             if (child != null)
             {
@@ -50,7 +51,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 return child;
             }
 
-            Editor doc = new Editor
+            TextEditor doc = new TextEditor
             {
                 Text = Path.GetFileName(filename),
                 TabText = Path.GetFileName(filename),
@@ -58,11 +59,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             };
 
             doc.OpenFile(filename);
-
-            if (!Settings.Default.RecentFiles.Contains(filename))
-            {
-                Settings.Default.RecentFiles.Add(filename);
-            }
 
             dockingService.ShowDockPanel(doc);
             return doc;
@@ -72,12 +68,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         #region Private Memebers
 
-        private readonly IDebuggerService _debuggerService;
-        private readonly IDockingService _dockingService;
-        private readonly IParserService _parserService;
-        private readonly IProjectService _projectService;
+        private readonly IDebuggerService _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+        private readonly IDockingService _dockingService = DependencyFactory.Resolve<IDockingService>();
+        private readonly IParserService _parserService = DependencyFactory.Resolve<IParserService>();
+        private readonly IProjectService _projectService = DependencyFactory.Resolve<IProjectService>();
         private int _stackTop;
-        private volatile bool _wasExternallyModified;
         private bool _documentChanged;
 
         #endregion
@@ -130,17 +125,13 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         #endregion
 
-        public Editor()
+        public TextEditor()
         {
             InitializeComponent();
 
-            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
-            _dockingService = DependencyFactory.Resolve<IDockingService>();
-            _parserService = DependencyFactory.Resolve<IParserService>();
-            _projectService = DependencyFactory.Resolve<IProjectService>();
-
             editorBox.TextChanged += editorBox_TextChanged;
             editorBox.ContextMenu = contextMenu;
+            editorBox.ActiveTextAreaControl.TextArea.MouseClick += editorBox_MouseClick;
             contextMenu.Popup += contextMenu_Popup;
 
             WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
@@ -153,56 +144,40 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 SetDebugging(true);
             }
 
-            if (_projectService.Project != null)
-            {
-                _projectService.Project.FileModifiedExternally += Project_FileModifiedExternally;
-            }
-            _projectService.ProjectOpened += (sender, args) => _projectService.Project.FileModifiedExternally += Project_FileModifiedExternally;
-
             if (_bindingsRegistered)
             {
                 return;
             }
 
-            // TODO: fix
-            //CodeCompletionFactory.RegisterCodeCompletionBinding(".asm", new Z80CodeCompletionBinding());
-            //CodeCompletionFactory.RegisterCodeCompletionBinding(".z80", new Z80CodeCompletionBinding());
-            //CodeCompletionFactory.RegisterCodeCompletionBinding(".inc", new Z80CodeCompletionBinding());
+            Z80CodeCompletionBinding completionBinding = new Z80CodeCompletionBinding();
+            var codeCompletionFactory = DependencyFactory.Resolve<ICodeCompletionFactory>();
+            codeCompletionFactory.RegisterCodeCompletionBinding(".asm", completionBinding);
+            codeCompletionFactory.RegisterCodeCompletionBinding(".z80", completionBinding);
+            codeCompletionFactory.RegisterCodeCompletionBinding(".inc", completionBinding);
 
             _bindingsRegistered = true;
         }
 
-        private void Project_FileModifiedExternally(object sender, FileModifiedEventArgs e)
+        private void editorBox_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.File.FileFullPath != FileName || _wasExternallyModified)
+            if ((ModifierKeys & Keys.Control) == 0)
             {
                 return;
             }
 
-            if (InvokeRequired)
+            TextView textView = editorBox.ActiveTextAreaControl.TextArea.TextView;
+            Point point = Point.Subtract(e.Location, new Size(textView.DrawingPosition.Location));
+            TextLocation location = textView.GetLogicalPosition(point);
+            LineSegment segment = Document.GetLineSegment(location.Line);
+            TextWord textWord = segment.GetWord(location.Column);
+            if (textWord == null)
             {
-                this.BeginInvoke(() => Project_FileModifiedExternally(sender, e));
                 return;
             }
 
-            if (IsDisposed)
-            {
-                return;
-            }
+            string text = textWord.Word;
+            AbstractUiAction.RunCommand(new GotoDefinitionAction(FileName, text, editorBox.ActiveTextAreaControl.Caret.Line));
 
-            _wasExternallyModified = true;
-            const string modifiedFormat = "{0} modified outside the editor.\nLoad changes?";
-            DialogResult result = MessageBox.Show(this, string.Format(modifiedFormat, e.File.FileFullPath),
-                "File modified", MessageBoxButtons.YesNo);
-            if (result == DialogResult.Yes)
-            {
-                editorBox.ReloadFile();
-            }
-            else
-            {
-                DocumentChanged = true;
-            }
-            _wasExternallyModified = false;
         }
 
         private void contextMenu_Popup(object sender, EventArgs e)
@@ -393,33 +368,26 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         private void editor_FormClosing(object sender, CancelEventArgs e)
         {
-            editorBox.Document.MarkerStrategy.RemoveAll(s => true);
-
-            AddFoldings();
-
-            WabbitcodeBreakpointManager.OnBreakpointAdded -= WabbitcodeBreakpointManager_OnBreakpointAdded;
-            WabbitcodeBreakpointManager.OnBreakpointRemoved -= WabbitcodeBreakpointManager_OnBreakpointRemoved;
-
-            if (!DocumentChanged)
+            if (DocumentChanged)
             {
-                return;
+                if (string.IsNullOrEmpty(FileName))
+                {
+                    FileName = new FilePath("New Document");
+                }
+
+                DialogResult dlg = MessageBox.Show(this, "Document '" + FileName + "' has changed. Save changes?", "Wabbitcode", MessageBoxButtons.YesNoCancel);
+                switch (dlg)
+                {
+                    case DialogResult.Cancel:
+                        e.Cancel = true;
+                        break;
+                    case DialogResult.Yes:
+                        SaveFile();
+                        break;
+                }
             }
 
-            if (string.IsNullOrEmpty(FileName))
-            {
-                FileName = new FilePath("New Document");
-            }
-
-            DialogResult dlg = MessageBox.Show(this, "Document '" + FileName + "' has changed. Save changes?", "Wabbitcode", MessageBoxButtons.YesNoCancel);
-            switch (dlg)
-            {
-                case DialogResult.Cancel:
-                    e.Cancel = true;
-                    break;
-                case DialogResult.Yes:
-                    SaveFile();
-                    break;
-            }
+            CloseFile();
         }
 
         #region Folding
@@ -816,6 +784,16 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         #endregion
 
+        public override void CloseFile()
+        {
+            base.CloseFile();
+
+            AddFoldings();
+            editorBox.Document.MarkerStrategy.RemoveAll(s => true);
+            WabbitcodeBreakpointManager.OnBreakpointAdded -= WabbitcodeBreakpointManager_OnBreakpointAdded;
+            WabbitcodeBreakpointManager.OnBreakpointRemoved -= WabbitcodeBreakpointManager_OnBreakpointRemoved;
+        }
+
         private void UpdateDocument(int line)
         {
             editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
@@ -837,7 +815,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             FindAndReplaceForm.Instance.ShowFor(owner, editorBox, mode);
         }
 
-        public override void OpenFile(FilePath fileName)
+        protected override void OpenFile(FilePath fileName)
         {
             base.OpenFile(fileName);
 
@@ -852,7 +830,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             _projectService.Project.EnableFileWatcher(false);
             if (string.IsNullOrEmpty(FileName))
             {
-                AbstractUiAction.RunCommand(new SaveAsCommand());
+                AbstractUiAction.RunCommand(new SaveAsCommand(this));
                 return;
             }
 
@@ -870,6 +848,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
             base.SaveFile();
+        }
+
+        protected override void ReloadFile()
+        {
+            editorBox.ReloadFile();
         }
 
         public override void PersistStringLoad(params string[] persistStrings)

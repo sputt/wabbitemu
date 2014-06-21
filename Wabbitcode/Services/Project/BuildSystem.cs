@@ -104,7 +104,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
             if (step == null)
             {
-                throw new Exception("Missing main build step");
+                throw new ArgumentException("Missing main build step");
             }
 
             return step;
@@ -200,6 +200,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 
         public void WriteXML(XmlTextWriter writer)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException("writer");
+            }
+
             writer.WriteStartElement("BuildSystem");
             string includes = string.Empty;
             string projFile = _project.ProjectFile;

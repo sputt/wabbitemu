@@ -868,7 +868,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             this.editorTab.Padding = new System.Windows.Forms.Padding(3);
             this.editorTab.Size = new System.Drawing.Size(321, 367);
             this.editorTab.TabIndex = 3;
-            this.editorTab.Text = "Editor";
+            this.editorTab.Text = "Text Editor";
             this.editorTab.UseVisualStyleBackColor = true;
             // 
             // textboxBox

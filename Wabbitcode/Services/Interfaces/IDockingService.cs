@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -11,13 +12,16 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
         event EventHandler<DockContentEventArgs> DocumentWindowAdded;
         event EventHandler<DockContentEventArgs> DocumentWindowRemoved;
 
-        void RegisterDockingWindow<T>() where T : ToolWindow;
-        ToolWindow GetDockingWindow(Type windowType);
-        T GetDockingWindow<T>() where T : ToolWindow;
-
+        DockPanel DockPanel { get; }
+        ToolStripContainer ToolStripContainer { get; }
         IDockContent ActiveContent { get; }
         IDockContent ActiveDocument { get; }
         IEnumerable<IDockContent> Documents { get; }
+
+
+        void RegisterDockingWindow<T>() where T : ToolWindow;
+        ToolWindow GetDockingWindow(Type windowType);
+        T GetDockingWindow<T>() where T : ToolWindow;
 
         void HideDockPanel(DockContent panel);
         void HideDockPanel<T>() where T : ToolWindow;
@@ -35,10 +39,7 @@ namespace Revsoft.Wabbitcode.Services.Interfaces
             where T : ToolWindow
             where TBefore : ToolWindow;
         void LoadConfig(DeserializeDockContent dockContent);
-        void InitPanels();
 
         void SavePanels();
-
-        
     }
 }

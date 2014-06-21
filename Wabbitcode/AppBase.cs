@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Windows.Forms;
 using Microsoft.VisualBasic.ApplicationServices;
 using System;
 using Revsoft.Wabbitcode.Extensions;
@@ -8,8 +9,11 @@ namespace Revsoft.Wabbitcode
 {
     public class AppBase : WindowsFormsApplicationBase
     {
-        public AppBase()
+        private readonly ToolStripContainer _toolStripContainer;
+        public AppBase(ToolStripContainer toolStripContainer)
         {
+            _toolStripContainer = toolStripContainer;
+
             // Make this a single-instance application
             IsSingleInstance = true;
             EnableVisualStyles = true;
@@ -29,7 +33,7 @@ namespace Revsoft.Wabbitcode
         {
             // Create an instance of the main form and set it in the application;
             // but don't try to run it.
-            MainForm = new MainForm(CommandLineArgs.ToArray());
+            MainForm = new MainForm(_toolStripContainer, CommandLineArgs.ToArray());
         }
 
         /// <summary>

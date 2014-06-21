@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
     public class BuildConfig : ICloneable
     {
-        private readonly SortedSet<IBuildStep> _steps = new SortedSet<IBuildStep>();
+        private readonly Collection<IBuildStep> _steps = new Collection<IBuildStep>();
 
         public BuildConfig(string name)
         {
@@ -16,9 +16,9 @@ namespace Revsoft.Wabbitcode.Services.Project
 
         public string OutputText { get; private set; }
 
-        public ISet<IBuildStep> Steps
+        public ReadOnlyCollection<IBuildStep> Steps
         {
-            get { return _steps; }
+            get { return new ReadOnlyCollection<IBuildStep>(_steps); }
         }
 
         public bool Build(IProject project)

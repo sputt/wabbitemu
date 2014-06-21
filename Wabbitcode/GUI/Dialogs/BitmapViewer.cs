@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.GUI.Dialogs
@@ -7,6 +8,11 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
     {
         public BitmapViewer(Image image)
         {
+            if (image == null)
+            {
+                throw new InvalidOperationException("Null image");
+            }
+
             InitializeComponent();
             Size = new Size(image.Size.Width + 42 + vertRuler.Width, image.Size.Height + 62 + horzRuler.Height);
             horzRuler.Location = new Point(33, 12);
@@ -21,7 +27,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             DrawGridLines();
         }
 
-        private void button1_Click(object sender, System.EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
             Close();
         }

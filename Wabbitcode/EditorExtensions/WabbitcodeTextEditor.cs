@@ -9,6 +9,7 @@ using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.TextEditor.Gui.InsightWindow;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.EditorExtensions.Markers;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
@@ -71,8 +72,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             _errorUnderliner = new ErrorUnderliner(this);
 
             Document.FormattingStrategy = new AsmFormattingStrategy();
-            // TODO: fix code completion
-            //editactions.Add(Keys.Control | Keys.Space, new ShowCodeCompletion());
+            editactions.Add(Keys.Control | Keys.Space, new ShowCodeCompletion());
             SetHighlighting("Z80 Assembly");
 
             TextChanged += WabbitcodeTextEditor_TextChanged;

@@ -1,4 +1,6 @@
-﻿namespace Revsoft.Wabbitcode.Actions
+﻿using System;
+
+namespace Revsoft.Wabbitcode.Actions
 {
     public abstract class AbstractUiAction
     {
@@ -8,6 +10,11 @@
 
         public static void RunCommand(AbstractUiAction action)
         {
+            if (action == null)
+            {
+                throw new InvalidOperationException("Action was null");
+            }
+
             action.Execute();
         }
     }

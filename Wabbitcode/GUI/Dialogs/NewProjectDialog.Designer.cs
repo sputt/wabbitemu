@@ -47,7 +47,7 @@
             this.okTemplate.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.okTemplate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.okTemplate.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.okTemplate.Location = new System.Drawing.Point(288, 328);
+            this.okTemplate.Location = new System.Drawing.Point(288, 297);
             this.okTemplate.Name = "okTemplate";
             this.okTemplate.Size = new System.Drawing.Size(75, 23);
             this.okTemplate.TabIndex = 7;
@@ -59,7 +59,7 @@
             this.cancelTemplate.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             this.cancelTemplate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelTemplate.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelTemplate.Location = new System.Drawing.Point(369, 328);
+            this.cancelTemplate.Location = new System.Drawing.Point(369, 297);
             this.cancelTemplate.Name = "cancelTemplate";
             this.cancelTemplate.Size = new System.Drawing.Size(75, 23);
             this.cancelTemplate.TabIndex = 8;
@@ -85,7 +85,7 @@
             // browseLoc
             // 
             this.browseLoc.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
-            this.browseLoc.Location = new System.Drawing.Point(369, 247);
+            this.browseLoc.Location = new System.Drawing.Point(369, 241);
             this.browseLoc.Name = "browseLoc";
             this.browseLoc.Size = new System.Drawing.Size(75, 23);
             this.browseLoc.TabIndex = 4;
@@ -94,7 +94,7 @@
             // 
             // locTextBox
             // 
-            this.locTextBox.Location = new System.Drawing.Point(89, 247);
+            this.locTextBox.Location = new System.Drawing.Point(89, 242);
             this.locTextBox.Name = "locTextBox";
             this.locTextBox.Size = new System.Drawing.Size(274, 20);
             this.locTextBox.TabIndex = 3;
@@ -103,7 +103,7 @@
             // 
             this.locLabel.AutoSize = true;
             this.locLabel.BackColor = System.Drawing.Color.Transparent;
-            this.locLabel.Location = new System.Drawing.Point(32, 252);
+            this.locLabel.Location = new System.Drawing.Point(32, 247);
             this.locLabel.Name = "locLabel";
             this.locLabel.Size = new System.Drawing.Size(51, 13);
             this.locLabel.TabIndex = 19;
@@ -112,17 +112,17 @@
             // projFromDirBox
             // 
             this.projFromDirBox.AutoSize = true;
-            this.projFromDirBox.Location = new System.Drawing.Point(89, 303);
+            this.projFromDirBox.Location = new System.Drawing.Point(89, 301);
             this.projFromDirBox.Name = "projFromDirBox";
-            this.projFromDirBox.Size = new System.Drawing.Size(158, 17);
+            this.projFromDirBox.Size = new System.Drawing.Size(180, 17);
             this.projFromDirBox.TabIndex = 6;
-            this.projFromDirBox.Text = "Create project from directory";
+            this.projFromDirBox.Text = "Create project from existing code";
             this.projFromDirBox.UseVisualStyleBackColor = true;
             this.projFromDirBox.CheckedChanged += new System.EventHandler(this.projFromDirBox_CheckedChanged);
             // 
             // fileTypesBox
             // 
-            this.fileTypesBox.Location = new System.Drawing.Point(89, 277);
+            this.fileTypesBox.Location = new System.Drawing.Point(89, 268);
             this.fileTypesBox.Name = "fileTypesBox";
             this.fileTypesBox.Size = new System.Drawing.Size(274, 20);
             this.fileTypesBox.TabIndex = 5;
@@ -133,7 +133,7 @@
             // 
             this.fileTypesLabel.AutoSize = true;
             this.fileTypesLabel.BackColor = System.Drawing.Color.Transparent;
-            this.fileTypesLabel.Location = new System.Drawing.Point(25, 280);
+            this.fileTypesLabel.Location = new System.Drawing.Point(25, 271);
             this.fileTypesLabel.Name = "fileTypesLabel";
             this.fileTypesLabel.Size = new System.Drawing.Size(54, 13);
             this.fileTypesLabel.TabIndex = 19;
@@ -154,7 +154,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelTemplate;
-            this.ClientSize = new System.Drawing.Size(456, 363);
+            this.ClientSize = new System.Drawing.Size(456, 332);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.projFromDirBox);
             this.Controls.Add(this.fileTypesLabel);

@@ -33,7 +33,6 @@
             this.deleteDirButton = new System.Windows.Forms.Button();
             this.okButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
-            this.includeDirBrowser = new System.Windows.Forms.FolderBrowserDialog();
             this.moveUp = new System.Windows.Forms.Button();
             this.moveDown = new System.Windows.Forms.Button();
             this.configBox = new System.Windows.Forms.ComboBox();
@@ -121,7 +120,7 @@
             this.moveUp.Name = "moveUp";
             this.moveUp.Size = new System.Drawing.Size(28, 23);
             this.moveUp.TabIndex = 1;
-            this.moveUp.Text = "↑";
+            this.moveUp.Text = "▲";
             this.moveUp.Click += new System.EventHandler(this.moveUp_Click);
             // 
             // moveDown
@@ -133,7 +132,7 @@
             this.moveDown.Name = "moveDown";
             this.moveDown.Size = new System.Drawing.Size(28, 23);
             this.moveDown.TabIndex = 1;
-            this.moveDown.Text = "↓";
+            this.moveDown.Text = "▼";
             this.moveDown.Click += new System.EventHandler(this.moveDown_Click);
             // 
             // configBox
@@ -330,7 +329,6 @@
         private System.Windows.Forms.Button deleteDirButton;
         private System.Windows.Forms.Button okButton;
         private System.Windows.Forms.Button cancelButton;
-		private System.Windows.Forms.FolderBrowserDialog includeDirBrowser;
         private System.Windows.Forms.Button moveUp;
         private System.Windows.Forms.Button moveDown;
         private System.Windows.Forms.ComboBox configBox;

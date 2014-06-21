@@ -9,7 +9,6 @@ using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.GUI.DocumentWindows;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Utils;
@@ -67,6 +66,12 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void BuildProjTree()
         {
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(BuildProjTree);
+                return;
+            }
+
             projViewer.Nodes.Clear();
             projViewer.TreeViewNodeSorter = new NodeSorter();
             ProjectFolder folder = _projectService.Project.MainFolder;

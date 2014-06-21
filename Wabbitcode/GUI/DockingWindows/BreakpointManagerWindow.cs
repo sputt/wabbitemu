@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.GUI.Dialogs;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
@@ -14,13 +13,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
     public partial class BreakpointManagerWindow : ToolWindow
     {
         // TODO: this entire class looks nasty
-        private readonly IProjectService _projectService;
+        private readonly IProjectService _projectService = DependencyFactory.Resolve<IProjectService>();
 
         public BreakpointManagerWindow()
         {
             InitializeComponent();
-
-            _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
         private void UpdateManager()
@@ -98,8 +95,10 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void breakpointToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            NewBreakpointForm form = new NewBreakpointForm();
-            form.ShowDialog();
+            using (NewBreakpointForm form = new NewBreakpointForm())
+            {
+                form.ShowDialog();
+            }
         }
 
         private void ColButtonClick(object sender, EventArgs e)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
@@ -10,7 +11,6 @@ using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.GUI.DocumentWindows;
 using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -636,11 +636,14 @@ namespace Revsoft.Wabbitcode.GUI.Menus
             UpdateMenuItem.Click += updateMenuItem_Click;
             AboutMenuItem.Click += aboutMenuItem_Click;
 
-            ClearRecentItems();
-            foreach (string file in GetRecentFiles())
+            Task.Factory.StartNew(() =>
             {
-                AddRecentItem(file);
-            }
+                foreach (string file in GetRecentFiles())
+                {
+                    string fileCopy = file;
+                    this.BeginInvoke(() => AddRecentItem(fileCopy));
+                }
+            });
         }
 
         /// <summary>
@@ -749,15 +752,10 @@ namespace Revsoft.Wabbitcode.GUI.Menus
             new OpenFileAction(new FilePath(button.Text)).Execute();
         }
 
-        private void AddRecentItem(string file)
+        private static void AddRecentItem(string file)
         {
             ToolStripMenuItem button = new ToolStripMenuItem(file, null, OpenRecentDoc);
             RecentFilesMenuItem.DropDownItems.Add(button);
-        }
-
-        private static void ClearRecentItems()
-        {
-            RecentFilesMenuItem.DropDownItems.Clear();
         }
 
         private static IEnumerable<string> GetRecentFiles()

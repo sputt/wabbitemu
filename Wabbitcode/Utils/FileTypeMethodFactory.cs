@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Revsoft.Wabbitcode.Annotations;
 
 namespace Revsoft.Wabbitcode.Utils
 {
+    [UsedImplicitly]
     public class FileTypeMethodFactory : IFileTypeMethodFactory
     {
         public delegate bool FileHandlerDelegate(FilePath fileName);

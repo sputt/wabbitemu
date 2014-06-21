@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 #pragma warning disable 1591
 // ReSharper disable UnusedMember.Global
@@ -287,16 +288,19 @@ namespace Revsoft.Wabbitcode.Annotations
         {
         }
 
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public UsedImplicitlyAttribute(ImplicitUseKindFlags useKindFlags)
             : this(useKindFlags, ImplicitUseTargetFlags.Default)
         {
         }
 
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public UsedImplicitlyAttribute(ImplicitUseTargetFlags targetFlags)
             : this(ImplicitUseKindFlags.Default, targetFlags)
         {
         }
 
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public UsedImplicitlyAttribute(
             ImplicitUseKindFlags useKindFlags, ImplicitUseTargetFlags targetFlags)
         {
@@ -304,7 +308,9 @@ namespace Revsoft.Wabbitcode.Annotations
             TargetFlags = targetFlags;
         }
 
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public ImplicitUseKindFlags UseKindFlags { get; private set; }
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public ImplicitUseTargetFlags TargetFlags { get; private set; }
     }
 
@@ -321,16 +327,19 @@ namespace Revsoft.Wabbitcode.Annotations
         {
         }
 
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public MeansImplicitUseAttribute(ImplicitUseKindFlags useKindFlags)
             : this(useKindFlags, ImplicitUseTargetFlags.Default)
         {
         }
 
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public MeansImplicitUseAttribute(ImplicitUseTargetFlags targetFlags)
             : this(ImplicitUseKindFlags.Default, targetFlags)
         {
         }
 
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public MeansImplicitUseAttribute(
             ImplicitUseKindFlags useKindFlags, ImplicitUseTargetFlags targetFlags)
         {
@@ -339,13 +348,16 @@ namespace Revsoft.Wabbitcode.Annotations
         }
 
         [UsedImplicitly]
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public ImplicitUseKindFlags UseKindFlags { get; private set; }
 
         [UsedImplicitly]
+        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public ImplicitUseTargetFlags TargetFlags { get; private set; }
     }
 
     [Flags]
+    [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
     public enum ImplicitUseKindFlags
     {
         Default = Access | Assign | InstantiatedWithFixedConstructorSignature,
@@ -372,6 +384,7 @@ namespace Revsoft.Wabbitcode.Annotations
     /// or <see cref="UsedImplicitlyAttribute"/>
     /// </summary>
     [Flags]
+    [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
     public enum ImplicitUseTargetFlags
     {
         Default = Itself,
@@ -388,7 +401,8 @@ namespace Revsoft.Wabbitcode.Annotations
     /// This attribute is intended to mark publicly available API
     /// which should not be removed and so is treated as used
     /// </summary>
-    [MeansImplicitUse]
+    [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "API"), MeansImplicitUse]
+    [AttributeUsage(AttributeTargets.All)]
     public sealed class PublicAPIAttribute : Attribute
     {
         public PublicAPIAttribute()
@@ -440,11 +454,11 @@ namespace Revsoft.Wabbitcode.Annotations
     [AttributeUsage(AttributeTargets.Parameter)]
     public class PathReferenceAttribute : Attribute
     {
-        public PathReferenceAttribute()
+        protected PathReferenceAttribute()
         {
         }
 
-        public PathReferenceAttribute([PathReference] string basePath)
+        protected PathReferenceAttribute([PathReference] string basePath)
         {
             BasePath = basePath;
         }

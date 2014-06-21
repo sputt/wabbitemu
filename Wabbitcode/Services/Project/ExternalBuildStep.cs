@@ -72,8 +72,9 @@ namespace Revsoft.Wabbitcode.Services.Project
                 _outputText = cmd.StandardOutput.ReadToEnd();
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.Log("External build step failed", ex);
                 return false;
             }
         }
