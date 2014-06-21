@@ -15,12 +15,10 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
     public partial class NewProjectDialog
     {
         private bool _cancelQuit;
-        private readonly IProjectService _projectService;
+        private readonly IProjectService _projectService = DependencyFactory.Resolve<IProjectService>();
 
         public NewProjectDialog()
         {
-            _projectService = DependencyFactory.Resolve<IProjectService>();
-
             InitializeComponent();
             CreateTemplates();
             if (!Directory.Exists(FileLocations.ProjectsDir))
@@ -32,9 +30,9 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             {
                 ParseTemplatesFile();
             }
-            catch (Exception ex)
+            catch (InvalidDataException ex)
             {
-                DockingService.ShowError("Error loading templates file", ex);
+                DockingService.ShowError("Templates file formatted incorrectly", ex);
             }
 
             locTextBox.Text = FileLocations.ProjectsDir;
@@ -50,7 +48,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             }
         }
 
-        private void CreateTemplates()
+        private static void CreateTemplates()
         {
             try
             {
@@ -79,6 +77,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                 Resources.Resources.GetResource("TemplatesSource.mirage.asm", Path.Combine(FileLocations.TemplatesDir, "TI-83 Plus\\Mirage.asm"));
                 Resources.Resources.GetResource("TemplatesSource.dcs.asm", Path.Combine(FileLocations.TemplatesDir, "TI-83 Plus\\DoorsCS.asm"));
                 Resources.Resources.GetResource("TemplatesSource.app.asm", Path.Combine(FileLocations.TemplatesDir, "TI-83 Plus\\App.asm"));
+                Resources.Resources.GetResource("TemplatesSource.icon.bmp", Path.Combine(FileLocations.TemplatesDir, "Icon.bmp"));
                 Directory.CreateDirectory(Path.Combine(FileLocations.TemplatesDir, "TI-85"));
 
                 // Resources.GetResource("Templates Source.nostub85.asm", Path.Combine(templatesDir, "NoStub.asm"));
@@ -100,7 +99,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                 Resources.Resources.GetResource("TemplatesIncludes.var.inc", Path.Combine(FileLocations.IncludesDir, "var.inc"));
                 Resources.Resources.GetResource("TemplatesIncludes.ion.inc", Path.Combine(FileLocations.IncludesDir, "ion.inc"));
                 Resources.Resources.GetResource("TemplatesIncludes.mirage.inc", Path.Combine(FileLocations.IncludesDir, "mirage.inc"));
-                Resources.Resources.GetResource("TemplatesIncludes.dcs.inc", Path.Combine(FileLocations.IncludesDir, "dcs.inc"));
+                Resources.Resources.GetResource("TemplatesIncludes.dcs7.inc", Path.Combine(FileLocations.IncludesDir, "dcs7.inc"));
                 Resources.Resources.GetResource("TemplatesIncludes.keys82.inc", Path.Combine(FileLocations.IncludesDir, "keys82.inc"));
                 Resources.Resources.GetResource("TemplatesIncludes.ti82.h", Path.Combine(FileLocations.IncludesDir, "ti82.h"));
             }
@@ -160,21 +159,17 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                     continue;
                 }
 
-                var templateName = reader.GetAttribute("name");
-                var ext = reader.GetAttribute("ext");
+                string templateName = reader.GetAttribute("name");
+                string ext = reader.GetAttribute("ext");
+                string usesIconString = reader.GetAttribute("usesicon");
+                bool usesIcon = usesIconString != null && bool.Parse(usesIconString);
                 if (!reader.Read())
                 {
                     throw new InvalidDataException("Invalid XML: Unexpected file end");
                 }
 
-                var file = reader.Value;
-                box.Items.Add(new ListBoxItem
-                {
-                    Text = templateName,
-                    File = Path.Combine(
-                        Path.Combine(FileLocations.TemplatesDir, modelName), file),
-                    Ext = ext
-                });
+                string file = Path.Combine(Path.Combine(FileLocations.TemplatesDir, modelName), reader.Value);
+                box.Items.Add(new ProjectItemModel(file, ext, templateName, usesIcon));
             }
 
             page.Controls.Add(box);
@@ -192,7 +187,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                 return;
             }
 
-            var item = (ListBoxItem) listBox.SelectedItem;
+            var item = (ProjectItemModel) listBox.SelectedItem;
             string outputExt = item.Ext;
             if (string.IsNullOrEmpty(projectDir))
             {
@@ -230,6 +225,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             else
             {
                 FilePath mainFile = new FilePath(Path.Combine(projectDir, projectName + ".asm"));
+                FilePath iconFile = new FilePath(Path.Combine(projectDir, "icon.bmp"));
                 try
                 {
                     File.Copy(item.File, mainFile);
@@ -246,18 +242,31 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                     }
                 }
 
+                try
+                {
+                    if (item.UsesIcon)
+                    {
+                        File.Copy(Path.Combine(FileLocations.TemplatesDir, "Icon.bmp"), iconFile);
+                        _projectService.AddFile(folder, iconFile);
+                    }
+                }
+                catch (IOException ex)
+                {
+                    Logger.Log("Icon already exists", ex);
+                }
+
                 _projectService.AddFile(folder, mainFile);
                 new OpenFileAction(mainFile).Execute();
             }
 
             _projectService.Project.IncludeDirs.Add(FileLocations.IncludesDir);
-            var debug = _projectService.Project.BuildSystem.BuildConfigs.Single(c => c.Name == "Debug");
-            var release = _projectService.Project.BuildSystem.BuildConfigs.Single(c => c.Name == "Release");
-            debug.Steps.Add(new InternalBuildStep(0,
+            var debugConfig = _projectService.Project.BuildSystem.BuildConfigs.Single(c => c.Name == "Debug");
+            var releaseConfig = _projectService.Project.BuildSystem.BuildConfigs.Single(c => c.Name == "Release");
+            debugConfig.AddStep(new InternalBuildStep(0,
                 BuildStepType.All,
                 projectDir.Combine(projectName + ".asm"),
                 projectDir.Combine(projectName + outputExt)));
-            release.Steps.Add(new InternalBuildStep(0,
+            releaseConfig.AddStep(new InternalBuildStep(0,
                 BuildStepType.Assemble,
                 projectDir.Combine(projectName + ".asm"),
                 projectDir.Combine(projectName + outputExt)));

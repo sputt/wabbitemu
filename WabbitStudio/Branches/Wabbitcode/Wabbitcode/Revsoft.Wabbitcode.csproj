@@ -90,7 +90,8 @@
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile>
     </ConfigurationOverrideFile>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <DocumentationFile>
     </DocumentationFile>
     <DebugSymbols>true</DebugSymbols>
@@ -100,7 +101,7 @@
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
-    <DebugType>full</DebugType>
+    <DebugType>pdbonly</DebugType>
     <ErrorReport>prompt</ErrorReport>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -699,6 +700,9 @@
     <Compile Include="GUI\Menus\MainMenuStrip.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="GUI\ToolBars\WabbitcodeToolStripContainer.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Interfaces\IBookmarkable.cs" />
     <Compile Include="Interfaces\IClipboardOperation.cs" />
     <Compile Include="Interfaces\ISelectable.cs" />
@@ -735,6 +739,9 @@
     <Compile Include="Services\Interfaces\ISymbolService.cs" />
     <Compile Include="Services\Interfaces\IToolBarService.cs" />
     <Compile Include="Services\Parser\IParserFactory.cs" />
+    <Compile Include="Services\WabbitcodeDockPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Utils\Logger.cs" />
     <Compile Include="Services\MenuService.cs" />
     <Compile Include="Services\Parser\ParserFactory.cs" />
@@ -763,7 +770,7 @@
     <Compile Include="GUI\DockingWindows\StackViewer.designer.cs">
       <DependentUpon>StackViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utils\ListBoxItem.cs" />
+    <Compile Include="Utils\ProjectItemModel.cs" />
     <Compile Include="GUI\Dialogs\RefactorRenameForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -886,8 +893,8 @@
     <Compile Include="GUI\Dialogs\NewBreakpointForm.designer.cs">
       <DependentUpon>NewBreakpointForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\DocumentWindows\Editor.Designer.cs">
-      <DependentUpon>Editor.cs</DependentUpon>
+    <Compile Include="GUI\DocumentWindows\TextEditor.Designer.cs">
+      <DependentUpon>TextEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <DependentUpon>Settings.settings</DependentUpon>
@@ -919,7 +926,7 @@
     <Compile Include="GUI\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\DocumentWindows\Editor.cs">
+    <Compile Include="GUI\DocumentWindows\TextEditor.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\Dialogs\GotoLine.cs">
@@ -977,6 +984,9 @@
     <EmbeddedResource Include="GUI\DocumentWindows\ImageViewer.resx">
       <DependentUpon>ImageViewer.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\DocumentWindows\TextEditor.resx">
+      <DependentUpon>TextEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\ToolBars\DebugToolBar.resx">
       <DependentUpon>DebugToolBar.cs</DependentUpon>
       <Generator>ResXFileCodeGenerator</Generator>
@@ -1003,7 +1013,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\TemplatesIncludes\app.inc" />
-    <EmbeddedResource Include="Resources\TemplatesIncludes\dcs.inc" />
+    <EmbeddedResource Include="Resources\TemplatesIncludes\dcs7.inc" />
     <EmbeddedResource Include="Resources\TemplatesIncludes\ion.inc" />
     <EmbeddedResource Include="Resources\TemplatesIncludes\mirage.inc" />
     <EmbeddedResource Include="Resources\TemplatesIncludes\ti83plus.inc" />
@@ -1078,6 +1088,7 @@
     <EmbeddedResource Include="Resources\TemplatesSource\nostub86.asm" />
     <EmbeddedResource Include="Resources\TemplatesIncludes\relocate.inc" />
     <EmbeddedResource Include="Resources\Templates.xml" />
+    <EmbeddedResource Include="Resources\TemplatesSource\icon.bmp" />
     <Content Include="Resources\Wabbitcode.ico" />
     <EmbeddedResource Include="GUI\Dialogs\BitmapViewer.resx">
       <DependentUpon>BitmapViewer.cs</DependentUpon>
@@ -1091,10 +1102,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Dialogs\IncludeDir.resx">
       <DependentUpon>IncludeDir.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\DocumentWindows\Editor.resx">
-      <DependentUpon>Editor.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Dialogs\GotoLine.resx">

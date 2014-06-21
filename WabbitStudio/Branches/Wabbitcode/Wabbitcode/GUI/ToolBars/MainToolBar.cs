@@ -4,9 +4,9 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.Interfaces;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Utils;
@@ -169,6 +169,12 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
 
         private void ProjectService_ProjectOpened(object sender, EventArgs e)
         {
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(() => ProjectService_ProjectOpened(sender, e));
+                return;
+            }
+
             IProject project = _projectService.Project;
             if (project.IsInternal)
             {

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
@@ -95,7 +94,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         protected override bool DocumentChanged { get; set; }
 
-        public override void OpenFile(FilePath fileName)
+        protected override void OpenFile(FilePath fileName)
         {
             base.OpenFile(fileName);
 
@@ -134,6 +133,14 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         public override void SelectAll()
         {
+        }
+
+        protected override void ReloadFile()
+        {
+            double zoom = _currentZoom;
+            OpenFile(FileName);
+            _currentZoom = zoom;
+            ShowCurrentImage();
         }
 
         protected override string GetPersistString()

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Windows.Forms;
 using System.Xml;
 using Revsoft.TextEditor.Document;
+using Revsoft.TextEditor.Src.Document.HighlightingStrategy.SyntaxModes;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
@@ -12,6 +12,41 @@ namespace Revsoft.Wabbitcode.Utils
 {
     public static class HighlightingUtils
     {
+        private const int HighlightingFileSize = 8192;
+
+        private static readonly string[] Punctuation =
+                {
+                    "?", ",", "(", ")", "[", "]", "{", "}", "+", "-",
+                    "/", "%", "*", "<", ">", "^", "=", "!", "|", "&"
+                };
+        private static readonly string[] Registers =
+                {
+                    "a", "b", "c", "d", "e", "f", "h", "l", "i", "af", "bc", "de", "hl", "ix",
+                    "iy", "ixl", "ixh", "iyl", "iyh", "hx", "lx", "ly", "hy", "pc", "sp"
+                };
+        private static readonly string[] Preprocessor =
+                {
+                    "#include", "#define", "#ifdef", "#ifndef", "#if", "#else", "#endif",
+                    "#defcont", "#undefine", "#undef", "#macro", "#endmacro", "#region", "#endregion"
+                };
+        private static readonly string[] Directives =
+                {
+                    ".db", ".dw", ".end", ".org", ".byte", ".word", ".fill", ".block", ".addinstr",
+                    ".echo", ".error", ".list", ".nolist", ".equ", ".option"
+                };
+        private static readonly string[] Opcodes =
+                {
+                    "adc", "add", "and", "bit", "call", "ccf", "cpdr", "cpd", "cpir",
+                    "cpi", "cpl", "cp", "daa", "dec", "di", "djnz", "ei", "exx", "ex", "halt", "im", "inc",
+                    "indr", "ind", "inir", "ini", "in", "jp", "jr", "lddr", "ldd", "ldir", "ldi", "ld", "neg",
+                    "nop", "or", "otdr", "otir", "outd", "outi", "out", "pop", "push", "res", "reti", "retn",
+                    "ret", "rla", "rlca", "rlc", "rld", "rl", "rra", "rrca", "rrc", "rrd", "rr", "rst", "sbc",
+                    "scf", "set", "sla", "sll", "sra", "srl", "sub", "xor"
+                };
+        private static readonly string[] Conditions = { "z", "nz", "c", "nc", "p", "m", "v", "nv", "pe", "po" };
+
+        private static readonly string[] Extensions = { ".asm", ".inc", ".z80", ".fcreate" };
+
         public static void MakeHighlightingFile()
         {
             string commentsColor = Settings.Default.CommentColor.ToHexString();
@@ -71,45 +106,18 @@ namespace Revsoft.Wabbitcode.Utils
 
             try
             {
-                string[] punctuation =
+                MemoryStream memoryStream = new MemoryStream(HighlightingFileSize);
+                XmlWriterSettings writerSettings = new XmlWriterSettings
                 {
-                    "?", ",", "(", ")", "[", "]", "{", "}", "+", "-",
-                    "/", "%", "*", "<", ">", "^", "=", "!", "|", "&"
-                };
-                string[] registers =
-                {
-                    "a", "b", "c", "d", "e", "f", "h", "l", "i", "af", "bc", "de", "hl", "ix",
-                    "iy", "ixl", "ixh", "iyl", "iyh", "hx", "lx", "ly", "hy", "pc", "sp"
-                };
-                string[] preprocessor =
-                {
-                    "#include", "#define", "#ifdef", "#ifndef", "#if", "#else", "#endif",
-                    "#defcont", "#undefine", "#undef", "#macro", "#endmacro", "#region", "#endregion"
-                };
-                string[] directives =
-                {
-                    ".db", ".dw", ".end", ".org", ".byte", ".word", ".fill", ".block", ".addinstr",
-                    ".echo", ".error", ".list", ".nolist", ".equ", ".option"
-                };
-                string[] opcodes =
-                {
-                    "adc", "add", "and", "bit", "call", "ccf", "cpdr", "cpd", "cpir",
-                    "cpi", "cpl", "cp", "daa", "dec", "di", "djnz", "ei", "exx", "ex", "halt", "im", "inc",
-                    "indr", "ind", "inir", "ini", "in", "jp", "jr", "lddr", "ldd", "ldir", "ldi", "ld", "neg",
-                    "nop", "or", "otdr", "otir", "outd", "outi", "out", "pop", "push", "res", "reti", "retn",
-                    "ret", "rla", "rlca", "rlc", "rld", "rl", "rra", "rrca", "rrc", "rrd", "rr", "rst", "sbc",
-                    "scf", "set", "sla", "sll", "sra", "srl", "sub", "xor"
+                    Encoding = Encoding.UTF8
                 };
 
-                XmlTextWriter writer = new XmlTextWriter(Application.UserAppDataPath + "\\Z80Asm.xshd", Encoding.UTF8)
-                {
-                    Formatting = Formatting.Indented
-                };
+                XmlWriter writer = XmlWriter.Create(memoryStream, writerSettings);
                 writer.WriteStartDocument();
                 writer.WriteComment("Z80 Asm syntax highlighting file");
                 writer.WriteStartElement("SyntaxDefinition");
                 writer.WriteAttributeString("name", "Z80 Assembly");
-                writer.WriteAttributeString("extensions", ".asm;.inc;.z80;.fcreate");
+                writer.WriteAttributeString("extensions", String.Join(";", Extensions));
                 writer.WriteStartElement("Environment");
                 writer.WriteStartElement("Custom");
                 writer.WriteAttributeString("name", "TypeReference");
@@ -304,7 +312,7 @@ namespace Revsoft.Wabbitcode.Utils
                 writer.WriteAttributeString("italic", "false");
                 writer.WriteAttributeString("color", "Black");
 
-                foreach (string punc in punctuation)
+                foreach (string punc in Punctuation)
                 {
                     writer.WriteStartElement("Key");
                     writer.WriteAttributeString("word", punc);
@@ -318,7 +326,7 @@ namespace Revsoft.Wabbitcode.Utils
                 writer.WriteAttributeString("bold", "false");
                 writer.WriteAttributeString("italic", "false");
                 writer.WriteAttributeString("color", registersColor);
-                foreach (string register in registers)
+                foreach (string register in Registers)
                 {
                     writer.WriteStartElement("Key");
                     writer.WriteAttributeString("word", register);
@@ -332,7 +340,7 @@ namespace Revsoft.Wabbitcode.Utils
                 writer.WriteAttributeString("bold", "false");
                 writer.WriteAttributeString("italic", "false");
                 writer.WriteAttributeString("color", preProcessorColor);
-                foreach (string pre in preprocessor)
+                foreach (string pre in Preprocessor)
                 {
                     writer.WriteStartElement("Key");
                     writer.WriteAttributeString("word", pre);
@@ -346,7 +354,7 @@ namespace Revsoft.Wabbitcode.Utils
                 writer.WriteAttributeString("bold", "false");
                 writer.WriteAttributeString("italic", "false");
                 writer.WriteAttributeString("color", directivesColor);
-                foreach (string directive in directives)
+                foreach (string directive in Directives)
                 {
                     writer.WriteStartElement("Key");
                     writer.WriteAttributeString("word", directive);
@@ -360,7 +368,7 @@ namespace Revsoft.Wabbitcode.Utils
                 writer.WriteAttributeString("bold", "false");
                 writer.WriteAttributeString("italic", "false");
                 writer.WriteAttributeString("color", opcodesColor);
-                foreach (string opcode in opcodes)
+                foreach (string opcode in Opcodes)
                 {
                     writer.WriteStartElement("Key");
                     writer.WriteAttributeString("word", opcode);
@@ -369,13 +377,12 @@ namespace Revsoft.Wabbitcode.Utils
 
                 writer.WriteEndElement();
 
-                string[] conditions = {"z", "nz", "c", "nc", "p", "m", "v", "nv", "pe", "po"};
                 writer.WriteStartElement("KeyWords");
                 writer.WriteAttributeString("name", "Conditions");
                 writer.WriteAttributeString("bold", "false");
                 writer.WriteAttributeString("italic", "false");
                 writer.WriteAttributeString("color", conditionsColor);
-                foreach (string condition in conditions)
+                foreach (string condition in Conditions)
                 {
                     writer.WriteStartElement("Key");
                     writer.WriteAttributeString("word", condition);
@@ -430,24 +437,31 @@ namespace Revsoft.Wabbitcode.Utils
                 writer.WriteEndElement(); // </SyntaxDefinition>
                 writer.Flush();
                 writer.Close();
+
+                // reset memory stream so it can be read
+                memoryStream.Position = 0;
+
+                // Create new provider with the temp directory
+                SyntaxMode syntaxMode = new SyntaxMode("MemoryStream", "Z80 Assembly", Extensions);
+                StreamSyntaxModeProvider provider = new StreamSyntaxModeProvider();
+                provider.AddSyntaxMode(syntaxMode, memoryStream);
+
+                // Attach to the text editor
+                HighlightingManager.Manager.AddSyntaxModeFileProvider(provider);
             }
             catch (Exception ex)
             {
                 DockingService.ShowError("Error creating highlighting file!", ex);
             }
+            // we don't dispose the memory stream here, the HighlightingManager will be responsible
 
-            // Create new provider with the temp directory
-            FileSyntaxModeProvider fsmProvider = new FileSyntaxModeProvider(Application.UserAppDataPath);
-
-            // Attach to the text editor
-            HighlightingManager.Manager.AddSyntaxModeFileProvider(fsmProvider);
             if (string.IsNullOrEmpty(Settings.Default.ExternalHighlight))
             {
                 return;
             }
 
-            FileSyntaxModeProvider fsmProvider2 = new FileSyntaxModeProvider(Path.GetDirectoryName(Settings.Default.ExternalHighlight));
-            HighlightingManager.Manager.AddSyntaxModeFileProvider(fsmProvider2);
+            FileSyntaxModeProvider fileProvider = new FileSyntaxModeProvider(Path.GetDirectoryName(Settings.Default.ExternalHighlight));
+            HighlightingManager.Manager.AddSyntaxModeFileProvider(fileProvider);
         }
     }
 }

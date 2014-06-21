@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Practices.Unity;
 using Revsoft.Wabbitcode.Actions;
-using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.GUI.DocumentWindows;
@@ -15,10 +13,8 @@ using Revsoft.Wabbitcode.GUI.Menus;
 using Revsoft.Wabbitcode.GUI.ToolBars;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
-using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -33,17 +29,16 @@ namespace Revsoft.Wabbitcode.GUI
         #region Private Members
 
         private bool _showToolbar = true;
-        private IFileTypeMethodFactory _fileTypeMethodFactory;
 
         #region Services
 
-        private IDockingService _dockingService;
-        private IProjectService _projectService;
-        private IStatusBarService _statusBarService;
-        private IToolBarService _toolBarService;
-        private IMenuService _menuService;
-        private IDebuggerService _debuggerService;
-        private IPluginService _pluginService;
+        private readonly IDockingService _dockingService = DependencyFactory.Resolve<IDockingService>();
+        private readonly IProjectService _projectService = DependencyFactory.Resolve<IProjectService>();
+        private readonly IStatusBarService _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
+        private readonly IToolBarService _toolBarService = DependencyFactory.Resolve<IToolBarService>();
+        private readonly IMenuService _menuService = DependencyFactory.Resolve<IMenuService>();
+        private readonly IDebuggerService _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+        private readonly IPluginService _pluginService = DependencyFactory.Resolve<IPluginService>();
 
         #endregion
 
@@ -53,51 +48,37 @@ namespace Revsoft.Wabbitcode.GUI
 
         #endregion
 
-        public MainForm(ICollection<string> args)
+        public MainForm(ToolStripContainer toolStripContainer, ICollection<string> args)
         {
+            this.toolStripContainer = toolStripContainer;
             InitializeComponent();
             RestoreWindow();
-            InitializeDependencies();
+
+            InitializeUi();
             InitializeEvents();
-            InitializeMenus();
-            InitializeToolbars();
-            RegisterFileTypes();
-
-            _dockingService.InitPanels();
-            _dockingService.LoadConfig(GetContentFromPersistString);
-
-            InitializePlugins();
-
-            if (args.Count == 0)
-            {
-                LoadStartupProject();
-            }
-
-            if (_projectService.Project == null)
-            {
-                _projectService.CreateInternalProject();
-            }
 
             HandleArgs(args);
         }
 
         private IDockContent GetContentFromPersistString(string persistString)
         {
-            Type type = Type.GetType(persistString);
+            string[] parsedStrings = persistString.Split(';');
+            Type type = Type.GetType(parsedStrings[0]);
             if (type == null)
             {
                 return null;
             }
 
-            ToolWindow window = _dockingService.GetDockingWindow(type);
-            if (window != null)
+            if (typeof(ToolWindow).IsAssignableFrom(type))
             {
-                return window;
+                ToolWindow window = _dockingService.GetDockingWindow(type);
+                if (window != null)
+                {
+                    return window;
+                }
             }
 
-            string[] parsedStrings = persistString.Split(';');
-            type = Type.GetType(parsedStrings[0]);
-            if (parsedStrings.Length < 3 || type == null || type.IsAssignableFrom(typeof(AbstractFileEditor)))
+            if (parsedStrings.Length < 3 || !typeof(AbstractFileEditor).IsAssignableFrom(type))
             {
                 return null;
             }
@@ -162,73 +143,45 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void InitializeEvents()
         {
-            _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
-            _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
-            _debuggerService.OnDebuggingEnded += (sender, args) => EndDebug();
-            _projectService.ProjectOpened += ProjectService_OnProjectOpened;
+            Task.Factory.StartNew(() =>
+            {
+                _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
+                _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
+                _debuggerService.OnDebuggingEnded += (sender, args) => EndDebug();
+                _projectService.ProjectOpened += ProjectService_OnProjectOpened;
+
+                LoadStartupProject();
+
+                if (_projectService.Project == null)
+                {
+                    _projectService.CreateInternalProject();
+                }
+
+                try
+                {
+                    _pluginService.LoadPlugins();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Loading plugin failed", ex);
+                }
+            });
         }
 
-        private void InitializeDependencies()
+        private void InitializeUi()
         {
-            // services
-            DependencyFactory.RegisterType<IDockingService, DockingService>(new InjectionConstructor(dockPanel));
-            DependencyFactory.RegisterType<IStatusBarService, StatusBarService>(new InjectionConstructor(statusBar));
-            DependencyFactory.RegisterType<IMenuService, MenuService>(new InjectionConstructor(toolStripContainer.TopToolStripPanel));
-            DependencyFactory.RegisterType<IToolBarService, ToolBarService>(new InjectionConstructor(toolStripContainer.TopToolStripPanel));
-            DependencyFactory.RegisterType<IAssemblerService, AssemblerService>();
-            DependencyFactory.RegisterType<IBackgroundAssemblerService, BackgroundAssemblerService>(new PerResolveLifetimeManager());
-            DependencyFactory.RegisterType<IProjectService, ProjectService>();
-            DependencyFactory.RegisterType<IParserService, ParserService>();
-            DependencyFactory.RegisterType<ISymbolService, SymbolService>();
-            DependencyFactory.RegisterType<IFileService, FileService>();
-            DependencyFactory.RegisterType<IDebuggerService, DebuggerService>();
-            DependencyFactory.RegisterType<IPluginService, PluginService>();
-            // factories
-            DependencyFactory.RegisterType<IAssemblerFactory, AssemblerFactory>();
-            DependencyFactory.RegisterType<IParserFactory, ParserFactory>();
-            DependencyFactory.RegisterType<IFileTypeMethodFactory, FileTypeMethodFactory>();
-            DependencyFactory.RegisterType<ICodeCompletionFactory, CodeCompletionFactory>();
+            IFileTypeMethodFactory fileTypeMethodFactory = DependencyFactory.Resolve<IFileTypeMethodFactory>();
+            fileTypeMethodFactory.RegisterFileType(".asm", path => DocumentWindows.TextEditor.OpenDocument(path) != null);
+            fileTypeMethodFactory.RegisterFileType(".z80", path => DocumentWindows.TextEditor.OpenDocument(path) != null);
+            fileTypeMethodFactory.RegisterFileType(".inc", path => DocumentWindows.TextEditor.OpenDocument(path) != null);
+            fileTypeMethodFactory.RegisterFileType(".bmp", path => ImageViewer.OpenImage(path) != null);
+            fileTypeMethodFactory.RegisterFileType(".png", path => ImageViewer.OpenImage(path) != null);
+            fileTypeMethodFactory.RegisterDefaultHandler(path => DocumentWindows.TextEditor.OpenDocument(path) != null); 
 
-            _dockingService = DependencyFactory.Resolve<IDockingService>();
-            _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
-            _menuService = DependencyFactory.Resolve<IMenuService>();
-            _toolBarService = DependencyFactory.Resolve<IToolBarService>();
-            _projectService = DependencyFactory.Resolve<IProjectService>();
-            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
-            _pluginService = DependencyFactory.Resolve<IPluginService>();
-            _fileTypeMethodFactory = DependencyFactory.Resolve<IFileTypeMethodFactory>();
-        }
-
-        private void InitializeToolbars()
-        {
+            _dockingService.LoadConfig(GetContentFromPersistString);
             _toolBarService.RegisterToolbar(DebugToolBarName, new DebugToolBar());
             _toolBarService.RegisterToolbar(MainToolBarName, new MainToolBar());
-        }
-
-        private void InitializeMenus()
-        {
             _menuService.RegisterMenu(MainMenuName, new MainMenuStrip());
-        }
-
-        private void InitializePlugins()
-        {
-            try
-            {
-                _pluginService.LoadPlugins();
-            }
-            catch (ReflectionTypeLoadException)
-            {
-            }
-        }
-
-        private void RegisterFileTypes()
-        {
-            _fileTypeMethodFactory.RegisterFileType(".asm", path => Editor.OpenDocument(path) != null);
-            _fileTypeMethodFactory.RegisterFileType(".z80", path => Editor.OpenDocument(path) != null);
-            _fileTypeMethodFactory.RegisterFileType(".inc", path => Editor.OpenDocument(path) != null);
-            _fileTypeMethodFactory.RegisterFileType(".bmp", path => ImageViewer.OpenImage(path) != null);
-            _fileTypeMethodFactory.RegisterFileType(".png", path => ImageViewer.OpenImage(path) != null);
-            _fileTypeMethodFactory.RegisterDefaultHandler(path => Editor.OpenDocument(path) != null);
         }
 
         private static void HandleArgs(ICollection<string> args)
@@ -241,8 +194,7 @@ namespace Revsoft.Wabbitcode.GUI
             new OpenFileAction(args
                 .Where(arg => !string.IsNullOrEmpty(arg))
                 .Select(arg => new FilePath(arg))
-                .ToArray()
-                ).Execute();
+                .ToArray()).Execute();
         }
 
         public void ProcessParameters(string[] args)

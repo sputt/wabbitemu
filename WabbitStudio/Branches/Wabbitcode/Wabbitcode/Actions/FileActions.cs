@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.GUI.DocumentWindows;
-using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -21,7 +21,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         public override void Execute()
         {
-            Editor doc = new Editor
+            GUI.DocumentWindows.TextEditor doc = new GUI.DocumentWindows.TextEditor
             {
                 Text = "New Document",
                 TabText = "New Document"
@@ -67,10 +67,10 @@ namespace Revsoft.Wabbitcode.Actions
                 {
                     if (!_fileTypeMethodFactory.OpenRegisteredFile(fileName))
                     {
-                        throw new Exception("Opening file failed");
+                        throw new IOException("Opening file failed");
                     }
                 }
-                catch (Exception ex)
+                catch (IOException ex)
                 {
                     DockingService.ShowError("Error opening file", ex);
                 }
@@ -79,7 +79,7 @@ namespace Revsoft.Wabbitcode.Actions
 
         private bool ShowDialog()
         {
-            var openFileDialog = new OpenFileDialog
+            using (var openFileDialog = new OpenFileDialog
             {
                 CheckFileExists = true,
                 DefaultExt = "*.asm",
@@ -90,14 +90,16 @@ namespace Revsoft.Wabbitcode.Actions
                 RestoreDirectory = true,
                 Multiselect = true,
                 Title = "Open File",
-            };
-
-            if (openFileDialog.ShowDialog() != DialogResult.OK)
+            })
             {
-                return false;
+                if (openFileDialog.ShowDialog() != DialogResult.OK)
+                {
+                    return false;
+                }
+
+                _fileNames = openFileDialog.FileNames.Select(path => new FilePath(path));
             }
 
-            _fileNames = openFileDialog.FileNames.Select(path => new FilePath(path));
             return true;
         }
     }
@@ -113,7 +115,8 @@ namespace Revsoft.Wabbitcode.Actions
 
         public override void Execute()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            FilePath fileName;
+            using (OpenFileDialog openFileDialog = new OpenFileDialog
             {
                 CheckFileExists = true,
                 DefaultExt = "*.wcodeproj",
@@ -121,33 +124,21 @@ namespace Revsoft.Wabbitcode.Actions
                 FilterIndex = 0,
                 RestoreDirectory = true,
                 Title = "Open Project File",
-            };
-            try
+            })
             {
                 if (openFileDialog.ShowDialog() != DialogResult.OK)
                 {
                     return;
                 }
 
-                FilePath fileName = new FilePath(openFileDialog.FileName);
+                fileName = new FilePath(openFileDialog.FileName);
+            }
 
+            try
+            {
                 if (!_projectService.OpenProject(fileName))
                 {
                     _projectService.CreateInternalProject();
-                }
-
-                if (Settings.Default.StartupProject == fileName)
-                {
-                    return;
-                }
-
-                if (
-                    MessageBox.Show("Would you like to make this your default project?",
-                        "Startup Project",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question) == DialogResult.Yes)
-                {
-                    Settings.Default.StartupProject = fileName;
                 }
             }
             catch (Exception ex)
@@ -184,8 +175,13 @@ namespace Revsoft.Wabbitcode.Actions
         private readonly AbstractFileEditor _editor;
 
         public SaveAsCommand()
+            : this(DependencyFactory.Resolve<IDockingService>().ActiveDocument as AbstractFileEditor)
         {
-            _editor = DependencyFactory.Resolve<IDockingService>().ActiveDocument as AbstractFileEditor;
+        }
+
+        public SaveAsCommand(AbstractFileEditor editor)
+        {
+            _editor = editor;
         }
 
         public override void Execute()

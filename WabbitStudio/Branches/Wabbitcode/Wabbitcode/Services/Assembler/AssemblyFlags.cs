@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Revsoft.Wabbitcode.Services.Assembler
 {
+    [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
     [Flags]
     public enum AssemblyFlags
     {

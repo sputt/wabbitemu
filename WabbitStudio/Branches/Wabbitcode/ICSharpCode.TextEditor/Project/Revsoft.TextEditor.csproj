@@ -516,6 +516,7 @@
     <Compile Include="Src\Document\DocumentEventArgs.cs" />
     <Compile Include="Src\Document\DocumentFactory.cs" />
     <Compile Include="Src\Document\HighlightingStrategy\HighlightingDefinitionInvalidException.cs" />
+    <Compile Include="Src\Document\HighlightingStrategy\SyntaxModes\StreamSyntaxModeProvider.cs" />
     <Compile Include="Src\Document\IDocument.cs" />
     <Compile Include="Src\Document\ISegment.cs" />
     <Compile Include="Src\Document\LineManager\DeferredEventList.cs" />

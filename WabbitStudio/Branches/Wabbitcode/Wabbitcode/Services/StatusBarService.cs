@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Annotations;
+﻿using System.Windows.Forms;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.GUI.ToolBars;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -13,6 +14,11 @@ namespace Revsoft.Wabbitcode.Services
         public StatusBarService(WabbitcodeStatusBar statusBar)
         {
             _statusBar = statusBar;
+        }
+
+        public StatusStrip StatusBar
+        {
+            get { return _statusBar; }
         }
 
         public void SetCaretPosition(int line, int column)

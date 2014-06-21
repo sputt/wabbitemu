@@ -6,7 +6,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;

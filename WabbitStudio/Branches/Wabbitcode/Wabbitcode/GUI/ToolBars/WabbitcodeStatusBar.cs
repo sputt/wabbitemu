@@ -24,6 +24,14 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
 
         public WabbitcodeStatusBar()
         {
+            SuspendLayout();
+
+            Dock = DockStyle.None;
+            Location = new Point(0, 0);
+            Name = "statusBar";
+            Size = new Size(990, 22);
+            TabIndex = 4;
+
             Items.AddRange(new ToolStripItem[]
             {
                 _statusLabel,
@@ -33,13 +41,15 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
                 _colStatusLabel
             });
             Name = "statusBar";
+
+            ResumeLayout(false);
         }
 
         public void SetCodeCountInfo(CodeCountInfo info)
         {
             if (InvokeRequired)
             {
-                this.Invoke(() => SetCodeCountInfo(info));
+                this.BeginInvoke(() => SetCodeCountInfo(info));
                 return;
             }
             _lineCodeInfo.Text = info == null ? string.Empty : string.Format("Min: {0} Max: {1} Size: {2}", info.Min, info.Max, info.Size);
@@ -49,7 +59,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
         {
             if (InvokeRequired)
             {
-                this.Invoke(() => SetText(text));
+                this.BeginInvoke(() => SetText(text));
                 return;
             }
             _statusLabel.Text = text;
@@ -59,7 +69,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
         {
             if (InvokeRequired)
             {
-                this.Invoke(() => SetCaretPosition(line, column));
+                this.BeginInvoke(() => SetCaretPosition(line, column));
                 return;
             }
             string lineString = line == -1 ? string.Empty : "Ln: " + line;
@@ -72,7 +82,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
         {
             if (InvokeRequired)
             {
-                this.Invoke(() => ShowProgressBar(show));
+                this.BeginInvoke(() => ShowProgressBar(show));
                 return;
             }
 
@@ -83,7 +93,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
         {
             if (InvokeRequired)
             {
-                this.Invoke(() => IncrementProgressBarProgress(value));
+                this.BeginInvoke(() => IncrementProgressBarProgress(value));
                 return;
             }
 

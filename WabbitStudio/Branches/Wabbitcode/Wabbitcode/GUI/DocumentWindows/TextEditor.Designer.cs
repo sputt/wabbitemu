@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 {
-	partial class Editor : AbstractFileEditor
+	partial class TextEditor
 	{
 		private IContainer components;
 		/// <summary>
@@ -29,7 +29,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Editor));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextEditor));
             this.editorBox = new Revsoft.Wabbitcode.EditorExtensions.WabbitcodeTextEditor();
 			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.contextMenu = new System.Windows.Forms.ContextMenu();

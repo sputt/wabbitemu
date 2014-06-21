@@ -42,8 +42,8 @@ namespace Revsoft.Wabbitcode.Services.Assembler
                 string type = match.Groups["type"].Value;
                 string description = match.Groups["description"].Value;
                 int lineNum = Convert.ToInt32(lineNumString);
-                bool isError = type.Contains("error");
-                _parsedErrors.Add(new BuildError(file, lineNum, description, isError));
+                bool isWarning = type.Contains("warning");
+                _parsedErrors.Add(new BuildError(file, lineNum, description, isWarning));
             }
         }
     }

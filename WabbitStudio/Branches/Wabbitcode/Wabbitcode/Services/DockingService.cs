@@ -19,11 +19,24 @@ namespace Revsoft.Wabbitcode.Services
         #region Private Members
 
         private readonly DockPanel _dockPanel;
+        private readonly ToolStripContainer _toolStripContainer;
+
         private readonly Dictionary<Type, ToolWindow> _registeredDockingWindows = new Dictionary<Type, ToolWindow>();
+        
 
         #endregion
 
         #region Public Properties
+
+        public DockPanel DockPanel
+        {
+            get { return _dockPanel; }
+        }
+
+        public ToolStripContainer ToolStripContainer
+        {
+            get { return _toolStripContainer; }
+        }
 
         public IDockContent ActiveContent
         {
@@ -110,9 +123,10 @@ namespace Revsoft.Wabbitcode.Services
 
         #endregion
 
-        public DockingService(DockPanel dockPanel)
+        public DockingService(DockPanel dockPanel, ToolStripContainer toolStripContainer)
         {
             _dockPanel = dockPanel;
+            _toolStripContainer = toolStripContainer;
 
             // Theme
             _dockPanel.Theme = new VS2012LightTheme();
@@ -121,6 +135,20 @@ namespace Revsoft.Wabbitcode.Services
             _dockPanel.ActiveDocumentChanged += DockPanelOnActiveDocumentChanged;
             _dockPanel.ContentAdded += DockPanel_ContentAdded;
             _dockPanel.ContentRemoved += DockPanel_ContentRemoved;
+
+            // this registration should be fast, so its ok to do in the constructor
+            RegisterDockingWindow<ProjectViewer>();
+            RegisterDockingWindow<ErrorList>();
+            RegisterDockingWindow<TrackingWindow>();
+            RegisterDockingWindow<DebugPanel>();
+            RegisterDockingWindow<CallStack>();
+            RegisterDockingWindow<LabelList>();
+            RegisterDockingWindow<OutputWindow>();
+            RegisterDockingWindow<FindResultsWindow>();
+            RegisterDockingWindow<MacroManager>();
+            RegisterDockingWindow<BreakpointManagerWindow>();
+            RegisterDockingWindow<StackViewer>();
+            RegisterDockingWindow<ExpressionWindow>();
         }
 
         public void RegisterDockingWindow<T>() where T : ToolWindow
@@ -287,22 +315,6 @@ namespace Revsoft.Wabbitcode.Services
             //{
             //    ShowError("Error Loading the DockPanel Config File", ex);
             //}
-        }
-
-        public void InitPanels()
-        {
-            RegisterDockingWindow<ProjectViewer>();
-            RegisterDockingWindow<ErrorList>();
-            RegisterDockingWindow<TrackingWindow>();
-            RegisterDockingWindow<DebugPanel>();
-            RegisterDockingWindow<CallStack>();
-            RegisterDockingWindow<LabelList>();
-            RegisterDockingWindow<OutputWindow>();
-            RegisterDockingWindow<FindResultsWindow>();
-            RegisterDockingWindow<MacroManager>();
-            RegisterDockingWindow<BreakpointManagerWindow>();
-            RegisterDockingWindow<StackViewer>();
-            RegisterDockingWindow<ExpressionWindow>();
         }
 
         public void SavePanels()
