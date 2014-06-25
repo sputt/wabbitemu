@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -20,49 +21,60 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 {
     internal sealed class MainMenuStrip : MenuStrip
     {
+        private const Image NoIcon = null;
+
         #region File Menu Items
 
-        private static readonly ToolStripMenuItem NewFileMenuItem = new ToolStripMenuItem("File")
+        private static readonly ToolStripMenuItem NewFileMenuItem = 
+            new ToolStripMenuItem("File", NoIcon, newFileMenuItem_Click)
         {
             ShortcutKeys = Keys.Control | Keys.N
         };
 
-        private static readonly ToolStripMenuItem NewProjectMenuItem = new ToolStripMenuItem("Project")
+        private static readonly ToolStripMenuItem NewProjectMenuItem =
+            new ToolStripMenuItem("Project", NoIcon, newProjectMenuItem_Click)
         {
             ShortcutKeys = Keys.Control | Keys.Shift | Keys.N
         };
 
-        private static readonly ToolStripMenuItem NewMenuItem = new ToolStripMenuItem("New", null,
+        private static readonly ToolStripMenuItem NewMenuItem = new ToolStripMenuItem("New", NoIcon,
             new ToolStripItem[] {NewFileMenuItem, NewProjectMenuItem});
 
-        private static readonly ToolStripMenuItem OpenFileMenuItem = new ToolStripMenuItem("File")
+        private static readonly ToolStripMenuItem OpenFileMenuItem = 
+            new ToolStripMenuItem("File", NoIcon, openFileMenuItem_Click)
         {
             ShortcutKeys = Keys.Control | Keys.O
         };
 
-        private static readonly ToolStripMenuItem OpenProjectMenuItem = new ToolStripMenuItem("Project")
+        private static readonly ToolStripMenuItem OpenProjectMenuItem = 
+            new ToolStripMenuItem("Project", NoIcon, openProjectMenuItem_Click)
         {
             ShortcutKeys = Keys.Control | Keys.Shift | Keys.O
         };
 
-        private static readonly ToolStripMenuItem OpenMenuItem = new ToolStripMenuItem("Open", null,
+        private static readonly ToolStripMenuItem OpenMenuItem = new ToolStripMenuItem("Open", NoIcon,
             new ToolStripItem[] {OpenFileMenuItem, OpenProjectMenuItem});
 
-        private static readonly ToolStripMenuItem SaveMenuItem = new ToolStripMenuItem("Save")
+        private static readonly ToolStripMenuItem SaveMenuItem =
+            new ToolStripMenuItem("Save", NoIcon, saveMenuItem_Click)
         {
             ShortcutKeys = Keys.Control | Keys.S
         };
 
-        private static readonly ToolStripMenuItem SaveAsMenuItem = new ToolStripMenuItem("Save As...");
+        private static readonly ToolStripMenuItem SaveAsMenuItem = 
+            new ToolStripMenuItem("Save As...", NoIcon, saveAsMenuItem_Click);
 
-        private static readonly ToolStripMenuItem SaveAllMenuItem = new ToolStripMenuItem("Save All")
+        private static readonly ToolStripMenuItem SaveAllMenuItem =
+            new ToolStripMenuItem("Save All", NoIcon, saveAllMenuItem_Click)
         {
             ShortcutKeys = Keys.Control | Keys.Shift | Keys.S
         };
 
-        private static readonly ToolStripMenuItem SaveProjectMenuItem = new ToolStripMenuItem("Save Project");
+        private static readonly ToolStripMenuItem SaveProjectMenuItem =
+            new ToolStripMenuItem("Save Project", NoIcon, saveProjectMenuItem_Click);
 
-        private static readonly ToolStripMenuItem CloseMenuItem = new ToolStripMenuItem("Close")
+        private static readonly ToolStripMenuItem CloseMenuItem =
+            new ToolStripMenuItem("Close", NoIcon, closeMenuItem_Click)
         {
             ShortcutKeys = Keys.Control | Keys.W
         };
@@ -84,7 +96,8 @@ namespace Revsoft.Wabbitcode.GUI.Menus
         };
 
         private static readonly ToolStripMenuItem RecentFilesMenuItem = new ToolStripMenuItem("Recent Files");
-        private static readonly ToolStripMenuItem ExitMenuItem = new ToolStripMenuItem("Exit");
+        private static readonly ToolStripMenuItem ExitMenuItem =
+            new ToolStripMenuItem("Exit", NoIcon, exitMenuItem_Click);
 
         #endregion
 
@@ -559,17 +572,6 @@ namespace Revsoft.Wabbitcode.GUI.Menus
             _toolBarService.OnToolBarVisibilityChanged += ToolBarService_OnToolBarVisibilityChanged;
             _toolBarService.OnToolbarRegistered += ToolBarService_OnToolbarRegistered;
             ToolWindow.OnDockStateChanged += ToolWindow_OnDockStateChanged;
-
-            NewFileMenuItem.Click += newFileMenuItem_Click;
-            NewProjectMenuItem.Click += newProjectMenuItem_Click;
-            OpenFileMenuItem.Click += openFileMenuItem_Click;
-            OpenProjectMenuItem.Click += openProjectMenuItem_Click;
-            SaveMenuItem.Click += saveMenuItem_Click;
-            SaveAsMenuItem.Click += saveAsMenuItem_Click;
-            SaveAllMenuItem.Click += saveAllMenuItem_Click;
-            SaveProjectMenuItem.Click += saveProjectMenuItem_Click;
-            CloseMenuItem.Click += closeMenuItem_Click;
-            ExitMenuItem.Click += exitMenuItem_Click;
 
             UndoMenuItem.Click += undoMenuItem_Click;
             RedoMenuItem.Click += redoMenuItem_Click;

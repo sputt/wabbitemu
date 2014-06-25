@@ -521,6 +521,14 @@ namespace Revsoft.Wabbitcode.EditorExtensions
             ActiveTextAreaControl.TextArea.Caret.Column = col;
             ActiveTextAreaControl.TextArea.ScrollToCaret();
         }
+
+        public void SelectAll()
+        {
+            int numLines = Document.TotalNumberOfLines - 1;
+            TextLocation selectStart = new TextLocation(0, 0);
+            TextLocation selectEnd = new TextLocation(Document.GetLineSegment(numLines).Length, numLines);
+            ActiveTextAreaControl.SelectionManager.SetSelection(new DefaultSelection(Document, selectStart, selectEnd));
+        }
     }
 
     public interface ICodeCompletionBinding

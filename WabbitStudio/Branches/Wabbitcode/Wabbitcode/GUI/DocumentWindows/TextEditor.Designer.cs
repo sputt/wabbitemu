@@ -32,20 +32,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextEditor));
             this.editorBox = new Revsoft.Wabbitcode.EditorExtensions.WabbitcodeTextEditor();
 			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-			this.contextMenu = new System.Windows.Forms.ContextMenu();
-			this.cutContext = new System.Windows.Forms.MenuItem();
-			this.copyContext = new System.Windows.Forms.MenuItem();
-			this.pasteContext = new System.Windows.Forms.MenuItem();
-			this.menuItem4 = new System.Windows.Forms.MenuItem();
-			this.selectAllContext = new System.Windows.Forms.MenuItem();
-            this.setNextStateMenuItem = new System.Windows.Forms.MenuItem();
-			this.fixCaseContext = new System.Windows.Forms.MenuItem();
-            this.renameContext = new System.Windows.Forms.MenuItem();
-            this.extractMethodContext = new System.Windows.Forms.MenuItem();
-            this.refactorContext = new System.Windows.Forms.MenuItem();
-			this.findRefContext = new System.Windows.Forms.MenuItem();
-			this.bgotoButton = new System.Windows.Forms.MenuItem();
-			this.contextMenu1 = new System.Windows.Forms.ContextMenu();
+			this.tabContextMenu = new System.Windows.Forms.ContextMenu();
 			this.saveMenuItem = new System.Windows.Forms.MenuItem();
 			this.closeMenuItem = new System.Windows.Forms.MenuItem();
 			this.closeAllOtherMenuItem = new System.Windows.Forms.MenuItem();
@@ -79,108 +66,9 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 			this.imageList1.Images.SetKeyName(6, "HexadecimalNumbersAutocomplete.png");
 			this.imageList1.Images.SetKeyName(7, "OpCodeAutocomplete.png");
 			// 
-			// contextMenu
+			// tabContextMenu
 			// 
-			this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-			this.cutContext,
-			this.copyContext,
-			this.pasteContext,
-			this.menuItem4,
-            this.refactorContext,
-			this.findRefContext,
-			this.menuItem5,
-			this.selectAllContext,
-            this.setNextStateMenuItem,
-			this.fixCaseContext,
-			this.bgotoButton});
-			// 
-			// cutContext
-			// 
-			this.cutContext.Index = 0;
-			this.cutContext.Text = "Cut";
-			this.cutContext.Click += new System.EventHandler(this.cutContext_Click);
-			// 
-			// copyContext
-			// 
-			this.copyContext.Index = 1;
-			this.copyContext.Text = "Copy";
-			this.copyContext.Click += new System.EventHandler(this.copyContext_Click);
-			// 
-			// pasteContext
-			// 
-			this.pasteContext.Index = 2;
-			this.pasteContext.Text = "Paste";
-			this.pasteContext.Click += new System.EventHandler(this.pasteContext_Click);
-			// 
-			// menuItem4
-			// 
-			this.menuItem4.Index = 3;
-			this.menuItem4.Text = "-";
-            // 
-            // refactorContext
-            // 
-            this.refactorContext.Index = 4;
-            this.refactorContext.Text = "Refactor";
-            this.refactorContext.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-				this.renameContext,
-				this.extractMethodContext,
-			});
-
-            // 
-            // renameContext
-            // 
-            this.renameContext.Index = 0;
-            this.renameContext.Text = "Rename";
-            this.renameContext.Click += new System.EventHandler(this.renameContext_Click);
-
-            // 
-            // extractMethodContext
-            // 
-            this.extractMethodContext.Index = 1;
-            this.extractMethodContext.Text = "Extract Method";
-            this.extractMethodContext.Click += new System.EventHandler(this.extractMethodContext_Click);
-			// 
-			// findRefContext
-			// 
-			this.findRefContext.Index = 5;
-			this.findRefContext.Text = "Find References";
-			this.findRefContext.Click += new System.EventHandler(this.findRefContext_Click);
-			// 
-			// menuItem5
-			// 
-			this.menuItem5.Index = 6;
-			this.menuItem5.Text = "-";
-			// 
-			// selectAllContext
-			// 
-			this.selectAllContext.Index = 7;
-			this.selectAllContext.Text = "Select All";
-			this.selectAllContext.Click += new System.EventHandler(this.selectAllContext_Click);
-            // 
-            // setNextStateMenuItem
-            // 
-            this.setNextStateMenuItem.Index = 8;
-            this.setNextStateMenuItem.Text = "Set Next Statement";
-            this.setNextStateMenuItem.Visible = false;
-            this.setNextStateMenuItem.Click += new System.EventHandler(this.setNextStateMenuItem_Click);
-			// 
-			// fixCaseContext
-			// 
-			this.fixCaseContext.Index = 9;
-			this.fixCaseContext.Text = "Fix Case";
-			this.fixCaseContext.Visible = false;
-			this.fixCaseContext.Click += new System.EventHandler(this.fixCaseContext_Click);
-			// 
-			// bgotoButton
-			// 
-			this.bgotoButton.Enabled = false;
-			this.bgotoButton.Index = 10;
-			this.bgotoButton.Text = "Goto";
-			this.bgotoButton.Click += new System.EventHandler(this.bgotoButton_Click);
-			// 
-			// contextMenu1
-			// 
-			this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+			this.tabContextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
 			this.closeMenuItem,
 			this.closeAllOtherMenuItem,
 			this.closeAllMenuItem,
@@ -235,14 +123,14 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 			this.AllowDrop = true;
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
 			this.BackColor = System.Drawing.SystemColors.Control;
-			this.ClientSize = new System.Drawing.Size(564, 340);
+			this.ClientSize = new System.Drawing.Size(1024, 768);
 			this.Controls.Add(this.editorBox);
 			this.DockAreas = WeifenLuo.WinFormsUI.Docking.DockAreas.Document | WeifenLuo.WinFormsUI.Docking.DockAreas.Float;
 			this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "newEditor";
 			this.Padding = new System.Windows.Forms.Padding(2);
-			this.TabPageContextMenu = this.contextMenu1;
+			this.TabPageContextMenu = this.tabContextMenu;
 			this.TabText = "";
 			this.Text = "frmDocument";
 			this.Closing += new System.ComponentModel.CancelEventHandler(this.editor_FormClosing);
@@ -255,27 +143,14 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 		#endregion
 		private Revsoft.Wabbitcode.EditorExtensions.WabbitcodeTextEditor editorBox;
 		internal ImageList imageList1;
-		private ContextMenu contextMenu;
-		private MenuItem cutContext;
-		private MenuItem copyContext;
-		private MenuItem pasteContext;
-        private MenuItem refactorContext;
-        private MenuItem renameContext;
-        private MenuItem extractMethodContext;
-		private MenuItem findRefContext;
-		private MenuItem fixCaseContext;
-		private MenuItem menuItem4;
-		private MenuItem selectAllContext;
-		private ContextMenu contextMenu1;
-		private MenuItem saveMenuItem;
-		private MenuItem closeMenuItem;
-		private MenuItem closeAllOtherMenuItem;
-		private MenuItem closeAllMenuItem;
-		private MenuItem menuItem5;
-		private MenuItem menuItem6;
-		private MenuItem copyPathMenuItem;
-		private MenuItem openFolderMenuItem;
-        private MenuItem setNextStateMenuItem;
-		private MenuItem bgotoButton;
+        private ContextMenu tabContextMenu;
+        private MenuItem saveMenuItem;
+        private MenuItem closeMenuItem;
+        private MenuItem closeAllOtherMenuItem;
+        private MenuItem closeAllMenuItem;
+        private MenuItem menuItem5;
+        private MenuItem menuItem6;
+        private MenuItem copyPathMenuItem;
+        private MenuItem openFolderMenuItem;
 	}
 }
