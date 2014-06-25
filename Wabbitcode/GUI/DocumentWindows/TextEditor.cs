@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -7,7 +6,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
@@ -16,12 +14,12 @@ using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
+using Revsoft.Wabbitcode.GUI.Menus;
 using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
-using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 using GotoNextBookmark = Revsoft.TextEditor.Actions.GotoNextBookmark;
@@ -130,9 +128,9 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             InitializeComponent();
 
             editorBox.TextChanged += editorBox_TextChanged;
-            editorBox.ContextMenu = contextMenu;
+            editorBox.ContextMenu = new EditorContextMenu(editorBox, _debuggerService,
+                _parserService, _projectService);
             editorBox.ActiveTextAreaControl.TextArea.MouseClick += editorBox_MouseClick;
-            contextMenu.Popup += contextMenu_Popup;
 
             WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
             WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
@@ -180,97 +178,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         }
 
-        private void contextMenu_Popup(object sender, EventArgs e)
-        {
-            bool hasSelection = editorBox.ActiveTextAreaControl.SelectionManager.HasSomethingSelected;
-            cutContext.Enabled = hasSelection;
-            copyContext.Enabled = hasSelection;
-            renameContext.Enabled = !hasSelection;
-            extractMethodContext.Enabled = hasSelection;
-
-            if (string.IsNullOrEmpty(editorBox.Text))
-            {
-                return;
-            }
-
-            int lineNum = editorBox.ActiveTextAreaControl.Caret.Line;
-            fixCaseContext.Visible = false;
-            fixCaseContext.MenuItems.Clear();
-
-            string line = editorBox.GetLineText(lineNum);
-            Match match = Regex.Match(line, "#include ((\"(?<includeFile>.*)(?<paren>\\)?)\")|((?!\")(?<includeFile>.*(?!\"))(?<paren>\\)?)))");
-            bool isInclude = match.Success;
-
-            var caret = editorBox.ActiveTextAreaControl.Caret;
-            var segment = editorBox.Document.GetLineSegment(caret.Line);
-            var word = segment.GetWord(caret.Column);
-            string text = word == null ? string.Empty : word.Word;
-            if (word != null && !string.IsNullOrEmpty(text) && !isInclude)
-            {
-                IEnumerable<IParserData> parserData = _parserService.GetParserData(text, Settings.Default.CaseSensitive).ToList();
-                if (parserData.Any())
-                {
-                    foreach (IParserData data in parserData.Where(data => data.Name != text))
-                    {
-                        fixCaseContext.Visible = true;
-                        MenuItem item = new MenuItem(data.Name, fixCaseContext_Click);
-                        fixCaseContext.MenuItems.Add(item);
-                    }
-                    bgotoButton.Enabled = true;
-                }
-                else
-                {
-                    bgotoButton.Enabled = false;
-                }
-            }
-
-            string gotoLabel = isInclude ? match.Groups["includeFile"].Value.Replace('"', ' ').Trim() : text;
-            if (gotoLabel == "_")
-            {
-                match = Regex.Match(line, "(?<offset>(\\+|\\-)*)_");
-                gotoLabel = match.Groups["offset"].Value + gotoLabel;
-            }
-
-            int num;
-            if (!int.TryParse(gotoLabel, out num))
-            {
-                if (isInclude)
-                {
-                    bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : FindFileIncludes(gotoLabel);
-                    if (exists)
-                    {
-                        bgotoButton.Text = "Open " + gotoLabel;
-                        bgotoButton.Enabled = true;
-                    }
-                    else
-                    {
-                        bgotoButton.Text = "File " + gotoLabel + " doesn't exist";
-                        bgotoButton.Enabled = false;
-                    }
-                }
-                else
-                {
-                    if (bgotoButton.Enabled)
-                    {
-                        bgotoButton.Text = "Goto " + gotoLabel;
-                        bgotoButton.Enabled = !string.IsNullOrEmpty(gotoLabel);
-                    }
-                    else
-                    {
-                        bgotoButton.Text = "Unable to find " + gotoLabel;
-                    }
-                }
-            }
-            else
-            {
-                bgotoButton.Text = "Goto ";
-                bgotoButton.Enabled = false;
-            }
-        }
-
         private void SetDebugging(bool debugging)
         {
-            setNextStateMenuItem.Visible = debugging;
             editorBox.Document.ReadOnly = debugging;
             editorBox.RemoveDebugHighlight();
 
@@ -500,54 +409,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         #endregion
 
-        #region Context Menu
-
-        private void cutContext_Click(object sender, EventArgs e)
-        {
-            Cut();
-        }
-
-        private void copyContext_Click(object sender, EventArgs e)
-        {
-            Copy();
-        }
-
-        private void pasteContext_Click(object sender, EventArgs e)
-        {
-            Paste();
-        }
-
-        private void selectAllContext_Click(object sender, EventArgs e)
-        {
-            SelectAll();
-        }
-
-        private void setNextStateMenuItem_Click(object sender, EventArgs e)
-        {
-            _debuggerService.CurrentDebugger.SetPCToSelect(FileName, CaretLine + 1);
-        }
-
-        private void bgotoButton_Click(object sender, EventArgs e)
-        {
-            // no need to make a stricter regex, as we own the inputs here
-            Match match = Regex.Match(bgotoButton.Text, "(?<action>.*?) (?<name>.*)");
-            string action = match.Groups["action"].Value;
-            FilePath text = new FilePath(match.Groups["name"].Value);
-
-            if (action == "Goto")
-            {
-                AbstractUiAction.RunCommand(new GotoDefinitionAction(FileName, text, editorBox.ActiveTextAreaControl.Caret.Line));
-            }
-            else
-            {
-                FilePath fileFullPath = Path.IsPathRooted(text) ? text :
-                    _projectService.Project.GetFilePathFromRelativePath(text).NormalizePath();
-                AbstractUiAction.RunCommand(new GotoFileAction(fileFullPath));
-            }
-        }
-
-        #endregion
-
         #region Drag and Drop
 
         private void editor_DragEnter(object sender, DragEventArgs e)
@@ -578,37 +439,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             {
                 TabText = "New Document" + changedString;
             }
-        }
-
-        private void fixCaseContext_Click(object sender, EventArgs e)
-        {
-            MenuItem item = sender as MenuItem;
-            if (item == null)
-            {
-                return;
-            }
-
-            AbstractUiAction.RunCommand(new FixCaseAction(item.Text));
-        }
-
-        private void findRefContext_Click(object sender, EventArgs e)
-        {
-            AbstractUiAction.RunCommand(new FindAllReferencesAction());
-        }
-
-        private void renameContext_Click(object sender, EventArgs e)
-        {
-            AbstractUiAction.RunCommand(new RefactorRenameAction());
-        }
-
-        private void extractMethodContext_Click(object sender, EventArgs e)
-        {
-            AbstractUiAction.RunCommand(new RefactorExtractMethodAction());
-        }
-
-        private bool FindFileIncludes(string gotoLabel)
-        {
-            return !string.IsNullOrEmpty(_projectService.Project.GetFilePathFromRelativePath(gotoLabel));
         }
 
         #region TitleBarContext
@@ -903,11 +733,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         public override void SelectAll()
         {
-            IDocument document = editorBox.Document;
-            int numLines = document.TotalNumberOfLines - 1;
-            TextLocation selectStart = new TextLocation(0, 0);
-            TextLocation selectEnd = new TextLocation(document.GetLineSegment(numLines).Length, numLines);
-            editorBox.ActiveTextAreaControl.SelectionManager.SetSelection(new DefaultSelection(document, selectStart, selectEnd));
+            editorBox.SelectAll();
         }
 
         #endregion
