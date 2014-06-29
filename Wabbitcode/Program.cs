@@ -114,6 +114,7 @@ namespace Revsoft.Wabbitcode
             DependencyFactory.RegisterType<IFileService, FileService>();
             DependencyFactory.RegisterType<IDebuggerService, DebuggerService>();
             DependencyFactory.RegisterType<IPluginService, PluginService>();
+            DependencyFactory.RegisterType<IMacroService, MacroService>();
             // factories
             DependencyFactory.RegisterType<IAssemblerFactory, AssemblerFactory>();
             DependencyFactory.RegisterType<IParserFactory, ParserFactory>();

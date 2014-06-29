@@ -70,6 +70,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         private readonly IDockingService _dockingService = DependencyFactory.Resolve<IDockingService>();
         private readonly IParserService _parserService = DependencyFactory.Resolve<IParserService>();
         private readonly IProjectService _projectService = DependencyFactory.Resolve<IProjectService>();
+        private readonly IMacroService _macroService = DependencyFactory.Resolve<IMacroService>();
         private int _stackTop;
         private bool _documentChanged;
 
@@ -348,9 +349,9 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 //_dockingService.FindForm.FindNext(true, false, "Text not found");
             }
 
-            if (MacroService.IsRecording)
+            if (_macroService.IsRecording)
             {
-                MacroService.RecordKeyData(keyData);
+                _macroService.RecordKeyData(keyData);
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
