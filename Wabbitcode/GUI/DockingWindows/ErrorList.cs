@@ -106,7 +106,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             FilePath file = (FilePath) errorGridView.Rows[e.RowIndex].Cells[3].Tag;
             if (file != FcreateFile)
             {
-                new GotoLineAction(file, line - 1).Execute();
+                AbstractUiAction.RunCommand(new GotoLineAction(file, line - 1));
             }
         }
 
@@ -137,7 +137,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             int line = (int) errorGridView.Rows[row].Cells[4].Value;
             FilePath file = (FilePath) errorGridView.Rows[row].Cells[3].Tag;
             string error = errorGridView.Rows[row].Cells[2].Value.ToString();
-            new GotoLineAction(file, line - 1).Execute();
+            AbstractUiAction.RunCommand(new GotoLineAction(file, line - 1));
             if (!error.Contains("Relative jump"))
             {
                 return;
@@ -153,7 +153,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             int row = errorGridView.SelectedRows[0].Index;
             int line = (int) errorGridView.Rows[row].Cells[4].Value;
             FilePath file = (FilePath) errorGridView.Rows[row].Cells[3].Tag;
-            new GotoLineAction(file, line).Execute();
+            AbstractUiAction.RunCommand(new GotoLineAction(file, line));
         }
 
         private void Instance_AssemblerFileFinished(object sender, AssemblyFinishFileEventArgs e)

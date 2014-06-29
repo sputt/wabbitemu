@@ -5,7 +5,6 @@ using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -110,7 +109,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
             FilePath file = new FilePath(match.Groups["fileName"].Value);
             int lineNumber = Convert.ToInt32(match.Groups["lineNum"].Value);
-            new GotoLineAction(file, lineNumber - 1).Execute();
+            AbstractUiAction.RunCommand(new GotoLineAction(file, lineNumber - 1));
         }
 
         private void selectAllOuputButton_Click(object sender, EventArgs e)

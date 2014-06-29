@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -144,44 +143,44 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
 
         private static void runDebuggerToolButton_Click(object sender, EventArgs e)
         {
-            new StartDebuggerAction().Execute();
+            AbstractUiAction.RunCommand(new StartDebuggerAction());
         }
 
         private static void pauseToolButton_Click(object sender, EventArgs e)
         {
-            new PauseDebuggerAction().Execute();
+            AbstractUiAction.RunCommand(new PauseDebuggerAction());
         }
 
         private static void stopDebugToolButton_Click(object sender, EventArgs e)
         {
-            new StopDebuggerAction().Execute();
+            AbstractUiAction.RunCommand(new StopDebuggerAction());
         }
 
         private static void restartToolStripButton_Click(object sender, EventArgs e)
         {
-            new RestartDebuggerAction().Execute();
+            AbstractUiAction.RunCommand(new RestartDebuggerAction());
         }
 
         private static void stepToolButton_Click(object sender, EventArgs e)
         {
-            new StepDebuggerAction().Execute();
+            AbstractUiAction.RunCommand(new StepDebuggerAction());
         }
 
         private static void stepOverToolButton_Click(object sender, EventArgs e)
         {
-            new StepOverDebuggerAction().Execute();
+            AbstractUiAction.RunCommand(new StepOverDebuggerAction());
         }
 
         private static void stepOutToolButton_Click(object sender, EventArgs e)
         {
-            new StepOutDebuggerAction().Execute();
+            AbstractUiAction.RunCommand(new StepOutDebuggerAction());
         }
 
         private void gotoCurrentToolButton_Click(object sender, EventArgs e)
         {
             IWabbitcodeDebugger debugger = _debuggerService.CurrentDebugger;
             DocumentLocation location = debugger.GetAddressLocation(debugger.CPU.PC);
-            new GotoLineAction(location).Execute();
+            AbstractUiAction.RunCommand(new GotoLineAction(location));
         }
     }
 }

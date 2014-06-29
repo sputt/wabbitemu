@@ -32,7 +32,7 @@ namespace Revsoft.Wabbitcode.GUI
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(990, 558);
-            this.Controls.Add(toolStripContainer);
+            this.Controls.Add(_toolStripContainer);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.IsMdiContainer = true;
             this.Name = "MainForm";
@@ -44,7 +44,7 @@ namespace Revsoft.Wabbitcode.GUI
 
 		}
 
-	    private ToolStripContainer toolStripContainer;
+	    private ToolStripContainer _toolStripContainer;
 
 	    #endregion
 	}

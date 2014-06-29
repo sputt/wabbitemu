@@ -46,7 +46,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             FilePath fileName = new FilePath(fileBox.Text);
             if (File.Exists(fileName))
             {
-                new GotoFileAction(fileName).Execute();
+                AbstractUiAction.RunCommand(new GotoFileAction(fileName));
             }
             else
             {

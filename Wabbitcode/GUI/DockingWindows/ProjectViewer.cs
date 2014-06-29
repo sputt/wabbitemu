@@ -185,7 +185,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             writer.Close();
             ProjectFile fileAdded = _projectService.AddFile((ProjectFolder) parent.Tag, file);
             AddFile(fileAdded, parent);
-            new OpenFileAction(file).Execute();
+            AbstractUiAction.RunCommand(new OpenFileAction(file));
         }
 
         private void CloseProject()
@@ -262,7 +262,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void existingFileMenuItem_Click(object sender, EventArgs e)
         {
-            new AddExistingFileAction(this).Execute();
+            AbstractUiAction.RunCommand(new AddExistingFileAction(this));
         }
 
         private ProjectFile GetFileFromPath(string path)
@@ -288,7 +288,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void newFileContextItem_Click(object sender, EventArgs e)
         {
-            new AddNewFileAction(this).Execute();
+            AbstractUiAction.RunCommand(new AddNewFileAction(this));
         }
 
         private void newFolderContextItem_Click(object sender, EventArgs e)
@@ -346,7 +346,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void OpenNode(TreeNode dropNode)
         {
-            if (dropNode == null || dropNode.Tag.GetType() == typeof(ProjectFolder) || !projViewer.SelectedNodes.Contains(dropNode))
+            if (dropNode == null || dropNode.Tag is ProjectFolder || !projViewer.SelectedNodes.Contains(dropNode))
             {
                 return;
             }
@@ -360,7 +360,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             FilePath filePath = file.FileFullPath;
             if (File.Exists(filePath))
             {
-                new OpenFileAction(filePath).Execute();
+                AbstractUiAction.RunCommand(new OpenFileAction(filePath));
             }
             else
             {

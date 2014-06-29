@@ -5,7 +5,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Utils;
@@ -59,7 +58,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
         {
             string symbolString = inputBox.Text;
             Close();
-            new GotoDefinitionAction(new FilePath(string.Empty), symbolString, 0).Execute();
+            AbstractUiAction.RunCommand(new GotoDefinitionAction(new FilePath(string.Empty), symbolString, 0));
         }
     }
 }

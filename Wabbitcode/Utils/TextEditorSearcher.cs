@@ -1,10 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 
 namespace Revsoft.Wabbitcode.Utils
 {
-    public sealed class TextEditorSearcher : IDisposable
+    public sealed class TextEditorSearcher
     {
         public bool MatchCase;
         public bool MatchWholeWordOnly;
@@ -18,19 +17,9 @@ namespace Revsoft.Wabbitcode.Utils
             _fileText = fileText;
         }
 
-        ~TextEditorSearcher()
-        {
-            Dispose();
-        }
-
         public string LookFor
         {
             set { _lookFor = value; }
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
         }
 
         /// <summary>Finds next instance of LookFor, according to the search rules

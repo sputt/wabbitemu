@@ -5,7 +5,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -65,7 +64,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             }
 
             DocumentLocation location = _callLocations[callStackView.SelectedRows[0].Index];
-            new GotoLineAction(location).Execute();
+            AbstractUiAction.RunCommand(new GotoLineAction(location));
         }
 
         #region IClipboardOperation

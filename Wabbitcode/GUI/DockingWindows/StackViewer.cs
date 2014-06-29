@@ -6,7 +6,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -73,7 +72,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             stackValue = stackValue.TrimStart().Substring(0, 4);
             ushort address = ushort.Parse(stackValue, NumberStyles.HexNumber);
             DocumentLocation location = _debugger.GetAddressLocation(address);
-            new GotoLineAction(location).Execute();
+            AbstractUiAction.RunCommand(new GotoLineAction(location));
         }
 
         #region IClipboardOperation

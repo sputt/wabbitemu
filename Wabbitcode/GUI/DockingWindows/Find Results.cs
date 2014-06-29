@@ -84,7 +84,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
             FilePath file = new FilePath(match.Groups["fileName"].Value);
             line = Convert.ToInt32(match.Groups["lineNum"].Value);
-            new GotoLineAction(file, line - 1).Execute();
+            AbstractUiAction.RunCommand(new GotoLineAction(file, line - 1));
         }
     }
 }

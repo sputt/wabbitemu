@@ -50,7 +50,7 @@ namespace Revsoft.Wabbitcode.GUI
 
         public MainForm(ToolStripContainer toolStripContainer, ICollection<string> args)
         {
-            this.toolStripContainer = toolStripContainer;
+            _toolStripContainer = toolStripContainer;
             InitializeComponent();
             RestoreWindow();
 
@@ -89,7 +89,7 @@ namespace Revsoft.Wabbitcode.GUI
                 return null;
             }
 
-            new OpenFileAction(fileName).Execute();
+            AbstractUiAction.RunCommand(new OpenFileAction(fileName));
             var doc = _dockingService.Documents.OfType<AbstractFileEditor>()
                 .FirstOrDefault(d => fileName == d.FileName);
             if (doc == null)
@@ -125,7 +125,7 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void DockingServiceActiveDocumentChanged(object sender, EventArgs eventArgs)
         {
-            if (Disposing)
+            if (Disposing || IsDisposed)
             {
                 return;
             }
@@ -191,10 +191,10 @@ namespace Revsoft.Wabbitcode.GUI
                 return;
             }
 
-            new OpenFileAction(args
+            AbstractUiAction.RunCommand(new OpenFileAction(args
                 .Where(arg => !string.IsNullOrEmpty(arg))
                 .Select(arg => new FilePath(arg))
-                .ToArray()).Execute();
+                .ToArray()));
         }
 
         public void ProcessParameters(string[] args)
@@ -348,7 +348,7 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void MainFormRedone_DragDrop(object sender, DragEventArgs e)
         {
-            new DragDropCommand(e.Data).Execute();
+            AbstractUiAction.RunCommand(new DragDropCommand(e.Data));
         }
 
         private void MainFormRedone_DragEnter(object sender, DragEventArgs e)
@@ -360,12 +360,12 @@ namespace Revsoft.Wabbitcode.GUI
         {
             if (_debuggerService.CurrentDebugger != null)
             {
-                new StopDebuggerAction().Execute();
+                AbstractUiAction.RunCommand(new StopDebuggerAction());
             }
 
             if (!_projectService.Project.IsInternal)
             {
-                new CloseProjectAction().Execute();
+                AbstractUiAction.RunCommand(new CloseProjectAction());
             }
 
             _pluginService.UnloadPlugins();

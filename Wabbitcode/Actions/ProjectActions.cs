@@ -2,7 +2,6 @@
 using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
@@ -10,7 +9,7 @@ namespace Revsoft.Wabbitcode.Actions
 {
     public class CreateNewProjectAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             NewProjectDialog template = new NewProjectDialog();
             template.ShowDialog();
@@ -26,7 +25,7 @@ namespace Revsoft.Wabbitcode.Actions
             _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             _projectService.SaveProject();
         }
@@ -41,7 +40,7 @@ namespace Revsoft.Wabbitcode.Actions
             _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             DialogResult result = DialogResult.No;
             if (_projectService.Project.NeedsSave && !Settings.Default.AutoSaveProject)
@@ -67,7 +66,7 @@ namespace Revsoft.Wabbitcode.Actions
             _projectViewer = projectViewer;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             RenameForm newNameForm = new RenameForm
             {
@@ -94,7 +93,7 @@ namespace Revsoft.Wabbitcode.Actions
             _projectViewer = projectViewer;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
             {

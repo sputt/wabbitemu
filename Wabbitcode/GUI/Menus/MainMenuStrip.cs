@@ -744,14 +744,14 @@ namespace Revsoft.Wabbitcode.GUI.Menus
         }
 
         /// <summary>
-        /// This opens the recend document clicked in the file menu.
+        /// This opens the recent document clicked in the file menu.
         /// </summary>
         /// <param name="sender">This is the button object. This is casted to get which button was clicked.</param>
         /// <param name="e">Nobody cares about this arg.</param>
         private static void OpenRecentDoc(object sender, EventArgs e)
         {
             MenuItem button = (MenuItem) sender;
-            new OpenFileAction(new FilePath(button.Text)).Execute();
+            AbstractUiAction.RunCommand(new OpenFileAction(new FilePath(button.Text)));
         }
 
         private static void AddRecentItem(string file)

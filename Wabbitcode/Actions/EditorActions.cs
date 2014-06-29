@@ -38,7 +38,7 @@ namespace Revsoft.Wabbitcode.Actions
             _findResults = _dockingService.GetDockingWindow<FindResultsWindow>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             IList<IParserData> parserData;
             if (_text.StartsWith("+") || _text.StartsWith("-") || _text == "_")
@@ -66,7 +66,7 @@ namespace Revsoft.Wabbitcode.Actions
 
             if (parserData.Count == 1)
             {
-                new GotoLabelAction(parserData.Single()).Execute();
+                RunCommand(new GotoLabelAction(parserData.Single()));
             }
             else
             {
@@ -97,9 +97,9 @@ namespace Revsoft.Wabbitcode.Actions
             _fileName = fileName;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
-            new OpenFileAction(_fileName).Execute();
+            RunCommand(new OpenFileAction(_fileName));
         }
     }
 
@@ -112,11 +112,11 @@ namespace Revsoft.Wabbitcode.Actions
             _parserData = parserData;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             ParserInformation info = _parserData.Parent;
             FilePath file = info.SourceFile;
-            new GotoLineAction(file, _parserData.Location.Line).Execute();
+            RunCommand(new GotoLineAction(file, _parserData.Location.Line));
         }
     }
 
@@ -140,7 +140,7 @@ namespace Revsoft.Wabbitcode.Actions
         {
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             var editor = _dockingService.ActiveDocument as ITextEditor;
             int line;
@@ -155,7 +155,7 @@ namespace Revsoft.Wabbitcode.Actions
             }
             else
             {
-                new GotoFileAction(_location.FileName).Execute();
+                RunCommand(new GotoFileAction(_location.FileName));
                 line = _location.LineNumber;
                 editor = _dockingService.Documents.OfType<ITextEditor>()
                     .Single(d => d.FileName == _location.FileName);

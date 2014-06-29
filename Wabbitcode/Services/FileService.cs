@@ -76,7 +76,7 @@ namespace Revsoft.Wabbitcode.Services
                 return _openDocuments[fileName];
             }
 
-            new OpenFileAction(fileName).Execute();
+            AbstractUiAction.RunCommand(new OpenFileAction(fileName));
             return _openDocuments[fileName];
         }
 
