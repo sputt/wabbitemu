@@ -1,18 +1,56 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Windows.Forms;
+using Revsoft.Wabbitcode.Annotations;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    public static class MacroService
+    [UsedImplicitly]
+    public class MacroService : IMacroService
     {
-        public static int currentMacro = -1;
-        public static List<string> macros = new List<string>();
+        private readonly List<WabbitcodeMacro> _macros = new List<WabbitcodeMacro>();
 
-        public static bool IsRecording { get; set; }
+        private WabbitcodeMacro _currentMacro;
 
-        internal static void RecordKeyData(System.Windows.Forms.Keys keyData)
+        public bool IsRecording
         {
-            throw new NotImplementedException();
+            get { return _currentMacro != null; }
         }
+
+        public void StartRecordingMacro(string macroName)
+        {
+            _currentMacro = new WabbitcodeMacro();
+        }
+
+        public void StopRecordingMacro()
+        {
+            _macros.Add(_currentMacro);
+            _currentMacro = null;
+        }
+
+        public void RecordKeyData(Keys keyData)
+        {
+            _currentMacro.AddKey(keyData);
+        }
+    }
+
+    public class WabbitcodeMacro
+    {
+        private readonly List<Keys> _keyData = new List<Keys>();
+
+        public void AddKey(Keys keyData)
+        {
+            _keyData.Add(keyData);
+        }
+    }
+
+    public interface IMacroService
+    {
+        bool IsRecording { get; }
+
+        void StartRecordingMacro(string macroName);
+
+        void StopRecordingMacro();
+
+        void RecordKeyData(Keys keyData);
     }
 }
