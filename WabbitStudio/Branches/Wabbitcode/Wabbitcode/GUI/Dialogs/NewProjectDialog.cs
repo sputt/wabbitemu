@@ -256,7 +256,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                 }
 
                 _projectService.AddFile(folder, mainFile);
-                new OpenFileAction(mainFile).Execute();
+                AbstractUiAction.RunCommand(new OpenFileAction(mainFile));
             }
 
             _projectService.Project.IncludeDirs.Add(FileLocations.IncludesDir);

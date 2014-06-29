@@ -4,7 +4,6 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -174,7 +173,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             TextBox box = (TextBox) menu.SourceControl;
             ushort address = ushort.Parse(box.Text, System.Globalization.NumberStyles.HexNumber);
             DocumentLocation location = _debugger.GetAddressLocation(address);
-            new GotoLineAction(location).Execute();
+            AbstractUiAction.RunCommand(new GotoLineAction(location));
         }
 
         private void Paste(object sender, EventArgs e)

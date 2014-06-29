@@ -7,7 +7,7 @@ namespace Revsoft.Wabbitcode.Actions
 {
     public class CheckForUpdateAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             try
             {
@@ -34,7 +34,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class AboutDialogAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             using (AboutBox box = new AboutBox())
             {

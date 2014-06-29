@@ -20,7 +20,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             ITextEditor activeTextEditor = _dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
@@ -54,7 +54,7 @@ namespace Revsoft.Wabbitcode.Actions
             _buildAction = new BuildAction();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_debuggerService.CurrentDebugger == null)
             {
@@ -149,7 +149,7 @@ namespace Revsoft.Wabbitcode.Actions
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_debuggerService.CurrentDebugger == null)
             {
@@ -176,7 +176,7 @@ namespace Revsoft.Wabbitcode.Actions
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_debuggerService.CurrentDebugger == null)
             {
@@ -195,7 +195,7 @@ namespace Revsoft.Wabbitcode.Actions
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_debuggerService.CurrentDebugger == null)
             {
@@ -216,7 +216,7 @@ namespace Revsoft.Wabbitcode.Actions
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_debuggerService.CurrentDebugger == null)
             {
@@ -236,7 +236,7 @@ namespace Revsoft.Wabbitcode.Actions
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_debuggerService.CurrentDebugger == null)
             {
@@ -256,7 +256,7 @@ namespace Revsoft.Wabbitcode.Actions
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_debuggerService.CurrentDebugger == null)
             {
@@ -278,7 +278,7 @@ namespace Revsoft.Wabbitcode.Actions
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             ITextEditor editor = _dockingService.ActiveDocument as ITextEditor;
             if (editor != null)

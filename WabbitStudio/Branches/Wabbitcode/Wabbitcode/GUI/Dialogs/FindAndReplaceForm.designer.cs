@@ -21,7 +21,6 @@
             if (disposing && (this.components != null))
             {
                 this.components.Dispose();
-                _search.Dispose();
             }
 
             base.Dispose(disposing);

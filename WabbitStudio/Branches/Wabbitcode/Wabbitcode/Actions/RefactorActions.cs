@@ -1,7 +1,6 @@
 ﻿using System.Windows.Forms;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.Interfaces;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
@@ -20,7 +19,7 @@ namespace Revsoft.Wabbitcode.Actions
             _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             ITextEditor editor = _dockingService.ActiveDocument as ITextEditor;
             if (editor == null)
@@ -52,7 +51,7 @@ namespace Revsoft.Wabbitcode.Actions
             _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             ITextEditor editor = _dockingService.ActiveDocument as ITextEditor;
             if (editor == null)

@@ -18,7 +18,7 @@ namespace Revsoft.Wabbitcode.Actions
             _activeContent = dockingService.ActiveContent as IClipboardOperation;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_activeContent != null)
             {
@@ -37,7 +37,7 @@ namespace Revsoft.Wabbitcode.Actions
             _activeContent = dockingService.ActiveContent as IClipboardOperation;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_activeContent != null)
             {
@@ -56,7 +56,7 @@ namespace Revsoft.Wabbitcode.Actions
             _activeContent = dockingService.ActiveContent as IClipboardOperation;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_activeContent != null)
             {
@@ -75,7 +75,7 @@ namespace Revsoft.Wabbitcode.Actions
             _activeContent = dockingService.ActiveContent as ISelectable;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_activeContent != null)
             {
@@ -94,7 +94,7 @@ namespace Revsoft.Wabbitcode.Actions
             _activeContent = dockingService.ActiveContent as IUndoable;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_activeContent != null)
             {
@@ -113,7 +113,7 @@ namespace Revsoft.Wabbitcode.Actions
             _activeContent = dockingService.ActiveContent as IUndoable;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_activeContent != null)
             {
@@ -124,7 +124,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class FindAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             var dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
@@ -139,7 +139,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class FindInFilesAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             var dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
@@ -156,7 +156,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class ReplaceAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             var dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
@@ -171,7 +171,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class ReplaceInFilesAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             var dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
@@ -201,7 +201,7 @@ namespace Revsoft.Wabbitcode.Actions
             _findResults = _dockingService.GetDockingWindow<FindResultsWindow>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_activeTextEditor == null)
             {
@@ -228,7 +228,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class ToUpperAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
@@ -243,7 +243,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class ToLowerAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
@@ -258,7 +258,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class InvertCaseAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
@@ -273,7 +273,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class ToSentenceCaseAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             IDockingService dockingService = DependencyFactory.Resolve<IDockingService>();
             var activeTextEditor = dockingService.ActiveDocument as ITextEditor;
@@ -297,7 +297,7 @@ namespace Revsoft.Wabbitcode.Actions
             _newCase = newCase;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             ITextEditor editor = _dockingService.ActiveDocument as ITextEditor;
             if (editor == null)
@@ -320,7 +320,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             var activeTextEditor = _dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
@@ -341,7 +341,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             var activeTextEditor = _dockingService.ActiveDocument as ITextEditor;
             if (activeTextEditor == null)
@@ -362,7 +362,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             var activeTextEditor = _dockingService.ActiveDocument as IBookmarkable;
             if (activeTextEditor == null)
@@ -383,7 +383,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             var activeTextEditor = _dockingService.ActiveDocument as IBookmarkable;
             if (activeTextEditor == null)
@@ -404,7 +404,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             var activeTextEditor = _dockingService.ActiveDocument as IBookmarkable;
             if (activeTextEditor == null)
@@ -418,7 +418,7 @@ namespace Revsoft.Wabbitcode.Actions
 
     public class EditPreferencesAction : AbstractUiAction
     {
-        public override void Execute()
+        protected override void Execute()
         {
             Preferences prefs = new Preferences();
             prefs.Show();

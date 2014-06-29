@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -26,7 +25,7 @@ namespace Revsoft.Wabbitcode.Actions
             _statusBarService = DependencyFactory.Resolve<IStatusBarService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_debuggerService.CurrentDebugger != null)
             {

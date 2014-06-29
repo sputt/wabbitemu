@@ -49,15 +49,15 @@ namespace Revsoft.Wabbitcode.Services
             {
                 client = new WebClient();
                 Version newVer = new Version(client.DownloadString(String.Format("{0}WabbitcodeVersion.txt", Hostname)));
-                updateState = new UpdateState(curVersion.CompareTo(newVer) < 0, newVer);
+                updateState = new UpdateState(curVersion.CompareTo(newVer) < 0);
             }
             catch (WebException)
             {
-                return new UpdateState(false, null);
+                return new UpdateState(false);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                DockingService.ShowError("Unable to check for update", ex);
             }
             finally
             {
@@ -72,12 +72,10 @@ namespace Revsoft.Wabbitcode.Services
         private sealed class UpdateState
         {
             public bool IsNewerVersion { get; private set; }
-            private Version NewestVersion { get; set; }
 
-            public UpdateState(bool isNewerVersion, Version newestVersion)
+            public UpdateState(bool isNewerVersion)
             {
                 IsNewerVersion = isNewerVersion;
-                NewestVersion = newestVersion;
             }
         }
     }

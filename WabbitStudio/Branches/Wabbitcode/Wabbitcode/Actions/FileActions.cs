@@ -19,7 +19,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             GUI.DocumentWindows.TextEditor doc = new GUI.DocumentWindows.TextEditor
             {
@@ -46,7 +46,7 @@ namespace Revsoft.Wabbitcode.Actions
             _fileTypeMethodFactory = DependencyFactory.Resolve<IFileTypeMethodFactory>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_fileNames == null)
             {
@@ -113,7 +113,7 @@ namespace Revsoft.Wabbitcode.Actions
             _projectService = DependencyFactory.Resolve<IProjectService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             FilePath fileName;
             using (OpenFileDialog openFileDialog = new OpenFileDialog
@@ -157,7 +157,7 @@ namespace Revsoft.Wabbitcode.Actions
             _editor = DependencyFactory.Resolve<IDockingService>().ActiveDocument as AbstractFileEditor;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             try
             {
@@ -184,7 +184,7 @@ namespace Revsoft.Wabbitcode.Actions
             _editor = editor;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
@@ -218,7 +218,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dockingService = DependencyFactory.Resolve<IDockingService>();
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             foreach (AbstractFileEditor child in _dockingService.Documents.OfType<AbstractFileEditor>())
             {
@@ -236,7 +236,7 @@ namespace Revsoft.Wabbitcode.Actions
             _editor = DependencyFactory.Resolve<IDockingService>().ActiveDocument as AbstractFileEditor;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_editor == null)
             {
@@ -256,7 +256,7 @@ namespace Revsoft.Wabbitcode.Actions
             _dataObject = dataObject;
         }
 
-        public override void Execute()
+        protected override void Execute()
         {
             if (_dataObject.GetDataPresent(DataFormats.FileDrop) == false)
             {
@@ -264,7 +264,7 @@ namespace Revsoft.Wabbitcode.Actions
             }
 
             string[] files = (string[]) _dataObject.GetData(DataFormats.FileDrop);
-            new OpenFileAction(files.Select(p => new FilePath(p)).ToArray()).Execute();
+            RunCommand(new OpenFileAction(files.Select(p => new FilePath(p)).ToArray()));
         }
     }
 }
