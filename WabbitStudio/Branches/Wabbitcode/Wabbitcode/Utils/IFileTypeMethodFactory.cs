@@ -1,9 +1,11 @@
 ﻿namespace Revsoft.Wabbitcode.Utils
 {
+    public delegate bool FileHandlerDelegate(FilePath fileName);
+
     public interface IFileTypeMethodFactory
     {
-        void RegisterFileType(string extension, FileTypeMethodFactory.FileHandlerDelegate handler);
-        void RegisterDefaultHandler(FileTypeMethodFactory.FileHandlerDelegate handler);
+        void RegisterFileType(string extension, FileHandlerDelegate handler);
+        void RegisterDefaultHandler(FileHandlerDelegate handler);
         bool OpenRegisteredFile(FilePath fileName);
     }
 }

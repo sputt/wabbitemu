@@ -9,8 +9,6 @@ namespace Revsoft.Wabbitcode.Utils
     [UsedImplicitly]
     public class FileTypeMethodFactory : IFileTypeMethodFactory
     {
-        public delegate bool FileHandlerDelegate(FilePath fileName);
-
         private readonly Dictionary<string, FileHandlerDelegate> _fileMethods = new Dictionary<string, FileHandlerDelegate>();
         private FileHandlerDelegate _defaultHandler;
 

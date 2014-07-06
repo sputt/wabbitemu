@@ -613,18 +613,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Annotations\Annotations.cs" />
-    <Compile Include="EditorExtensions\AsmFormattingStrategy.cs" />
-    <Compile Include="EditorExtensions\CodeCompletion.cs" />
-    <Compile Include="EditorExtensions\CodeCompletionFactory.cs" />
-    <Compile Include="EditorExtensions\CompletionProviderBase.cs" />
-    <Compile Include="EditorExtensions\CompletionProviders.cs" />
-    <Compile Include="EditorExtensions\ErrorUnderliner.cs" />
-    <Compile Include="EditorExtensions\ICodeCompletionFactory.cs" />
-    <Compile Include="EditorExtensions\InsightProviders.cs" />
-    <Compile Include="EditorExtensions\Markers\ErrorMarker.cs" />
-    <Compile Include="EditorExtensions\Markers\ReferenceMarker.cs" />
-    <Compile Include="EditorExtensions\TextEditorProperties.cs" />
-    <Compile Include="EditorExtensions\WabbitcodeTextEditor.cs">
+    <Compile Include="TextEditor\AsmFormattingStrategy.cs" />
+    <Compile Include="TextEditor\CodeCompletion.cs" />
+    <Compile Include="TextEditor\CodeCompletionFactory.cs" />
+    <Compile Include="TextEditor\CompletionProviderBase.cs" />
+    <Compile Include="TextEditor\CompletionProviders.cs" />
+    <Compile Include="TextEditor\ErrorUnderliner.cs" />
+    <Compile Include="TextEditor\ICodeCompletionFactory.cs" />
+    <Compile Include="TextEditor\InsightProviders.cs" />
+    <Compile Include="TextEditor\Markers\ErrorMarker.cs" />
+    <Compile Include="TextEditor\Markers\ReferenceMarker.cs" />
+    <Compile Include="TextEditor\TextEditorProperties.cs" />
+    <Compile Include="TextEditor\WabbitcodeTextEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\Dialogs\AboutBox.cs">
@@ -673,8 +673,8 @@
     <Compile Include="GUI\DockingWindows\ExpressionWindow.designer.cs">
       <DependentUpon>ExpressionWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="EditorExtensions\Markers\DebugHighlightMarker.cs" />
-    <Compile Include="EditorExtensions\FoldingItem.cs" />
+    <Compile Include="TextEditor\Markers\DebugHighlightMarker.cs" />
+    <Compile Include="TextEditor\FoldingItem.cs" />
     <Compile Include="Exceptions\InvalidProjectVersionException.cs" />
     <Compile Include="GUI\Dialogs\GotoSymbol.cs">
       <SubType>Form</SubType>
@@ -682,7 +682,7 @@
     <Compile Include="GUI\Dialogs\GotoSymbol.Designer.cs">
       <DependentUpon>GotoSymbol.cs</DependentUpon>
     </Compile>
-    <Compile Include="EditorExtensions\RegionFoldingStrategy.cs" />
+    <Compile Include="TextEditor\RegionFoldingStrategy.cs" />
     <Compile Include="GUI\DocumentWindows\ImageViewer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -706,11 +706,11 @@
     <Compile Include="GUI\ToolBars\WabbitcodeToolStripContainer.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Interfaces\IBookmarkable.cs" />
-    <Compile Include="Interfaces\IClipboardOperation.cs" />
-    <Compile Include="Interfaces\ISelectable.cs" />
-    <Compile Include="Interfaces\ITextEditor.cs" />
-    <Compile Include="Interfaces\IUndoable.cs" />
+    <Compile Include="TextEditor\Interfaces\IBookmarkable.cs" />
+    <Compile Include="TextEditor\Interfaces\IClipboardOperation.cs" />
+    <Compile Include="TextEditor\Interfaces\ISelectable.cs" />
+    <Compile Include="TextEditor\Interfaces\ITextEditor.cs" />
+    <Compile Include="TextEditor\Interfaces\IUndoable.cs" />
     <Compile Include="GUI\ToolBars\MainToolBar.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1195,6 +1195,9 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -164,7 +164,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 return;
             }
 
-            TextView textView = editorBox.ActiveTextAreaControl.TextArea.TextView;
+            TextAreaControl activeTextAreaControl = editorBox.ActiveTextAreaControl;
+            TextView textView = activeTextAreaControl.TextArea.TextView;
             Point point = Point.Subtract(e.Location, new Size(textView.DrawingPosition.Location));
             TextLocation location = textView.GetLogicalPosition(point);
             LineSegment segment = Document.GetLineSegment(location.Line);
@@ -175,7 +176,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
 
             string text = textWord.Word;
-            AbstractUiAction.RunCommand(new GotoDefinitionAction(FileName, text, editorBox.ActiveTextAreaControl.Caret.Line));
+            AbstractUiAction.RunCommand(new GotoDefinitionAction(FileName, text, activeTextAreaControl.Caret.Line));
 
         }
 
