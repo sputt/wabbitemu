@@ -80,6 +80,7 @@ CalcModel FindRomVersion(char *string, unsigned char *rom, u_int size) {
 			}
 			break;
 		case TI_82:
+		case TI_85:
 			for(i = 0; i < (size - strlen(catalog) - 10); i++) {
 				if (!CmpStringCase(catalog, rom + i)) {
 					calc = TI_85;
@@ -154,6 +155,7 @@ CalcModel FindRomVersion(char *string, unsigned char *rom, u_int size) {
 				string[3] = 0;
 			}
 			break;
+		case TI_73:
 		case TI_83P:
 			for(i = 0; i < (size - strlen(txt73) - 10); i++) {
 				if (CmpStringCase(txt73, rom + i) == 0) {
@@ -180,7 +182,10 @@ CalcModel FindRomVersion(char *string, unsigned char *rom, u_int size) {
 				}
 			}
 			break;
+		case INVALID_MODEL:
+			return INVALID_MODEL;
 	}
+
 	return calc;
 }
 
@@ -334,7 +339,7 @@ TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 	fread(tifile->rom->data, sizeof(unsigned char), size, infile);
 	tifile->rom->size		= (int)size;
 	calc = FindRomVersion(tifile->rom->version, tifile->rom->data, (int)size);
-	if (calc == -1) {
+	if (calc == INVALID_MODEL) {
 		return FreeTiFile(tifile);
 	}
 	tifile->model			= calc;
@@ -494,20 +499,8 @@ void ReadTiFileHeader(FILE *infile, TIFILE_t *tifile) {
 }
 
 static unsigned short length2 = 0;
-TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
-	switch (tifile->type) {
-		case ROM_TYPE:
-			return ImportROMFile(infile, tifile);
-		case FLASH_TYPE:
-			return ImportFlashFile(infile, tifile);
-		case SAV_TYPE:
-			tifile->save = ReadSave(infile);
-			if (!tifile->save)
-				return FreeTiFile(tifile);
-			tifile->model = tifile->save->model;
-			return tifile;
-	}
 
+TIFILE_t* ImportVarFile(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	int i;
 	int tmp;
 	unsigned short headersize;
@@ -538,14 +531,14 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 		(tifile->model == TI_82 && vartype == 0x0F) ||
 		(tifile->model == TI_85 && vartype == 0x1D))
 	{
-		tifile->backup = (TIBACKUP_t *) malloc(sizeof(TIBACKUP_t));
+		tifile->backup = (TIBACKUP_t *)malloc(sizeof(TIBACKUP_t));
 		if (tifile->backup == NULL) {
 			return FreeTiFile(tifile);
 		}
 
-		tifile->backup->headersize	= headersize;
-		tifile->backup->length1		= length;
-		tifile->backup->vartype		= vartype;
+		tifile->backup->headersize = headersize;
+		tifile->backup->length1 = length;
+		tifile->backup->vartype = vartype;
 		return ImportBackup(infile, tifile);
 	}
 
@@ -555,7 +548,7 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 		tifile->type = VAR_TYPE;
 	}
 
-	tifile->var = (TIVAR_t *) malloc(sizeof(TIVAR_t));
+	tifile->var = (TIVAR_t *)malloc(sizeof(TIVAR_t));
 	tifile->vars[varNumber] = tifile->var;
 	if (tifile->var == NULL)
 		return FreeTiFile(tifile);
@@ -570,12 +563,12 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 		}
 	}
 
-	tifile->var->name_length	= name_length;
-	tifile->var->headersize		= headersize;
-	tifile->var->length			= length;
-	tifile->var->vartype		= vartype;
+	tifile->var->name_length = name_length;
+	tifile->var->headersize = headersize;
+	tifile->var->length = length;
+	tifile->var->vartype = vartype;
 	ptr = tifile->var->name;
-	for(i = 0; i < name_length && !feof(infile); i++) {
+	for (i = 0; i < name_length && !feof(infile); i++) {
 		tmpread(infile);
 		ptr[i] = (unsigned char)tmp;
 	}
@@ -598,12 +591,12 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 		return FreeTiFile(tifile);
 	ptr[i++] = (unsigned char)tmp;
 
-	tifile->var->data = (unsigned char *) malloc(tifile->var->length);
+	tifile->var->data = (unsigned char *)malloc(tifile->var->length);
 	if (tifile->var->data == NULL) {
 		return FreeTiFile(tifile);
 	}
 
-	for(i = 0; i < tifile->var->length && !feof(infile); i++) {
+	for (i = 0; i < tifile->var->length && !feof(infile); i++) {
 		tmp = fgetc(infile);
 		if (tmp == EOF) {
 			return FreeTiFile(tifile);
@@ -620,12 +613,33 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 			if (length2 <= 0) {
 				break;
 			}
-			tifile = ImportVarData(infile, tifile, ++varNumber);
+			tifile = ImportVarFile(infile, tifile, ++varNumber);
 		}
 	}
 
-	tifile->chksum = (fgetc(infile) & 0xFF) + ((fgetc(infile) & 0xFF) << 8 );
+	tifile->chksum = (fgetc(infile) & 0xFF) + ((fgetc(infile) & 0xFF) << 8);
 	return tifile;
+}
+
+TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile) {
+	switch (tifile->type) {
+		case ROM_TYPE:
+			return ImportROMFile(infile, tifile);
+		case FLASH_TYPE:
+			return ImportFlashFile(infile, tifile);
+		case SAV_TYPE:
+			tifile->save = ReadSave(infile);
+			if (tifile->save == NULL) {
+				return FreeTiFile(tifile);
+			}
+
+			tifile->model = tifile->save->model;
+			return tifile;
+		case VAR_TYPE:
+			return ImportVarFile(infile, tifile, 0);
+		default:
+			return NULL;
+	}	
 }
 
 TIFILE_t* importvar(LPCTSTR filePath, BOOL only_check_header) {
@@ -634,8 +648,7 @@ TIFILE_t* importvar(LPCTSTR filePath, BOOL only_check_header) {
 	
 	TCHAR extension[5] = _T("");
 	const TCHAR *pext = _tcsrchr(filePath, _T('.'));
-	if (pext != NULL)
-	{
+	if (pext != NULL) {
 		StringCbCopy(extension, sizeof(extension), pext);
 	}
 
@@ -670,16 +683,16 @@ TIFILE_t* importvar(LPCTSTR filePath, BOOL only_check_header) {
 	}
 
 	ReadTiFileHeader(infile, tifile);
-	// the last part is to make sure we don't allow files that cant be imported but
+	// The last part is to make sure we don't allow files that cant be imported but
 	// assumed to be ROMs until we try to read data. Why? because we don't read the
 	// size of the data till we import. Since importing a ROM is fast and I don't
-	// care enough to fix and this was meant for speed checking files on drop its fine
-	if (only_check_header && tifile->type != ROM_TYPE) {
+	// care enough to fix as this was meant for speed checking files on drop
+	if (only_check_header && tifile->type != ROM_TYPE && tifile->type != SAV_TYPE) {
 		fclose(infile);
 		return tifile;
 	}
 
-	tifile = ImportVarData(infile, tifile, 0);
+	tifile = ImportVarData(infile, tifile);
 	fclose(infile);
 	return tifile;
 }

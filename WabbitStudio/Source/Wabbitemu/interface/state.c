@@ -303,6 +303,7 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 						default: 
 							return NULL;
 					}
+					break;
 				}
 			default:
 				return NULL;

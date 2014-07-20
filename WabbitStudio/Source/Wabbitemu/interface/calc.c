@@ -50,15 +50,15 @@ void audio_frame_callback(CPU_t *cpu);
  * Determine the slot for a new calculator.  Return a pointer to the calc
  */
 LPCALC calc_slot_new(void) {
-	if (link_hub[MAX_CALCS] == NULL) {
-		memset(link_hub, 0, sizeof(link_hub));
+	if (link_hub == NULL) {
+		memset(link_hub_list, 0, sizeof(link_hub_list));
 		link_t *hub_link = (link_t *) malloc(sizeof(link_t)); 
 		if (!hub_link) {
 			printf("Couldn't allocate memory for link hub\n");
 		}
 		hub_link->host		= 0;				//neither lines set
 		hub_link->client	= &hub_link->host;	//nothing plugged in.
-		link_hub[MAX_CALCS] = hub_link;
+		link_hub = hub_link;
 	}
 	int i;
 	for (i = 0; i < MAX_CALCS; i++) {
@@ -325,7 +325,12 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 			return FALSE;
 		}
 
-		LoadSlot(tifile->save, lpCalc);
+		error = LoadSlot(tifile->save, lpCalc) == FALSE;
+		if (error) {
+			FreeTiFile(tifile);
+			return FALSE;
+		}
+
 		StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), FileName);
 		FindRomVersion(lpCalc->rom_version, lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
 	} else if (tifile->type == ROM_TYPE) {
@@ -442,7 +447,7 @@ void calc_slot_free(LPCALC lpCalc) {
 		lpCalc->mem_c.ram_break = NULL;
 
 		if (link_connected_hub(lpCalc->slot)) {
-			link_hub[lpCalc->slot] = NULL;
+			link_hub_list[lpCalc->slot] = NULL;
 		}
 		free(lpCalc->cpu.pio.link);
 		lpCalc->cpu.pio.link = NULL;
@@ -498,18 +503,9 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 			return 0;
 		}
 
-		if (link_hub_count > 1) {
-			CPU_connected_step(&lpCalc->cpu);
-			if (lpCalc->cpu.is_link_instruction) {
-				lpCalc->time_error = (time_t)(tc_tstates((&lpCalc->timer_c)) - time_end);
-				calc_waiting_link++;
-				break;
-			}
-		} else {
-			CPU_step(&lpCalc->cpu);
-		}
+		CPU_step(&lpCalc->cpu);
 
-		if (!calc_waiting_link && lpCalc->cpu.pio.lcd != NULL &&
+		if (lpCalc->cpu.pio.lcd != NULL && 
 			(tc_elapsed(&lpCalc->timer_c) - lpCalc->cpu.pio.lcd->lastaviframe) >= (1.0 / AVI_FPS))
 		{
 			notify_event(lpCalc, AVI_VIDEO_FRAME_EVENT);
@@ -633,61 +629,34 @@ void calc_set_running(LPCALC lpCalc, BOOL running) {
 
 int calc_run_all(void) {
 	int i, j, active_calc = -1;
-	BOOL calc_waiting = FALSE;
 
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
-		link_hub[MAX_CALCS]->host = 0;
+		link_hub->host = 0;
 		for (j = 0; j < MAX_CALCS; j++) {
 			char hostVal = 0;
 			for (int k = 0; k < MAX_CALCS; k++) {
-				if (link_hub[k] != NULL && link_hub[k]->host) {
-					hostVal |= link_hub[k]->host;
-					calc_waiting |= link_hub[k]->hasChanged;
+				if (link_hub_list[k] != NULL && *link_hub_list[k]) {
+					hostVal |= *link_hub_list[k];
 				}
 			}
-			if (hostVal != link_hub[MAX_CALCS]->host) {
-				link_hub[MAX_CALCS]->host = hostVal;
-				calc_waiting = TRUE;
+
+			if (hostVal != link_hub->host) {
+				link_hub->host = hostVal;
+				/*calc_waiting = TRUE;
 				for (int k = 0; k < MAX_CALCS; k++) {
-					if (link_hub[k]) {
-						link_hub[k]->hasChanged = TRUE;
+					if (link_hub_list[k]) {
+						link_hub_list[k]->hasChanged = TRUE;
 						link_hub[k]->changedTime = calcs[k].timer_c.tstates;
 					}
-				}
-			}
-			if (calcs[j].active && !calcs[j].fake_running) {
-				/*if (link_hub[j] != NULL && (!link_hub[MAX_CALCS]->host || link_hub[MAX_CALCS]->host != link_hub[j]->host)
-					&& calcs[j].cpu.is_link_instruction || ((int) (calcs[j].cpu.linking_time - calcs[j].cpu.timer_c->tstates) >= 100000)) {
-					calcs[j].cpu.is_link_instruction = FALSE;
-					calcs[j].cpu.linking_time = 0;
-					CPU_step(&calcs[j].cpu);
 				}*/
-				if (calcs[j].cpu.is_link_instruction && calcs[j].cpu.pio.link->changedTime - calcs[j].timer_c.tstates >= 100000) {
-					calcs[j].cpu.is_link_instruction = FALSE;
-					calcs[j].cpu.pio.link->changedTime = 0;
-					calcs[j].cpu.pio.link->hasChanged = FALSE;
-					CPU_step(&calcs[j].cpu);
-				}
+			}
 
+			if (calcs[j].active && !calcs[j].fake_running) {
 				active_calc = j;
 				int speed = calcs[j].speed;
-				int time = (int)((int64_t) speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
-				if (!calcs[j].cpu.is_link_instruction || !calc_waiting || calcs[j].cpu.pio.link->hasChanged == TRUE) {
-					calc_run_tstates(&calcs[j], time);
-				} /*else {
-					calcs[j].cpu.linking_time += time;
-				}*/
+				time_t time = ((time_t) speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
+				calc_run_tstates(&calcs[j], time);
 			}
-		}
-
-		if (link_hub_count > 1 && calc_waiting_link >= link_hub_count) {
-			for (int k = 0; k < MAX_CALCS; k++) {
-				if (calcs[k].cpu.is_link_instruction) {
-					calcs[k].cpu.is_link_instruction = FALSE;
-					CPU_step(&calcs[k].cpu);
-				}
-			}
-			calc_waiting_link = 0;
 		}
 
 		//this code handles screenshotting if were actually taking screenshots right now
@@ -772,14 +741,14 @@ int calc_run_seconds(LPCALC lpCalc, double seconds) {
 }
 
 int link_connect_hub(int slot, CPU_t *cpu) {
-	link_hub[slot] = cpu->pio.link;
-	cpu->pio.link->client = &link_hub[MAX_CALCS]->host;
+	cpu->pio.link->client = &link_hub->host;
+	link_hub_list[slot] = &cpu->pio.link->host;
 	link_hub_count++;
 	return 0;
 }
 
 BOOL link_connected_hub(int slot) {
-	return link_hub[slot] != NULL;
+	return link_hub_list[slot] != NULL;
 }
 
 // ticks

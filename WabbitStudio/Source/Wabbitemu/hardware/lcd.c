@@ -60,7 +60,6 @@ static void LCD_advance_cursor(LCD_t *);
 static void LCD_enqueue(CPU_t *cpu, LCD_t *lcd);
 static void LCD_free(CPU_t *);
 static void LCD_reset(CPU_t *);
-static void LCD_timer_refresh(CPU_t * cpu);
 u_char *LCD_update_image(LCD_t *lcd);
 u_char* LCD_image(LCDBase_t *lcdBase);
 static void LCD_command(CPU_t *cpu, device_t *dev);
@@ -139,18 +138,6 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	lcd->base.write_avg = 0.0f;
 	lcd->base.write_last = tc_elapsed(cpu->timer_c);
 	return lcd;
-}
-
-static void LCD_timer_refresh(CPU_t * cpu) {
-	LCD_t *lcd = (LCD_t *)cpu->pio.lcd;
-	lcd->base.time = tc_elapsed(cpu->timer_c);
-	lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
-	lcd->base.ufps = 0.0f;
-	lcd->base.lastgifframe = tc_elapsed(cpu->timer_c);
-	lcd->base.lastaviframe = tc_elapsed(cpu->timer_c);
-	lcd->base.write_avg = 0.0f;
-	lcd->base.write_last = tc_elapsed(cpu->timer_c);
-	lcd->lcd_delay = NORMAL_DELAY;
 }
 
 /* 

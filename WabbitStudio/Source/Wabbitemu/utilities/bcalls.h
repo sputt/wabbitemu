@@ -26,7 +26,7 @@ bcall_t bcalls_83p[] = {
 	{ _T("_ContextSizeWindow"), 0x403F },
 	{ _T("_ContextErrEP"), 0x4042 },
 	{ _T("_CallMain"), 0x4045 },
-	{ _T("_MonErrHand"), 0x4048 },
+	{ _T("_MonErrorHandler"), 0x4048 },
 	{ _T("_AppInit"), 0x404B },
 	{ _T("_ResetRam"), 0x404E },
 	{ _T("_LCD_BUSY"), 0x4051 },

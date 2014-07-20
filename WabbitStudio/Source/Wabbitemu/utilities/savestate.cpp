@@ -1,14 +1,11 @@
 #include "stdafx.h"
 
-#include "calc.h"
-#include "core.h"
-#include "link.h"
-#include "savestate.h"
-#include "83psehw.h"
-#include "fileutilities.h"
-
-#define CHUNK_SIZE_FAIL 1
-static jmp_buf errorJumpBuf;
+#include "core\core.h"
+#include "hardware\83psehw.h"
+#include "hardware\link.h"
+#include "interface\calc.h"
+#include "utilities\fileutilities.h"
+#include "utilities\savestate.h"
 
 extern int def(FILE *, FILE *, int);
 extern int inf(FILE *, FILE *);
@@ -181,7 +178,7 @@ BOOL DelChunk(SAVESTATE_t *save, char *tag) {
  ************************************************************************/
 void CheckPNT(CHUNK_t* chunk) {
 	if (chunk->size < chunk->pnt) {
-		longjmp(errorJumpBuf, CHUNK_SIZE_FAIL);
+		throw std::exception();
 	}
 }
 
@@ -782,8 +779,12 @@ SAVESTATE_t* SaveSlot(LPCALC lpCalc, TCHAR *author, TCHAR *comment) {
 	return save;
 }
 
-void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
+BOOL LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	CHUNK_t* chunk = FindChunk(save, CPU_tag);
+	if (chunk == NULL) {
+		return FALSE;
+	}
+
 	chunk->pnt = 0;
 	
 	cpu->a = ReadChar(chunk);
@@ -843,13 +844,19 @@ void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	} else {
 		cpu->model_bits = save->model == TI_84P ? 0 : 1;
 	}
+
+	return TRUE;
 }
 
 
 
-void LoadMEM(SAVESTATE_t* save, memc* mem) {
+BOOL LoadMEM(SAVESTATE_t* save, memc* mem) {
 	int i;
 	CHUNK_t* chunk = FindChunk(save, MEM_tag);
+	if (chunk == NULL) {
+		return FALSE;
+	}
+
 	chunk->pnt = 0;
 
 	mem->flash_size	= ReadInt(chunk);
@@ -896,10 +903,18 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	mem->flash_lower = (unsigned short)ReadInt(chunk);
 
 	chunk = FindChunk(save, ROM_tag);
+	if (chunk == NULL) {
+		return FALSE;
+	}
+
 	chunk->pnt = 0;
 	ReadBlock(chunk, (unsigned char *)mem->flash, mem->flash_size);
 	
 	chunk = FindChunk(save, RAM_tag);
+	if (chunk == NULL) {
+		return FALSE;
+	}
+
 	chunk->pnt = 0;
 	ReadBlock(chunk, (unsigned char *)mem->ram, mem->ram_size);	
 
@@ -972,20 +987,31 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 			}
 		}
 	}
+
+	return TRUE;
 }
 
-void LoadTIMER(SAVESTATE_t* save, timerc* time) {
+BOOL LoadTIMER(SAVESTATE_t* save, timerc* time) {
 	CHUNK_t* chunk = FindChunk(save,TIMER_tag);
+	if (chunk == NULL) {
+		return FALSE;
+	}
+
 	chunk->pnt = 0;
 
 	time->tstates	= ReadLong(chunk);
 	time->freq		= (uint32_t) ReadLong(chunk);
 	time->elapsed	= ReadDouble(chunk);
 	time->lasttime	= ReadDouble(chunk);	// this isn't used.
+	return TRUE;
 }
 
-void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
+BOOL LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	CHUNK_t* chunk = FindChunk(save,LCD_tag);
+	if (chunk == NULL) {
+		return FALSE;
+	}
+
 	chunk->pnt = 0;
 
 	lcd->base.active		= ReadInt(chunk);
@@ -1022,10 +1048,16 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 		// using a custom location
 		lcd->screen_addr = 0xFC00;
 	}
+
+	return TRUE;
 }
 
-void LoadColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
+BOOL LoadColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
 	CHUNK_t* chunk = FindChunk(save, LCD_tag);
+	if (chunk == NULL) {
+		return FALSE;
+	}
+
 	chunk->pnt = 0;
 
 	lcd->base.active = ReadInt(chunk);
@@ -1051,23 +1083,31 @@ void LoadColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
 	lcd->write_step = ReadInt(chunk);
 	lcd->frame_rate = ReadInt(chunk);
 	lcd->front = ReadInt(chunk);
+
+	return TRUE;
 }
 
-void LoadLINK(SAVESTATE_t* save, link_t* link) {
+BOOL LoadLINK(SAVESTATE_t* save, link_t* link) {
 	CHUNK_t* chunk	= FindChunk(save,LINK_tag);
 	if (chunk == NULL) {
 		// 81
-		return;
+		return save->model == TI_81;
 	}
 
 	chunk->pnt = 0;
 
 	link->host		= ReadChar(chunk);
+
+	return TRUE;
 }
 
-void LoadSTDINT(SAVESTATE_t* save, STDINT_t* stdint) {
+BOOL LoadSTDINT(SAVESTATE_t* save, STDINT_t* stdint) {
 	int i;
 	CHUNK_t* chunk		= FindChunk(save,STDINT_tag);
+	if (chunk == NULL) {
+		return FALSE;
+	}
+
 	chunk->pnt = 0;
 
 	stdint->intactive	= ReadChar(chunk);
@@ -1080,6 +1120,8 @@ void LoadSTDINT(SAVESTATE_t* save, STDINT_t* stdint) {
 	}
 	stdint->mem			= (unsigned char) ReadInt(chunk);
 	stdint->xy			= (unsigned char) ReadInt(chunk);
+
+	return TRUE;
 }
 
 // CPU needed for compatibility, see below
@@ -1088,6 +1130,7 @@ void LoadSE_AUX(SAVESTATE_t* save, CPU_t *cpu, SE_AUX_t *se_aux) {
 	if (!se_aux) {
 		return;
 	}
+
 	CHUNK_t* chunk = FindChunk(save, SE_AUX_tag);
 	if (!chunk) {
 		return;
@@ -1177,34 +1220,68 @@ void LoadSE_AUX(SAVESTATE_t* save, CPU_t *cpu, SE_AUX_t *se_aux) {
 	se_aux->usb.Port54 = ReadChar(chunk);
 }
 
-
-void LoadSlot(SAVESTATE_t *save, LPCALC lpCalc) {
+BOOL LoadSlot_Unsafe(SAVESTATE_t *save, LPCALC lpCalc) {
 	BOOL runsave;
-	
+
 	if (lpCalc == NULL || lpCalc->active == FALSE) {
-		puts("Slot was not active");
-		return;
+		return FALSE;
 	}
 	if (save == NULL) {
-		puts("Save was null");
-		return;
+		return FALSE;
 	}
-	
+
 	runsave = lpCalc->running;
 	lpCalc->running = FALSE;
-	
-	LoadCPU(save, &lpCalc->cpu);
-	LoadMEM(save, &lpCalc->mem_c);
-	LoadTIMER(save, &lpCalc->timer_c);
-	if (lpCalc->model >= TI_84PCSE) {
-		LoadColorLCD(save, (ColorLCD_t *)lpCalc->cpu.pio.lcd);
-	} else {
-		LoadLCD(save, (LCD_t *) lpCalc->cpu.pio.lcd);
+
+	BOOL success = LoadCPU(save, &lpCalc->cpu);
+	if (success == FALSE) {
+		return FALSE;
 	}
-	LoadLINK(save, lpCalc->cpu.pio.link);
-	LoadSTDINT(save, lpCalc->cpu.pio.stdint);
+
+	success = LoadMEM(save, &lpCalc->mem_c);
+	if (success == FALSE) {
+		return FALSE;
+	}
+
+	success = LoadTIMER(save, &lpCalc->timer_c);
+	if (success == FALSE) {
+		return FALSE;
+	}
+
+	if (lpCalc->model >= TI_84PCSE) {
+		success = LoadColorLCD(save, (ColorLCD_t *)lpCalc->cpu.pio.lcd);
+	} else {
+		success = LoadLCD(save, (LCD_t *)lpCalc->cpu.pio.lcd);
+	}
+
+	if (success == FALSE) {
+		return FALSE;
+	}
+
+	success = LoadLINK(save, lpCalc->cpu.pio.link);
+	if (success == FALSE) {
+		return FALSE;
+	}
+
+	success = LoadSTDINT(save, lpCalc->cpu.pio.stdint);
+	if (success == FALSE) {
+		return FALSE;
+	}
+
 	LoadSE_AUX(save, &lpCalc->cpu, lpCalc->cpu.pio.se_aux);
 	lpCalc->running = runsave;
+
+	return TRUE;
+}
+
+BOOL LoadSlot(SAVESTATE_t *save, LPCALC lpCalc) {
+	try {
+		return LoadSlot_Unsafe(save, lpCalc);
+	}
+	catch (std::exception& e) {
+		_tprintf(_T("Exception loading save state: %s", e.what()));
+		return FALSE;
+	}
 }
 
 char* GetRomOnly(SAVESTATE_t *save, int *size) {
@@ -1300,14 +1377,6 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 	CHUNK_t *chunk;
 	FILE *tmpFile;
 
-	int error = setjmp(errorJumpBuf);
-	if (error == CHUNK_SIZE_FAIL) {
-		if (save) {
-			free(save);
-		}
- 		return NULL;
-	}
-
 	fread(string, 1, 8, ifile);
 	string[8] = 0;
 	if (strncmp(DETECT_CMP_STR, string, 8) == 0) {
@@ -1386,25 +1455,26 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 	}
 
 	save->chunk_count = 0;
-	for(i = 0; i < chunk_count; i++) {
-		string[0]	= (char)fgetc(ifile);
-		string[1]	= (char)fgetc(ifile);
-		string[2]	= (char)fgetc(ifile);
-		string[3]	= (char)fgetc(ifile);
-		string[4]	= 0;
+	for (i = 0; i < chunk_count; i++) {
+		string[0] = (char)fgetc(ifile);
+		string[1] = (char)fgetc(ifile);
+		string[2] = (char)fgetc(ifile);
+		string[3] = (char)fgetc(ifile);
+		string[4] = 0;
 		if (feof(ifile)) {
 			FreeSave(save);
 			return NULL;
 		}
-		chunk		= NewChunk(save, string);
-		chunk->size	= fgeti(ifile);
+		chunk = NewChunk(save, string);
+		chunk->size = fgeti(ifile);
 		if (feof(ifile)) {
 			FreeSave(save);
 			return NULL;
 		}
-		chunk->data	= (unsigned char *) malloc(chunk->size);
+		chunk->data = (unsigned char *)malloc(chunk->size);
 		fread(chunk->data, 1, chunk->size, ifile);
 	}
+
 	if (compressed == TRUE) {
 		fclose(ifile);
 	}

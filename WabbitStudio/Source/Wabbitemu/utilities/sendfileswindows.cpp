@@ -113,7 +113,7 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 	for (lpsi->iCurrentFile = 0; (UINT)lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)	{
 		const TCHAR *filename = lpsi->FileList->at(lpsi->iCurrentFile).c_str();
 		TIFILE_t *var = importvar(filename, TRUE);
-		if (var != NULL && var->type != ROM_TYPE) {
+		if (var != NULL && var->type != ROM_TYPE && var->type != SAV_TYPE) {
 			PostMessage(lpsi->hwndDlg, WM_USER, 0, NULL);
 		} else {
 			lpsi->isRom = true;

@@ -25,7 +25,6 @@
 #include <OleIdl.h>
 #include <ShObjIdl.h>
 #include <assert.h>
-#include <setjmp.h>
 #include <stdlib.h>
 #include <crtdbg.h>
 
