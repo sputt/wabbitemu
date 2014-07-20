@@ -232,7 +232,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="utilities\print.c" />
-    <ClCompile Include="utilities\savestate.c" />
+    <ClCompile Include="utilities\savestate.cpp" />
     <ClCompile Include="utilities\sendfile.c" />
     <ClCompile Include="utilities\sendfileswindows.cpp" />
     <ClCompile Include="utilities\sound.c" />

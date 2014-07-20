@@ -70,14 +70,14 @@ typedef struct {
 
 LPCALC DuplicateCalc(LPCALC lpCalc);
 void WriteSave(const TCHAR *, SAVESTATE_t *, int);
-void LoadSlot(SAVESTATE_t* , LPCALC);
+BOOL LoadSlot(SAVESTATE_t* , LPCALC);
 SAVESTATE_t* SaveSlot(LPCALC, TCHAR *author, TCHAR *comment);
 SAVESTATE_t* CreateSave(TCHAR *, TCHAR *, int);
 SAVESTATE_t* ReadSave(FILE *ifile);
 void FreeSave(SAVESTATE_t *);
 char* GetRomOnly(SAVESTATE_t *save, int *);
-void LoadLCD(SAVESTATE_t *, LCD_t *);
-void LoadColorLCD(SAVESTATE_t *, ColorLCD_t *);
+BOOL LoadLCD(SAVESTATE_t *, LCD_t *);
+BOOL LoadColorLCD(SAVESTATE_t *, ColorLCD_t *);
 
 #endif
 
