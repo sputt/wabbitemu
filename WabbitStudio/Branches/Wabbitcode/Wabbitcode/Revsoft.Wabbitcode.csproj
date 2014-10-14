@@ -79,7 +79,7 @@
     <DebugType>Full</DebugType>
     <ErrorReport>prompt</ErrorReport>
     <UseVSHostingProcess>true</UseVSHostingProcess>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
@@ -623,6 +623,7 @@
     <Compile Include="TextEditor\InsightProviders.cs" />
     <Compile Include="TextEditor\Markers\ErrorMarker.cs" />
     <Compile Include="TextEditor\Markers\ReferenceMarker.cs" />
+    <Compile Include="TextEditor\SymbolUnderliner.cs" />
     <Compile Include="TextEditor\TextEditorProperties.cs" />
     <Compile Include="TextEditor\WabbitcodeTextEditor.cs">
       <SubType>UserControl</SubType>

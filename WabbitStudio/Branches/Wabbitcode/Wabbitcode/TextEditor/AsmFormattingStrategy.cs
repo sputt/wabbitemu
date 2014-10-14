@@ -1,10 +1,11 @@
-﻿using Revsoft.TextEditor.Document;
+﻿using Revsoft.TextEditor;
+using Revsoft.TextEditor.Document;
 
-namespace Revsoft.Wabbitcode.EditorExtensions
+namespace Revsoft.Wabbitcode.TextEditor
 {
     internal class AsmFormattingStrategy : DefaultFormattingStrategy
     {
-        public override void FormatLine(TextEditor.TextArea textArea, int line, int cursorOffset, char ch)
+        public override void FormatLine(TextArea textArea, int line, int cursorOffset, char ch)
         {
             base.FormatLine(textArea, line, cursorOffset, ch);
             if (ch != '#')

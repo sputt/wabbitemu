@@ -1,6 +1,7 @@
 using System.Windows.Forms;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Gui.CompletionWindow;
+using Revsoft.Wabbitcode.TextEditor;
 
 namespace Revsoft.Wabbitcode.EditorExtensions
 {

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.TextEditor;
 
 namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 {
@@ -30,7 +31,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 		{
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextEditor));
-            this.editorBox = new Revsoft.Wabbitcode.EditorExtensions.WabbitcodeTextEditor();
+            this.editorBox = new WabbitcodeTextEditor();
 			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.tabContextMenu = new System.Windows.Forms.ContextMenu();
 			this.saveMenuItem = new System.Windows.Forms.MenuItem();
@@ -141,7 +142,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 		}
 
 		#endregion
-		private Revsoft.Wabbitcode.EditorExtensions.WabbitcodeTextEditor editorBox;
+		private WabbitcodeTextEditor editorBox;
 		internal ImageList imageList1;
         private ContextMenu tabContextMenu;
         private MenuItem saveMenuItem;

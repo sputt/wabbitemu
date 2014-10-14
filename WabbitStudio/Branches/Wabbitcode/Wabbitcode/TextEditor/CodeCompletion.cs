@@ -6,6 +6,7 @@ using Revsoft.Wabbitcode.Properties;
 using System.Linq;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.TextEditor;
 
 namespace Revsoft.Wabbitcode.EditorExtensions
 {

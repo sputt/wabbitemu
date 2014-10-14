@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using Revsoft.Wabbitcode.Annotations;
+using Revsoft.Wabbitcode.EditorExtensions;
 
-namespace Revsoft.Wabbitcode.EditorExtensions
+namespace Revsoft.Wabbitcode.TextEditor
 {
     [UsedImplicitly]
     public class CodeCompletionFactory : ICodeCompletionFactory

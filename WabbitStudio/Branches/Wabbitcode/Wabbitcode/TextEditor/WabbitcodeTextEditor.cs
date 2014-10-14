@@ -10,6 +10,7 @@ using Revsoft.TextEditor.Document;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.TextEditor.Gui.InsightWindow;
 using Revsoft.Wabbitcode.Actions;
+using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.EditorExtensions.Markers;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
@@ -18,9 +19,8 @@ using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
-using Timer = System.Windows.Forms.Timer;
 
-namespace Revsoft.Wabbitcode.EditorExtensions
+namespace Revsoft.Wabbitcode.TextEditor
 {
     public sealed class WabbitcodeTextEditor : TextEditorControl
     {
@@ -42,6 +42,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         };
 
         private readonly ErrorUnderliner _errorUnderliner;
+        private readonly SymbolUnderliner _symbolUnderliner;
 
         private bool _useTextHighlighting = true;
 
@@ -70,6 +71,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
         {
             TextEditorProperties = new TextEditorProperties();
             _errorUnderliner = new ErrorUnderliner(this);
+            _symbolUnderliner = new SymbolUnderliner(this);
 
             Document.FormattingStrategy = new AsmFormattingStrategy();
             editactions.Add(Keys.Control | Keys.Space, new ShowCodeCompletion());

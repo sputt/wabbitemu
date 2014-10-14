@@ -8,6 +8,7 @@ using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.TextEditor;
 using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Threading.Tasks;
