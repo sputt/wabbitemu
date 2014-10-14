@@ -20,6 +20,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         private ushort _oldSP;
         private IWabbitemuDebugger _debugger;
         private bool _disposed;
+        private bool _isStepping;
         private readonly List<KeyValuePair<ushort, ushort>> _memoryAllocations;
 
         private IBreakpoint _stepOverBreakpoint;
@@ -305,6 +306,12 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         public void Step()
         {
+            if (_isStepping)
+            {
+                return;
+            }
+
+            _isStepping = true;
             // need to clear the old breakpoint so lets save it
             ushort currentPC = _debugger.CPU.PC;
             byte oldPage = GetRelativePageNum(currentPC);
@@ -329,10 +336,18 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             {
                 DebuggerStep(this, new DebuggerStepEventArgs(key));
             }
+
+            _isStepping = false;
         }
 
         public void StepOut()
         {
+            if (_isStepping)
+            {
+                return;
+            }
+
+            _isStepping = true;
             DocumentLocation lastCallLocation = CallStack.Last().CallLocation;
             CalcLocation calcLocation = _symbolService.ListTable.GetCalcLocation(lastCallLocation.FileName, lastCallLocation.LineNumber);
             DocumentLocation docLocation = null;
@@ -368,10 +383,18 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             {
                 DebuggerStep(this, new DebuggerStepEventArgs(key));
             }
+
+            _isStepping = false;
         }
 
         public void StepOver()
         {
+            if (_isStepping)
+            {
+                return;
+            }
+
+            _isStepping = true;
             // need to clear the old breakpoint so lets save it
             ushort currentPC = _debugger.CPU.PC;
             byte oldPage = GetRelativePageNum(currentPC);
@@ -390,6 +413,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             string[] specialCommands = {"jp", "jr", "ret", "djnz"};
             if (specialCommands.Any(s => line.Contains(s)))
             {
+                _isStepping = false;
                 Step();
                 return;
             }
@@ -430,6 +454,8 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             {
                 DebuggerStep(this, new DebuggerStepEventArgs(key));
             }
+
+            _isStepping = false;
         }
 
         #endregion
