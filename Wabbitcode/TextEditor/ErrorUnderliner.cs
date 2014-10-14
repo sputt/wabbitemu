@@ -6,12 +6,11 @@ using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.EditorExtensions.Markers;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
-namespace Revsoft.Wabbitcode.EditorExtensions
+namespace Revsoft.Wabbitcode.TextEditor
 {
     internal class ErrorUnderliner : IDisposable
     {

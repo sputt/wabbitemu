@@ -11,6 +11,7 @@ using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.TextEditor;
 
 namespace Revsoft.Wabbitcode.GUI.Dialogs
 {

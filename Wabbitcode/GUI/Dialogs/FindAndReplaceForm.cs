@@ -7,12 +7,11 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
-using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.Interfaces;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.TextEditor;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.Dialogs

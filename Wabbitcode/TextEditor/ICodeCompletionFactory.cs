@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Revsoft.Wabbitcode.TextEditor;
 
 namespace Revsoft.Wabbitcode.EditorExtensions
 {

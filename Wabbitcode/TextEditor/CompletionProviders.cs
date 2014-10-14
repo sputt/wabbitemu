@@ -3,6 +3,7 @@ using Revsoft.TextEditor;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.TextEditor;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.EditorExtensions

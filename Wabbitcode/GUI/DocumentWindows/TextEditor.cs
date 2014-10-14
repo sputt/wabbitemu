@@ -2,7 +2,6 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -33,9 +32,16 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
     /// </summary>
     public partial class TextEditor : AbstractFileEditor, ITextEditor, IBookmarkable
     {
-        #region Static Members
+        #region Static Methods
 
-        private static bool _bindingsRegistered;
+        static TextEditor()
+        {
+            Z80CodeCompletionBinding completionBinding = new Z80CodeCompletionBinding();
+            var codeCompletionFactory = DependencyFactory.Resolve<ICodeCompletionFactory>();
+            codeCompletionFactory.RegisterCodeCompletionBinding(".asm", completionBinding);
+            codeCompletionFactory.RegisterCodeCompletionBinding(".z80", completionBinding);
+            codeCompletionFactory.RegisterCodeCompletionBinding(".inc", completionBinding);
+        }
 
         internal static TextEditor OpenDocument(FilePath filename)
         {
@@ -131,7 +137,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             editorBox.TextChanged += editorBox_TextChanged;
             editorBox.ContextMenu = new EditorContextMenu(editorBox, _debuggerService,
                 _parserService, _projectService);
-            editorBox.ActiveTextAreaControl.TextArea.MouseClick += editorBox_MouseClick;
 
             WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
             WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
@@ -142,42 +147,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             {
                 SetDebugging(true);
             }
-
-            if (_bindingsRegistered)
-            {
-                return;
-            }
-
-            Z80CodeCompletionBinding completionBinding = new Z80CodeCompletionBinding();
-            var codeCompletionFactory = DependencyFactory.Resolve<ICodeCompletionFactory>();
-            codeCompletionFactory.RegisterCodeCompletionBinding(".asm", completionBinding);
-            codeCompletionFactory.RegisterCodeCompletionBinding(".z80", completionBinding);
-            codeCompletionFactory.RegisterCodeCompletionBinding(".inc", completionBinding);
-
-            _bindingsRegistered = true;
-        }
-
-        private void editorBox_MouseClick(object sender, MouseEventArgs e)
-        {
-            if ((ModifierKeys & Keys.Control) == 0)
-            {
-                return;
-            }
-
-            TextAreaControl activeTextAreaControl = editorBox.ActiveTextAreaControl;
-            TextView textView = activeTextAreaControl.TextArea.TextView;
-            Point point = Point.Subtract(e.Location, new Size(textView.DrawingPosition.Location));
-            TextLocation location = textView.GetLogicalPosition(point);
-            LineSegment segment = Document.GetLineSegment(location.Line);
-            TextWord textWord = segment.GetWord(location.Column);
-            if (textWord == null)
-            {
-                return;
-            }
-
-            string text = textWord.Word;
-            AbstractUiAction.RunCommand(new GotoDefinitionAction(FileName, text, activeTextAreaControl.Caret.Line));
-
         }
 
         private void SetDebugging(bool debugging)
@@ -616,7 +585,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         #endregion
 
-        public override void CloseFile()
+        protected override void CloseFile()
         {
             base.CloseFile();
 

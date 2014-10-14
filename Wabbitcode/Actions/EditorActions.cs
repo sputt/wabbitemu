@@ -11,6 +11,7 @@ using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.TextEditor;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Actions

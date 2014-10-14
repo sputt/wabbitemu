@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 
@@ -22,11 +21,9 @@ namespace Revsoft.Wabbitcode.Utils
         #region Events
 
         public delegate void BreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e);
-
-        public static event BreakpointAdded OnBreakpointAdded;
-
         public delegate void BreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e);
 
+        public static event BreakpointAdded OnBreakpointAdded;
         public static event BreakpointRemoved OnBreakpointRemoved;
 
         #endregion
@@ -46,8 +43,9 @@ namespace Revsoft.Wabbitcode.Utils
             }
 
             var eventArgs = new WabbitcodeBreakpointEventArgs(newBreak);
-            foreach (BreakpointAdded handler in OnBreakpointAdded.GetInvocationList())
+            foreach (var addedDelegage in OnBreakpointAdded.GetInvocationList())
             {
+                var handler = (BreakpointAdded)addedDelegage;
                 if (!eventArgs.Cancel)
                 {
                     handler(null, eventArgs);
@@ -78,8 +76,9 @@ namespace Revsoft.Wabbitcode.Utils
             }
 
             var eventArgs = new WabbitcodeBreakpointEventArgs(newBreak);
-            foreach (BreakpointRemoved handler in OnBreakpointRemoved.GetInvocationList())
+            foreach (var removedDelegate in OnBreakpointRemoved.GetInvocationList())
             {
+                var handler = (BreakpointRemoved) removedDelegate;
                 if (!eventArgs.Cancel)
                 {
                     handler(null, eventArgs);

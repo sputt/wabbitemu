@@ -92,11 +92,15 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             DocumentChanged = false;
         }
 
-        public virtual void CloseFile()
+        protected virtual void CloseFile()
         {
-            _projectService.Project.FileModifiedExternally -= Project_FileModifiedExternally;
             _projectService.ProjectOpened -= ProjectService_OnProjectOpened;
             _projectService.ProjectClosed -= ProjectService_OnProjectClosed;
+
+            if (_projectService.Project != null)
+            {
+                _projectService.Project.FileModifiedExternally -= Project_FileModifiedExternally;
+            }
         }
 
         protected override string GetPersistString()
