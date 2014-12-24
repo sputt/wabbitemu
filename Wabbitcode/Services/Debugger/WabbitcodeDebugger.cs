@@ -496,7 +496,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             do
             {
                 key = _symbolService.ListTable.GetFileLocation(page, --stackData, stackData >= 0x8000);
-            } while (key == null && stackData >= 0x8000);
+            } while (key == null && (IsAnApp ? (stackData >= 0x4000 && stackData < 0x8000) : stackData >= 0x8000));
 
             if (key == null)
             {
