@@ -122,7 +122,7 @@ void gui_draw(LPCALC, LPVOID lParam) {
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
 	if (lpMainWindow->hwndLCD != NULL) {
 		InvalidateRect(lpMainWindow->hwndLCD, NULL, FALSE);
-		if (frame_skip == TRUE) {
+		if (frame_skip == FALSE) {
 			UpdateWindow(lpMainWindow->hwndLCD);
 		}
 	}

@@ -498,7 +498,7 @@ void ReadTiFileHeader(FILE *infile, TIFILE_t *tifile) {
 	return;
 }
 
-static unsigned short length2 = 0;
+static int length2 = 0;
 
 TIFILE_t* ImportVarFile(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	int i;

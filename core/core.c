@@ -678,6 +678,7 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				cpu->mem_write_break_callback(cpu);
 			}
 		}
+		mem_c->step = FLASH_FASTMODE;
 		break;
 	}
 	default:
