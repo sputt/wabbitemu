@@ -71,15 +71,19 @@ namespace Revsoft.Wabbitcode
 
             int numErrors = 0;
             AppBase appBase = new AppBase(toolStripContainer);
+#if !DEBUG
             try
             {
+#endif
                 appBase.Run(args);
+#if !DEBUG
             }
             catch (Exception ex)
             {
                 numErrors++;
                 DockingService.ShowError("Unhandled exception occurred. Please report this to the developers", ex);
             }
+#endif
 
             if (numErrors == 0)
             {
