@@ -64,7 +64,14 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 UpdateAllRows();
                 EnablePanel(true);
             };
-            _debugger.DebuggerRunningChanged += (o, args) => EnablePanel(!args.Running);
+            _debugger.DebuggerRunningChanged += (o, args) =>
+            {
+                if (!args.Running)
+                {
+                    UpdateAllRows();
+                }
+                EnablePanel(!args.Running);
+            };
         }
 
         #region Clipboard Operation
