@@ -85,8 +85,8 @@
         ItemsControl.SelectedItem = ZMisc
         ItemsControl.Focus()
 
-        MiscLayer.SetLeft(ZMisc, ZMisc.X)
-        MiscLayer.SetTop(ZMisc, ZMisc.Y)
+        'MiscLayer.SetLeft(ZMisc, ZMisc.X)
+        'MiscLayer.SetTop(ZMisc, ZMisc.Y)
 
         _IsDraggingMisc = True
         e.Handled = True

@@ -19,39 +19,6 @@ Namespace ValueConverters
         End Function
     End Class
 
-    Public Class ImageIndexScenarioConverter
-        Implements IMultiValueConverter
-
-        Public Function Convert(values() As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IMultiValueConverter.Convert
-            On Error Resume Next
-
-            Dim Index = values(0)
-            Dim Images = Scenario.Instance.Images
-
-            If Images(Index) Is Nothing Then
-                Return Nothing
-            End If
-            Return Images(Index).GetValue(ZeldaImage.ImageProperty)
-        End Function
-
-        Public Function ConvertBack(value As Object, targetTypes() As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object() Implements System.Windows.Data.IMultiValueConverter.ConvertBack
-            Return Nothing
-        End Function
-    End Class
-
-    Public Class ImageIndexConverter
-        Implements IValueConverter
-
-        Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
-            Dim Index = value
-            Return Scenario.Instance.Images(Index).Image
-        End Function
-
-        Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
-            Return Nothing
-        End Function
-    End Class
-
     Public Class YConverter
         Implements IMultiValueConverter
 
@@ -63,7 +30,7 @@ Namespace ValueConverters
             Dim ObjHeight As Double = values(2)
             Dim ObjZRaw As Object = values(3)
 
-            Dim Images = Scenario.Instance.Images
+            Dim Images = Nothing 'Scenario.Instance.Images
 
             Dim ImgSource As ImageSource = Nothing
             Dim ZImg As ZeldaImage = Nothing
@@ -104,7 +71,7 @@ Namespace ValueConverters
             Dim Index As Object = values(0)
             Dim ObjX As Double = values(1)
             Dim ObjWidth As Double = values(2)
-            Dim Images = Scenario.Instance.Images
+            Dim Images = Nothing 'Scenario.Instance.Images
 
             Dim ImgSource As ImageSource = Nothing
             Dim ZImg As ZeldaImage = Nothing
@@ -172,23 +139,6 @@ Namespace ValueConverters
         End Function
     End Class
 
-    ''' <summary>
-    ''' Convert a label into a ZeldaImage and back
-    ''' </summary>
-    ''' <remarks></remarks>
-    Public Class GraphicsConverter
-        Implements IValueConverter
-
-        Public Function Convert(value As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.Convert
-            Dim Result = From i As ZeldaImage In Scenario.Instance.Images Where i.GetValue(ZeldaImage.LabelProperty) = CStr(value) Select i
-            Return Result(0)
-        End Function
-
-        Public Function ConvertBack(value As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.ConvertBack
-            Return CType(value, DependencyObject).GetValue(ZeldaImage.LabelProperty)
-        End Function
-    End Class
-
     Public Class DirectionConverter
         Implements IValueConverter
 
@@ -249,6 +199,69 @@ Namespace ValueConverters
         End Function
 
         Public Function ConvertBack1(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+            Return Nothing
+        End Function
+    End Class
+
+    Public Class TileConverter
+        Implements IMultiValueConverter
+
+        Public Function Convert(values() As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
+            If Not TypeOf values(0) Is Tileset Then
+                Return Nothing
+            End If
+            Dim Tileset As Tileset = values(0)
+            Dim Index As Byte = values(1)
+            Index = Index Mod 128
+            If Index < Tileset.Tiles.Count Then
+                Return Tileset.Tiles(Index).Image
+            Else
+                Return Nothing
+            End If
+        End Function
+
+        Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As Globalization.CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+            Dim Tile As TileImageSource = value
+            Return {Nothing, Tile.Index}
+        End Function
+    End Class
+
+    Public Class CollisionConverter
+        Implements IValueConverter
+
+        Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+            Dim Index As Integer = value
+            Return If(Index >= 128, Visibility.Visible, Visibility.Hidden)
+        End Function
+
+        Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+            Return 0
+        End Function
+    End Class
+
+    Public Class XImageConverter
+        Implements IMultiValueConverter
+
+        Public Function Convert(values() As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
+            Dim Scenario As Scenario = values(0)
+            Dim Index As Integer = values(1)
+
+            Return Scenario.Images(Index).Image
+        End Function
+
+        Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As Globalization.CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+            Return Nothing
+        End Function
+    End Class
+
+    Public Class GapConverter
+        Implements IValueConverter
+
+        Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+            Return If(value, 8, 0)
+        End Function
+
+        Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
             Return Nothing
         End Function
     End Class

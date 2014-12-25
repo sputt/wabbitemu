@@ -5,16 +5,16 @@
     xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
     Title="GameWindow" Height="600" Width="524" Loaded="Window_Loaded" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
     <Window.Resources>
-        <localconverters:ImageIndexConverter x:Key="convertImageIndex"/>
+        <!--<localconverters:ImageIndexConverter x:Key="convertImageIndex"/>-->
         <localconverters:YConverter x:Key="YConverter"/>
         <localconverters:XConverter x:Key="XConverter"/>
         <localconverters:ZConverter x:Key="ZConverter"/>
 
         <DataTemplate DataType="{x:Type local:ZDrawEntry}">
             <Image>
-                <Image.Source>
+                <!--<Image.Source>
                     <Binding Path="Image" Converter="{StaticResource convertImageIndex}"/>
-                </Image.Source>
+                </Image.Source>-->
             </Image>
         </DataTemplate>
     </Window.Resources>

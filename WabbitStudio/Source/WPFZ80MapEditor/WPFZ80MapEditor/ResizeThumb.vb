@@ -26,11 +26,11 @@ Public Class ResizeThumb
 
         _IsDraggingMisc = True
 
-        Misc.SetValue(MiscLayer.LeftProperty, CDbl(Misc.Args(0).Value))
-        Misc.SetValue(MiscLayer.TopProperty, CDbl(Misc.Args(1).Value))
+        'Misc.SetValue(MiscLayer.LeftProperty, CDbl(Misc.Args(0).Value))
+        'Misc.SetValue(MiscLayer.TopProperty, CDbl(Misc.Args(1).Value))
 
-        Misc.SetValue(MiscLayer.MiscWidthProperty, CDbl(Misc.Args(2).Value))
-        Misc.SetValue(MiscLayer.MiscHeightProperty, CDbl(Misc.Args(3).Value))
+        'Misc.SetValue(MiscLayer.MiscWidthProperty, CDbl(Misc.Args(2).Value))
+        'Misc.SetValue(MiscLayer.MiscHeightProperty, CDbl(Misc.Args(3).Value))
         e.Handled = True
     End Sub
 
@@ -57,10 +57,10 @@ Public Class ResizeThumb
 
             Dim Misc As ZMisc = DataContext
 
-            Dim X As Double = Misc.GetValue(MiscLayer.LeftProperty)
-            Dim Y As Double = Misc.GetValue(MiscLayer.TopProperty)
-            Dim MiscWidth As Double = Misc.GetValue(MiscLayer.MiscWidthProperty)
-            Dim MiscHeight As Double = Misc.GetValue(MiscLayer.MiscHeightProperty)
+            Dim X As Double '= Misc.GetValue(MiscLayer.LeftProperty)
+            Dim Y As Double ' = Misc.GetValue(MiscLayer.TopProperty)
+            Dim MiscWidth As Double '= Misc.GetValue(MiscLayer.MiscWidthProperty)
+            Dim MiscHeight As Double ' = Misc.GetValue(MiscLayer.MiscHeightProperty)
 
             If VerticalAlignment = Windows.VerticalAlignment.Bottom Then
                 MiscHeight += VDelta

@@ -30,7 +30,7 @@
                 <Rectangle x:Name="TileOverlay" Visibility="Hidden" Canvas.ZIndex="1">
                 </Rectangle>
             </Grid>
-            <ControlTemplate.Triggers>
+            <!--<ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter TargetName="TileOverlay" Property="Visibility" Value="Visible"/>
                     <Setter TargetName="TileOverlay" Property="Fill">
@@ -39,25 +39,7 @@
                         </Setter.Value>
                     </Setter>
                 </Trigger>
-                
-                <!--<Trigger Property="local:XTile.IsAnimated" Value="True">
-                    <Trigger.EnterActions>
-                        <BeginStoryboard Storyboard="{Binding AnimDef, ElementName=Tile, Converter={StaticResource AnimConverter}}">
-                        </BeginStoryboard>
-                    </Trigger.EnterActions>
-                </Trigger>-->
-                
-                <!--
-                <Trigger Property="IsAnimated" Value="True">
-                </Trigger>
-                -->
-            </ControlTemplate.Triggers>
+            </ControlTemplate.Triggers>-->
         </ControlTemplate>
-        
     </UserControl.Template>
-
-    <UserControl.Triggers>
-
-    </UserControl.Triggers>
-    
 </UserControl>

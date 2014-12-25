@@ -9,11 +9,9 @@
     xmlns:local="clr-namespace:WPFZ80MapEditor"
     xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
     mc:Ignorable="d" 
-    DataContext="{Binding Source={x:Static local:Scenario.Instance}}"
     d:DesignHeight="232" d:DesignWidth="166" xmlns:my="clr-namespace:WPFZ80MapEditor">
 
     <UserControl.Resources>
-        <localconverters:ImageIndexScenarioConverter x:Key="convertImageIndex"/>
         <Style x:Key="BorderStyle" TargetType="Border">
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Style.Triggers>
@@ -28,6 +26,7 @@
         </Style>
     </UserControl.Resources>
     <Grid >
+        <!--
         <TabControl>
             <TabItem Header="Objects" Name="TilesTab">
                 <ScrollViewer Margin="0,0,0,0" VerticalScrollBarVisibility="Auto">
@@ -51,11 +50,6 @@
                                             <StackPanel.Triggers>
                                             </StackPanel.Triggers>
                                             <Image Stretch="None" Width="40" x:Name="ObjectImage" UseLayoutRounding="True">
-                                                <Image.Source>
-                                                    <MultiBinding Converter="{StaticResource convertImageIndex}">
-                                                        <Binding Path="DefaultImage"/>
-                                                    </MultiBinding>
-                                                </Image.Source>
                                             </Image>
                                             <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Name="TextBlock1"/>
                                         </StackPanel>
@@ -118,5 +112,6 @@
                 </ScrollViewer>
             </TabItem>
         </TabControl>
+        -->
     </Grid>
 </UserControl>

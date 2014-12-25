@@ -11,7 +11,7 @@
              d:DesignHeight="382" d:DesignWidth="300" WindowStyle="ToolWindow" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
     <Window.Resources>
         <localconverters:BitValueConverter x:Key="BitConverter"/>
-        <localconverters:GraphicsConverter x:Key="GraphicsConverter"/>
+        <!--<localconverters:GraphicsConverter x:Key="GraphicsConverter"/>-->
         <localconverters:DirectionConverter x:Key="DirectionConverter"/>
 
         <DataTemplate DataType="{x:Type local:ZDefArgGenState}">
@@ -44,8 +44,8 @@
                     <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
                     <Label Content=":" Height="28" Padding="0,5,5,5" />
                 </StackPanel>
-                <ComboBox SelectedItem="{Binding Path=Value,Converter={StaticResource GraphicsConverter}}" ItemsSource="{Binding Path=Graphics}" Margin="10,0,0,0" Height="23"
-                          Width="160" ItemTemplate="{StaticResource GraphicTemplate}"/>
+                <!--<ComboBox SelectedItem="{Binding Path=Value,Converter={StaticResource GraphicsConverter}}" ItemsSource="{Binding Path=Graphics}" Margin="10,0,0,0" Height="23"
+                          Width="160" ItemTemplate="{StaticResource GraphicTemplate}"/>-->
             </StackPanel>
         </DataTemplate>
 

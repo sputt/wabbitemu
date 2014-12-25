@@ -89,8 +89,8 @@ Public Class MapView
                             tile.SetValue(XTile.IsAnimatedProperty, True)
                             tile.SetValue(XTile.AnimDefProperty, Anim.Definition)
 
-                            Dim Story As Storyboard = New AnimDefStoryboardConverter().Convert1(Anim.Definition, GetType(Storyboard), Nothing, Nothing)
-                            Story.Begin(tile)
+                            'Dim Story As Storyboard = New AnimDefStoryboardConverter().Convert1(Anim.Definition, GetType(Storyboard), Nothing, Nothing)
+                            'Story.Begin(Tile)
                             Exit For
                         End If
                     Next

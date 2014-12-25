@@ -6,87 +6,108 @@ Imports System.ComponentModel
 ''' </summary>
 ''' <remarks></remarks>
 Public Class MapData
-    Inherits DependencyObject
+    Inherits Freezable
     Implements INotifyPropertyChanged
 
-    Public Shared ReadOnly TileDataProperty As DependencyProperty =
-        DependencyProperty.Register("TileData", GetType(ObservableCollection(Of Byte)), GetType(MapData))
+    Private _Exists As Boolean = True
+    Private _X As Double
+    Private _Y As Double
 
-    Public Shared ReadOnly TilesetProperty As DependencyProperty =
-        DependencyProperty.Register("Tileset", GetType(Integer), GetType(MapData))
+    Public Property Exists As Boolean
+        Get
+            Return _Exists
+        End Get
+        Set(value As Boolean)
+            If value <> _Exists Then
+                _Exists = value
+                RaisePropertyChanged("Exists")
+            End If
+        End Set
+    End Property
 
-    Public Shared ReadOnly ZAnimsProperty As DependencyProperty =
-        DependencyProperty.Register("ZAnims",
-                                    GetType(ObservableCollection(Of ZAnim)), GetType(MapData))
 
-    Public Shared ReadOnly ZObjectsProperty As DependencyProperty =
-        DependencyProperty.Register("ZObjects",
-                                    GetType(ObservableCollection(Of ZObject)), GetType(MapData))
+    Public Property X As Double
+        Get
+            Return _X
+        End Get
+        Set(value As Double)
+            If (value <> _X) Then
+                _X = value
+                RaisePropertyChanged("X")
+            End If
+        End Set
+    End Property
 
-    Public Shared ReadOnly ZEnemiesProperty As DependencyProperty =
-        DependencyProperty.Register("ZEnemies",
-                                    GetType(ObservableCollection(Of ZEnemy)), GetType(MapData))
+    Public Property Y As Double
+        Get
+            Return _Y
+        End Get
+        Set(value As Double)
+            If (value <> _Y) Then
+                _Y = value
+                RaisePropertyChanged("Y")
+            End If
+        End Set
+    End Property
 
-    Public Shared ReadOnly ZMiscProperty As DependencyProperty =
-        DependencyProperty.Register("ZMisc",
-                                    GetType(ObservableCollection(Of ZMisc)), GetType(MapData))
+    'Public Shared ReadOnly TileDataProperty As DependencyProperty =
+    '    DependencyProperty.Register("TileData", GetType(ObservableCollection(Of Byte)), GetType(MapData))
 
-    Public Shared ReadOnly ScenarioProperty As DependencyProperty =
-        DependencyProperty.Register("Scenario", GetType(Scenario), GetType(MapData))
+    'Public Shared ReadOnly TilesetProperty As DependencyProperty =
+    '    DependencyProperty.Register("Tileset", GetType(Tileset), GetType(MapData))
 
+    'Public Shared ReadOnly ZAnimsProperty As DependencyProperty =
+    '    DependencyProperty.Register("ZAnims",
+    '                                GetType(ObservableCollection(Of ZAnim)), GetType(MapData))
+
+    'Public Shared ReadOnly ZObjectsProperty As DependencyProperty =
+    '    DependencyProperty.Register("ZObjects",
+    '                                GetType(ObservableCollection(Of ZObject)), GetType(MapData))
+
+    'Public Shared ReadOnly ZEnemiesProperty As DependencyProperty =
+    '    DependencyProperty.Register("ZEnemies",
+    '                                GetType(ObservableCollection(Of ZEnemy)), GetType(MapData))
+
+    'Public Shared ReadOnly ZMiscProperty As DependencyProperty =
+    '    DependencyProperty.Register("ZMisc",
+    '                                GetType(ObservableCollection(Of ZMisc)), GetType(MapData))
+
+    'Public Shared ReadOnly ScenarioProperty As DependencyProperty =
+    '    DependencyProperty.Register("Scenario", GetType(Scenario), GetType(MapData))
+
+    Private _Scenario As Scenario
     Public Property Scenario As Scenario
         Get
-            Return GetValue(ScenarioProperty)
+            Return _Scenario
         End Get
         Private Set(value As Scenario)
-            SetValue(ScenarioProperty, value)
+            If value IsNot _Scenario Then
+                _Scenario = value
+                RaisePropertyChanged("Scenario")
+            End If
         End Set
     End Property
 
     Public Property TileData As ObservableCollection(Of Byte)
-        Get
-            Return GetValue(TileDataProperty)
-        End Get
-        Set(value As ObservableCollection(Of Byte))
-            SetValue(TileDataProperty, value)
-        End Set
-    End Property
 
     Public Property ZAnims As ObservableCollection(Of ZAnim)
-        Get
-            Return GetValue(ZAnimsProperty)
-        End Get
-        Set(value As ObservableCollection(Of ZAnim))
-            SetValue(ZAnimsProperty, value)
-        End Set
-    End Property
 
+    'Private _ZObjects As ObservableCollection(Of ZObject)
     Public Property ZObjects As ObservableCollection(Of ZObject)
-        Get
-            Return GetValue(ZObjectsProperty)
-        End Get
-        Set(value As ObservableCollection(Of ZObject))
-            SetValue(ZObjectsProperty, value)
-        End Set
-    End Property
+    '    Get
+    '        Return _ZObjects
+    '    End Get
+    '    Set(value As ObservableCollection(Of ZObject))
+    '        If value IsNot _ZObjects Then
+    '            _ZObjects = value
+    '            RaisePropertyChanged("ZObjects")
+    '        End If
+    '    End Set
+    'End Property
 
     Public Property ZEnemies As ObservableCollection(Of ZEnemy)
-        Get
-            Return GetValue(ZEnemiesProperty)
-        End Get
-        Set(value As ObservableCollection(Of ZEnemy))
-            SetValue(ZEnemiesProperty, value)
-        End Set
-    End Property
 
     Public Property ZMisc As ObservableCollection(Of ZMisc)
-        Get
-            Return GetValue(ZMiscProperty)
-        End Get
-        Set(value As ObservableCollection(Of ZMisc))
-            SetValue(ZMiscProperty, value)
-        End Set
-    End Property
 
     Public Sub AddFromDef(Def As ZDef, X As Byte, Y As Byte)
         If Scenario.ObjectDefs.ContainsValue(Def) Then
@@ -112,15 +133,7 @@ Public Class MapData
         End If
     End Sub
 
-    Public Property Tileset As Integer
-        Get
-            Return GetValue(TilesetProperty)
-        End Get
-        Set(value As Integer)
-            SetValue(TilesetProperty, value)
-            RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs("Tileset"))
-        End Set
-    End Property
+    Public Property Tileset As Tileset
 
     'Public Property Scenario As Scenario
     '    Get
@@ -133,7 +146,9 @@ Public Class MapData
 
     Private Sub Initialize(newScenario As Scenario, NewTileset As Integer)
         Scenario = newScenario
-        Tileset = NewTileset
+        If Scenario IsNot Nothing Then
+            Tileset = Scenario.Tilesets(NewTileset)
+        End If
         ZAnims = New ObservableCollection(Of ZAnim)
         ZObjects = New ObservableCollection(Of ZObject)
         ZEnemies = New ObservableCollection(Of ZEnemy)
@@ -146,18 +161,55 @@ Public Class MapData
         Dim CompMapData = SPASMHelper.AssembleFile(FullPath)
         TileData = New ObservableCollection(Of Byte)(MapCompressor.Decompress(CompMapData))
 
-        Initialize(newScenario, NewTileset)
+        Initialize(newScenario, newTileset)
     End Sub
 
     Public Sub New(Data As IEnumerable(Of Byte), newScenario As Scenario, newTileset As Integer)
         TileData = New ObservableCollection(Of Byte)(MapCompressor.Decompress(Data))
-        Initialize(newScenario, NewTileset)
+        Initialize(newScenario, newTileset)
     End Sub
 
     Public Sub New(newScenario As Scenario, newTileset As Integer)
         TileData = New ObservableCollection(Of Byte)(Enumerable.Repeat(CByte(0), LayerContainer.MapSize.Width * LayerContainer.MapSize.Height))
-        Initialize(newScenario, NewTileset)
+        Initialize(newScenario, newTileset)
+    End Sub
+
+    Public Shared Function NonexistentMap(X As Integer, Y As Integer) As MapData
+        Dim MapData As New MapData(Nothing, Nothing)
+        MapData.Exists = False
+        MapData.X = X
+        MapData.Y = Y
+        Return MapData
+    End Function
+
+    Public Shared Function EmptyMap(NewScenario, NewTileset, X, Y, NumberOfTiles)
+        Dim Map As New MapData(NewScenario, NewTileset)
+        Map.X = X
+        Map.Y = Y
+        Map.Exists = True
+        Map.TileData = New ObservableCollection(Of Byte)(Enumerable.Repeat(CByte(0), NumberOfTiles).ToList())
+        Return Map
+    End Function
+
+    Private Sub RaisePropertyChanged(PropName As String)
+        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropName))
     End Sub
 
     Public Event PropertyChanged(sender As Object, e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+
+    Protected Overrides Function CreateInstanceCore() As Freezable
+        Dim Map As New MapData(Scenario, 0)
+        Map.Tileset = Tileset
+
+        Map.X = X
+        Map.Y = Y
+        Map.Exists = Exists
+        Map.TileData = New ObservableCollection(Of Byte)(TileData)
+        Map.ZAnims = New ObservableCollection(Of ZAnim)(ZAnims)
+        Map.ZObjects = New ObservableCollection(Of ZObject)(ZObjects)
+        Map.ZEnemies = New ObservableCollection(Of ZEnemy)(ZEnemies)
+        Map.ZMisc = New ObservableCollection(Of ZMisc)(ZMisc)
+
+        Return Map
+    End Function
 End Class

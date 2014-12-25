@@ -1,16 +1,20 @@
 ﻿Imports System.IO
 Imports System.Text.RegularExpressions
+Imports System.Windows.Interop
+Imports System.Threading.Tasks
 
 Partial Public Class Scenario
-    Private Sub LoadImages(FileName As String)
-        Dim Rx As New Regex(
-    "^(?<Name>[a-z_]+_gfx)(\s*|\s+with\s+bm_map\s*=\s*(?<X>\d+)x(?<Y>\d+)\s*)" & _
-    "^#include\s+""(?<FileName>.+)""\s*" & _
-    "(^\s*|(?<ExtraDefines>(^[a-z0-9_]+\s*=\s*[a-z0-9_]+\s*)+))$", RegexOptions.Multiline Or RegexOptions.Compiled)
+    Private Async Function LoadImages(FileName As String) As Task
+        '    Dim Rx As New Regex(
+        '"^(?<Name>[a-z_]+_gfx)(\s*|\s+with\s+bm_map\s*=\s*(?<X>\d+)x(?<Y>\d+)\s*)" & _
+        '"^#include\s+""(?<FileName>.+)""\s*" & _
+        '"(^\s*|(?<ExtraDefines>(^[a-z0-9_]+\s*=\s*[a-z0-9_]+\s*)+))$", RegexOptions.Multiline Or RegexOptions.Compiled)
+
+        Dim Rx As New GraphicsRegex()
 
         Dim Path As String = Directory.GetParent(FileName).FullName
         Dim Stream = New StreamReader(FileName)
-        Dim Matches = Rx.Matches(Stream.ReadToEnd())
+        Dim Matches = Rx.Matches(Await Stream.ReadToEndAsync())
         Stream.Close()
 
         ' Empty first image
@@ -68,5 +72,5 @@ Partial Public Class Scenario
         Next
 
         'Images.Sort()
-    End Sub
+    End Function
 End Class

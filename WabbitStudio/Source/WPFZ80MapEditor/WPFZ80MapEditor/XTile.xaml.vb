@@ -14,7 +14,7 @@
         DependencyProperty.Register("Scenario", GetType(Scenario), GetType(XTile))
     Public Shared ReadOnly TileImageProperty As DependencyProperty =
         DependencyProperty.Register("TileImage", GetType(ImageSource), GetType(XTile),
-                                    New PropertyMetadata(Nothing, Nothing, AddressOf OnTileImagePropertyCoerce))
+                                    New PropertyMetadata(Nothing, Nothing))
 
     Private Shared Sub OnIndexPropertyChanged(d As DependencyObject, basevalue As Object)
         Dim tile As XTile = d
@@ -30,18 +30,6 @@
         End Set
     End Property
 
-    Private Shared Function OnTileImagePropertyCoerce(d As DependencyObject, basevalue As Object) As Object
-        Dim tile As XTile = d
-        Dim tileIndex = tile.Index
-        If tileIndex < 0 Then tileIndex = 0
-        Try
-            Return Scenario.Instance.Tilesets(0)(tileIndex Mod 128)
-        Catch e As Exception
-            Debug.WriteLine("TileIndex: " & tileIndex)
-            Return Scenario.Instance.Tilesets(0)(0)
-        End Try
-    End Function
-
     Private ReadOnly Property Index() As Integer
         Get
             Return GetValue(IndexProperty)
@@ -50,7 +38,7 @@
 
     Public Property TileImage As ImageSource
         Get
-            GetValue(TileImageProperty)
+            Return GetValue(TileImageProperty)
         End Get
         Set(value As ImageSource)
             SetValue(TileImageProperty, value)

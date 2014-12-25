@@ -47,9 +47,9 @@ Public Class GameWindow
 
         _Calc.Run()
 
-        _Calc.Keypad.PressKey(Calc_Key.KEY_ON)
+        _Calc.Keypad.PressKey(CalcKey.KEY_ON)
         Thread.Sleep(200)
-        _Calc.Keypad.ReleaseKey(Calc_Key.KEY_ON)
+        _Calc.Keypad.ReleaseKey(CalcKey.KEY_ON)
 
         LaunchApp("Zelda   ")
 
@@ -66,8 +66,8 @@ Public Class GameWindow
         Next
 
 
-        Dim ZeldaApp As TIApplication = Nothing
-        For Each App As TIApplication In _Calc.Apps
+        Dim ZeldaApp As ITIApplication = Nothing
+        For Each App As ITIApplication In _Calc.Apps
             If App.Name Like "Zelda*" Then
                 ZeldaApp = App
                 Exit For

@@ -1,0 +1,55 @@
+﻿<ListBox x:Class="XLayerContainer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPFZ80MapEditor"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300" Name="LayerContainer"
+         
+            ItemsSource="{Binding Maps}">
+
+    <ListBox.Resources>
+        <local:MapPositionConverter x:Key="MapPositionConverter"/>
+    </ListBox.Resources>
+    
+    <ListBox.Template>
+        <ControlTemplate>
+            <ItemsPresenter></ItemsPresenter>
+        </ControlTemplate>
+    </ListBox.Template>
+
+    <ListBox.ItemsPanel>
+        <ItemsPanelTemplate>
+            <Canvas>
+
+            </Canvas>
+        </ItemsPanelTemplate>
+    </ListBox.ItemsPanel>
+
+    <ItemsControl.ItemContainerStyle>
+        <Style TargetType="ListBoxItem">
+            <!--<Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                   <ContentPresenter/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>-->
+            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListBoxItem_MouseDown"/>
+
+            <Setter Property="Canvas.Left" Value="{Binding Path=X, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"/>
+            <Setter Property="Canvas.Top" Value="{Binding Path=Y, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"/>
+        </Style>
+    </ItemsControl.ItemContainerStyle>
+    
+    <!--<Control.Template>
+        <ControlTemplate>
+            <ListBox ItemsSource="{TemplateBinding local:XLayerContainer.Maps}"
+                     ItemTemplate="{TemplateBinding local:XLayerContainer.MapTemplate}">
+                
+            </ListBox>
+        </ControlTemplate>
+    </Control.Template>-->
+    
+</ListBox>

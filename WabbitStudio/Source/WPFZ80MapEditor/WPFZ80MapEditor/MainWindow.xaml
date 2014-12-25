@@ -3,16 +3,26 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:WPFZ80MapEditor"
     xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
-    Title="Z80 Scenario Editor" Height="473" Width="708" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200">
+    Title="Z80 Scenario Editor" Height="473" Width="708" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" BorderBrush="Black">
     <Window.Resources>
         <localconverters:DoubleToZoomLevelConverter x:Key="convertZoomLevel2"/>
+        <localconverters:GapConverter x:Key="GapConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter1" />
     </Window.Resources>
     
+    <VisualStateManager.VisualStateGroups>
+        <VisualStateGroup x:Name="LayerStates">
+            <VisualState x:Name="MapsetState"/>
+            <VisualState x:Name="MapState"/>
+            <VisualState x:Name="ObjectState"/>
+            <VisualState x:Name="MiscState"/>
+        </VisualStateGroup>
+    </VisualStateManager.VisualStateGroups>
+    
     <DockPanel>
         <Menu DockPanel.Dock="Top" Name="MainMenu" Height="20" Panel.ZIndex="1">
-            <MenuItem Header="_File" Name="MenuItem1">
-                <MenuItem Header="_Open" Command="Open"/>
+            <MenuItem Header="_File">
+                <MenuItem Name="OpenScenario" Header="_Open"/>
                 <MenuItem Header="_Save" Command="Save"/>
                 <MenuItem Header="E_xit" />
             </MenuItem>
@@ -20,7 +30,7 @@
                 <MenuItem Header="_Undo" Command="Undo"/>
                 <MenuItem Header="_Redo" Command="Redo"/>
             </MenuItem>
-            <MenuItem Header="_Mapset" Visibility="{Binding ElementName=RadioMapSet, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter1}}" Name="MenuItem2">
+            <MenuItem Header="_Mapset" Name="MapsetMenu">
                 <MenuItem Name="MapsetNew" Header="_New map"/>
                 <MenuItem Name="MapsetNewFromFile" Header="New map from _file..."/>
                 <MenuItem Name="MapsetDelete" Header="_Delete map"/>
@@ -35,7 +45,7 @@
                 <MenuItem Header="Delete c_olumn" Name="DeleteMapColumn"/>
                 <MenuItem Header="Delete ro_w" Name="DeleteMapRow"/>
             </MenuItem>
-            <MenuItem Header="_Map" Visibility="{Binding ElementName=RadioMapView, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter1}}">
+            <MenuItem Header="_Map">
 
             </MenuItem>
             <MenuItem Header="_View">
@@ -54,16 +64,16 @@
             <ToolBar DockPanel.Dock="top" ToolBarTray.IsLocked="True" Name="MainToolBar" Height="26">
                 <!--Background="#00000000"-->
                 <Button>
-                    <Image Source="Toolbar/open.bmp"/>
+                    <Image Source="Toolbar/open.bmp" OpacityMask="#A8E61D"/>
                 </Button>
                 <Button Name="Button1">
-                    <Image Source="Toolbar/save.bmp"/>
+                    <Image Source="Toolbar/save.bmp"  OpacityMask="#A8E61D"/>
                 </Button>
                 <Button Name="TestButton">Test</Button>
                 <Separator></Separator>
-                <RadioButton IsChecked="True" Name="RadioMapSet">Mapset</RadioButton>
-                <RadioButton IsChecked="False" Name="RadioMapView">Map</RadioButton>
-                <RadioButton IsChecked="False" Name="RadioObjectLayer">Objects</RadioButton>
+                <RadioButton IsChecked="True" Name="RadioMapSet" Tag="MapsetState">Mapset</RadioButton>
+                <RadioButton IsChecked="False" Name="RadioMapView" Tag="MapState">Map</RadioButton>
+                <RadioButton IsChecked="False" Name="RadioObjectLayer" Tag="ObjectState">Objects</RadioButton>
                 <RadioButton IsChecked="False" Name="RadioEnemyLayer">Enemies</RadioButton>
                 <RadioButton IsChecked="False" Name="RadioMiscLayer">Misc</RadioButton>
             </ToolBar>
@@ -109,17 +119,25 @@
         </Grid>
 
         <Canvas Grid.Column="1" Name="Background" Background="Gray" Panel.ZIndex="0">
-            <local:LayerContainer Panel.ZIndex="0" Canvas.Left="0" Canvas.Top="0" SnapsToDevicePixels="True" 
-                                  x:Name="LayerContainer" 
-                                  ShowGridPadding="{Binding ElementName=PaddingMenuItem, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter1}, UpdateSourceTrigger=PropertyChanged}">
-                <local:LayerContainer.RenderTransform>
+            <local:XLayerContainer x:Name="LayerContainer" Maps="{Binding Maps}"
+                                   Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}">
+                <local:XLayerContainer.RenderTransform>
                     <TransformGroup>
-                        <ScaleTransform x:Name="MapZoomTransform"/>
+                        <ScaleTransform/>
                         <TranslateTransform/>
                     </TransformGroup>
-                </local:LayerContainer.RenderTransform>
-            </local:LayerContainer>
+                </local:XLayerContainer.RenderTransform>
+                <local:XLayerContainer.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Width="256" Height="256">
+                            <local:XMapView Panel.ZIndex="0" IsHitTestVisible="False"/>
+                            <!--<local:XObjectLayer Panel.ZIndex="1"/>-->
+                        </Grid>
+                    </DataTemplate>
+                </local:XLayerContainer.ItemTemplate>
+            </local:XLayerContainer>
         </Canvas>
+
     </DockPanel>
 
 

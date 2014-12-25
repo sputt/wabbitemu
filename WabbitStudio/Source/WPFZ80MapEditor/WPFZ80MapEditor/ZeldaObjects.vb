@@ -1,6 +1,7 @@
 ﻿Imports System.Runtime.InteropServices
 Imports System.Collections.ObjectModel
 Imports System.ComponentModel
+Imports System.IO
 
 <StructLayout(LayoutKind.Sequential, Pack:=1)>
 Public Structure AZPosition
@@ -73,13 +74,8 @@ Public Interface IGeneralObject(Of ZBase)
 End Interface
 
 Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)})
-    Inherits DependencyObject
     Implements IGeneralObject(Of ZBase)
     Implements ICloneable
-
-#Region "Definition/Arguments"
-    Public Shared ReadOnly DefinitionProperty = DependencyProperty.Register("Definition", GetType(ZDef), GetType(ZBaseObject(Of ZBase, Base)))
-    Public Shared ReadOnly ArgsProperty = DependencyProperty.Register("Args", GetType(ArgsCollection), GetType(ZBaseObject(Of ZBase, Base)))
 
     Protected _Name As String
 
@@ -93,27 +89,12 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
     End Property
 
     Public Property Definition As ZDef Implements IGeneralObject(Of ZBase).Definition
-        Get
-            Return GetValue(DefinitionProperty)
-        End Get
-        Set(value As ZDef)
-            SetValue(DefinitionProperty, value)
-        End Set
-    End Property
-
     Public Property Args As ArgsCollection Implements IGeneralObject(Of ZBase).Args
-        Get
-            Return GetValue(ArgsProperty)
-        End Get
-        Set(value As ArgsCollection)
-            SetValue(ArgsProperty, value)
-        End Set
-    End Property
 
     Public Function ToMacro() As String
         Dim Result As String = Me._Name
         Result &= "("
-        Dim NewArgs = (From a In Args Select a.GetValue(ZDefArg.ValueProperty)).ToList()
+        Dim NewArgs = (From a In Args Select a.Value).ToList()
         For i = 0 To NewArgs.Count - 1
             Result &= NewArgs(i)
 
@@ -174,7 +155,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Y = Math.Min(255.0, Math.Max(0.0, Y))
         If Assemble Then
             Dim Obj As New ZBase
-            Dim NewArgs = (From a In Args Select a.GetValue(ZDefArg.ValueProperty)).Skip(2).ToList()
+            Dim NewArgs = (From a In Args Select a.Value).Skip(2).ToList()
             NewArgs.InsertRange(0, {CByte(X), CByte(Y)})
             ZType.FromMacro(_Name, NewArgs.Cast(Of Object), Obj)
             FromStruct(Obj)
@@ -202,7 +183,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
     Public Sub New()
     End Sub
 
-    Public Sub New(Def As ZDef, Args() As Object)
+    Public Sub New(Def As ZDef, Args() As Object, Optional Data As Stream = Nothing)
         Definition = Def
         _Name = Def.Macro
         Me.Args = Def.Args.Clone
@@ -211,94 +192,32 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Next
         Definition = Def
         Dim Obj As New ZBase
-        ZType.FromMacro(Def.Macro, Args, Obj)
+        If Data Is Nothing Then
+            ZType.FromMacro(Def.Macro, Args, Obj)
+        Else
+            Dim ObjData(0 To Marshal.SizeOf(Obj) - 1) As Byte
+            Data.Read(ObjData, 0, ObjData.Length)
+            ZType.FromData(ObjData, Obj)
+        End If
         FromStruct(Obj)
     End Sub
 
-#End Region
-#Region "Position/Size"
-    Public Shared ReadOnly XProperty As DependencyProperty = DependencyProperty.Register("X", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
-    Public Shared ReadOnly YProperty As DependencyProperty = DependencyProperty.Register("Y", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
-    Public Shared ReadOnly ZProperty As DependencyProperty = DependencyProperty.Register("Z", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
-
-    Public Shared ReadOnly WProperty As DependencyProperty = DependencyProperty.Register("W", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
-    Public Shared ReadOnly HProperty As DependencyProperty = DependencyProperty.Register("H", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
-    Public Shared ReadOnly DProperty As DependencyProperty = DependencyProperty.Register("D", GetType(Byte), GetType(ZBaseObject(Of ZBase, Base)))
-
     Public Property X As Byte Implements IGeneralObject(Of ZBase).X
-        Get
-            Return GetValue(XProperty)
-        End Get
-        Set(value As Byte)
-            SetValue(XProperty, value)
-        End Set
-    End Property
-
     Public Property Y As Byte Implements IGeneralObject(Of ZBase).Y
-        Get
-            Return GetValue(YProperty)
-        End Get
-        Set(value As Byte)
-            SetValue(YProperty, value)
-        End Set
-    End Property
-
     Public Property Z As Byte Implements IGeneralObject(Of ZBase).Z
-        Get
-            Return GetValue(ZProperty)
-        End Get
-        Set(value As Byte)
-            SetValue(ZProperty, value)
-        End Set
-    End Property
+
 
     Public Property W As Byte Implements IGeneralObject(Of ZBase).W
-        Get
-            Return GetValue(WProperty)
-        End Get
-        Set(value As Byte)
-            SetValue(WProperty, value)
-        End Set
-    End Property
-
     Public Property H As Byte Implements IGeneralObject(Of ZBase).H
-        Get
-            Return GetValue(HProperty)
-        End Get
-        Set(value As Byte)
-            SetValue(HProperty, value)
-        End Set
-    End Property
-
     Public Property D As Byte Implements IGeneralObject(Of ZBase).D
-        Get
-            Return GetValue(DProperty)
-        End Get
-        Set(value As Byte)
-            SetValue(DProperty, value)
-        End Set
-    End Property
 
     Public ReadOnly Property Bounds As Rect
         Get
             Return New Rect(X, Y, W, H)
         End Get
     End Property
-#End Region
-#Region "Image"
-    Public Shared ReadOnly ImageProperty As DependencyProperty =
-        DependencyProperty.Register("Image", GetType(Integer), GetType(ZBaseObject(Of ZBase, Base)))
 
     Public Property Image As Integer Implements IGeneralObject(Of ZBase).Image
-        Get
-            Return GetValue(ImageProperty)
-        End Get
-        Set(value As Integer)
-            SetValue(ImageProperty, value)
-        End Set
-    End Property
-
-#End Region
 
     Sub Move(Dx As Integer, Dy As Integer, Optional Dz As Integer = 0)
         X += Dx : Y += Dy : Z += Dz
@@ -337,13 +256,12 @@ Public Class ZDefArgGenState
     Inherits ZDefArg
 
     Public Sub New(Name As String, Description As String)
-        SetValue(ZDefArg.NameProperty, Name)
-        SetValue(ZDefArg.DescriptionProperty, Description)
+        MyBase.New(Name, Description)
     End Sub
 
     Public Overloads Function Clone() As Object
-        Dim Copy As New ZDefArgGenState(GetValue(ZDefArg.NameProperty), GetValue(ZDefArg.DescriptionProperty))
-        Copy.SetValue(ZDefArg.ValueProperty, GetValue(ZDefArg.ValueProperty))
+        Dim Copy As New ZDefArgGenState(Name, Description)
+        Copy.Value = Value
         Return Copy
     End Function
 End Class
@@ -351,21 +269,17 @@ End Class
 Public Class ZDefArgGraphic
     Inherits ZDefArg
 
-    Public Shared ReadOnly GraphicsProperty = DependencyProperty.Register("Graphics", GetType(IEnumerable(Of ZeldaImage)), GetType(ZDefArg))
-    Private ReadOnly _images As ObservableCollection(Of ZeldaImage)
+    Public Property Graphics As IEnumerable(Of ZeldaImage)
 
-    Public Sub New(Name As String, Description As String, images As ObservableCollection(Of ZeldaImage))
-        SetValue(ZDefArg.NameProperty, Name)
-        SetValue(ZDefArg.DescriptionProperty, Description)
-        _images = images
-
-
-        SetValue(GraphicsProperty, images)
+    Public Sub New(Name As String, Description As String, Graphics As ObservableCollection(Of ZeldaImage))
+        MyBase.New(Name, Description)
+        Me.Graphics = Graphics
     End Sub
 
     Public Overloads Function Clone() As Object
-        Dim Copy As New ZDefArgGraphic(GetValue(ZDefArg.NameProperty), GetValue(ZDefArg.DescriptionProperty), _images)
-        Copy.SetValue(ZDefArg.ValueProperty, GetValue(ZDefArg.ValueProperty))
+        Dim Copy As New ZDefArgGraphic(Name, Description, Graphics)
+        Copy.Value = Value
+        Copy.Graphics = Graphics
         Return Copy
     End Function
 End Class
@@ -373,12 +287,12 @@ End Class
 Public Class ZDefArgObjectID
     Inherits ZDefArg
 
-    Public Shared ReadOnly ObjectIDsProperty = DependencyProperty.Register("ObjectIDs", GetType(IEnumerable(Of String)), GetType(ZDefArg))
+    'Public Shared ReadOnly ObjectIDsProperty = DependencyProperty.Register("ObjectIDs", GetType(IEnumerable(Of String)), GetType(ZDefArg))
+
+    Public ObjectIDs As IEnumerable(Of String)
 
     Public Sub New(Name As String, Description As String)
-        SetValue(ZDefArg.NameProperty, Name)
-        SetValue(ZDefArg.DescriptionProperty, Description)
-
+        MyBase.New(Name, Description)
         Dim ObjectIDs As New List(Of String)
 
         For Each Label In SPASMHelper.Labels
@@ -388,12 +302,12 @@ Public Class ZDefArgObjectID
         Next
 
         ObjectIDs.Sort()
-        SetValue(ObjectIDsProperty, ObjectIDs)
     End Sub
 
     Public Overloads Function Clone() As Object
-        Dim Copy As New ZDefArgObjectID(GetValue(ZDefArg.NameProperty), GetValue(ZDefArg.DescriptionProperty))
-        Copy.SetValue(ZDefArg.ValueProperty, GetValue(ZDefArg.ValueProperty))
+        Dim Copy As New ZDefArgObjectID(Name, Description)
+        Copy.Value = Value
+        Copy.ObjectIDs = ObjectIDs
         Return Copy
     End Function
 End Class
@@ -402,14 +316,13 @@ Public Class ZDefArgObjectFlags
     Inherits ZDefArg
 
     Public Sub New(Name As String, Description As String)
-        SetValue(ZDefArg.NameProperty, Name)
-        SetValue(ZDefArg.DescriptionProperty, Description)
-        SetValue(ZDefArg.ValueProperty, "0")
+        MyBase.New(Name, Description)
+        Me.Value = "0"
     End Sub
 
     Public Overloads Function Clone() As Object
-        Dim Copy As New ZDefArgObjectFlags(GetValue(ZDefArg.NameProperty), GetValue(ZDefArg.DescriptionProperty))
-        Copy.SetValue(ZDefArg.ValueProperty, GetValue(ZDefArg.ValueProperty))
+        Dim Copy As New ZDefArgObjectFlags(Name, Description)
+        Copy.Value = Value
         Return Copy
     End Function
 End Class
@@ -418,14 +331,13 @@ Public Class ZDefArgEnemyFlags
     Inherits ZDefArg
 
     Public Sub New(Name As String, Description As String)
-        SetValue(ZDefArg.NameProperty, Name)
-        SetValue(ZDefArg.DescriptionProperty, Description)
-        SetValue(ZDefArg.ValueProperty, "0")
+        MyBase.New(Name, Description)
+        Me.Value = "0"
     End Sub
 
     Public Overloads Function Clone() As Object
-        Dim Copy As New ZDefArgEnemyFlags(GetValue(ZDefArg.NameProperty), GetValue(ZDefArg.DescriptionProperty))
-        Copy.SetValue(ZDefArg.ValueProperty, GetValue(ZDefArg.ValueProperty))
+        Dim Copy As New ZDefArgEnemyFlags(Name, Description)
+        Copy.Value = Value
         Return Copy
     End Function
 End Class
@@ -434,48 +346,32 @@ Public Class ZDefArg8Bit
     Inherits ZDefArg
 
     Public Sub New(Name As String, Description As String)
-        SetValue(ZDefArg.NameProperty, Name)
-        SetValue(ZDefArg.DescriptionProperty, Description)
+        MyBase.New(Name, Description)
     End Sub
 
     Public Overloads Function Clone() As Object
-        Dim Copy As New ZDefArg8Bit(GetValue(ZDefArg.NameProperty), GetValue(ZDefArg.DescriptionProperty))
-        Copy.SetValue(ZDefArg.ValueProperty, GetValue(ZDefArg.ValueProperty))
+        Dim Copy As New ZDefArg8Bit(Name, Description)
+        Copy.Value = Value
         Return Copy
     End Function
 End Class
 
 Public Class ZDefArg
-    Inherits DependencyObject
     Implements ICloneable
 
-    Public Shared ReadOnly NameProperty = DependencyProperty.Register("Name", GetType(String), GetType(ZDefArg))
-    Public Shared ReadOnly DescriptionProperty = DependencyProperty.Register("Description", GetType(String), GetType(ZDefArg))
-    Public Shared ReadOnly ValueProperty = DependencyProperty.Register("Value", GetType(String), GetType(ZDefArg))
+    'Public Shared ReadOnly NameProperty = DependencyProperty.Register("Name", GetType(String), GetType(ZDefArg))
+    'Public Shared ReadOnly DescriptionProperty = DependencyProperty.Register("Description", GetType(String), GetType(ZDefArg))
+    'Public Shared ReadOnly ValueProperty = DependencyProperty.Register("Value", GetType(String), GetType(ZDefArg))
 
     Public IsOptional As Boolean
 
     Public Property Name As String
-        Get
-            Return GetValue(NameProperty)
-        End Get
-        Set(value As String)
-            SetValue(NameProperty, value)
-        End Set
-    End Property
-
+    Public Property Description As String
     Public Property Value As String
-        Get
-            Return GetValue(ValueProperty)
-        End Get
-        Set(value As String)
-            SetValue(ValueProperty, value.Trim())
-        End Set
-    End Property
 
     Public Sub New(Name As String, Description As String)
-        SetValue(NameProperty, Name)
-        SetValue(DescriptionProperty, Description)
+        Me.Name = Name
+        Me.Description = Description
     End Sub
 
     Public Sub New()
@@ -483,68 +379,47 @@ Public Class ZDefArg
     End Sub
 
     Public Function Clone() As Object Implements System.ICloneable.Clone
-        Dim Copy As New ZDefArg(GetValue(NameProperty), GetValue(DescriptionProperty))
-        Copy.SetValue(ValueProperty, GetValue(ValueProperty))
+        Dim Copy As New ZDefArg(Name, Description)
+        Copy.Value = Value
         Return Copy
     End Function
 End Class
 #End Region
 
 Public Class ZDef
-    Inherits DependencyObject
+    '    Inherits DependencyObject
 
-    Public Shared ReadOnly NameProperty = DependencyProperty.Register("Name", GetType(String), GetType(ZDef))
-    Public Shared ReadOnly MacroProperty = DependencyProperty.Register("Macro", GetType(String), GetType(ZDef))
-    Public Shared ReadOnly DescriptionProperty = DependencyProperty.Register("Description", GetType(String), GetType(ZDef))
-    Public Shared ReadOnly ArgsProperty = DependencyProperty.Register("Args", GetType(ArgsCollection), GetType(ZDef))
-    Public Shared ReadOnly DefaultImageProperty = DependencyProperty.Register("DefaultImage", GetType(Integer), GetType(ZDef))
+    'Public Shared ReadOnly NameProperty = DependencyProperty.Register("Name", GetType(String), GetType(ZDef))
+    'Public Shared ReadOnly MacroProperty = DependencyProperty.Register("Macro", GetType(String), GetType(ZDef))
+    'Public Shared ReadOnly DescriptionProperty = DependencyProperty.Register("Description", GetType(String), GetType(ZDef))
+    'Public Shared ReadOnly ArgsProperty = DependencyProperty.Register("Args", GetType(ArgsCollection), GetType(ZDef))
+    'Public Shared ReadOnly DefaultImageProperty = DependencyProperty.Register("DefaultImage", GetType(Integer), GetType(ZDef))
 
+    Public Property Name As String
     Public Property Macro As String
-        Get
-            Return GetValue(MacroProperty)
-        End Get
-        Set(value As String)
-            SetValue(MacroProperty, value)
-        End Set
-    End Property
-
+    Public Property Description As String
     Public Property Args As ArgsCollection
-        Get
-            Return GetValue(ArgsProperty)
-        End Get
-        Set(value As ArgsCollection)
-            SetValue(MacroProperty, value)
-        End Set
-    End Property
-
     Public Property DefaultImage As Integer
-        Get
-            Return GetValue(DefaultImageProperty)
-        End Get
-        Set(value As Integer)
-            SetValue(DefaultImageProperty, value)
-        End Set
-    End Property
 
     Public Sub New(Name As String, Macro As String, Description As String, ObjType As Type)
-        SetValue(NameProperty, Name)
-        SetValue(MacroProperty, Macro)
-        SetValue(DescriptionProperty, Description)
-        SetValue(ArgsProperty, New ArgsCollection)
+        Me.Name = Name
+        Me.Macro = Macro
+        Me.Description = Description
+        Args = New ArgsCollection
 
-        Dim M = ObjType.BaseType.GetMethod("FromMacro")
+        'Dim M = ObjType.BaseType.GetMethod("FromMacro")
 
-        Dim Defs As New Dictionary(Of String, ZDef)
-        Defs.Add(Macro, Me)
-        Dim ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0)"})
-        If ObjectInstance.Image = 0 Then
-            ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0)"})
-            If ObjectInstance.Image = 0 Then
-                ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0, 0)"})
-            End If
-        End If
+        'Dim Defs As New Dictionary(Of String, ZDef)
+        'Defs.Add(Macro, Me)
+        'Dim ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0)"})
+        'If ObjectInstance.Image = 0 Then
+        '    ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0)"})
+        '    If ObjectInstance.Image = 0 Then
+        '        ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0, 0)"})
+        '    End If
+        'End If
 
-        SetValue(DefaultImageProperty, ObjectInstance.Image)
+        'DefaultImage = ObjectInstance.Image
     End Sub
 
     Public Sub AddArg(Name As String, Description As String, images As ObservableCollection(Of ZeldaImage), Optional IsOptional As Boolean = False)
@@ -571,7 +446,11 @@ End Class
 
 Class ZType
     Public Shared Sub FromMacro(ByVal Macro As String, ByRef ZObj As Object)
-        Dim data = SPASMHelper.Assemble(" " & Macro)
+        Dim Data = SPASMHelper.Assemble(" " & Macro)
+        FromData(Data, ZObj)
+    End Sub
+
+    Public Shared Sub FromData(Data() As Byte, ByRef ZObj As Object)
         Dim h = GCHandle.Alloc(data, GCHandleType.Pinned)
         ZObj = Marshal.PtrToStructure(h.AddrOfPinnedObject, ZObj.GetType())
         h.Free()
@@ -613,6 +492,10 @@ Public Class ZObject
     Public Sub New(Def As ZDef, ParamArray Args() As Object)
         MyBase.New(Def, Args)
     End Sub
+
+    Public Sub New(Def As ZDef, Data As Stream, ParamArray Args() As Object)
+        MyBase.New(Def, Args, Data)
+    End Sub
 End Class
 
 Public Class ZMisc
@@ -628,6 +511,10 @@ Public Class ZMisc
 
     Public Sub New(Def As ZDef, ParamArray Args() As Object)
         MyBase.New(Def, Args)
+    End Sub
+
+    Public Sub New(Def As ZDef, Data As Stream, ParamArray Args() As Object)
+        MyBase.New(Def, Args, Data)
     End Sub
 End Class
 
@@ -650,6 +537,10 @@ Public Class ZEnemy
         MyBase.New(Def, Args)
     End Sub
 
+    Public Sub New(Def As ZDef, Data As Stream, ParamArray Args() As Object)
+        MyBase.New(Def, Args, Data)
+    End Sub
+
 End Class
 
 Public Class ZAnim
@@ -665,8 +556,8 @@ Public Class ZAnim
     Public Sub New()
     End Sub
 
-    Public Sub New(Def As ZDef, X As Byte, Y As Byte)
-        MyBase.New(Def, {X, Y})
+    Public Sub New(Def As ZDef, X As Byte, Y As Byte, Optional Data As Stream = Nothing)
+        MyBase.New(Def, {X, Y}, Data)
     End Sub
 
 End Class

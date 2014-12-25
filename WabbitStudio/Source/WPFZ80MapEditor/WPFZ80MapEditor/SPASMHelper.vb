@@ -34,14 +34,21 @@ Public Class SPASMHelper
         Return CInt(BitConverter.ToUInt16(Bytes, 0))
     End Function
 
+    Private Shared Sub Log(LogStr As String)
+        Debug.Write(Now.ToFileTime & ": " & LogStr & vbCrLf)
+    End Sub
+
     Public Shared Function Assemble(ByVal Code As String) As Byte()
+        Log("FINE: Assembling " & Code)
         Dim Output = Assembler.Assemble(Code)
 
+        Log("FINE: Reading all output")
         Dim StdOutput = Assembler.StdOut.ReadAll()
-        'Debug.Write(StdOutput)
+        Debug.Write(StdOutput)
 
         Dim Data As New List(Of Byte)
 
+        Log("FINE: Reading all data")
         Dim st As New tagSTATSTG
         Output.Stat(st, 0)
 
@@ -50,6 +57,7 @@ Public Class SPASMHelper
             Dim BytesRead As UInteger
             Output.RemoteRead(Result(0), st.cbSize.QuadPart, BytesRead)
         End If
+        Log("FINE: DONE " & Code)
         Return Result
     End Function
 
@@ -57,6 +65,7 @@ Public Class SPASMHelper
         Dim FullPath = System.IO.Path.GetFullPath(FileName)
         Dim Bytes = Assemble("#include """ & FullPath & """")
         Labels.Clear()
+
         For Each Label In Assembler.Labels.Keys
             Labels.Add(Label, Assembler.Labels(Label))
         Next

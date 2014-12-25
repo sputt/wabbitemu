@@ -1,181 +1,167 @@
 ﻿Imports System.IO
 Imports System.Collections.ObjectModel
 Imports System.Text.RegularExpressions
+Imports System.Threading.Tasks
+Imports System.ComponentModel
+Imports System.Reflection
 
 Public Class Scenario
-    Inherits Freezable
+    Implements INotifyPropertyChanged
 
-    Public Maps As New Dictionary(Of String, MapData)
     Public ScenarioName As String
 
     Public ActiveLayerType As System.Type
 
     Private _MapCount As Integer
 
-    Public Shared ReadOnly ImagesProperty As DependencyProperty =
-        DependencyProperty.Register("Images", GetType(ObservableCollection(Of ZeldaImage)), GetType(Scenario),
-        New PropertyMetadata(New ObservableCollection(Of ZeldaImage)))
-    Public Shared ReadOnly AnimDefsProperty As DependencyProperty =
-        DependencyProperty.Register("AnimDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
-        New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
-    Public Shared ReadOnly ObjectDefsProperty As DependencyProperty =
-        DependencyProperty.Register("ObjectDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
-        New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
-    Public Shared ReadOnly EnemyDefsProperty As DependencyProperty =
-        DependencyProperty.Register("EnemyDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
-        New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
-    Public Shared ReadOnly MiscDefsProperty As DependencyProperty =
-        DependencyProperty.Register("MiscDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
-        New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
+    'Public Shared ReadOnly ImagesProperty As DependencyProperty =
+    '    DependencyProperty.Register("Images", GetType(ObservableCollection(Of ZeldaImage)), GetType(Scenario),
+    '    New PropertyMetadata(New ObservableCollection(Of ZeldaImage)))
+    'Public Shared ReadOnly AnimDefsProperty As DependencyProperty =
+    '    DependencyProperty.Register("AnimDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
+    '    New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
+    'Public Shared ReadOnly ObjectDefsProperty As DependencyProperty =
+    '    DependencyProperty.Register("ObjectDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
+    '    New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
+    'Public Shared ReadOnly EnemyDefsProperty As DependencyProperty =
+    '    DependencyProperty.Register("EnemyDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
+    '    New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
+    'Public Shared ReadOnly MiscDefsProperty As DependencyProperty =
+    '    DependencyProperty.Register("MiscDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
+    '    New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
 
-    Public Shared ReadOnly TilesetsProperty As DependencyProperty =
-        DependencyProperty.Register("Tilesets", GetType(ObservableCollection(Of Tileset)), GetType(Scenario))
+    'Public Shared ReadOnly TilesetsProperty As DependencyProperty =
+    '    DependencyProperty.Register("Tilesets", GetType(ObservableCollection(Of Tileset)), GetType(Scenario))
 
-    ' Player starting position and map
-    Public Shared ReadOnly StartXProperty As DependencyProperty =
-        DependencyProperty.Register("StartX", GetType(Byte), GetType(Scenario))
-    Public Shared ReadOnly StartYProperty As DependencyProperty =
-        DependencyProperty.Register("StartY", GetType(Byte), GetType(Scenario))
-    Public Shared ReadOnly StartMapIndexProperty As DependencyProperty =
-        DependencyProperty.Register("StartMapIndex", GetType(Integer), GetType(Scenario))
+    '' Player starting position and map
+    'Public Shared ReadOnly StartXProperty As DependencyProperty =
+    '    DependencyProperty.Register("StartX", GetType(Byte), GetType(Scenario))
+    'Public Shared ReadOnly StartYProperty As DependencyProperty =
+    '    DependencyProperty.Register("StartY", GetType(Byte), GetType(Scenario))
+    'Public Shared ReadOnly StartMapIndexProperty As DependencyProperty =
+    '    DependencyProperty.Register("StartMapIndex", GetType(Integer), GetType(Scenario))
+    'Public Shared ReadOnly MapsProperty As DependencyProperty = _
+    '                   DependencyProperty.Register("Maps", _
+    '                   GetType(ObservableCollection(Of MapData)), GetType(Scenario), _
+    '                   New PropertyMetadata(New ObservableCollection(Of MapData)()))
 
-    Public Property Images As ObservableCollection(Of ZeldaImage)
+    Private _Maps As New ObservableCollection(Of MapData)
+
+    Public Property Maps As ObservableCollection(Of MapData)
         Get
-            Return GetValue(ImagesProperty)
+            Return _Maps
         End Get
-        Set(value As ObservableCollection(Of ZeldaImage))
-            SetValue(ImagesProperty, value)
+        Set(value As ObservableCollection(Of MapData))
+            If value IsNot _Maps Then
+                _Maps = value
+                RaisePropertyChanged("Maps")
+            End If
         End Set
     End Property
 
-    Public Property AnimDefs As ObservableDictionary(Of String, ZDef)
-        Get
-            Return GetValue(AnimDefsProperty)
-        End Get
-        Set(value As ObservableDictionary(Of String, ZDef))
-            SetValue(AnimDefsProperty, value)
-        End Set
-    End Property
+    Public Property Images As New ObservableCollection(Of ZeldaImage)
 
-    Public Property ObjectDefs As ObservableDictionary(Of String, ZDef)
-        Get
-            Return GetValue(ObjectDefsProperty)
-        End Get
-        Set(value As ObservableDictionary(Of String, ZDef))
-            SetValue(ObjectDefsProperty, value)
-        End Set
-    End Property
-
-    Public Property EnemyDefs As ObservableDictionary(Of String, ZDef)
-        Get
-            Return GetValue(EnemyDefsProperty)
-        End Get
-        Set(value As ObservableDictionary(Of String, ZDef))
-            SetValue(EnemyDefsProperty, value)
-        End Set
-    End Property
-
-    Public Property MiscDefs As ObservableDictionary(Of String, ZDef)
-        Get
-            Return GetValue(MiscDefsProperty)
-        End Get
-        Set(value As ObservableDictionary(Of String, ZDef))
-            SetValue(MiscDefsProperty, value)
-        End Set
-    End Property
-
-    Public Property Tilesets As ObservableCollection(Of Tileset)
-        Get
-            Return GetValue(TilesetsProperty)
-        End Get
-        Set(value As ObservableCollection(Of Tileset))
-            SetValue(TilesetsProperty, value)
-        End Set
-    End Property
-
-    Public ReadOnly Property AllDefs As Dictionary(Of String, ZDef)
-        Get
-            Return ObjectDefs.Values.Union(EnemyDefs.Values).Union(MiscDefs.Values).Union(AnimDefs.Values)
-        End Get
-    End Property
+    Public Property AnimDefs As New ObservableDictionary(Of String, ZDef)
+    Public Property ObjectDefs As New ObservableDictionary(Of String, ZDef)
+    Public Property EnemyDefs As New ObservableDictionary(Of String, ZDef)
+    Public Property MiscDefs As New ObservableDictionary(Of String, ZDef)
 
 
-    Public Sub AddMap(x As Integer, y As Integer, Map As MapData)
+    Public Property Tilesets As New ObservableCollection(Of Tileset)
 
-        Dim Container = MainWindow.Instance.LayerContainer.AddMap(x, y, Map)
 
-        Dim EnemyLayer As New EnemyLayer
-        Container.Children.Add(EnemyLayer)
-        Grid.SetColumn(EnemyLayer, x)
-        Grid.SetRow(EnemyLayer, y)
-        Panel.SetZIndex(EnemyLayer, 4)
-
-        Dim ObjLayer As New ObjectLayer
-        ObjLayer.Scenario = Me
-        Container.Children.Add(ObjLayer)
-        Grid.SetColumn(ObjLayer, x)
-        Grid.SetRow(ObjLayer, y)
-        Panel.SetZIndex(ObjLayer, 3)
-
-        Dim MiscLayer As New MiscLayer
-        Container.Children.Add(MiscLayer)
-        Grid.SetColumn(MiscLayer, x)
-        Grid.SetRow(MiscLayer, y)
-        Panel.SetZIndex(MiscLayer, 2)
-
-        Dim MapView As New MapView(Map, True)
-        Container.Children.Add(MapView)
-        Grid.SetColumn(MapView, x)
-        Grid.SetRow(MapView, y)
-        Panel.SetZIndex(MapView, 1)
-
-        Dim MapSet As New MapSet
-        Container.Children.Add(MapSet)
-        Grid.SetColumn(MapSet, x)
-        Grid.SetRow(MapSet, y)
-        Panel.SetZIndex(MapSet, 10)
-
-        Maps(String.Format("{0:D2}", _MapCount)) = Map
-        _MapCount += 1
-    End Sub
+    'Public ReadOnly Property AllDefs As Collection(Of ZDef)
+    '    Get
+    '        Return ObjectDefs.Values.Union(EnemyDefs.Values).Union(MiscDefs.Values).Union(AnimDefs.Values)
+    '    End Get
+    'End Property
 
     Public ReadOnly Property ActiveLayer As IMapLayer
         Get
-            Return (From containers As MapContainer In MainWindow.Instance.LayerContainer.Children
-                    From m As IMapLayer In containers.Children
-                    Where m.GetType() = ActiveLayerType
-                    Select m).First()
+            'Return (From containers As MapContainer In MainWindow.Instance.LayerContainer.Children
+            '        From m As IMapLayer In containers.Children
+            '        Where m.GetType() = ActiveLayerType
+            '        Select m).First()
+            Return Nothing
         End Get
     End Property
 
 
     Private _FileName As String
 
-    Public Sub LoadScenario(FileName As String)
+    Private Sub Log(LogStr As String)
+        Debug.Write(Now.ToFileTime & ": " & LogStr & vbCrLf)
+    End Sub
+
+    Public Async Function LoadScenario(FileName As String) As Task
         Tilesets = New ObservableCollection(Of Tileset)()
         Tilesets.Add(New Tileset("dungeon", IO.Path.Combine(MainWindow.ZeldaFolder, "images\dungeon.bmp")))
         Tilesets.Add(New Tileset("town", IO.Path.Combine(MainWindow.ZeldaFolder, "images\town.bmp")))
 
         Dim Path As String = Directory.GetParent(FileName).FullName
+        Log("Starting SPASM")
         SPASMHelper.Initialize(Path)
-        LoadImages(Path & "\graphics.asm")
+
+        Log("Loading images")
+        Await LoadImages(Path & "\graphics.asm")
 
         _FileName = FileName
         SPASMHelper.Assembler.Defines.Add("INCLUDE_ALL", 1)
+
+        Log("Assembling map")
         Dim Data = SPASMHelper.AssembleFile(FileName)
 
-        LoadDefs(Path & "\animatedef.inc", AnimDefsProperty, GetType(ZAnim))
-        'LoadDefs(Path & "\objectdef.inc", ObjectDefsProperty, GetType(ZObject))
-        'LoadDefs(Path & "\miscdef.inc", MiscDefsProperty, GetType(ZMisc))
-        'LoadDefs(Path & "\enemydef.inc", EnemyDefsProperty, GetType(ZEnemy))
+        Log("Loading animate defs")
+        Await LoadDefs(Path & "\animatedef.inc", AnimDefs, GetType(ZAnim))
+        Log("Loading object defs")
+        Await LoadDefs(Path & "\objectdef.inc", ObjectDefs, GetType(ZObject))
+        Log("Loading misc defs")
+        Await LoadDefs(Path & "\miscdef.inc", MiscDefs, GetType(ZMisc))
+        Log("Loading enemy defs")
+        Await LoadDefs(Path & "\enemydef.inc", EnemyDefs, GetType(ZEnemy))
 
         Dim Reader As New StreamReader(FileName)
-        Dim ScenarioContents As String = Reader.ReadToEnd()
+        Dim ScenarioContents As String = Await Reader.ReadToEndAsync()
+        ScenarioContents = ScenarioContents.ToUpper().Replace(vbCrLf, vbLf)
         Reader.Close()
+
+        'Dim CompList As New List(Of RegexCompilationInfo)
+        'CompList.Add(New RegexCompilationInfo("^ANIMATE_SECTION\(\)" & vbLf & _
+        '    "(^\s+(?<AnimName>[A-Z_]+)\((?<AnimArgs>.*)\)\s*)*\s*" & _
+        '    "^OBJECT_SECTION\(\)" & vbLf & _
+        '    "(^\s+(?<ObjectName>[A-Z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
+        '    "^ENEMY_SECTION\(\)" & vbLf & _
+        '    "(^\s+(?<EnemyName>[A-Z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
+        '    "^MISC_SECTION\(\)" & vbLf & _
+        '    "(^\s+(?<MiscName>[A-Z_]+)\((?<MiscArgs>.*)\)\s*)*\s*",
+        '    RegexOptions.Multiline Or RegexOptions.CultureInvariant, _
+        '    "MapDataRegex", _
+        '    "WPFZ80MapEditor", _
+        '    True))
+        'CompList.Add(New RegexCompilationInfo("^;(?<Name>[a-zA-Z][a-zA-Z ]+) - (?<Description>.+)\s*" & _
+        '    "(^; (?<ArgName>\w+) - (?<ArgDesc>.+)\s*)*" & _
+        '    "(^;Properties\s*)?" & _
+        '    "(^; [a-zA-Z_]+ = .+\s*)*" & _
+        '    "#macro (?<MacroName>[a-z0-9_]+).*\s*$",
+        '    RegexOptions.Multiline Or RegexOptions.CultureInvariant, _
+        '    "ZDefRegex", _
+        '    "WPFZ80MapEditor", _
+        '    True))
+        'CompList.Add(New RegexCompilationInfo("^(?<Name>[a-z_]+_gfx)(\s*|\s+with\s+bm_map\s*=\s*(?<X>\d+)x(?<Y>\d+)\s*)" & _
+        '    "^#include\s+""(?<FileName>.+)""\s*" & _
+        '    "(^\s*|(?<ExtraDefines>(^[a-z0-9_]+\s*=\s*[a-z0-9_]+\s*)+))$",
+        '    RegexOptions.Multiline Or RegexOptions.CultureInvariant, _
+        '    "GraphicsRegex", _
+        '    "WPFZ80MapEditor", _
+        '    True))
+        'Dim Asm As New AssemblyName("RegexLib, Version=1.0.0.1001, Culture=neutral, PublicKeyToken=null")
+        'Regex.CompileToAssembly(CompList.ToArray(), Asm)
 
         Dim MaxX = -1
         Dim MaxY = -1
         _MapCount = 0
+        Dim CurShiftX = 0, CurShiftY = 0
+
         For Each Label In SPASMHelper.Labels.Keys
             If Label Like "*_MAP_##" Then
                 Dim x = SPASMHelper.Labels(Label & "_X")
@@ -184,67 +170,153 @@ Public Class Scenario
                 MaxY = Math.Max(y, MaxY)
                 Dim Tileset = SPASMHelper.Labels(Label & "_TILESET")
 
-                Dim MapData = New MapData(Data.Skip(SPASMHelper.Labels(Label)), Me, Tileset)
 
-                Dim Rx As New Regex(
-                    "^" & Label & "_DEFAULTS:" & vbCrLf & _
-                    "^animate_section\(\)" & vbCrLf & _
-                    "(^\s+(?<AnimName>[a-z_]+)\((?<AnimArgs>.*)\)\s*)*\s*" & _
-                    "^object_section\(\)" & vbCrLf & _
-                    "(^\s+(?<ObjectName>[a-z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
-                    "^enemy_section\(\)" & vbCrLf & _
-                    "(^\s+(?<EnemyName>[a-z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
-                    "^misc_section\(\)" & vbCrLf & _
-                    "(^\s+(?<MiscName>[a-z_]+)\((?<MiscArgs>.*)\)\s*)*\s*" & _
-                    "end_section\(\)", RegexOptions.Multiline Or RegexOptions.Compiled)
+                Dim RawMapData = Data.Skip(SPASMHelper.Labels(Label))
 
-                Dim Matches = Rx.Matches(ScenarioContents)
+                Dim MapData = New MapData(RawMapData, Me, Tileset)
+
+                Dim MapMacrosStart = ScenarioContents.IndexOf(Label & ":")
+                Dim MapMacrosEnd = ScenarioContents.IndexOf("END_SECTION()", MapMacrosStart)
+
+                Dim MapContents = ScenarioContents.Substring(MapMacrosStart, MapMacrosEnd - MapMacrosStart)
+
+                Log("Loading map " & x & "," & y)
+                Dim Rx As New MapDataRegex()
+
+                Log("Running regular expression...")
+                Dim Matches = Rx.Matches(MapContents)
+                Log("Done")
+
+                Dim RawScenarioData = Data.Skip(SPASMHelper.Labels(Label & "_DEFAULTS"))
+                Dim RawData As New MemoryStream(RawScenarioData.ToArray())
+
                 If Matches.Count = 1 Then
                     Dim Groups = Matches(0).Groups
 
+                    Log("Loading animated tiles...")
+
+                    RawData.ReadByte() : RawData.ReadByte()
                     For i = 0 To Groups("AnimName").Captures.Count - 1
                         Dim Params = Split(Groups("AnimArgs").Captures(i).Value, ",")
-                        Dim Anim As New ZAnim(AnimDefs(Groups("AnimName").Captures(i).Value), Params(0), Params(1))
+                        Dim Anim As New ZAnim(AnimDefs(Groups("AnimName").Captures(i).Value), Params(0), Params(1), RawData)
                         MapData.ZAnims.Add(Anim)
                     Next
+                    Log("Done")
 
+                    Log("Loading the rest...")
+                    RawData.ReadByte() : RawData.ReadByte()
                     For i = 0 To Groups("ObjectName").Captures.Count - 1
                         Dim Params = Split(Groups("ObjectArgs").Captures(i).Value, ",")
-                        'Dim Obj As New ZObject(ObjectDefs(Groups("ObjectName").Captures(i).Value), Params)
-                        'MapData.ZObjects.Add(Obj)
+                        Dim Obj As New ZObject(ObjectDefs(Groups("ObjectName").Captures(i).Value), RawData, Params)
+                        MapData.ZObjects.Add(Obj)
                     Next
 
+                    RawData.ReadByte() : RawData.ReadByte()
                     For i = 0 To Groups("EnemyName").Captures.Count - 1
                         Dim Params = Split(Groups("EnemyArgs").Captures(i).Value, ",")
-                        'Dim Enemy As New ZEnemy(EnemyDefs(Groups("EnemyName").Captures(i).Value), Params)
-                        'MapData.ZEnemies.Add(Enemy)
+                        Dim Enemy As New ZEnemy(EnemyDefs(Groups("EnemyName").Captures(i).Value), RawData, Params)
+                        MapData.ZEnemies.Add(Enemy)
                     Next
 
+                    RawData.ReadByte() : RawData.ReadByte()
                     For i = 0 To Groups("MiscName").Captures.Count - 1
                         Dim Params = Split(Groups("MiscArgs").Captures(i).Value, ",")
-                        'Dim Misc As New ZMisc(MiscDefs(Groups("MiscName").Captures(i).Value), Params)
-                        'MapData.ZMisc.Add(Misc)
+                        Dim Misc As New ZMisc(MiscDefs(Groups("MiscName").Captures(i).Value), RawData, Params)
+                        MapData.ZMisc.Add(Misc)
                     Next
+                    Log("Done")
                 End If
 
-                AddMap(x, y, MapData)
+                Log("Creating map...")
+                MapData.X = x + CurShiftX
+                MapData.Y = y + CurShiftY
+                Dim OldX = MapData.X, OldY = MapData.Y
+                AddMap(MapData)
+                CurShiftX += MapData.X - OldX
+                CurShiftY += MapData.Y - OldY
+                Log("Done")
                 ScenarioName = Left(Label, Len(Label) - 7)
             End If
         Next
 
-        For x = 0 To MaxX
-            For y = 0 To MaxY
-                Dim CurX = x, CurY = y
-                Dim Exist = (From m In MainWindow.Instance.LayerContainer.Children Where Grid.GetColumn(m) = CurX And Grid.GetRow(m) = CurY).Count() > 0
-                If Not Exist Then
-                    AddMap(x, y, Nothing)
-                End If
-            Next
-        Next
+        'For x = 0 To MaxX
+        '    For y = 0 To MaxY
+        '        Dim CurX = x, CurY = y
+        '        Dim Exist = (From m In MainWindow.Instance.LayerContainer.Children Where Grid.GetColumn(m) = CurX And Grid.GetRow(m) = CurY).Count() > 0
+        '        If Not Exist Then
+        '            AddMap(x, y, Nothing)
+        '        End If
+        '    Next
+        'Next
 
-        ActiveLayerType = GetType(MapSet)
+
+    End Function
+
+    Private Function AddMap(MapCollection As Collection(Of MapData), Map As MapData) As MapData
+        Dim OriginalMap As MapData = MapCollection.ToList().Find(Function(m) m.X = Map.X And m.Y = Map.Y)
+        If OriginalMap IsNot Nothing AndAlso Not Map.Exists Then
+            Return OriginalMap
+        End If
+
+        If Map.X < 0 Then
+            MapCollection.ToList().ForEach(Sub(m) m.X -= Map.X)
+            Map.X = 0
+        End If
+        If Map.Y < 0 Then
+            MapCollection.ToList().ForEach(Sub(m) m.Y -= Map.Y)
+            Map.Y = 0
+        End If
+
+        If Map.Exists And OriginalMap IsNot Nothing Then
+            MapCollection.Remove(OriginalMap)
+        End If
+        MapCollection.Add(Map)
+
+        Dim AddedMap = Map
+        If Map.Exists Then
+            AddedMap = AddMap(MapCollection, MapData.NonexistentMap(AddedMap.X - 1, AddedMap.Y))
+            AddedMap = AddMap(MapCollection, MapData.NonexistentMap(AddedMap.X + 2, AddedMap.Y))
+            AddedMap = AddMap(MapCollection, MapData.NonexistentMap(AddedMap.X - 1, AddedMap.Y - 1))
+            AddedMap = AddMap(MapCollection, MapData.NonexistentMap(AddedMap.X, AddedMap.Y + 2))
+        End If
+        Return Map
+    End Function
+
+    Public Function AddMap(Map As MapData) As MapData
+        Return AddMap(Maps, Map)
+    End Function
+
+    Private Function GetExistingMaps() As ICollection(Of MapData)
+        Dim Existing = Maps.ToList().FindAll(Function(m) m.Exists).Select(Function(m) CType(m.Clone(), MapData)).ToList()
+        Dim Leftmost = Existing.Min(Function(m) m.X)
+        Dim Topmost = Existing.Min(Function(m) m.Y)
+        Existing.ForEach(Sub(m)
+                             m.X -= Leftmost
+                             m.Y -= Topmost
+                         End Sub)
+
+        Return Existing
+    End Function
+
+    Public Sub RemoveMap(Map As MapData)
+        Maps.Remove(Map)
+
+        Dim Existing = GetExistingMaps()
+        Maps.Clear()
+        Dim CurShiftX = 0, CurShiftY = 0
+
+        Dim TempMaps As New Collection(Of MapData)
+        Existing.ToList().ForEach(Sub(m)
+                                      Dim m2 = CType(m.Clone(), MapData)
+                                      m2.X += CurShiftX
+                                      m2.Y += CurShiftY
+                                      Dim OldX = m2.X, OldY = m2.Y
+                                      AddMap(TempMaps, m2)
+                                      CurShiftX += m2.X - OldX
+                                      CurShiftY += m2.Y - OldY
+                                  End Sub)
+        Maps = New ObservableCollection(Of MapData)(TempMaps)
     End Sub
-
 
     Private Shared Sub WriteAssemblyData(Stream As StreamWriter, Data As IEnumerable(Of Byte))
         Dim Index = 0
@@ -311,9 +383,10 @@ Public Class Scenario
         Dim MapsTable As String = ""
 
         Dim MapIndex As Integer = 0
-        Dim PossibleViews = From v In MainWindow.Instance.LayerContainer.Children
-                            Where TypeOf v Is MapContainer AndAlso CType(v, MapContainer).MapData IsNot Nothing
-                            Order By Grid.GetRow(v), Grid.GetColumn(v)
+        'Dim PossibleViews = From v In MainWindow.Instance.LayerContainer.Children
+        '                    Where TypeOf v Is MapContainer AndAlso CType(v, MapContainer).MapData IsNot Nothing
+        '                    Order By Grid.GetRow(v), Grid.GetColumn(v)
+        Dim PossibleViews = Nothing
         For Each View In PossibleViews
             Dim Container As MapContainer = View
             Dim MapData = Container.MapData
@@ -399,20 +472,10 @@ Public Class Scenario
         Stream.Close()
     End Sub
 
-    Protected Overrides Function CreateInstanceCore() As Freezable
-        Return New Scenario
-    End Function
+    Private Sub RaisePropertyChanged(PropName As String)
+        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropName))
+    End Sub
 
-    Private Shared _Instance As Scenario
-    Public Shared ReadOnly Property Instance As Scenario
-        Get
-            SyncLock GetType(Scenario)
-                If _Instance Is Nothing Then
-                    _Instance = New Scenario
-                End If
-            End SyncLock
-            Return _Instance
-        End Get
-    End Property
+    Public Event PropertyChanged(sender As Object, e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
 
 End Class

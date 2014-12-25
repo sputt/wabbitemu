@@ -2,22 +2,17 @@
 Imports System.Linq
 Imports System.IO
 Imports WPFZ80MapEditor.ValueConverters
+Imports System.Threading.Tasks
 
 Public Class MainWindow
-    Private Property Scenario As Scenario
-
-    Public Shared ReadOnly Property ZeldaFolder() As String
+    Private ReadOnly Property Scenario As Scenario
         Get
-            Return "C:\Users\Chris\Documents\Wabbitcode\Projects\Zelda\"
+            Return DataContext
         End Get
     End Property
 
-    Public Shared ReadOnly Property RomPath() As String
-        Get
-            Return "C:\Users\Chris\Documents\Asm\Roms\ti84pse.rom"
-        End Get
-    End Property
-
+    Public Shared Property ZeldaFolder As String
+    Public Shared Property RomPath As String
 
     Public Shared Instance As MainWindow
 
@@ -26,10 +21,12 @@ Public Class MainWindow
         InitializeComponent()
     End Sub
 
-    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs) Handles MyBase.Loaded
-        Scenario = Scenario.Instance
-        Scenario.LoadScenario(Path.Combine(ZeldaFolder, "hill.asm"))
-        DataContext = Scenario
+    Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs) Handles MyBase.Loaded
+        If ZeldaFolder IsNot Nothing Then
+            Dim HillScenario As New Scenario
+            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "hill.asm"))
+            DataContext = HillScenario
+        End If
     End Sub
 
     Private Sub Background_MouseWheel(sender As Object, e As MouseWheelEventArgs) Handles Background.MouseWheel
@@ -70,20 +67,10 @@ Public Class MainWindow
     Private StartPoint As Point
     Private Origin As Point
 
-    Private Sub Background_MouseDown(sender As Object, e As MouseButtonEventArgs) Handles Background.MouseRightButtonDown
-        Dim tt As TranslateTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is TranslateTransform)
-
-        StartPoint = e.GetPosition(Background)
-        Origin = New Point(tt.X, tt.Y)
-        Background.CaptureMouse()
-    End Sub
-
-    Private Sub Background_MouseUp(sender As Object, e As MouseButtonEventArgs) Handles Background.MouseRightButtonUp
-        Background.ReleaseMouseCapture()
-    End Sub
-
     Private Sub Background_Click(sender As Object, e As MouseButtonEventArgs) Handles Background.MouseLeftButtonUp
-        Scenario.ActiveLayer.DeselectAll()
+        If Scenario.ActiveLayer IsNot Nothing Then
+            Scenario.ActiveLayer.DeselectAll()
+        End If
     End Sub
 
     Private Sub ZoomAnimationEnd(sender As Object, e As EventArgs)
@@ -166,46 +153,61 @@ Public Class MainWindow
     Private Sub LayerRadioButton_Checked(sender As Object, e As RoutedEventArgs) _
         Handles RadioMapSet.Checked, RadioMapView.Checked, RadioObjectLayer.Checked, RadioMiscLayer.Checked, RadioEnemyLayer.Checked
         If Not LayerContainer Is Nothing Then
-            Dim ActivateLayer = Sub(t As Type, rb As RadioButton)
-                                    Dim AllLayers = (From s As MapContainer In LayerContainer.Children
-                                                      From m In s.Children
-                                                      Where m.GetType() = t
-                                                      Select m).ToList()
-                                    AllLayers.ForEach(Sub(s) s.Active = rb.IsChecked)
-                                End Sub
+            'Dim ActivateLayer = Sub(t As Type, rb As RadioButton)
+            '                        Dim AllLayers = (From s As MapContainer In LayerContainer.Children
+            '                                          From m In s.Children
+            '                                          Where m.GetType() = t
+            '                                          Select m).ToList()
+            '                        AllLayers.ForEach(Sub(s) s.Active = rb.IsChecked)
+            '                    End Sub
 
-            ActivateLayer(GetType(MapSet), RadioMapSet)
-            ActivateLayer(GetType(MapView), RadioMapView)
-            ActivateLayer(GetType(ObjectLayer), RadioObjectLayer)
-            ActivateLayer(GetType(EnemyLayer), RadioEnemyLayer)
-            ActivateLayer(GetType(MiscLayer), RadioMiscLayer)
+            'ActivateLayer(GetType(MapSet), RadioMapSet)
+            'ActivateLayer(GetType(MapView), RadioMapView)
+            'ActivateLayer(GetType(ObjectLayer), RadioObjectLayer)
+            'ActivateLayer(GetType(EnemyLayer), RadioEnemyLayer)
+            'ActivateLayer(GetType(MiscLayer), RadioMiscLayer)
 
-            If RadioMapSet.IsChecked Then
-                Scenario.ActiveLayerType = GetType(MapSet)
-            ElseIf RadioMapView.IsChecked Then
-                Scenario.ActiveLayerType = GetType(MapView)
-            ElseIf RadioObjectLayer.IsChecked Then
-                Scenario.ActiveLayerType = GetType(ObjectLayer)
-            ElseIf RadioMiscLayer.IsChecked Then
-                Scenario.ActiveLayerType = GetType(MiscLayer)
-            ElseIf RadioEnemyLayer.IsChecked Then
-                Scenario.ActiveLayerType = GetType(EnemyLayer)
-            End If
+            'If RadioMapSet.IsChecked Then
+            '    Scenario.ActiveLayerType = GetType(MapSet)
+            'ElseIf RadioMapView.IsChecked Then
+            '    Scenario.ActiveLayerType = GetType(MapView)
+            'ElseIf RadioObjectLayer.IsChecked Then
+            '    Scenario.ActiveLayerType = GetType(ObjectLayer)
+            'ElseIf RadioMiscLayer.IsChecked Then
+            '    Scenario.ActiveLayerType = GetType(MiscLayer)
+            'ElseIf RadioEnemyLayer.IsChecked Then
+            '    Scenario.ActiveLayerType = GetType(EnemyLayer)
+            'End If
+        End If
+        If sender.tag IsNot Nothing Then
+            Dim result = VisualStateManager.GoToState(Me, sender.Tag, True)
+            Debug.WriteLine("Result: " & result)
         End If
     End Sub
 
     Private Sub MapsetNew_Click(sender As Object, e As RoutedEventArgs) Handles MapsetNew.Click
-        Dim x = Grid.GetColumn(MapSet.CurrentlySelected)
-        Dim y = Grid.GetRow(MapSet.CurrentlySelected)
+        Dim SelectedMap As MapData = LayerContainer.SelectedItem
+        If SelectedMap.Exists Then
+            MessageBox.Show("This map already exists", "Error", MessageBoxButton.OK)
+            Exit Sub
+        End If
 
-        Dim MapData As New MapData(Scenario, 0)
-
-        Scenario.AddMap(x, y, MapData)
-
+        Scenario.AddMap(MapData.EmptyMap(Scenario, 0, SelectedMap.X, SelectedMap.Y, 16 * 16))
     End Sub
 
-    Private Sub MenuItem1_Click(sender As Object, e As RoutedEventArgs) Handles MenuItem1.Click
-        Scenario.SaveScenario()
+    Private Sub MapsetDelete_Click(sender As Object, e As RoutedEventArgs) Handles MapsetDelete.Click
+        Dim SelectedMap As MapData = LayerContainer.SelectedItem
+        Scenario.RemoveMap(SelectedMap)
+    End Sub
+
+    Private Async Sub OpenScenario_Click(sender As Object, e As RoutedEventArgs) Handles OpenScenario.Click
+        Dim dlg As New Windows.Forms.FolderBrowserDialog
+        If dlg.ShowDialog() = Forms.DialogResult.OK Then
+            ZeldaFolder = dlg.SelectedPath
+            Dim HillScenario As New Scenario
+            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "hill.asm"))
+            DataContext = HillScenario
+        End If
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As RoutedEventArgs) Handles Button1.Click
@@ -213,66 +215,78 @@ Public Class MainWindow
     End Sub
 
     Private Sub AddColumnLeft_Click(sender As Object, e As RoutedEventArgs) Handles AddColumnLeft.Click
-        LayerContainer.AddLeftColumn()
-        For Each Child In LayerContainer.Children
-            Grid.SetColumn(Child, Grid.GetColumn(Child) + 1)
-        Next
-        For i = 0 To LayerContainer.RowDefinitions.Count - 1
-            Scenario.AddMap(0, i, Nothing)
-        Next
+        'LayerContainer.AddLeftColumn()
+        'For Each Child In LayerContainer.Children
+        '    Grid.SetColumn(Child, Grid.GetColumn(Child) + 1)
+        'Next
+        'For i = 0 To LayerContainer.RowDefinitions.Count - 1
+        '    Scenario.AddMap(0, i, Nothing)
+        'Next
     End Sub
 
     Private Sub DeleteMapColumn_Click(sender As Object, e As RoutedEventArgs) Handles DeleteMapColumn.Click
-        Dim CurCol = Grid.GetColumn(MapSet.CurrentlySelected)
+        'Dim CurCol = Grid.GetColumn(MapSet.CurrentlySelected)
 
-        Dim LayersInColumn = (From m In LayerContainer.Children Where Grid.GetColumn(m) = CurCol).ToList()
-        LayersInColumn.ForEach(Sub(m) LayerContainer.Children.Remove(m))
+        'Dim LayersInColumn = (From m In LayerContainer.Children Where Grid.GetColumn(m) = CurCol).ToList()
+        'LayersInColumn.ForEach(Sub(m) LayerContainer.Children.Remove(m))
 
-        LayerContainer.ColumnDefinitions.RemoveAt(CurCol)
-        For Each Child In (From m In LayerContainer.Children Where Grid.GetColumn(m) > CurCol)
-            Grid.SetColumn(Child, Grid.GetColumn(Child) - 1)
-        Next
+        'LayerContainer.ColumnDefinitions.RemoveAt(CurCol)
+        'For Each Child In (From m In LayerContainer.Children Where Grid.GetColumn(m) > CurCol)
+        '    Grid.SetColumn(Child, Grid.GetColumn(Child) - 1)
+        'Next
     End Sub
 
     Private Sub AddColumnRight_Click(sender As Object, e As RoutedEventArgs) Handles AddColumnRight.Click
-        LayerContainer.AddRightColumn()
-        For i = 0 To LayerContainer.RowDefinitions.Count - 1
-            Scenario.AddMap(LayerContainer.ColumnDefinitions.Count - 1, i, Nothing)
-        Next
+        'LayerContainer.AddRightColumn()
+        'For i = 0 To LayerContainer.RowDefinitions.Count - 1
+        '    Scenario.AddMap(LayerContainer.ColumnDefinitions.Count - 1, i, Nothing)
+        'Next
     End Sub
 
     Private Sub AddRowTop_Click(sender As Object, e As RoutedEventArgs) Handles AddRowTop.Click
-        LayerContainer.AddTopRow()
-        For Each Child In LayerContainer.Children
-            Grid.SetRow(Child, Grid.GetRow(Child) + 1)
-        Next
-        For i = 0 To LayerContainer.ColumnDefinitions.Count - 1
-            Scenario.AddMap(i, 0, Nothing)
-        Next
+        'LayerContainer.AddTopRow()
+        'For Each Child In LayerContainer.Children
+        '    Grid.SetRow(Child, Grid.GetRow(Child) + 1)
+        'Next
+        'For i = 0 To LayerContainer.ColumnDefinitions.Count - 1
+        '    Scenario.AddMap(i, 0, Nothing)
+        'Next
     End Sub
 
     Private Sub AddRowBottom_Click(sender As Object, e As RoutedEventArgs) Handles AddRowBottom.Click
-        LayerContainer.AddBottomRow()
-        For i = 0 To LayerContainer.ColumnDefinitions.Count - 1
-            Scenario.AddMap(i, LayerContainer.RowDefinitions.Count - 1, Nothing)
-        Next
+        'LayerContainer.AddBottomRow()
+        'For i = 0 To LayerContainer.ColumnDefinitions.Count - 1
+        '    Scenario.AddMap(i, LayerContainer.RowDefinitions.Count - 1, Nothing)
+        'Next
     End Sub
 
     Private Sub DeleteMapRow_Click(sender As Object, e As RoutedEventArgs) Handles DeleteMapRow.Click
-        Dim CurRow = Grid.GetRow(MapSet.CurrentlySelected)
+        'Dim CurRow = Grid.GetRow(MapSet.CurrentlySelected)
 
-        Dim LayersInRow = (From m In LayerContainer.Children Where Grid.GetRow(m) = CurRow).ToList()
-        LayersInRow.ForEach(Sub(m) LayerContainer.Children.Remove(m))
+        'Dim LayersInRow = (From m In LayerContainer.Children Where Grid.GetRow(m) = CurRow).ToList()
+        'LayersInRow.ForEach(Sub(m) LayerContainer.Children.Remove(m))
 
-        LayerContainer.RowDefinitions.RemoveAt(CurRow)
-        For Each Child In (From m In LayerContainer.Children Where Grid.GetRow(m) > CurRow)
-            Grid.SetRow(Child, Grid.GetRow(Child) - 1)
-        Next
+        'LayerContainer.RowDefinitions.RemoveAt(CurRow)
+        'For Each Child In (From m In LayerContainer.Children Where Grid.GetRow(m) > CurRow)
+        '    Grid.SetRow(Child, Grid.GetRow(Child) - 1)
+        'Next
     End Sub
 
     Private Sub TestButton_Click(sender As Object, e As RoutedEventArgs) Handles TestButton.Click
         Dim GameWindow As New GameWindow()
         GameWindow.Scenario = Scenario
         GameWindow.Show()
+    End Sub
+
+    Private Sub Background_PreviewMouseRightButtonDown(sender As Object, e As MouseButtonEventArgs) Handles Background.PreviewMouseRightButtonDown
+        Dim tt As TranslateTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is TranslateTransform)
+
+        StartPoint = e.GetPosition(Background)
+        Origin = New Point(tt.X, tt.Y)
+        Background.CaptureMouse()
+    End Sub
+
+    Private Sub Background_PreviewMouseRightButtonUp(sender As Object, e As MouseButtonEventArgs) Handles Background.PreviewMouseRightButtonUp
+        Background.ReleaseMouseCapture()
     End Sub
 End Class

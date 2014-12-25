@@ -11,7 +11,7 @@
              MouseLeftButtonUp="ObjectCanvas_MouseLeftButtonUp"
              MouseMove="ObjectCanvas_MouseMove"
              Background="#01FFFFFF"
-            
+            Name="ObjectLayer"
              >
     <!--             DragEnter="ObjectLayer_DragEnter"
              DragOver="ObjectLayer_DragOver"
@@ -20,9 +20,6 @@
         <ControlTemplate x:Key="NoScroll">
             <ItemsPresenter></ItemsPresenter>
         </ControlTemplate>
-
-        <local:Scenario x:Key="Scenario">
-        </local:Scenario>
 
         <localconverters:YConverter x:Key="YConverter"/>
         <localconverters:XConverter x:Key="XConverter"/>
@@ -92,7 +89,11 @@
                                 Normally it is transparent, when the item is selected the border is set to blue.
                                 -->
                                 <Border Name="Border" BorderThickness="2" Margin="-2,-2,-2,-2">
-                                    <ContentPresenter/>
+                                    <ContentPresenter>
+                                        <ContentPresenter.Effect>
+                                            <DropShadowEffect BlurRadius="0" Direction="0" Opacity="1.0" Color="Blue"/>
+                                        </ContentPresenter.Effect>
+                                    </ContentPresenter>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <!--When the ListBoxItem is selected draw a simple blue border around it.-->

@@ -15,29 +15,14 @@ Public Class TileImageSource
 End Class
 
 Public Class Tileset
-    Inherits DependencyObject
 
-    Public Shared ReadOnly NameProperty = DependencyProperty.Register("Name", GetType(String), GetType(Tileset))
-    Public Shared ReadOnly TilesProperty = DependencyProperty.Register("Tiles",
-                                                                      GetType(ObservableCollection(Of TileImageSource)), GetType(Tileset))
+    'Public Shared ReadOnly NameProperty = DependencyProperty.Register("Name", GetType(String), GetType(Tileset))
+    'Public Shared ReadOnly TilesProperty = DependencyProperty.Register("Tiles",
+    '                                                                  GetType(ObservableCollection(Of TileImageSource)), GetType(Tileset))
 
     Public Property Name As String
-        Get
-            Return GetValue(NameProperty)
-        End Get
-        Set(value As String)
-            SetValue(NameProperty, value)
-        End Set
-    End Property
 
-    Public Property Tiles As ObservableCollection(Of TileImageSource)
-        Get
-            Return GetValue(TilesProperty)
-        End Get
-        Set(value As ObservableCollection(Of TileImageSource))
-            SetValue(TilesProperty, value)
-        End Set
-    End Property
+    Public Property Tiles As IList(Of TileImageSource)
 
     Sub New()
     End Sub
@@ -45,14 +30,16 @@ Public Class Tileset
     Sub New(Name As String, FileName As String)
         Me.Name = Name
 
-        Tiles = New ObservableCollection(Of TileImageSource)()
+        Tiles = New Collection(Of TileImageSource)()
 
-        Dim Image As New BitmapImage(New Uri(FileName, UriKind.Absolute))
-        For i = 0 To (Image.Height / Image.Width) - 1
-            Dim CroppedImage As New CroppedBitmap(Image, New Int32Rect(0, i * Image.PixelWidth, Image.PixelWidth, Image.PixelWidth))
-            Tiles.Add(New TileImageSource(CroppedImage, i, Me))
-        Next
-
+        MainWindow.Instance.Dispatcher.Invoke(
+            Sub()
+                Dim Image As New BitmapImage(New Uri(FileName, UriKind.Absolute))
+                For i = 0 To (Image.Height / Image.Width) - 1
+                    Dim CroppedImage As New CroppedBitmap(Image, New Int32Rect(0, i * Image.PixelWidth, Image.PixelWidth, Image.PixelWidth))
+                    Tiles.Add(New TileImageSource(CroppedImage, i, Me))
+                Next
+            End Sub)
     End Sub
 
     Default Public ReadOnly Property Item(index As Integer) As ImageSource
