@@ -4,14 +4,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPFZ80MapEditor"
-      xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
+             xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
              mc:Ignorable="d" 
              x:Name="MapView"
-             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" SnapsToDevicePixels="True" Background="DarkGray">
+             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" SnapsToDevicePixels="True">
+
     <Grid.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:TileConverter x:Key="TileConverter"/>
         <converters:CollisionConverter x:Key="CollisionConverter"/>
+        <local:LayerType x:Key="LayerType">MapLayer</local:LayerType>
         <DataTemplate x:Key="TileTemplate">
             <Control MouseLeftButtonUp="TileButton_Click" MouseEnter="TileGrid_MouseEnter" MouseLeave="TileGrid_MouseLeave">
                 <Control.Template>
@@ -52,10 +53,12 @@
         </DataTemplate>
     </Grid.Resources>
 
-    <TextBlock>NEW MAP</TextBlock>
+    <Grid Background="DarkGray" Visibility="{Binding ShowNewMaps, ElementName=MapView, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <TextBlock FontSize="200" Text="+" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,50" Foreground="#FFA0A0A0"/>
+    </Grid>
 
     <ItemsControl ItemsSource="{Binding TileData}" Margin="0" ItemTemplate="{StaticResource TileTemplate}"
-                  Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}">        
+                  Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}" Foreground="#FFA0A0A0">
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
                 <WrapPanel x:Name="TilePanel" Orientation="Horizontal">

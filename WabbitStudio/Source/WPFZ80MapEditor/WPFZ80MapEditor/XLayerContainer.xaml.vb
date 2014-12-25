@@ -1,7 +1,6 @@
 ﻿Imports System.Collections.ObjectModel
 
 Public Class XLayerContainer
-    Inherits ListBox
 
     Public Property Maps As ObservableCollection(Of MapData)
         Get
@@ -42,6 +41,26 @@ Public Class XLayerContainer
             SetValue(GapProperty, value)
         End Set
     End Property
+
+
+
+    Public Property Selectable As Boolean
+        Get
+            Return GetValue(SelectableProperty)
+        End Get
+
+        Set(ByVal value As Boolean)
+            SetValue(SelectableProperty, value)
+        End Set
+    End Property
+
+    Public Shared ReadOnly SelectableProperty As DependencyProperty = _
+                           DependencyProperty.Register("Selectable", _
+                           GetType(Boolean), GetType(XLayerContainer), _
+                           New PropertyMetadata(False))
+
+
+
 
     Public Shared ReadOnly GapProperty As DependencyProperty = _
                            DependencyProperty.Register("Gap", _

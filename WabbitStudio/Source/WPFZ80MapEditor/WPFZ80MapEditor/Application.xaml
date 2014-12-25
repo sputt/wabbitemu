@@ -15,5 +15,7 @@
         <Color x:Key="ObjectColor">#FF4040FF</Color>
         <Color x:Key="CollisionColor">#FFFF0000</Color>
         <local:TintEffect Color="{StaticResource CollisionColor}" x:Key="CollisionTint"/>
+
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Application.Resources>
 </Application>

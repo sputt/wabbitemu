@@ -1,4 +1,6 @@
 ﻿Public Class XObjectLayer
+    Implements IMapLayer
+
     Public Property Tint As Color
         Get
             Return GetValue(TintProperty)
@@ -89,4 +91,19 @@
     End Sub
 #End Region
 
+    Public WriteOnly Property Active As Boolean Implements IMapLayer.Active
+        Set(value As Boolean)
+
+        End Set
+    End Property
+
+    Public Sub DeselectAll() Implements IMapLayer.DeselectAll
+
+    End Sub
+
+    Public ReadOnly Property LayerType As LayerType Implements IMapLayer.LayerType
+        Get
+            Return LayerType.ObjectLayer
+        End Get
+    End Property
 End Class

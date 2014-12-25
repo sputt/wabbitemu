@@ -15,6 +15,21 @@
 
 
 
+    Public Property ShowNewMaps As Boolean
+        Get
+            Return GetValue(ShowNewMapsProperty)
+        End Get
+
+        Set(ByVal value As Boolean)
+            SetValue(ShowNewMapsProperty, value)
+        End Set
+    End Property
+
+    Public Shared ReadOnly ShowNewMapsProperty As DependencyProperty = _
+                           DependencyProperty.Register("ShowNewMaps", _
+                           GetType(Boolean), GetType(XMapView), _
+                           New PropertyMetadata(False))
+
     Private Sub TileGrid_MouseEnter(sender As Object, e As MouseEventArgs)
         Dim result = VisualStateManager.GoToState(sender, "MouseOver", True)
     End Sub

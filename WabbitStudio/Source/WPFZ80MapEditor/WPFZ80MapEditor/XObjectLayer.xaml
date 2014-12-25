@@ -11,6 +11,7 @@
 
     <Grid.Resources>
         <converters:XImageConverter x:Key="ImageConverter"/>
+        <local:LayerType x:Key="LayerType">ObjectLayer</local:LayerType>
         
         <ControlTemplate x:Key="ObjectTemplate"  TargetType="ListBoxItem">
             <Border x:Name="SelectionBorder" Margin="-2" BorderThickness="2">
@@ -130,9 +131,9 @@
                                 <Binding Path="Image"/>
                             </MultiBinding>
                         </Image.Source>
-                        <!--<Image.Effect>
+                        <Image.Effect>
                             <local:TintEffect Color="{StaticResource ObjectColor}"/>
-                        </Image.Effect>-->
+                        </Image.Effect>
                     </Image>
                 </DataTemplate>
             </ListBox.ItemTemplate>

@@ -268,8 +268,11 @@ Public Class MainWindow
 
     Private Sub RadioMapSet_Click(sender As Object, e As RoutedEventArgs)
         If sender.tag IsNot Nothing Then
+            Model.SelectedMap = Nothing
+
             Dim result = VisualStateManager.GoToState(Me, sender.Tag.ToString, True)
             Model.CurrentLayer = sender.Tag
+
             Debug.WriteLine("Result: " & result)
         End If
     End Sub
