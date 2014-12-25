@@ -613,6 +613,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Annotations\Annotations.cs" />
+    <Compile Include="Services\Symbols\CallerInformation.cs" />
     <Compile Include="TextEditor\AsmFormattingStrategy.cs" />
     <Compile Include="TextEditor\CodeCompletion.cs" />
     <Compile Include="TextEditor\CodeCompletionFactory.cs" />

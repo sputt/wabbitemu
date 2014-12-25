@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -10,8 +9,15 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 {
     public class ListTable
     {
+        private static readonly Regex CallRegex = new Regex(@"\s*(?<command>\w*call\w*)[\(?|\s]\s*((?<condition>z|nz|c|nc),\s*)?(?<call>\w*?)\)?\s*(;.*)?$",
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex FileRegex = new Regex("Listing for (built\\-in|file) (\"(?<file>.+)\"|(?<file>.+))", RegexOptions.Compiled);
+        private static readonly Regex ListingRegex = new Regex(@"(?<lineNum>[\d| ]{5}) (?<page>[0-9A-F]{2}):(?<addr>[0-9A-F]{4}) (?<byte1>[0-9A-F]{2}|- |  ) (?<byte2>[0-9A-F]{2}|- |  ) (?<byte3>[0-9A-F]{2}|- |  ) (?<byte4>[0-9A-F]{2}|- |  ) (?<line>.*)", RegexOptions.Compiled);
+        private static readonly Regex ListingContRegex = new Regex(@"\s{14}(?<byte1>[0-9A-F]{2}|- |  ) (?<byte2>[0-9A-F]{2}|- |  ) (?<byte3>[0-9A-F]{2}|- |  ) (?<byte4>[0-9A-F]{2}|- |  ) (?<line>.*)");
+
         private Dictionary<CalcLocation, DocumentLocation> _calcToFile;
         private Dictionary<DocumentLocation, CalcLocation> _fileToCalc;
+        private Dictionary<CalcLocation, CallerInformation> _callerInformation;
 
         public ListTable()
         {
@@ -23,16 +29,22 @@ namespace Revsoft.Wabbitcode.Services.Symbols
         {
             var calcToFile = new Dictionary<CalcLocation, DocumentLocation>(700000);
             var fileToCalc = new Dictionary<DocumentLocation, CalcLocation>(700000);
+            var callerInfo = new Dictionary<CalcLocation, CallerInformation>();
             StreamWriter writer = null;
-            Regex fileRegex = new Regex("Listing for (built\\-in|file) (\"(?<file>.+)\"|(?<file>.+))", RegexOptions.Compiled);
-            Regex listingRegex = new Regex(@"(?<lineNum>[\d| ]{5}) (?<page>[0-9A-F]{2}):(?<addr>[0-9A-F]{4}) (?<byte1>[0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) (?<line>.*)", RegexOptions.Compiled);
             FilePath currentFile = new FilePath(string.Empty);
-            string[] lines = listFileContents.Split('\n');
-            Dictionary<FilePath, int> fcreateForFile = new Dictionary<FilePath, int>();
-            foreach (string line in lines.Where(line => !string.IsNullOrWhiteSpace(line)))
+            var lines = listFileContents.Split('\n');
+            var fcreateForFile = new Dictionary<FilePath, int>();
+            CallerInformation callInfoToAdd = null;
+
+            for (int i = 0; i < lines.Length; i++)
             {
-                Match fileMatch = fileRegex.Match(line);
-                Match listingMatch = listingRegex.Match(line);
+                var line = lines[i];
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                Match fileMatch = FileRegex.Match(line);
                 if (fileMatch.Success)
                 {
                     string file = fileMatch.Groups["file"].Value.Trim();
@@ -61,12 +73,19 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                         writer = null;
                     }
                 }
-                else if (listingMatch.Success)
+                else
                 {
+                    Match listingMatch = ListingRegex.Match(line);
+                    if (!listingMatch.Success)
+                    {
+                        continue;
+                    }
+
                     string stringLineNumber = listingMatch.Groups["lineNum"].Value.Trim();
-                    int lineNumber = Convert.ToInt32(stringLineNumber);
+                    int lineNumber = int.Parse(stringLineNumber);
                     ushort address = ushort.Parse(listingMatch.Groups["addr"].Value, NumberStyles.HexNumber);
                     byte page = byte.Parse(listingMatch.Groups["page"].Value, NumberStyles.HexNumber);
+                    string codeLine = listingMatch.Groups["line"].Value;
 
                     // correction for ram pages
                     if (page == 0 && address >= 0x8000 && address < 0xC000)
@@ -87,10 +106,29 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                     DocumentLocation key = new DocumentLocation(currentFile, lineNumber);
                     CalcLocation value = new CalcLocation(address, page, address >= 0x8000);
 
+                    do
+                    {
+                        line = lines[i + 1];
+                        listingMatch = ListingContRegex.Match(line);
+                        if (listingMatch.Success)
+                        {
+                            i++;
+                            codeLine = listingMatch.Groups["line"].Value;
+                        }
+                    } while (listingMatch.Success);
+
+                    if (callInfoToAdd != null)
+                    {
+                        callerInfo.Add(value, callInfoToAdd);
+                    }
+
+                    callInfoToAdd = ParseCallLine(codeLine, key);
+
                     if (!calcToFile.ContainsKey(value))
                     {
                         calcToFile.Add(value, key);
                     }
+
                     if (!fileToCalc.ContainsKey(key))
                     {
                         fileToCalc.Add(key, value);
@@ -106,6 +144,52 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 
             _fileToCalc = fileToCalc;
             _calcToFile = calcToFile;
+            _callerInformation = callerInfo;
+        }
+
+        private CallerInformation ParseCallLine(string codeLine, DocumentLocation location)
+        {
+            Match match = CallRegex.Match(codeLine);
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            return new CallerInformation(match.Groups["command"].Value, match.Groups["condition"].Value, match.Groups["call"].Value, location);
+        }
+
+        public CallerInformation CheckValidCall(ushort callerLocation, bool isCallerInRam, byte calleePage)
+        {
+            CalcLocation location = new CalcLocation(callerLocation, calleePage, isCallerInRam);
+            CallerInformation info = GetCallInfo(location);
+            if (isCallerInRam || info != null)
+            {
+                return info;
+            }
+
+            for (byte page = 0; page < 0x20; page++)
+            {
+                if (page == calleePage)
+                {
+                    continue;
+                }
+
+                location = new CalcLocation(callerLocation, page, false);
+                info = GetCallInfo(location);
+                if (info != null)
+                {
+                    return info;
+                }
+            }
+
+            return null;
+        }
+
+        private CallerInformation GetCallInfo(CalcLocation location)
+        {
+            CallerInformation info;
+            _callerInformation.TryGetValue(location, out info);
+            return info;
         }
 
         /// <summary>
