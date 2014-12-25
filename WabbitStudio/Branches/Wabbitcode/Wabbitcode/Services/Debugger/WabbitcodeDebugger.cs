@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Text;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Symbols;
@@ -17,7 +17,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         #region Private Fields
 
         private byte _appPage;
-        private ushort _oldSP;
+        private ushort _oldSp;
         private IWabbitemuDebugger _debugger;
         private bool _disposed;
         private bool _isStepping;
@@ -100,7 +100,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _memoryAllocations = new List<KeyValuePair<ushort, ushort>>();
             CallStack = new Stack<CallStackEntry>();
             MachineStack = new Stack<StackEntry>();
-            _oldSP = IsAnApp ? TopStackApp : (ushort) 0xFFFF;
+            _oldSp = IsAnApp ? TopStackApp : (ushort) 0xFFFF;
             SetupInternalBreakpoints();
         }
 
@@ -239,14 +239,14 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         public void Pause()
         {
             _debugger.Running = false;
-            ushort currentPC = _debugger.CPU.PC;
-            int maxStep = 500;
-            DocumentLocation key = _symbolService.ListTable.GetFileLocation(currentPC, GetRelativePageNum(currentPC), currentPC >= 0x8000);
+            var currentPc = _debugger.CPU.PC;
+            var maxStep = 500;
+            var key = _symbolService.ListTable.GetFileLocation(currentPc, GetRelativePageNum(currentPc), currentPc >= 0x8000);
             while (key == null && maxStep >= 0)
             {
                 _debugger.Step();
-                currentPC = _debugger.CPU.PC;
-                key = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(currentPC), currentPC, currentPC >= 0x8000);
+                currentPc = _debugger.CPU.PC;
+                key = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(currentPc), currentPc, currentPc >= 0x8000);
                 maxStep--;
             }
 
@@ -313,16 +313,16 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
             _isStepping = true;
             // need to clear the old breakpoint so lets save it
-            ushort currentPC = _debugger.CPU.PC;
-            byte oldPage = GetRelativePageNum(currentPC);
-            DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
+            ushort currentPc = _debugger.CPU.PC;
+            byte oldPage = GetRelativePageNum(currentPc);
+            DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPc, currentPc >= 0x8000);
             DocumentLocation newKey = key;
             while (newKey == null || newKey.LineNumber == key.LineNumber)
             {
                 _debugger.Step();
                 newKey = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(_debugger.CPU.PC), _debugger.CPU.PC, _debugger.CPU.PC >= 0x8000);
                 // we are safe to check this here, because we are stepping one at a time meaning if the stack did change, it can't have changed much
-                if (_oldSP != _debugger.CPU.SP)
+                if (_oldSp != _debugger.CPU.SP)
                 {
                     UpdateStack();
                 }
@@ -396,9 +396,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
             _isStepping = true;
             // need to clear the old breakpoint so lets save it
-            ushort currentPC = _debugger.CPU.PC;
-            byte oldPage = GetRelativePageNum(currentPC);
-            DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
+            ushort currentPc = _debugger.CPU.PC;
+            byte oldPage = GetRelativePageNum(currentPc);
+            DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPc, currentPc >= 0x8000);
 
             string line = _fileService.GetLine(key.FileName, key.LineNumber);
 
@@ -420,12 +420,12 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
             do
             {
-                currentPC++;
-                oldPage = GetRelativePageNum(currentPC);
-                key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
+                currentPc++;
+                oldPage = GetRelativePageNum(currentPc);
+                key = _symbolService.ListTable.GetFileLocation(oldPage, currentPc, currentPc >= 0x8000);
             } while (key == null);
 
-            _stepOverBreakpoint = _debugger.SetBreakpoint(currentPC >= 0x8000, GetAbsolutePageNum(currentPC), currentPC);
+            _stepOverBreakpoint = _debugger.SetBreakpoint(currentPc >= 0x8000, GetAbsolutePageNum(currentPc), currentPc);
             _debugger.OnBreakpoint += StepOverBreakpointEvent;
 
             _debugger.Step();
@@ -469,97 +469,64 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                     .Select(s => s.CallStackEntry).Reverse());
         }
 
-        private CallStackEntry CheckValidCall(int currentSP)
+        private CallStackEntry CheckValidCall(int currentSp)
         {
-            DocumentLocation location;
-            Match match = CheckValidCall(ReadShort((ushort) currentSP), out location);
-            if (match == null)
+            var callerAddress = ReadShort((ushort)currentSp);
+            var calleePage = GetRelativePageNum(_debugger.CPU.PC);
+            CallerInformation info = _symbolService.ListTable.CheckValidCall(callerAddress, callerAddress >= 0x8000, calleePage);
+            if (info == null)
             {
                 return null;
             }
 
-            string callTypeString = match.Groups["command"].Value + " " + match.Groups["condition"].Value;
-            string nameString = match.Groups["call"].Value;
-            return new CallStackEntry(callTypeString, nameString, location);
-        }
-
-        private Match CheckValidCall(ushort stackData, out DocumentLocation location)
-        {
-            location = null;
-            int page = GetRelativePageNum(stackData);
-            if (IsAnApp && (stackData < 0x4000 || stackData >= 0x8000))
-            {
-                return null;
-            }
-
-            DocumentLocation key;
-            do
-            {
-                key = _symbolService.ListTable.GetFileLocation(page, --stackData, stackData >= 0x8000);
-            } while (key == null && (IsAnApp ? (stackData >= 0x4000 && stackData < 0x8000) : stackData >= 0x8000));
-
-            if (key == null)
-            {
-                return null;
-            }
-
-            string line = _fileService.GetLine(key.FileName, key.LineNumber);
-            Regex callRegex = new Regex(@"\s*(?<command>\w*call)[\(?|\s]\s*((?<condition>z|nz|c|nc),\s*)?(?<call>\w*?)\)?\s*(;.*)?$",
-                RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            Match match = callRegex.Match(line);
-            if (!match.Success)
-            {
-                return null;
-            }
-
-            location = key;
-            return match;
+            string callTypeString = info.Command + " " + info.Condition;
+            return new CallStackEntry(callTypeString, info.CallName, info.DocumentLocation);
         }
 
         private void UpdateStack()
         {
             var oldStackList = MachineStack.Reverse().ToList();
             MachineStack.Clear();
-            int currentSP = _debugger.CPU.SP;
+            int currentSp = _debugger.CPU.SP;
             ushort topStack = IsAnApp ? TopStackApp : (ushort) 0xFFFF;
             // avoid generating a massive callstack
-            if (currentSP < MachineStackBottom)
+            if (currentSp < MachineStackBottom)
             {
                 int maxStackSize = topStack - MachineStackBottom;
-                topStack = (ushort) (currentSP + maxStackSize);
+                topStack = (ushort) (currentSp + maxStackSize);
             }
 
-            if ((currentSP < _oldSP) || (currentSP < topStack && oldStackList.Count == 0))
+            if ((currentSp < _oldSp) || (currentSp < topStack && oldStackList.Count == 0))
             {
                 // new stack entries to add
-                while (currentSP != _oldSP && currentSP <= topStack)
+                while (currentSp != _oldSp && currentSp <= topStack)
                 {
-                    CallStackEntry callStackEntry = CheckValidCall(currentSP);
-                    MachineStack.Push(new StackEntry((ushort) currentSP, ReadShort((ushort) currentSP), callStackEntry));
-                    currentSP += 2;
+                    CallStackEntry callStackEntry = CheckValidCall(currentSp);
+                    MachineStack.Push(new StackEntry((ushort) currentSp, ReadShort((ushort) currentSp), callStackEntry));
+                    currentSp += 2;
                 }
             }
-            else if (currentSP > _oldSP)
+            else if (currentSp > _oldSp)
             {
                 // stack entries to remove
-                oldStackList.RemoveAll(s => s.Address < currentSP);
+                oldStackList.RemoveAll(s => s.Address < currentSp);
             }
 
             foreach (StackEntry stackEntry in oldStackList)
             {
-                int data = ReadShort((ushort) currentSP);
+                int data = ReadShort((ushort) currentSp);
                 if (stackEntry.Data != data)
                 {
-                    CallStackEntry callStackEntry = CheckValidCall(currentSP);
-                    MachineStack.Push(new StackEntry((ushort) currentSP, (ushort) data, callStackEntry));
+                    CallStackEntry callStackEntry = CheckValidCall(currentSp);
+                    MachineStack.Push(new StackEntry((ushort) currentSp, (ushort) data, callStackEntry));
                 }
                 else
                 {
                     MachineStack.Push(stackEntry);
                 }
-                currentSP += 2;
+                currentSp += 2;
             }
-            _oldSP = _debugger.CPU.SP;
+            _oldSp = _debugger.CPU.SP;
 
             UpdateCallstack();
         }
@@ -817,7 +784,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             // bcall(_CloseEditBuf)
             // bcall(_ExecuteApp)
             byte[] launchAppCode = { 0xEF, 0xD3, 0x48, 0xEF, 0x51, 0x4C };
-            byte[] createdNameBytes = System.Text.Encoding.ASCII.GetBytes(createdName);
+            byte[] createdNameBytes = Encoding.ASCII.GetBytes(createdName);
             // _ExecuteApp expects the name of the app to launch in progToEdit
             _debugger.Running = false;
             _debugger.Write(true, 1, progToEdit, createdNameBytes);
