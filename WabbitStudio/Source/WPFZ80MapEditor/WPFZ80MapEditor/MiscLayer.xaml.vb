@@ -148,4 +148,10 @@
     '    End If
     'End Sub
 
+    Public ReadOnly Property LayerType As LayerType Implements IMapLayer.LayerType
+        Get
+            Return WPFZ80MapEditor.LayerType.MiscLayer
+
+        End Get
+    End Property
 End Class

@@ -3,6 +3,8 @@
 Public Class ObjectLayer
     Implements IMapLayer
 
+
+
     Public Shared ReadOnly LeftProperty As DependencyProperty =
         DependencyProperty.RegisterAttached("Left", GetType(Double), GetType(ObjectLayer), New UIPropertyMetadata(CDbl(-1)))
 
@@ -220,4 +222,10 @@ Public Class ObjectLayer
     Private Sub ObjectItemsControl_SelectionChanged(sender As System.Object, e As System.Windows.Controls.SelectionChangedEventArgs) Handles ObjectItemsControl.SelectionChanged
         sender.Focus()
     End Sub
+
+    Public ReadOnly Property LayerType As LayerType Implements IMapLayer.LayerType
+        Get
+            Return WPFZ80MapEditor.LayerType.ObjectLayer
+        End Get
+    End Property
 End Class

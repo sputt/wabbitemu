@@ -6,7 +6,8 @@
              xmlns:local="clr-namespace:WPFZ80MapEditor"
       xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" x:Name="MapView" SnapsToDevicePixels="True" Background="DarkGray">
+             x:Name="MapView"
+             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" SnapsToDevicePixels="True" Background="DarkGray">
     <Grid.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:TileConverter x:Key="TileConverter"/>

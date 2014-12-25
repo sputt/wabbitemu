@@ -13,14 +13,7 @@
         'End If
     End Sub
 
-    Public WriteOnly Property Active As Boolean Implements IMapLayer.Active
-        Set(value As Boolean)
 
-        End Set
-    End Property
-
-    Public Sub DeselectAll() Implements IMapLayer.DeselectAll
-    End Sub
 
     Private Sub TileGrid_MouseEnter(sender As Object, e As MouseEventArgs)
         Dim result = VisualStateManager.GoToState(sender, "MouseOver", True)
@@ -30,6 +23,19 @@
         Dim result = VisualStateManager.GoToState(sender, "Normal", True)
     End Sub
 
+    Public WriteOnly Property Active As Boolean Implements IMapLayer.Active
+        Set(value As Boolean)
 
+        End Set
+    End Property
 
+    Public Sub DeselectAll() Implements IMapLayer.DeselectAll
+
+    End Sub
+
+    Public ReadOnly Property LayerType As LayerType Implements IMapLayer.LayerType
+        Get
+            Return WPFZ80MapEditor.LayerType.MapLayer
+        End Get
+    End Property
 End Class

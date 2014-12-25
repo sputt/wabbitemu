@@ -1,6 +1,7 @@
 ﻿Public Class EnemyLayer
     Implements IMapLayer
 
+
     Public Shared ReadOnly ImageProperty As DependencyProperty =
         DependencyProperty.RegisterAttached("Image", GetType(ImageSource), GetType(ObjectLayer),
                                             New PropertyMetadata(Nothing, AddressOf ImagePropertyChanged))
@@ -159,4 +160,10 @@
         Next
     End Sub
 #End Region
+
+    Public ReadOnly Property LayerType As LayerType Implements IMapLayer.LayerType
+        Get
+            Return LayerType.EnemyLayer
+        End Get
+    End Property
 End Class

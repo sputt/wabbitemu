@@ -135,6 +135,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AppModel.vb" />
     <Compile Include="DragAdorner.vb" />
     <Compile Include="Effects\TintEffect.vb" />
     <Compile Include="EnemyLayer.xaml.vb">
@@ -154,7 +155,6 @@
     <Compile Include="MapContainer.vb" />
     <Compile Include="MapData.vb" />
     <Compile Include="IMapLayer.vb" />
-    <Compile Include="MapSet.vb" />
     <Compile Include="LayerContainer.vb" />
     <Compile Include="BitmapUtils.vb" />
     <Compile Include="ObservableDictionary.vb" />
@@ -302,9 +302,6 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <AppDesigner Include="My Project\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="MapView.vb" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Toolbar\open.bmp" />

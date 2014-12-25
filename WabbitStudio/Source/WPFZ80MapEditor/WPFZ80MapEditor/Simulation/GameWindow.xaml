@@ -35,7 +35,7 @@
                     <ScaleTransform ScaleY="2" ScaleX="2"/>
                 </TransformGroup>
             </Canvas.RenderTransform>
-            <local:MapView DataContext="{Binding Map}" Canvas.Left="0" Canvas.Top="0"/>
+            <local:XMapView DataContext="{Binding Map}" Canvas.Left="0" Canvas.Top="0"/>
             <ItemsControl ItemsSource="{Binding Path=DrawEntries}" Panel.ZIndex="2">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
