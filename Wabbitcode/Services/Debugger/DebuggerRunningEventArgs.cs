@@ -4,8 +4,8 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 {
     public class DebuggerRunningEventArgs : DebuggerEventArgs
     {
-        public DocumentLocation Location { get; set; }
-        public bool Running { get; set; }
+        public DocumentLocation Location { get; private set; }
+        public bool Running { get; private set; }
 
         public DebuggerRunningEventArgs(DocumentLocation location, bool running)
         {

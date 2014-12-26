@@ -194,21 +194,18 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         private void Debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
         {
-            if (InvokeRequired)
+            this.Invoke(() =>
             {
-                this.Invoke(() => Debugger_OnDebuggerStep(sender, e));
-                return;
-            }
+                editorBox.RemoveDebugHighlight();
+                AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
 
-            editorBox.RemoveDebugHighlight();
-            AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
+                if (e.Location.FileName != FileName)
+                {
+                    return;
+                }
 
-            if (e.Location.FileName != FileName)
-            {
-                return;
-            }
-
-            editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
+                editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
+            });
         }
 
         private void Debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
@@ -218,32 +215,29 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 return;
             }
 
-            if (InvokeRequired)
+            this.Invoke(() =>
             {
-                this.Invoke(() => Debugger_OnDebuggerRunningChanged(sender, e));
-                return;
-            }
-
-            editorBox.RemoveDebugHighlight();
-            if (e.Running)
-            {
-                Form activeForm = _dockingService.ActiveDocument as Form;
-                if (activeForm != null)
+                editorBox.RemoveDebugHighlight();
+                if (e.Running)
                 {
-                    activeForm.Refresh();
+                    Form activeForm = _dockingService.ActiveDocument as Form;
+                    if (activeForm != null)
+                    {
+                        activeForm.Refresh();
+                    }
                 }
-            }
-            else
-            {
-                if (e.Location.FileName != FileName)
+                else
                 {
-                    return;
-                }
+                    if (e.Location.FileName != FileName)
+                    {
+                        return;
+                    }
 
-                Activate();
-                AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
-                editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
-            }
+                    Activate();
+                    AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
+                    editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
+                }
+            });
         }
 
         private void editor_FormClosing(object sender, CancelEventArgs e)

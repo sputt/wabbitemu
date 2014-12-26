@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -172,9 +171,10 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void SetRowValue(DataGridViewRow row, object cellData)
         {
-            if (cellData is Image)
+            Image data = cellData as Image;
+            if (data != null)
             {
-                _imageList[row.Index] = (Image) cellData;
+                _imageList[row.Index] = data;
                 cellData = "Double click for image";
             }
             row.Cells[VarValueIndex].Value = cellData;
@@ -192,7 +192,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private int GetAddressValue(string address)
         {
-            IEnumerable<string> tokenList = ExpressionEvaluator.CreateTokenList(address);
+            var tokenList = ExpressionEvaluator.CreateTokenList(address);
             var postFix = ExpressionEvaluator.InfixToPostfix(tokenList);
             int value = _expressionEvaluator.EvalPostfix(postFix);
             return value;
@@ -207,7 +207,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             }
             catch (FormatException ex)
             {
-                row.Cells[5].Value = string.Format("Error: {0}", ex.Message);
+                row.Cells[VarValueIndex].Value = string.Format("Error: {0}", ex.Message);
                 return;
             }
 
