@@ -1,4 +1,4 @@
-﻿<Grid x:Class="XMapView"
+﻿<UserControl x:Class="XMapView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -7,9 +7,9 @@
              xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
              mc:Ignorable="d" 
              x:Name="MapView"
-             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" SnapsToDevicePixels="True">
+             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" SnapsToDevicePixels="True" >
 
-    <Grid.Resources>
+    <UserControl.Resources>
         <converters:TileConverter x:Key="TileConverter"/>
         <converters:CollisionConverter x:Key="CollisionConverter"/>
         <local:LayerType x:Key="LayerType">MapLayer</local:LayerType>
@@ -51,19 +51,21 @@
                 </Control.Template>
             </Control>
         </DataTemplate>
-    </Grid.Resources>
+    </UserControl.Resources>
 
-    <Grid Background="DarkGray" Visibility="{Binding ShowNewMaps, ElementName=MapView, Converter={StaticResource BooleanToVisibilityConverter}}">
-        <TextBlock FontSize="200" Text="+" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,50" Foreground="#FFA0A0A0"/>
+    <Grid>
+        <Grid Background="DarkGray" Visibility="{Binding ShowNewMaps, ElementName=MapView, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TextBlock FontSize="200" Text="+" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,50" Foreground="#FFA0A0A0"/>
+        </Grid>
+
+        <ItemsControl ItemsSource="{Binding TileData}" Margin="0" ItemTemplate="{StaticResource TileTemplate}"
+                      Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}" Foreground="#FFA0A0A0">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel x:Name="TilePanel" Orientation="Horizontal">
+                    </WrapPanel>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
     </Grid>
-
-    <ItemsControl ItemsSource="{Binding TileData}" Margin="0" ItemTemplate="{StaticResource TileTemplate}"
-                  Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}" Foreground="#FFA0A0A0">
-        <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <WrapPanel x:Name="TilePanel" Orientation="Horizontal">
-                </WrapPanel>
-            </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-    </ItemsControl>
-</Grid>
+</UserControl>

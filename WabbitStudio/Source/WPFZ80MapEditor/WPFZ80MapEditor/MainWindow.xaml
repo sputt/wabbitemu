@@ -13,7 +13,12 @@
         <local:ActiveLayerConverter x:Key="ActiveLayerConverter"/>
         <local:MapPositionConverter x:Key="MapPositionConverter"/>
 
-        <Style x:Key="LayerStyle" TargetType="Grid">
+        <TransformGroup x:Key="MapCanvasRenderTransform">
+            <ScaleTransform/>
+            <TranslateTransform/>
+        </TransformGroup>
+
+        <Style x:Key="LayerStyle" TargetType="UserControl">
             <Style.Triggers>
                 <DataTrigger Value="True">
                     <DataTrigger.Binding>
@@ -48,22 +53,23 @@
                     </VisualStateGroup>
                 </VisualStateManager.VisualStateGroups>
                 
-                <Canvas Name="Background" Background="Gray" Panel.ZIndex="0">
+                <Canvas x:Name="MapCanvas" Background="Gray" Panel.ZIndex="0" MouseMove="Background_MouseMove" MouseWheel="Background_MouseWheel" PreviewMouseRightButtonDown="Background_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Background_PreviewMouseRightButtonUp">
                     <local:XLayerContainer x:Name="LayerContainer" Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, Mode=TwoWay, ElementName=MainWindow}"
-                                   Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}">
-                        <local:XLayerContainer.RenderTransform>
-                            <TransformGroup>
-                                <ScaleTransform/>
-                                <TranslateTransform/>
-                            </TransformGroup>
-                        </local:XLayerContainer.RenderTransform>
-
+                                   Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
+                                           RenderTransform="{StaticResource MapCanvasRenderTransform}" MouseDoubleClick="Map_MouseDoubleClick">
+                        <!--<local:XLayerContainer.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <EventSetter Event="MouseDoubleClick" Handler="Map_MouseDoubleClick"/>
+                            </Style>
+                        </local:XLayerContainer.ItemContainerStyle>-->
                         <local:XLayerContainer.ItemTemplate>
                             <DataTemplate>
-                                <Grid Width="256" Height="260">
-                                    <local:XMapView     Panel.ZIndex="0" Style="{StaticResource LayerStyle}" ShowNewMaps="{Binding Path=Selectable, ElementName=LayerContainer}"/>
-                                    <local:XObjectLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
-                                </Grid>
+                                <UserControl Width="256" Height="260">
+                                    <Grid>
+                                        <local:XMapView     Panel.ZIndex="0" Style="{StaticResource LayerStyle}" ShowNewMaps="{Binding Path=Selectable, ElementName=LayerContainer}"/>
+                                        <local:XObjectLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
+                                    </Grid>
+                                </UserControl>
                             </DataTemplate>
                         </local:XLayerContainer.ItemTemplate>
                     </local:XLayerContainer>
@@ -81,9 +87,9 @@
                             <MenuItem Header="_Redo" Command="Redo"/>
                         </MenuItem>
                         <MenuItem Header="_Mapset" Name="MapsetMenu">
-                            <MenuItem Name="MapsetNew" Header="_New map"/>
+                            <MenuItem Name="MapsetNew" Header="_New map" Click="MapsetNew_Click"/>
                             <MenuItem Name="MapsetNewFromFile" Header="New map from _file..."/>
-                            <MenuItem Name="MapsetDelete" Header="_Delete map"/>
+                            <MenuItem Name="MapsetDelete" Header="_Delete map" Click="MapsetDelete_Click"/>
                             <MenuItem Header="Add _column">
                                 <MenuItem Header="_Left" Name="AddColumnLeft"/>
                                 <MenuItem Header="_Right" Name="AddColumnRight"/>

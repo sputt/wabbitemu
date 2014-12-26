@@ -243,7 +243,9 @@ Namespace ValueConverters
         Implements IMultiValueConverter
 
         Public Function Convert(values() As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
-            Dim Scenario As Scenario = values(0)
+            Dim Scenario As Scenario = TryCast(values(0), Scenario)
+            If Scenario Is Nothing Then Return Nothing
+
             Dim Index As Integer = values(1)
 
             Return Scenario.Images(Index).Image

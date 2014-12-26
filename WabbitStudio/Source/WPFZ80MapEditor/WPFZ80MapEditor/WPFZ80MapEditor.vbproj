@@ -339,6 +339,9 @@
   <ItemGroup>
     <None Include="Effects\Tint.fx" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Scenario\question.bmp" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
     <PreBuildEvent>"C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Utilities\bin\x64\fxc.exe" /T ps_2_0 /E main /Fo "$(ProjectDir)Effects\Tint.ps" "$(ProjectDir)Effects\Tint.fx"</PreBuildEvent>
