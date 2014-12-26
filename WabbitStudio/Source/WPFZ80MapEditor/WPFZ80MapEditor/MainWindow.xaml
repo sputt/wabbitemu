@@ -57,11 +57,6 @@
                     <local:XLayerContainer x:Name="LayerContainer" Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, Mode=TwoWay, ElementName=MainWindow}"
                                    Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
                                            RenderTransform="{StaticResource MapCanvasRenderTransform}" MouseDoubleClick="Map_MouseDoubleClick">
-                        <!--<local:XLayerContainer.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
-                                <EventSetter Event="MouseDoubleClick" Handler="Map_MouseDoubleClick"/>
-                            </Style>
-                        </local:XLayerContainer.ItemContainerStyle>-->
                         <local:XLayerContainer.ItemTemplate>
                             <DataTemplate>
                                 <UserControl Width="256" Height="260">

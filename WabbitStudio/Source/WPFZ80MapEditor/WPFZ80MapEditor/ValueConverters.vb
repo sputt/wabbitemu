@@ -25,12 +25,13 @@ Namespace ValueConverters
         Public Function Convert(values() As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IMultiValueConverter.Convert
             On Error Resume Next
 
-            Dim Index As Object = values(0)
-            Dim ObjY As Double = values(1)
-            Dim ObjHeight As Double = values(2)
-            Dim ObjZRaw As Object = values(3)
+            Dim Scenario As Scenario = values(0).Scenario
+            Dim Index As Object = values(1)
+            Dim ObjY As Double = values(2)
+            Dim ObjHeight As Double = values(3)
+            Dim ObjZRaw As Object = values(4)
 
-            Dim Images = Nothing 'Scenario.Instance.Images
+            Dim Images = Scenario.Images
 
             Dim ImgSource As ImageSource = Nothing
             Dim ZImg As ZeldaImage = Nothing
@@ -68,10 +69,11 @@ Namespace ValueConverters
         Public Function Convert(values() As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IMultiValueConverter.Convert
             On Error Resume Next
 
-            Dim Index As Object = values(0)
-            Dim ObjX As Double = values(1)
-            Dim ObjWidth As Double = values(2)
-            Dim Images = Nothing 'Scenario.Instance.Images
+            Dim Scenario As Scenario = values(0).Scenario
+            Dim Index As Object = values(1)
+            Dim ObjX As Double = values(2)
+            Dim ObjWidth As Double = values(3)
+            Dim Images = Scenario.Images
 
             Dim ImgSource As ImageSource = Nothing
             Dim ZImg As ZeldaImage = Nothing

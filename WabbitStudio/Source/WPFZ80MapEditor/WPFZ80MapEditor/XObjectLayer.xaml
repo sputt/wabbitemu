@@ -11,6 +11,9 @@
 
     <UserControl.Resources>
         <converters:XImageConverter x:Key="ImageConverter"/>
+        <converters:YConverter x:Key="YConverter"/>
+        <converters:XConverter x:Key="XConverter"/>
+        <converters:ZConverter x:Key="ZConverter"/>
         <local:LayerType x:Key="LayerType">ObjectLayer</local:LayerType>
         
         <ControlTemplate x:Key="ObjectTemplate"  TargetType="ListBoxItem">
@@ -111,9 +114,37 @@
             </ListBox.Template>
             <ItemsControl.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
-                    <Setter Property="Canvas.Left" Value="{Binding Path=X}"/>
-                    <Setter Property="Canvas.Top" Value="{Binding Path=Y}"/>
-                    <Setter Property="Panel.ZIndex" Value="{Binding Path=Y}"/>
+                    <Setter Property="Canvas.Left">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource XConverter}">
+                                <Binding Path="DataContext" ElementName="ObjectLayer"/>
+                                <Binding Path="Image"/>
+                                <Binding Path="X"/>
+                                <Binding Path="W"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Canvas.Top">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource YConverter}">
+                                <Binding Path="DataContext" ElementName="ObjectLayer"/>
+                                <Binding Path="Image"/>
+                                <Binding Path="Y"/>
+                                <Binding Path="H"/>
+                                <Binding Path="Z"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Panel.ZIndex">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource ZConverter}">
+                                <Binding Path="Y"/>
+                                <Binding Path="H"/>
+                                <Binding Path="Z"/>
+                                <Binding Path="D"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
                     <Setter Property="Template" Value="{StaticResource ObjectTemplate}"/>
                     <Style.Triggers>
                         <Trigger Property="IsSelected" Value="True">
