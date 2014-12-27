@@ -74,7 +74,7 @@
                     <Menu DockPanel.Dock="Top" Name="MainMenu" Height="20" Panel.ZIndex="1">
                         <MenuItem Header="_File">
                             <MenuItem Name="OpenScenario" Header="_Open"/>
-                            <MenuItem Header="_Save" Command="Save"/>
+                            <MenuItem Header="_Save" Click="Save_Click"/>
                             <MenuItem Header="E_xit" />
                         </MenuItem>
                         <MenuItem Header="_Edit">

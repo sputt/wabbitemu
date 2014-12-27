@@ -129,7 +129,9 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
 
         Dim ZObj = BaseFromZBase(Obj)
 
-        ZObj.Definition = Defs(Split(Macro, "(")(0))
+        ZObj.Name = Split(Macro, "(")(0)
+        ZObj.Definition = Defs(ZObj.Name)
+
         ZObj.Args = ZObj.Definition.Args.Clone
         Dim Args = Split(Split(Split(Macro, "(")(1), ")")(0), ",")
 

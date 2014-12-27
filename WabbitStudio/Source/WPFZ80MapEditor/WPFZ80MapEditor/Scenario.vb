@@ -383,19 +383,12 @@ Public Class Scenario
         Dim MapsTable As String = ""
 
         Dim MapIndex As Integer = 0
-        'Dim PossibleViews = From v In MainWindow.Instance.LayerContainer.Children
-        '                    Where TypeOf v Is MapContainer AndAlso CType(v, MapContainer).MapData IsNot Nothing
-        '                    Order By Grid.GetRow(v), Grid.GetColumn(v)
-        Dim PossibleViews = Nothing
-        For Each View In PossibleViews
-            Dim Container As MapContainer = View
-            Dim MapData = Container.MapData
-
+        For Each MapData In Maps.ToList().Where(Function(m) m.Exists)
             Dim MapId = String.Format("{0:D2}", MapIndex)
             Dim MapPrefix = ScenarioName & "_MAP_" & MapId
 
-            Dim X = Grid.GetColumn(Container)
-            Dim Y = Grid.GetRow(Container)
+            Dim X = MapData.X
+            Dim Y = MapData.Y
             Stream.WriteLine("#ifdef INCLUDE_MAPS")
             MapsTable &= vbTab & ".dw " & MapPrefix & vbCrLf
 

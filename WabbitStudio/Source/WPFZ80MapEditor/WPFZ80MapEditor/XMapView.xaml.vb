@@ -95,11 +95,11 @@
                         If MatchingAnim IsNot Nothing Then
                             Map.ZAnims.Remove(MatchingAnim)
                         End If
-                    End If
                 ElseIf SelectedTile.Type = TileSelection.SelectionType.AnimatedTile Then
                     Dim Anim = ZAnim.FromMacro(Map.Scenario.AnimDefs, SelectedTile.AnimatedTileDef.Macro & "(" & (Index Mod 16) * 16 & "," & Math.Floor(Index / 16) * 16 & ")")
                     Map.ZAnims.Add(Anim)
                     Map.TileData(Index) = SelectedTile.AnimatedTileDef.DefaultImage
+                    End If
                 End If
             End If
         End If

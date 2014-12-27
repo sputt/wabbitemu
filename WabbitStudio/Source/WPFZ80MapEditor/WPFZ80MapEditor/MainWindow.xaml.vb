@@ -217,4 +217,8 @@ Public Class MainWindow
     Private Sub Map_MouseDoubleClick(sender As Object, e As MouseButtonEventArgs)
         MapsetNew_Click(sender, e)
     End Sub
+
+    Private Sub Save_Click(sender As Object, e As RoutedEventArgs)
+        Model.Scenario.SaveScenario()
+    End Sub
 End Class
