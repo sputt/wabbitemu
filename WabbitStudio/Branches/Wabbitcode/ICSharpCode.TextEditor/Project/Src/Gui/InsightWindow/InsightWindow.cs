@@ -106,14 +106,16 @@ namespace Revsoft.TextEditor.Gui.InsightWindow
 					if (DataProvider != null && DataProvider.InsightDataCount > 0) {
 						CurrentData = (CurrentData + 1) % DataProvider.InsightDataCount;
 						ShowInsightWindow();
+					    return true;
 					}
-					return true;
+					return false;
 				case Keys.Up:
 					if (DataProvider != null && DataProvider.InsightDataCount > 0) {
 						CurrentData = (CurrentData + DataProvider.InsightDataCount - 1) % DataProvider.InsightDataCount;
                         ShowInsightWindow();
+					    return true;
 					}
-					return true;
+					return false;
                 case Keys.Escape:
                     CloseCurrentDataProvider();
 			        return true;
