@@ -11,6 +11,18 @@ End Enum
 Public Class AppModel
     Implements INotifyPropertyChanged
 
+    Public Shared Property Instance As AppModel
+
+    Public Sub New()
+        _CurrentLayer = LayerType.MapsetLayer
+        _Scenario = Nothing
+        _SelectedMap = Nothing
+        _SelectedTile = Nothing
+        _SelectedTileset = Nothing
+
+        Instance = Me
+    End Sub
+
     Private _CurrentLayer As LayerType
 
     Public Property CurrentLayer As LayerType
@@ -33,6 +45,9 @@ Public Class AppModel
         Set(value As Scenario)
             If _Scenario IsNot value Then
                 _Scenario = value
+
+                SelectedTileset = Scenario.Tilesets(0)
+
                 RaisePropertyChanged("Scenario")
             End If
         End Set
@@ -51,6 +66,31 @@ Public Class AppModel
         End Set
     End Property
 
+    Private _SelectedTile As TileSelection
+    Public Property SelectedTile As TileSelection
+        Get
+            Return _SelectedTile
+        End Get
+        Set(value As TileSelection)
+            If _SelectedTile IsNot value Then
+                _SelectedTile = value
+                RaisePropertyChanged("SelectedTile")
+            End If
+        End Set
+    End Property
+
+    Private _SelectedTileset As Tileset
+    Public Property SelectedTileset As Tileset
+        Get
+            Return _SelectedTileset
+        End Get
+        Set(value As Tileset)
+            If _SelectedTileset IsNot value Then
+                _SelectedTileset = value
+                RaisePropertyChanged("SelectedTileset")
+            End If
+        End Set
+    End Property
 
     Private _Status As String
     Public Property Status As String
@@ -64,6 +104,8 @@ Public Class AppModel
             End If
         End Set
     End Property
+
+
 
     Private Sub RaisePropertyChanged(PropName As String)
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropName))

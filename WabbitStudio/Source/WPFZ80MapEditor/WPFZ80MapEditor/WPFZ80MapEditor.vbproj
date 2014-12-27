@@ -144,7 +144,6 @@
     <Compile Include="MiscLayer.xaml.vb">
       <DependentUpon>MiscLayer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Panels\PanelTile.vb" />
     <Compile Include="ResizeThumb.vb" />
     <Compile Include="ScenarioDefs.vb" />
     <Compile Include="Simulation\GameWindow.xaml.vb">
@@ -173,7 +172,7 @@
     </Compile>
     <Compile Include="Scenario.vb" />
     <Compile Include="SPASMHelper.vb" />
-    <Compile Include="Tile.vb" />
+    <Compile Include="TileSelection.vb" />
     <Compile Include="Tileset.vb" />
     <Compile Include="Utils.vb" />
     <Compile Include="XLayerContainer.xaml.vb">

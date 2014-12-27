@@ -407,19 +407,19 @@ Public Class ZDef
         Me.Description = Description
         Args = New ArgsCollection
 
-        'Dim M = ObjType.BaseType.GetMethod("FromMacro")
+        Dim M = ObjType.BaseType.GetMethod("FromMacro")
 
-        'Dim Defs As New Dictionary(Of String, ZDef)
-        'Defs.Add(Macro, Me)
-        'Dim ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0)"})
-        'If ObjectInstance.Image = 0 Then
-        '    ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0)"})
-        '    If ObjectInstance.Image = 0 Then
-        '        ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0, 0)"})
-        '    End If
-        'End If
+        Dim Defs As New Dictionary(Of String, ZDef)
+        Defs.Add(Macro, Me)
+        Dim ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0)"})
+        If ObjectInstance.Image = 0 Then
+            ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0)"})
+            If ObjectInstance.Image = 0 Then
+                ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0, 0)"})
+            End If
+        End If
 
-        'DefaultImage = ObjectInstance.Image
+        DefaultImage = ObjectInstance.Image
     End Sub
 
     Public Sub AddArg(Name As String, Description As String, images As ObservableCollection(Of ZeldaImage), Optional IsOptional As Boolean = False)

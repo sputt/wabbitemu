@@ -7,58 +7,20 @@
              xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
              mc:Ignorable="d" 
              x:Name="MapView"
-             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" SnapsToDevicePixels="True" >
+             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" SnapsToDevicePixels="True">
 
     <UserControl.Resources>
         <converters:TileConverter x:Key="TileConverter"/>
         <converters:CollisionConverter x:Key="CollisionConverter"/>
         <local:LayerType x:Key="LayerType">MapLayer</local:LayerType>
-        <DataTemplate x:Key="TileTemplate">
-            <Control MouseLeftButtonUp="TileButton_Click" MouseEnter="TileGrid_MouseEnter" MouseLeave="TileGrid_MouseLeave">
-                <Control.Template>
-                    <ControlTemplate>
-                        <Grid x:Name="TileGrid" Width="16" Height="16" Background="Transparent">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup>
-                                    <VisualStateGroup.Transitions>
-                                        <!--<VisualTransition From="MouseOver" GeneratedDuration="0:0:0.125"/>-->
-                                        <VisualTransition From="MouseOver" GeneratedDuration="0"/>
-                                        <VisualTransition To="MouseOver" GeneratedDuration="0"/>
-                                    </VisualStateGroup.Transitions>
-                                    <VisualState x:Name="Normal"/>
-                                    <VisualState x:Name="MouseOver">
-                                        <Storyboard>
-                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="TileOverlay">
-                                                <EasingDoubleKeyFrame KeyTime="0" Value="0.3"/>
-                                            </DoubleAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                            <!--<Rectangle Name="CollisionOverlay" Fill="Red" Opacity="0.25"
-                               Panel.ZIndex="2" IsHitTestVisible="False" Width="16" Height="16" Visibility="{Binding ., Converter={StaticResource CollisionConverter}}"/>-->
-                            <Rectangle x:Name="TileOverlay" Fill="White" Panel.ZIndex="1" Opacity="0" IsHitTestVisible="False"  Width="16" Height="16"/>
-                            <Image x:Name="TileImage" Panel.ZIndex="0" IsHitTestVisible="False" Width="16" Height="16">
-                                <Image.Source>
-                                    <MultiBinding Converter="{StaticResource TileConverter}">
-                                        <Binding ElementName="MapView" Path="DataContext.Tileset"/>
-                                        <Binding Path="."/>
-                                    </MultiBinding>
-                                </Image.Source>
-                            </Image>
-                        </Grid>
-                    </ControlTemplate>
-                </Control.Template>
-            </Control>
-        </DataTemplate>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid >
         <Grid Background="DarkGray" Visibility="{Binding ShowNewMaps, ElementName=MapView, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TextBlock FontSize="200" Text="+" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,50" Foreground="#FFA0A0A0"/>
         </Grid>
 
-        <ItemsControl ItemsSource="{Binding TileData}" Margin="0" ItemTemplate="{StaticResource TileTemplate}"
+        <ItemsControl Panel.ZIndex="0" Name="TileContainer" ItemsSource="{Binding TileData}" Margin="0"
                       Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}" Foreground="#FFA0A0A0">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -66,6 +28,93 @@
                     </WrapPanel>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Control Background="{x:Null}" MouseEnter="TileGrid_MouseEnter" MouseLeave="TileGrid_MouseLeave" MouseDown="TileImage_MouseLeftButtonDown">
+                        <Control.Template>
+                            <ControlTemplate>
+                                <Grid x:Name="TileGrid" Width="16" Height="16" Background="Transparent">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup>
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="TileOverlay">
+                                                        <DiscreteDoubleKeyFrame KeyTime="0" Value="0.3"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Rectangle x:Name="TileOverlay" Fill="White" Panel.ZIndex="1" Opacity="0" IsHitTestVisible="False"  Width="16" Height="16"/>
+                                    <Image x:Name="TileImage" Panel.ZIndex="0" IsHitTestVisible="False" Width="16" Height="16">
+                                        <Image.Source>
+                                            <MultiBinding Converter="{StaticResource TileConverter}">
+                                                <Binding ElementName="MapView" Path="DataContext.Tileset"/>
+                                                <Binding Path="."/>
+                                            </MultiBinding>
+                                        </Image.Source>
+                                    </Image>
+                                </Grid>
+                            </ControlTemplate>
+                        </Control.Template>
+                    </Control>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ItemsControl Panel.ZIndex="1" Name="AnimsControl" IsHitTestVisible="False" ItemsSource="{Binding ZAnims}" Background="{x:Null}" Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.Template>
+                <ControlTemplate>
+                    <Canvas Background="{x:Null}">
+                        <ItemsPresenter></ItemsPresenter>
+                    </Canvas>
+                </ControlTemplate>
+            </ItemsControl.Template>
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+            
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Image Width="16" Height="16" Panel.ZIndex="0">
+                        <Image.Source>
+                            <MultiBinding Converter="{StaticResource TileConverter}">
+                                <Binding ElementName="MapView" Path="DataContext.Tileset"/>
+                                <Binding Path="Image"/>
+                            </MultiBinding>
+                        </Image.Source>
+                        <Image.Effect>
+                            <local:TintEffect Color="{StaticResource AnimColor}"/>
+                        </Image.Effect>
+                    </Image>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ItemsControl Panel.ZIndex="2" Name="CollisionContainer" ItemsSource="{Binding TileData}"
+                      Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}" Background="{x:Null}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" Background="{x:Null}">
+                    </WrapPanel>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Rectangle Name="CollisionOverlay" Fill="Red" Opacity="0.25"
+                                       Panel.ZIndex="2" IsHitTestVisible="False" Width="16" Height="16"
+                               Visibility="{Binding ., Converter={StaticResource CollisionConverter}}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
         </ItemsControl>
     </Grid>
 </UserControl>

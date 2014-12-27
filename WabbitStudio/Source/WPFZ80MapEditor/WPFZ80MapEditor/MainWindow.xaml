@@ -61,7 +61,7 @@
                             <DataTemplate>
                                 <UserControl Width="256" Height="260">
                                     <Grid>
-                                        <local:XMapView     Panel.ZIndex="0" Style="{StaticResource LayerStyle}" ShowNewMaps="{Binding Path=Selectable, ElementName=LayerContainer}"/>
+                                        <local:XMapView     Panel.ZIndex="0" Style="{StaticResource LayerStyle}" ShowNewMaps="{Binding Path=Selectable, ElementName=LayerContainer}" SelectedTile="{Binding Path=DataContext.SelectedTile, ElementName=MainWindow, Mode=TwoWay}"/>
                                         <local:XObjectLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
                                     </Grid>
                                 </UserControl>
