@@ -131,6 +131,7 @@ Public Class ActiveLayerConverter
     Implements IMultiValueConverter
 
     Public Function Convert(values() As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
+        If Not TypeOf values(0) Is LayerType Or Not TypeOf values(1) Is LayerType Then Return Nothing
         Return values(0) = values(1)
     End Function
 

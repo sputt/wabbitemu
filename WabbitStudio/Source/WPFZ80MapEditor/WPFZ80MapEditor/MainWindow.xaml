@@ -34,16 +34,16 @@
         </Style>
     </Window.Resources>
 
-    <Window.Template>
+    <!--<Window.Template>
         <ControlTemplate>
             <Grid>
                 <VisualStateManager.VisualStateGroups>
                     <VisualStateGroup x:Name="LayerStateGroup">
                         <VisualState x:Name="MapsetLayer">
                             <Storyboard>
-                                <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="TilesSelectorGridItem" Storyboard.TargetProperty="(UIElement.Visibility)">
+                                --><!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="TilesSelectorGridItem" Storyboard.TargetProperty="(UIElement.Visibility)">
                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
-                                </ObjectAnimationUsingKeyFrames>-->
+                                </ObjectAnimationUsingKeyFrames>--><!--
                                 <BooleanAnimationUsingKeyFrames Storyboard.TargetName="LayerContainer" Storyboard.TargetProperty="Selectable">
                                     <DiscreteBooleanKeyFrame KeyTime="0" Value="True"/>
                                 </BooleanAnimationUsingKeyFrames>
@@ -52,128 +52,134 @@
                         <VisualState x:Name="MapLayer"/>
                     </VisualStateGroup>
                 </VisualStateManager.VisualStateGroups>
-                
-                <Canvas x:Name="MapCanvas" Background="Gray" Panel.ZIndex="0" MouseMove="Background_MouseMove" MouseWheel="Background_MouseWheel" PreviewMouseRightButtonDown="Background_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Background_PreviewMouseRightButtonUp">
-                    <local:XLayerContainer x:Name="LayerContainer" Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, Mode=TwoWay, ElementName=MainWindow}"
-                                   Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
-                                           RenderTransform="{StaticResource MapCanvasRenderTransform}" MouseDoubleClick="Map_MouseDoubleClick">
-                        <local:XLayerContainer.ItemTemplate>
-                            <DataTemplate>
-                                <UserControl Width="256" Height="260">
-                                    <Grid>
-                                        <local:XMapView     Panel.ZIndex="0" Style="{StaticResource LayerStyle}" ShowNewMaps="{Binding Path=Selectable, ElementName=LayerContainer}" SelectedTile="{Binding Path=DataContext.SelectedTile, ElementName=MainWindow, Mode=TwoWay}"/>
-                                        <local:XObjectLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
-                                    </Grid>
-                                </UserControl>
-                            </DataTemplate>
-                        </local:XLayerContainer.ItemTemplate>
-                    </local:XLayerContainer>
-                </Canvas>
-
-                <DockPanel Panel.ZIndex="1">
-                    <Menu DockPanel.Dock="Top" Name="MainMenu" Height="20" Panel.ZIndex="1">
-                        <MenuItem Header="_File">
-                            <MenuItem Name="OpenScenario" Header="_Open"/>
-                            <MenuItem Header="_Save" Click="Save_Click"/>
-                            <MenuItem Header="E_xit" />
-                        </MenuItem>
-                        <MenuItem Header="_Edit">
-                            <MenuItem Header="_Undo" Command="Undo"/>
-                            <MenuItem Header="_Redo" Command="Redo"/>
-                        </MenuItem>
-                        <MenuItem Header="_Mapset" Name="MapsetMenu">
-                            <MenuItem Name="MapsetNew" Header="_New map" Click="MapsetNew_Click"/>
-                            <MenuItem Name="MapsetNewFromFile" Header="New map from _file..."/>
-                            <MenuItem Name="MapsetDelete" Header="_Delete map" Click="MapsetDelete_Click"/>
-                            <MenuItem Header="Add _column">
-                                <MenuItem Header="_Left" Name="AddColumnLeft"/>
-                                <MenuItem Header="_Right" Name="AddColumnRight"/>
-                            </MenuItem>
-                            <MenuItem Header="Add _row">
-                                <MenuItem Header="_Top" Name="AddRowTop"/>
-                                <MenuItem Header="_Bottom" Name="AddRowBottom"/>
-                            </MenuItem>
-                            <MenuItem Header="Delete c_olumn" Name="DeleteMapColumn"/>
-                            <MenuItem Header="Delete ro_w" Name="DeleteMapRow"/>
-                        </MenuItem>
-                        <MenuItem Header="_Map">
-
-                        </MenuItem>
-                        <MenuItem Header="_View">
-                            <MenuItem Name="TilesMenuItem" Header="Show _tiles panel" IsCheckable="True" IsChecked="True"/>
-                            <MenuItem Name="PaddingMenuItem" Header="Show map _padding" IsCheckable="True" IsChecked="True"/>
-                        </MenuItem>
-                        <MenuItem Header="_Help">
-                            <MenuItem Header="_About"/>
-                        </MenuItem>
-                    </Menu>
-
-                    <WrapPanel DockPanel.Dock="Top" Height="26" Panel.ZIndex="1" Background="White">
-                        <WrapPanel.Effect>
-                            <DropShadowEffect Direction="270" Opacity="0.25" ShadowDepth="5" />
-                        </WrapPanel.Effect>
-                        <ToolBar DockPanel.Dock="top" ToolBarTray.IsLocked="True" Name="MainToolBar" Height="26">
-                            <Button>
-                                <Image Source="Toolbar/open.bmp" OpacityMask="#A8E61D"/>
-                            </Button>
-                            <Button Name="Button1" Click="Save_Click">
-                                <Image Source="Toolbar/save.bmp"  OpacityMask="#A8E61D"/>
-                            </Button>
-                            <Button Name="TestButton">Test</Button>
-                            <Separator></Separator>
-                            <RadioButton IsChecked="True" Name="RadioMapSet" Tag="{x:Static local:LayerType.MapsetLayer}" Click="RadioMapSet_Click">Mapset</RadioButton>
-                            <RadioButton IsChecked="False" Name="RadioMapView" Tag="{x:Static local:LayerType.MapLayer}" Click="RadioMapSet_Click">Map</RadioButton>
-                            <RadioButton IsChecked="False" Name="RadioObjectLayer" Tag="{x:Static local:LayerType.ObjectLayer}" Click="RadioMapSet_Click">Objects</RadioButton>
-                            <RadioButton IsChecked="False" Name="RadioEnemyLayer">Enemies</RadioButton>
-                            <RadioButton IsChecked="False" Name="RadioMiscLayer">Misc</RadioButton>
-                        </ToolBar>
-                    </WrapPanel>
-
-                    <StatusBar DockPanel.Dock="Bottom" Name="StatusBar" Margin="0" Padding="0" Panel.ZIndex="1">
-                        <StatusBar.Effect>
-                            <DropShadowEffect Direction="90" Opacity="0.25" ShadowDepth="2" />
-                        </StatusBar.Effect>
-                        <StatusBarItem HorizontalAlignment="Left" >
-                            <WrapPanel Height="19" VerticalAlignment="Center">
-                                <Label Padding="0" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom">Tile:</Label>
-                                <Rectangle Width="6"/>
-                                <Label Padding="0" Content="{Binding Path=Index, ElementName=TileSelectorPanel}"></Label>
-                            </WrapPanel>
-                        </StatusBarItem>
-                        <StatusBarItem>
-                            <TextBlock x:Name="StatusTextBlock" Text="{Binding Status}">
-                            </TextBlock>
-                        </StatusBarItem>
-                        <StatusBarItem HorizontalAlignment="Right" Width="75">
-                            <ComboBox Name="ZoomLevelCombo" FontSize="10" SelectedIndex="0" Padding="8,2,0,3" Width="50" HorizontalAlignment="Right" IsEditable="False" IsTabStop="False">
-                                <ComboBoxItem Content="100%" Name="CurrentZoomLevelItem"/>
-                                <ComboBoxItem Content="50%" />
-                                <ComboBoxItem Content="75%" />
-                                <ComboBoxItem Content="100%" />
-                                <ComboBoxItem Content="150%" />
-                                <ComboBoxItem Content="200%" />
-                                <ComboBoxItem Content="400%" />
-                            </ComboBox>
-                        </StatusBarItem>
-                    </StatusBar>
-
-                    <Grid x:Name="TilesSelectorGridItem" DockPanel.Dock="Left" Panel.ZIndex="2" Background="White" Width="170">
-                        <Grid.Effect>
-                            <DropShadowEffect Direction="0" Opacity="0.25" ShadowDepth="2" />
-                        </Grid.Effect>
-                        <local:TilesPanel x:Name="TileSelectorPanel"/>
-                    </Grid>
-
-                    <Grid DockPanel.Dock="Right" Panel.ZIndex="2" Background="White" Width="170">
-                        <Grid.Effect>
-                            <DropShadowEffect Direction="180" Opacity="0.25" ShadowDepth="2" />
-                        </Grid.Effect>
-                        <local:ObjectsPanel x:Name="ObjectsPanel"/>
-                    </Grid>
-                    
-                    <Grid IsHitTestVisible="False"/>
-                </DockPanel>
+                <ContentPresenter/>
             </Grid>
         </ControlTemplate>
-    </Window.Template>
+    </Window.Template>-->
+    <AdornerDecorator>
+        <Grid>
+        
+            <Canvas x:Name="MapCanvas" Background="Gray" Panel.ZIndex="0" MouseMove="Background_MouseMove" MouseWheel="Background_MouseWheel" PreviewMouseRightButtonDown="Background_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Background_PreviewMouseRightButtonUp">
+                <local:XLayerContainer x:Name="LayerContainer" Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, Mode=TwoWay, ElementName=MainWindow}"
+                                       Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
+                                               RenderTransform="{StaticResource MapCanvasRenderTransform}" MouseDoubleClick="Map_MouseDoubleClick">
+                    <local:XLayerContainer.ItemTemplate>
+                        <DataTemplate>
+                            <UserControl Width="256" Height="260">
+                                <Grid>
+                                    <local:XMapView     Panel.ZIndex="0" Style="{StaticResource LayerStyle}" ShowNewMaps="{Binding Path=Selectable, ElementName=LayerContainer}" SelectedTile="{Binding Path=DataContext.SelectedTile, ElementName=MainWindow, Mode=TwoWay}"/>
+                                    <local:XObjectLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
+                                </Grid>
+                            </UserControl>
+                        </DataTemplate>
+                    </local:XLayerContainer.ItemTemplate>
+                </local:XLayerContainer>
+            </Canvas>
+        
+
+        <DockPanel Panel.ZIndex="1">
+            <Menu DockPanel.Dock="Top" Name="MainMenu" Height="20" Panel.ZIndex="1">
+                <MenuItem Header="_File">
+                    <MenuItem Name="OpenScenario" Header="_Open"/>
+                    <MenuItem Header="_Save" Click="Save_Click"/>
+                    <MenuItem Header="E_xit" />
+                </MenuItem>
+                <MenuItem Header="_Edit">
+                    <MenuItem Header="_Undo" Command="Undo"/>
+                    <MenuItem Header="_Redo" Command="Redo"/>
+                </MenuItem>
+                <MenuItem Header="_Mapset" Name="MapsetMenu">
+                    <MenuItem Name="MapsetNew" Header="_New map" Click="MapsetNew_Click"/>
+                    <MenuItem Name="MapsetNewFromFile" Header="New map from _file..."/>
+                    <MenuItem Name="MapsetDelete" Header="_Delete map" Click="MapsetDelete_Click"/>
+                    <MenuItem Header="Add _column">
+                        <MenuItem Header="_Left" Name="AddColumnLeft"/>
+                        <MenuItem Header="_Right" Name="AddColumnRight"/>
+                    </MenuItem>
+                    <MenuItem Header="Add _row">
+                        <MenuItem Header="_Top" Name="AddRowTop"/>
+                        <MenuItem Header="_Bottom" Name="AddRowBottom"/>
+                    </MenuItem>
+                    <MenuItem Header="Delete c_olumn" Name="DeleteMapColumn"/>
+                    <MenuItem Header="Delete ro_w" Name="DeleteMapRow"/>
+                </MenuItem>
+                <MenuItem Header="_Map">
+
+                </MenuItem>
+                <MenuItem Header="_View">
+                    <MenuItem Name="TilesMenuItem" Header="Show _tiles panel" IsCheckable="True" IsChecked="True"/>
+                    <MenuItem Name="PaddingMenuItem" Header="Show map _padding" IsCheckable="True" IsChecked="True"/>
+                </MenuItem>
+                <MenuItem Header="_Help">
+                    <MenuItem Header="_About"/>
+                </MenuItem>
+            </Menu>
+
+            <WrapPanel DockPanel.Dock="Top" Height="26" Panel.ZIndex="1" Background="White">
+                <WrapPanel.Effect>
+                    <DropShadowEffect Direction="270" Opacity="0.25" ShadowDepth="5" />
+                </WrapPanel.Effect>
+                <ToolBar DockPanel.Dock="top" ToolBarTray.IsLocked="True" Name="MainToolBar" Height="26">
+                    <Button>
+                        <Image Source="Toolbar/open.bmp" OpacityMask="#A8E61D"/>
+                    </Button>
+                    <Button Name="Button1" Click="Save_Click">
+                        <Image Source="Toolbar/save.bmp"  OpacityMask="#A8E61D"/>
+                    </Button>
+                    <Button Name="TestButton">Test</Button>
+                    <Separator></Separator>
+                    <RadioButton IsChecked="True" Name="RadioMapSet" Tag="{x:Static local:LayerType.MapsetLayer}" Click="RadioMapSet_Click">Mapset</RadioButton>
+                    <RadioButton IsChecked="False" Name="RadioMapView" Tag="{x:Static local:LayerType.MapLayer}" Click="RadioMapSet_Click">Map</RadioButton>
+                    <RadioButton IsChecked="False" Name="RadioObjectLayer" Tag="{x:Static local:LayerType.ObjectLayer}" Click="RadioMapSet_Click">Objects</RadioButton>
+                    <RadioButton IsChecked="False" Name="RadioEnemyLayer">Enemies</RadioButton>
+                    <RadioButton IsChecked="False" Name="RadioMiscLayer">Misc</RadioButton>
+                </ToolBar>
+            </WrapPanel>
+
+            <StatusBar DockPanel.Dock="Bottom" Name="StatusBar" Margin="0" Padding="0" Panel.ZIndex="1">
+                <StatusBar.Effect>
+                    <DropShadowEffect Direction="90" Opacity="0.25" ShadowDepth="2" />
+                </StatusBar.Effect>
+                <StatusBarItem HorizontalAlignment="Left" >
+                    <WrapPanel Height="19" VerticalAlignment="Center">
+                        <Label Padding="0" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom">Tile:</Label>
+                        <Rectangle Width="6"/>
+                        <Label Padding="0" Content="{Binding Path=Index, ElementName=TileSelectorPanel}"></Label>
+                    </WrapPanel>
+                </StatusBarItem>
+                <StatusBarItem>
+                    <TextBlock x:Name="StatusTextBlock" Text="{Binding Status}">
+                    </TextBlock>
+                </StatusBarItem>
+                <StatusBarItem HorizontalAlignment="Right" Width="75">
+                    <ComboBox Name="ZoomLevelCombo" FontSize="10" SelectedIndex="0" Padding="8,2,0,3" Width="50" HorizontalAlignment="Right" IsEditable="False" IsTabStop="False">
+                        <ComboBoxItem Content="100%" Name="CurrentZoomLevelItem"/>
+                        <ComboBoxItem Content="50%" />
+                        <ComboBoxItem Content="75%" />
+                        <ComboBoxItem Content="100%" />
+                        <ComboBoxItem Content="150%" />
+                        <ComboBoxItem Content="200%" />
+                        <ComboBoxItem Content="400%" />
+                    </ComboBox>
+                </StatusBarItem>
+            </StatusBar>
+
+            <Grid x:Name="TilesSelectorGridItem" DockPanel.Dock="Left" Panel.ZIndex="2" Background="White" Width="170">
+                <Grid.Effect>
+                    <DropShadowEffect Direction="0" Opacity="0.25" ShadowDepth="2" />
+                </Grid.Effect>
+                <local:TilesPanel x:Name="TileSelectorPanel"/>
+            </Grid>
+
+            <Grid DockPanel.Dock="Right" Panel.ZIndex="2" Background="White" Width="170">
+                <Grid.Effect>
+                    <DropShadowEffect Direction="180" Opacity="0.25" ShadowDepth="2" />
+                </Grid.Effect>
+                <local:ObjectsPanel x:Name="ObjectsPanel"/>
+            </Grid>
+
+            <Grid IsHitTestVisible="False"/>
+        </DockPanel>
+    </Grid>
+    </AdornerDecorator>
 </Window>
