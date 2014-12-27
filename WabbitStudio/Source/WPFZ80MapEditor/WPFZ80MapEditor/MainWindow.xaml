@@ -116,7 +116,7 @@
                             <Button>
                                 <Image Source="Toolbar/open.bmp" OpacityMask="#A8E61D"/>
                             </Button>
-                            <Button Name="Button1">
+                            <Button Name="Button1" Click="Save_Click">
                                 <Image Source="Toolbar/save.bmp"  OpacityMask="#A8E61D"/>
                             </Button>
                             <Button Name="TestButton">Test</Button>
