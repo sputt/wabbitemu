@@ -51,14 +51,6 @@ Public Class ObjectLayer
         '        GetType(ZObject), New PropertyMetadata(-1, AddressOf OnImagePropertyChanged))
     End Sub
 
-    Public WriteOnly Property Active As Boolean Implements IMapLayer.Active
-        Set(value As Boolean)
-            _IsActive = value
-            IsHitTestVisible = value
-            DeselectAll()
-        End Set
-    End Property
-
     Public Sub DeselectAll() Implements IMapLayer.DeselectAll
         ObjectItemsControl.SelectedItems.Clear()
     End Sub

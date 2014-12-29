@@ -26,14 +26,6 @@
         'Return objectLayer.Scenario.Images(Index).Image
     End Sub
 
-    Public WriteOnly Property Active As Boolean Implements IMapLayer.Active
-        Set(value As Boolean)
-            _Active = value
-            IsHitTestVisible = value
-            DeselectAll()
-        End Set
-    End Property
-
     Public Sub DeselectAll() Implements IMapLayer.DeselectAll
         ItemsControl.SelectedItems.Clear()
     End Sub

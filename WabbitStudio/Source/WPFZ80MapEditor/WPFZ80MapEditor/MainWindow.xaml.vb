@@ -58,11 +58,11 @@ Public Class MainWindow
         st.BeginAnimation(ScaleTransform.ScaleXProperty, CreateZoomAnimation(currentZoom), HandoffBehavior.Compose)
         st.BeginAnimation(ScaleTransform.ScaleYProperty, CreateZoomAnimation(currentZoom), HandoffBehavior.Compose)
 
-        'If currentZoom < 2.0 Then
-        '    RenderOptions.SetBitmapScalingMode(LayerContainer, BitmapScalingMode.Fant)
-        'Else
-        '    RenderOptions.SetBitmapScalingMode(LayerContainer, BitmapScalingMode.NearestNeighbor)
-        'End If
+        If currentZoom < 2.0 Then
+            RenderOptions.SetBitmapScalingMode(LayerContainer, BitmapScalingMode.Fant)
+        Else
+            RenderOptions.SetBitmapScalingMode(LayerContainer, BitmapScalingMode.NearestNeighbor)
+        End If
     End Sub
 
     Private StartPoint As Point

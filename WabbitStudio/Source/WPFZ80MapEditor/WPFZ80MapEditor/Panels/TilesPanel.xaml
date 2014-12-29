@@ -60,9 +60,9 @@
                                                             <VisualTransition GeneratedDuration="0:0:0.1"/>
                                                         </VisualStateGroup.Transitions>
                                                         <VisualState x:Name="Unselected">
-                                                            <Storyboard>
+                                                            <!--<Storyboard>
                                                                 <DoubleAnimation Storyboard.TargetName="TileBorder" Storyboard.TargetProperty="Opacity" To="0.80"/>
-                                                            </Storyboard>
+                                                            </Storyboard>-->
                                                         </VisualState>
                                                         <VisualState x:Name="Selected">
                                                             <Storyboard>

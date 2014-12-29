@@ -91,12 +91,6 @@
     End Sub
 #End Region
 
-    Public WriteOnly Property Active As Boolean Implements IMapLayer.Active
-        Set(value As Boolean)
-
-        End Set
-    End Property
-
     Public Sub DeselectAll() Implements IMapLayer.DeselectAll
 
     End Sub

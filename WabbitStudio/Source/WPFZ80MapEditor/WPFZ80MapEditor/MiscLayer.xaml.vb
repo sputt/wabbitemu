@@ -44,14 +44,6 @@
         Width = LayerContainer.TileSize.Width * LayerContainer.MapSize.Width
     End Sub
 
-    Public WriteOnly Property Active As Boolean Implements IMapLayer.Active
-        Set(value As Boolean)
-            _IsActive = value
-            IsHitTestVisible = value
-            DeselectAll()
-        End Set
-    End Property
-
     Public Sub DeselectAll() Implements IMapLayer.DeselectAll
         ItemsControl.SelectedItem = Nothing
     End Sub
