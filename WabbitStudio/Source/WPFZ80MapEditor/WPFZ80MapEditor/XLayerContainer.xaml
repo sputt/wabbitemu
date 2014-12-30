@@ -31,7 +31,7 @@
         <Style TargetType="ListBoxItem">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Selectable, ElementName=LayerContainer}" Value="False">
-                    <Setter Property="Focusable" Value="False"/>
+                    <!--<Setter Property="Focusable" Value="False"/>-->
                 </DataTrigger>
             </Style.Triggers>
             <Setter Property="Template">

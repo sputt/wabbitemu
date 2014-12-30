@@ -53,16 +53,23 @@
         Dim Index = TileContainer.ItemContainerGenerator.IndexFromContainer(VisualTreeHelper.GetParent(sender))
         If Index = -1 Then Exit Sub
 
+
+
         Dim Map As MapData = DataContext
 
         If Keyboard.IsKeyDown(Key.LeftCtrl) Then
-            SelectedTile = New TileSelection(Map.TileData(Index))
+            SelectedTile = New TileSelection(Map.Tileset, Map.TileData(Index))
         Else
             If e.MiddleButton = MouseButtonState.Pressed Then
                 Map.TileData(Index) = Map.TileData(Index) Xor &H80
             Else
                 If SelectedTile IsNot Nothing Then
                     If SelectedTile.Type = TileSelection.SelectionType.Tile Then
+
+                        If Map.Tileset IsNot SelectedTile.Tileset Then
+                            Exit Sub
+                        End If
+
                         Map.TileData(Index) = SelectedTile.TileIndex
 
                         Dim X = (Index Mod 16) * 16
@@ -71,10 +78,10 @@
                         If MatchingAnim IsNot Nothing Then
                             Map.ZAnims.Remove(MatchingAnim)
                         End If
-                ElseIf SelectedTile.Type = TileSelection.SelectionType.AnimatedTile Then
-                    Dim Anim = ZAnim.FromMacro(Map.Scenario.AnimDefs, SelectedTile.AnimatedTileDef.Macro & "(" & (Index Mod 16) * 16 & "," & Math.Floor(Index / 16) * 16 & ")")
-                    Map.ZAnims.Add(Anim)
-                    Map.TileData(Index) = SelectedTile.AnimatedTileDef.DefaultImage
+                    ElseIf SelectedTile.Type = TileSelection.SelectionType.AnimatedTile Then
+                        Dim Anim = ZAnim.FromMacro(Map.Scenario.AnimDefs, SelectedTile.AnimatedTileDef.Macro & "(" & (Index Mod 16) * 16 & "," & Math.Floor(Index / 16) * 16 & ")")
+                        Map.ZAnims.Add(Anim)
+                        Map.TileData(Index) = SelectedTile.AnimatedTileDef.DefaultImage
                     End If
                 End If
             End If

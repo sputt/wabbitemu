@@ -400,7 +400,7 @@ Public Class Scenario
             Stream.WriteLine(MapPrefix & ":")
             Stream.WriteLine(MapPrefix & "_X = " & X)
             Stream.WriteLine(MapPrefix & "_Y = " & Y)
-            Stream.WriteLine(MapPrefix & "_TILESET = 0")
+            Stream.WriteLine(MapPrefix & "_TILESET = " & Tilesets.IndexOf(MapData.Tileset))
 
             Dim CompressedMap = MapCompressor.Compress(MapData.TileData)
             WriteAssemblyData(Stream, CompressedMap)

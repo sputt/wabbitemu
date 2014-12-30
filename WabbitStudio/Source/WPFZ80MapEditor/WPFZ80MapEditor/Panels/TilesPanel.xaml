@@ -22,7 +22,7 @@
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="0,5" VerticalAlignment="Top">
             <DockPanel>
                 <Label DockPanel.Dock="Left">_Tileset:</Label>
-                <ComboBox Name="CurrentTileset" ItemsSource="{Binding Scenario.Tilesets}" DisplayMemberPath="Name" Width="88" Height="23" SelectedItem="{Binding SelectedTileset, Mode=TwoWay}"/>
+                <ComboBox Name="CurrentTileset" ItemsSource="{Binding Scenario.Tilesets}" DisplayMemberPath="Name" Width="88" Height="23" SelectedItem="{Binding SelectedMap.Tileset, Mode=TwoWay}"/>
                 <Button DockPanel.Dock="Right" Content="..." Margin="5,0,0,0" Width="26" Height="23"/>
             </DockPanel>
             <WrapPanel>
@@ -35,7 +35,7 @@
                 <Border
                 BorderBrush="Gray"
                 BorderThickness="1">
-                    <ListBox ItemsSource="{Binding SelectedTileset.Tiles}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectedItem="{Binding SelectedTile, Mode=TwoWay, Converter={StaticResource TileSelectionConverter}}" BorderThickness="0" SelectionMode="Single">
+                    <ListBox ItemsSource="{Binding Path=SelectedItem.Tiles, ElementName=CurrentTileset}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectedItem="{Binding SelectedTile, Mode=TwoWay, Converter={StaticResource TileSelectionConverter}}" BorderThickness="0" SelectionMode="Single">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel ItemWidth="{Binding ElementName=TileZoomSlider, Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" ItemHeight="{Binding ElementName=TileZoomSlider, Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Margin="4">

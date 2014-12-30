@@ -17,7 +17,8 @@ Public Class TileSelectionConverter
 
     Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
         If value Is Nothing Then Return Nothing
-        Return New TileSelection(DirectCast(value, TileImageSource).Index)
+
+        Return New TileSelection(DirectCast(value, TileImageSource).Tileset, DirectCast(value, TileImageSource).Index)
     End Function
 End Class
 
@@ -32,6 +33,6 @@ Public Class AnimatedTileSelectionConverter
 
     Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
         If value Is Nothing Then Return Nothing
-        Return New TileSelection(DirectCast(value, ZDef))
+        Return New TileSelection(Nothing, DirectCast(value, ZDef))
     End Function
 End Class

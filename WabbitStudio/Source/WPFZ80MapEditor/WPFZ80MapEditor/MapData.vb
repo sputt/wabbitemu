@@ -133,7 +133,18 @@ Public Class MapData
         End If
     End Sub
 
+    Private _Tileset As Tileset
     Public Property Tileset As Tileset
+        Get
+            Return _Tileset
+        End Get
+        Set(value As Tileset)
+            If value IsNot _Tileset Then
+                _Tileset = value
+                RaisePropertyChanged("Tileset")
+            End If
+        End Set
+    End Property
 
     'Public Property Scenario As Scenario
     '    Get
