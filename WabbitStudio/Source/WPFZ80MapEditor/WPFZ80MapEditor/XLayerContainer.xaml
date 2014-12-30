@@ -62,14 +62,4 @@
             <Setter Property="Canvas.Top" Value="{Binding Path=Y, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"/>
         </Style>
     </ItemsControl.ItemContainerStyle>
-    
-    <!--<Control.Template>
-        <ControlTemplate>
-            <ListBox ItemsSource="{TemplateBinding local:XLayerContainer.Maps}"
-                     ItemTemplate="{TemplateBinding local:XLayerContainer.MapTemplate}">
-                
-            </ListBox>
-        </ControlTemplate>
-    </Control.Template>-->
-    
 </ListBox>

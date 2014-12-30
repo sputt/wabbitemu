@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:WPFZ80MapEditor"
     xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
-    x:Name="MainWindow"
+    Name="MainWindow"
     Title="Z80 Scenario Editor" Height="800" Width="1200" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" Background="White">
 
     <Window.Resources>
@@ -13,13 +13,15 @@
         <local:LayerHitTestConverter x:Key="LayerHitTestConverter"/>
         <local:ActiveLayerConverter x:Key="ActiveLayerConverter"/>
         <local:MapPositionConverter x:Key="MapPositionConverter"/>
+        
+        <local:LayerType x:Key="MapsetLayer">MapsetLayer</local:LayerType>
 
         <TransformGroup x:Key="MapCanvasRenderTransform">
             <ScaleTransform/>
             <TranslateTransform/>
         </TransformGroup>
 
-        <Style x:Key="LayerStyle" TargetType="UserControl">
+        <Style x:Key="LayerStyle" TargetType="local:MapLayer">
             <Style.Triggers>
                 <DataTrigger Value="True">
                     <DataTrigger.Binding>
@@ -33,47 +35,57 @@
                         </MultiBinding>
                     </DataTrigger.Binding>
                     <Setter Property="IsHitTestVisible" Value="True"/>
+                    <Setter Property="Active" Value="true"/>
                 </DataTrigger>
             </Style.Triggers>
             <Setter Property="IsHitTestVisible" Value="False"/>
         </Style>
     </Window.Resources>
 
-    <Window.Template>
-        <ControlTemplate TargetType="Window">
-            <Grid>
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup x:Name="LayerStateGroup">
-                        <VisualState x:Name="MapsetLayer">
-                            <Storyboard>
-                                <BooleanAnimationUsingKeyFrames Storyboard.TargetName="LayerContainer" Storyboard.TargetProperty="Selectable">
-                                    <DiscreteBooleanKeyFrame KeyTime="0" Value="True"/>
-                                </BooleanAnimationUsingKeyFrames>
-                            </Storyboard>
-                        </VisualState>
-                        <VisualState x:Name="MapLayer"/>
-                        <VisualState x:Name="ObjectLayer"/>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <ContentPresenter/>
-            </Grid>
-        </ControlTemplate>
-    </Window.Template>
-
     <AdornerDecorator>
         <Grid>
             <Canvas x:Name="MapCanvas" Background="Gray" Panel.ZIndex="0" MouseMove="Background_MouseMove" MouseWheel="Background_MouseWheel" PreviewMouseRightButtonDown="Background_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Background_PreviewMouseRightButtonUp">
                 <local:XLayerContainer x:Name="LayerContainer" Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, Mode=TwoWay, ElementName=MainWindow}"
                                        Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
-                                               RenderTransform="{StaticResource MapCanvasRenderTransform}" MouseDoubleClick="Map_MouseDoubleClick">
+                                               RenderTransform="{StaticResource MapCanvasRenderTransform}" MouseDoubleClick="Map_MouseDoubleClick" >
+                    <local:XLayerContainer.Style>
+                        <Style TargetType="local:XLayerContainer">
+                        <Style.Triggers>
+                            <DataTrigger Value="True">
+                                <DataTrigger.Binding>
+                                    <MultiBinding Converter="{StaticResource ActiveLayerConverter}">
+                                        <Binding Path="DataContext.CurrentLayer">
+                                            <Binding.RelativeSource>
+                                                <RelativeSource AncestorType="{x:Type local:MainWindow}"/>
+                                            </Binding.RelativeSource>
+                                        </Binding>
+                                            <Binding Source="{StaticResource MapsetLayer}"/>
+                                        </MultiBinding>
+                                </DataTrigger.Binding>
+                                    <Setter Property="Selectable" Value="True"/>
+                                </DataTrigger>
+                        </Style.Triggers>
+                            <Setter Property="Selectable" Value="False"/>
+                        </Style>
+                    </local:XLayerContainer.Style>
                     <local:XLayerContainer.ItemTemplate>
                         <DataTemplate>
                             <UserControl Width="256" Height="260">
                                 <Grid>
                                     <local:XMapView     Panel.ZIndex="0" Style="{StaticResource LayerStyle}" 
-                                                        ShowNewMaps="{Binding Path=Selectable, ElementName=LayerContainer}"
-                                                        SelectedTile="{Binding Path=DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}, Mode=TwoWay}"/>
-                                    
+                                                        SelectedTile="{Binding Path=DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}, Mode=TwoWay}">
+                                        <local:XMapView.ShowNewMaps>
+                                            <MultiBinding Converter="{StaticResource ActiveLayerConverter}">
+                                                <Binding Source="{StaticResource MapsetLayer}"/>
+                                                <Binding Path="DataContext.CurrentLayer">
+                                                    <Binding.RelativeSource>
+                                                        <RelativeSource AncestorType="{x:Type local:MainWindow}"/>
+                                                    </Binding.RelativeSource>
+                                                </Binding>
+                                            </MultiBinding>
+                                        </local:XMapView.ShowNewMaps>
+                                    </local:XMapView>
+
                                     <local:XObjectLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
                                 </Grid>
                             </UserControl>
@@ -150,7 +162,7 @@
                         <WrapPanel Height="19" VerticalAlignment="Center">
                             <Label Padding="0" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom">Tile:</Label>
                             <Rectangle Width="6"/>
-                            <Label Padding="0" Content="{Binding Path=Index, ElementName=TileSelectorPanel}"></Label>
+                            <Label Padding="0" Content="{Binding Path=SelectedTile}"></Label>
                         </WrapPanel>
                     </StatusBarItem>
                     <StatusBarItem>

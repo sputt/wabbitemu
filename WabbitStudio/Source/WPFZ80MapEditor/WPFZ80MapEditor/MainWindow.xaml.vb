@@ -4,6 +4,7 @@ Imports System.IO
 Imports WPFZ80MapEditor.ValueConverters
 Imports System.Threading.Tasks
 
+<TemplatePart(Name:="PART_LayerContainer", Type:=GetType(XLayerContainer))>
 Public Class MainWindow
     Public Shared Property ZeldaFolder As String
     Public Shared Property RomPath As String
@@ -24,6 +25,7 @@ Public Class MainWindow
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs) Handles MyBase.Loaded
         DataContext = Model
+        Model.CurrentLayer = LayerType.MapsetLayer
 
         If ZeldaFolder IsNot Nothing Then
             Dim HillScenario As New Scenario
@@ -165,7 +167,10 @@ Public Class MainWindow
             Exit Sub
         End If
 
-        Model.Scenario.AddMap(MapData.EmptyMap(Model.Scenario, 0, Model.SelectedMap.X, Model.SelectedMap.Y, 16 * 16))
+        Dim EmptyMap = MapData.EmptyMap(Model.Scenario, 0, Model.SelectedMap.X, Model.SelectedMap.Y, 16 * 16)
+        Model.Scenario.AddMap(EmptyMap)
+
+        Model.SelectedMap = EmptyMap
     End Sub
 
     Private Sub MapsetDelete_Click(sender As Object, e As RoutedEventArgs)
@@ -207,10 +212,8 @@ Public Class MainWindow
         If sender.tag IsNot Nothing Then
             Model.SelectedMap = Nothing
 
-            Dim result = VisualStateManager.GoToState(Me, sender.Tag.ToString, True)
+            'Dim result = VisualStateManager.GoToState(Me, sender.Tag.ToString, True)
             Model.CurrentLayer = sender.Tag
-
-            Debug.WriteLine("Result: " & result)
         End If
     End Sub
 

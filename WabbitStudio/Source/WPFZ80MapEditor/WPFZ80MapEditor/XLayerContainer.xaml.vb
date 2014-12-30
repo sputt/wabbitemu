@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.ObjectModel
 
 Public Class XLayerContainer
+    Inherits ListBox
 
     Public Property Maps As ObservableCollection(Of MapData)
         Get
@@ -31,6 +32,21 @@ Public Class XLayerContainer
                            DependencyProperty.Register("MapTemplate", _
                            GetType(DataTemplate), GetType(XLayerContainer), _
                            New PropertyMetadata(Nothing))
+
+    Public Property Active As Boolean
+        Get
+            Return GetValue(ActiveProperty)
+        End Get
+
+        Set(ByVal value As Boolean)
+            SetValue(ActiveProperty, value)
+        End Set
+    End Property
+
+    Public Shared ReadOnly ActiveProperty As DependencyProperty = _
+                           DependencyProperty.Register("Active", _
+                           GetType(Boolean), GetType(XLayerContainer), _
+                           New PropertyMetadata(False))
 
     Public Property Gap As Double
         Get

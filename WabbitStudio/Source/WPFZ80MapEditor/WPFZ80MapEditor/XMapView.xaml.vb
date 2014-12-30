@@ -1,5 +1,5 @@
 ﻿Public Class XMapView
-    Implements IMapLayer
+    Inherits MapLayer
 
     Public Property SelectedTile As TileSelection
         Get
@@ -39,11 +39,11 @@
         Dim result = VisualStateManager.GoToState(sender, "Normal", True)
     End Sub
 
-    Public Sub DeselectAll() Implements IMapLayer.DeselectAll
+    Public Overrides Sub DeselectAll()
 
     End Sub
 
-    Public ReadOnly Property LayerType As LayerType Implements IMapLayer.LayerType
+    Public Overrides ReadOnly Property LayerType As LayerType
         Get
             Return WPFZ80MapEditor.LayerType.MapLayer
         End Get

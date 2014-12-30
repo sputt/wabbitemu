@@ -1,5 +1,5 @@
 ﻿Public Class XObjectLayer
-    Implements IMapLayer
+    Inherits MapLayer
 
     Public Property Tint As Color
         Get
@@ -20,7 +20,7 @@
 #Region "Canvas events"
     Private _StartDrag As New Point
 
-    Private Sub ObjectCanvas_MouseLeftButtonDown(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs) Handles ObjectLayer.MouseLeftButtonDown
+    Private Sub ObjectCanvas_MouseLeftButtonDown(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
         SelectionRect.Width = 0
         SelectionRect.Height = 0
 
@@ -33,7 +33,7 @@
         End If
     End Sub
 
-    Private Sub ObjectCanvas_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs) Handles ObjectLayer.MouseLeftButtonUp
+    Private Sub ObjectCanvas_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
         If Mouse.Captured Is sender Then
             sender.ReleaseMouseCapture()
             SelectionRect.Visibility = Windows.Visibility.Hidden
@@ -50,7 +50,7 @@
         End If
     End Sub
 
-    Private Sub ObjectCanvas_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs) Handles ObjectLayer.MouseMove
+    Private Sub ObjectCanvas_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs)
         If Mouse.Captured Is sender Then
             Dim CurPoint = Mouse.GetPosition(ObjectCanvas)
             CurPoint.X = Math.Max(0, Math.Min(Me.Width, CurPoint.X))
@@ -91,11 +91,11 @@
     End Sub
 #End Region
 
-    Public Sub DeselectAll() Implements IMapLayer.DeselectAll
+    Public Overrides Sub DeselectAll()
 
     End Sub
 
-    Public ReadOnly Property LayerType As LayerType Implements IMapLayer.LayerType
+    Public Overrides ReadOnly Property LayerType As LayerType
         Get
             Return LayerType.ObjectLayer
         End Get

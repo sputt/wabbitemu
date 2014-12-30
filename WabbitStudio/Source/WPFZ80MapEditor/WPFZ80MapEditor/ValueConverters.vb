@@ -25,6 +25,10 @@ Namespace ValueConverters
         Public Function Convert(values() As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IMultiValueConverter.Convert
             On Error Resume Next
 
+            If Not TypeOf values(0) Is MapData Then
+                Return Nothing
+            End If
+
             Dim Scenario As Scenario = values(0).Scenario
             Dim Index As Object = values(1)
             Dim ObjY As Double = values(2)
@@ -68,6 +72,10 @@ Namespace ValueConverters
 
         Public Function Convert(values() As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IMultiValueConverter.Convert
             On Error Resume Next
+
+            If Not TypeOf values(0) Is MapData Then
+                Return Nothing
+            End If
 
             Dim Scenario As Scenario = values(0).Scenario
             Dim Index As Object = values(1)
