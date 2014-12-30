@@ -95,15 +95,15 @@ Public Class Scenario
 
     Public Async Function LoadScenario(FileName As String) As Task
         Tilesets = New ObservableCollection(Of Tileset)()
-        Tilesets.Add(New Tileset("dungeon", IO.Path.Combine(MainWindow.ZeldaFolder, "images\dungeon.bmp")))
-        Tilesets.Add(New Tileset("town", IO.Path.Combine(MainWindow.ZeldaFolder, "images\town.bmp")))
+        Tilesets.Add(New Tileset("dungeon", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\dungeon.bmp")))
+        Tilesets.Add(New Tileset("town", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\town.bmp")))
+        Tilesets.Add(New Tileset("graveyard", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\graveyard.bmp")))
 
-        Dim Path As String = Directory.GetParent(FileName).FullName
         Log("Starting SPASM")
-        SPASMHelper.Initialize(Path)
+        SPASMHelper.Initialize(MainWindow.ZeldaFolder)
 
         Log("Loading images")
-        Await LoadImages(Path & "\graphics.asm")
+        Await LoadImages(MainWindow.ZeldaFolder & "\graphics.asm")
 
         _FileName = FileName
         SPASMHelper.Assembler.Defines.Add("INCLUDE_ALL", 1)
@@ -112,13 +112,13 @@ Public Class Scenario
         Dim Data = SPASMHelper.AssembleFile(FileName)
 
         Log("Loading animate defs")
-        Await LoadDefs(Path & "\animatedef.inc", AnimDefs, GetType(ZAnim))
+        Await LoadDefs(MainWindow.ZeldaFolder & "\animatedef.inc", AnimDefs, GetType(ZAnim))
         Log("Loading object defs")
-        Await LoadDefs(Path & "\objectdef.inc", ObjectDefs, GetType(ZObject))
+        Await LoadDefs(MainWindow.ZeldaFolder & "\objectdef.inc", ObjectDefs, GetType(ZObject))
         Log("Loading misc defs")
-        Await LoadDefs(Path & "\miscdef.inc", MiscDefs, GetType(ZMisc))
+        Await LoadDefs(MainWindow.ZeldaFolder & "\miscdef.inc", MiscDefs, GetType(ZMisc))
         Log("Loading enemy defs")
-        Await LoadDefs(Path & "\enemydef.inc", EnemyDefs, GetType(ZEnemy))
+        Await LoadDefs(MainWindow.ZeldaFolder & "\enemydef.inc", EnemyDefs, GetType(ZEnemy))
 
         Dim Reader As New StreamReader(FileName)
         Dim ScenarioContents As String = Await Reader.ReadToEndAsync()
@@ -169,14 +169,14 @@ Public Class Scenario
                 Dim y = SPASMHelper.Labels(Label & "_Y")
                 MaxY = Math.Max(y, MaxY)
                 Dim Tileset = SPASMHelper.Labels(Label & "_TILESET")
-
+                Dim IsCompressed = Not SPASMHelper.Labels.ContainsKey(Label & "_RAW")
 
                 Dim RawMapData = Data.Skip(SPASMHelper.Labels(Label))
 
-                Dim MapData = New MapData(RawMapData, Me, Tileset)
+                Dim MapData = New MapData(RawMapData, Me, Tileset, IsCompressed)
 
                 Dim MapMacrosStart = ScenarioContents.IndexOf(Label & ":")
-                Dim MapMacrosEnd = ScenarioContents.IndexOf("END_SECTION()", MapMacrosStart)
+                Dim MapMacrosEnd = Math.Max(ScenarioContents.IndexOf("END_SECTION()", MapMacrosStart), MapMacrosStart)
 
                 Dim MapContents = ScenarioContents.Substring(MapMacrosStart, MapMacrosEnd - MapMacrosStart)
 

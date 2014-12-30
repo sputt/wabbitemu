@@ -17,10 +17,10 @@ Public Class SPASMHelper
         Assembler.Defines.Add("_MAPEDITOR", "1")
         Assembler.Defines.Add("TILE_TABLE", 0)
 
-        Assembler.IncludeDirectories.Add(Environment.CurrentDirectory)
-        Assembler.IncludeDirectories.Add(Environment.CurrentDirectory & "\Images")
-        Assembler.IncludeDirectories.Add(Environment.CurrentDirectory & "\Defaults")
-        Assembler.IncludeDirectories.Add(Environment.CurrentDirectory & "\Maps")
+        Assembler.IncludeDirectories.Add(Path)
+        Assembler.IncludeDirectories.Add(Path & "\Images")
+        Assembler.IncludeDirectories.Add(Path & "\Defaults")
+        Assembler.IncludeDirectories.Add(Path & "\Maps")
         Assembler.Assemble("#include ""objectdef.inc""")
         Dim StdOutput = Assembler.StdOut.ReadAll()
 

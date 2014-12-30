@@ -257,6 +257,9 @@ Namespace ValueConverters
             If Scenario Is Nothing Then Return Nothing
 
             Dim Index As Integer = values(1)
+            If Index > Scenario.Images.Count Then
+                Return Nothing
+            End If
 
             Return Scenario.Images(Index).Image
         End Function

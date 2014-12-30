@@ -98,7 +98,8 @@
             <DockPanel Panel.ZIndex="1">
                 <Menu DockPanel.Dock="Top" Name="MainMenu" Height="20" Panel.ZIndex="1">
                     <MenuItem Header="_File">
-                        <MenuItem Name="OpenScenario" Header="_Open"/>
+                        <MenuItem Name="NewScenario" Header="_New" Click="NewScenario_Click" />
+                        <MenuItem Name="OpenScenario" Header="_Open" Click="OpenScenario_Click"/>
                         <MenuItem Header="_Save" Click="Save_Click"/>
                         <MenuItem Header="E_xit" />
                     </MenuItem>
@@ -138,7 +139,7 @@
                         <DropShadowEffect Direction="270" Opacity="0.25" ShadowDepth="5" />
                     </WrapPanel.Effect>
                     <ToolBar DockPanel.Dock="top" ToolBarTray.IsLocked="True" Name="MainToolBar" Height="26">
-                        <Button>
+                        <Button Click="OpenScenario_Click">
                             <Image Source="Toolbar/open.bmp" OpacityMask="#A8E61D"/>
                         </Button>
                         <Button Name="Button1" Click="Save_Click">

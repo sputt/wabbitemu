@@ -29,7 +29,7 @@ Public Class MainWindow
 
         If ZeldaFolder IsNot Nothing Then
             Dim HillScenario As New Scenario
-            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "hill.asm"))
+            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\overworld.asm"))
             Model.Scenario = HillScenario
         End If
     End Sub
@@ -180,12 +180,23 @@ Public Class MainWindow
     End Sub
 
     Private Async Sub OpenScenario_Click(sender As Object, e As RoutedEventArgs)
-        Dim dlg As New Windows.Forms.FolderBrowserDialog
+        Dim dlg As New Windows.Forms.OpenFileDialog
         If dlg.ShowDialog() = Forms.DialogResult.OK Then
-            ZeldaFolder = dlg.SelectedPath
-            Dim HillScenario As New Scenario
-            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "hill.asm"))
-            Model.Scenario = HillScenario
+            ZeldaFolder = Path.GetDirectoryName(Path.GetDirectoryName(dlg.FileName))
+
+            Dim Scenario As New Scenario
+            Await Scenario.LoadScenario(dlg.FileName)
+            Model.Scenario = Scenario
+        End If
+    End Sub
+
+    Private Sub NewScenario_Click(sender As Object, e As RoutedEventArgs)
+        Dim dlg As New Windows.Forms.OpenFileDialog
+        If dlg.ShowDialog() = Forms.DialogResult.OK Then
+            ZeldaFolder = Path.GetDirectoryName(dlg.FileName)
+
+            Dim Scenario As New Scenario
+            Model.Scenario = Scenario
         End If
     End Sub
 

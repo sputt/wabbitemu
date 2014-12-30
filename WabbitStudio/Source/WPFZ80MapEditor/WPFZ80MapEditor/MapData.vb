@@ -175,8 +175,9 @@ Public Class MapData
         Initialize(newScenario, newTileset)
     End Sub
 
-    Public Sub New(Data As IEnumerable(Of Byte), newScenario As Scenario, newTileset As Integer)
-        TileData = New ObservableCollection(Of Byte)(MapCompressor.Decompress(Data))
+    Public Sub New(Data As IEnumerable(Of Byte), newScenario As Scenario, newTileset As Integer, isCompressed As Boolean)
+
+        TileData = New ObservableCollection(Of Byte)(If(isCompressed, MapCompressor.Decompress(Data), Data))
         Initialize(newScenario, newTileset)
     End Sub
 
