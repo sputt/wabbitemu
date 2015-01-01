@@ -98,6 +98,7 @@ Public Class Scenario
         Tilesets.Add(New Tileset("dungeon", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\dungeon.bmp")))
         Tilesets.Add(New Tileset("town", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\town.bmp")))
         Tilesets.Add(New Tileset("graveyard", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\graveyard.bmp")))
+        Tilesets.Add(New Tileset("cave", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\cave.bmp")))
 
         Log("Starting SPASM")
         SPASMHelper.Initialize(MainWindow.ZeldaFolder)
@@ -380,12 +381,14 @@ Public Class Scenario
         Stream.WriteLine("#define INCLUDE_DEFAULTS")
         Stream.WriteLine("#define INCLUDE_MAPS_TABLE")
         Stream.WriteLine("#define INCLUDE_DEFAULTS_TABLE")
+        Stream.WriteLine("#define INCLUDE_TILESET_TABLE")
         Stream.WriteLine("#define INCLUDE_MAP_HIERARCHY")
         Stream.WriteLine("#endif")
 
         Dim MapHierarchy As New MapHierarchy
         Dim DefaultsTable As String = ""
         Dim MapsTable As String = ""
+        Dim TilesetTable As New List(Of String)
 
         Dim MapIndex As Integer = 0
         For Each MapData In Maps.ToList().Where(Function(m) m.Exists)
@@ -437,6 +440,8 @@ Public Class Scenario
                 Stream.WriteLine(vbTab & Misc.ToMacro())
             Next
 
+            TilesetTable.Add(MapPrefix & "_TILESET")
+
             Stream.WriteLine("end_section()")
             Stream.WriteLine("#endif")
             Stream.WriteLine("")
@@ -461,10 +466,20 @@ Public Class Scenario
 
         Stream.WriteLine("")
 
+        Stream.WriteLine("#ifdef INCLUDE_TILESET_TABLE")
+        For Each tileset In TilesetTable
+            Stream.Write(vbTab & ".db " & tileset & vbCrLf)
+        Next
+        Stream.WriteLine("#endif")
+
+        Stream.WriteLine("")
+
+
         Stream.WriteLine("#undefine INCLUDE_MAPS")
         Stream.WriteLine("#undefine INCLUDE_DEFAULTS")
         Stream.WriteLine("#undefine INCLUDE_MAPS_TABLE")
         Stream.WriteLine("#undefine INCLUDE_DEFAULTS_TABLE")
+        Stream.WriteLine("#undefine INCLUDE_TILESET_TABLE")
         Stream.WriteLine("#undefine INCLUDE_MAP_HIERARCHY")
 
         Stream.Close()
