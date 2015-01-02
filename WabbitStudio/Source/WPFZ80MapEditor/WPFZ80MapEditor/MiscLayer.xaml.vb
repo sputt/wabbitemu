@@ -34,20 +34,6 @@
 
     Private _IsActive As Boolean
 
-    Public Sub New()
-
-        ' This call is required by the designer.
-        InitializeComponent()
-
-        ' Add any initialization after the InitializeComponent() call.
-        Height = LayerContainer.TileSize.Height * LayerContainer.MapSize.Height
-        Width = LayerContainer.TileSize.Width * LayerContainer.MapSize.Width
-    End Sub
-
-    Public Sub DeselectAll() Implements IMapLayer.DeselectAll
-        ItemsControl.SelectedItem = Nothing
-    End Sub
-
     Private Sub UserControl_MouseDown(sender As Object, e As MouseButtonEventArgs)
         If e.ChangedButton = MouseButton.Left Then
             DeselectAll()
@@ -89,10 +75,10 @@
             Dim CurPoint As Point = e.GetPosition(Me)
             Dim DragDelta = CurPoint - _StartDrag
 
-            Dim NewX = MiscLayer.GetLeft(ItemsControl.SelectedValue) + DragDelta.X
-            Dim NewY = MiscLayer.GetTop(ItemsControl.SelectedValue) + DragDelta.Y
+            'Dim NewX = MiscLayer.GetLeft(ItemsControl.SelectedValue) + DragDelta.X
+            'Dim NewY = MiscLayer.GetTop(ItemsControl.SelectedValue) + DragDelta.Y
 
-            ItemsControl.SelectedValue.UpdatePosition(NewX, NewY, False)
+            'ItemsControl.SelectedValue.UpdatePosition(NewX, NewY, False)
 
             SetValue(SelectionOpacityProperty, 0.25)
 
@@ -140,10 +126,9 @@
     '    End If
     'End Sub
 
-    Public ReadOnly Property LayerType As LayerType Implements IMapLayer.LayerType
+    Public Overrides ReadOnly Property LayerType As LayerType
         Get
             Return WPFZ80MapEditor.LayerType.MiscLayer
-
         End Get
     End Property
 End Class

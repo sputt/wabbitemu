@@ -29,7 +29,7 @@ Public Class MainWindow
 
         If ZeldaFolder IsNot Nothing Then
             Dim HillScenario As New Scenario
-            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\overworld.asm"))
+            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\hill.asm"))
             Model.Scenario = HillScenario
         End If
     End Sub
@@ -221,9 +221,6 @@ Public Class MainWindow
 
     Private Sub RadioMapSet_Click(sender As Object, e As RoutedEventArgs)
         If sender.tag IsNot Nothing Then
-            Model.SelectedMap = Nothing
-
-            'Dim result = VisualStateManager.GoToState(Me, sender.Tag.ToString, True)
             Model.CurrentLayer = sender.Tag
         End If
     End Sub

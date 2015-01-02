@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="MiscLayer"
+﻿<local:MapLayer x:Class="MiscLayer"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -10,9 +10,10 @@
              d:DesignHeight="256" d:DesignWidth="256"
              Background="#01FFFFFF"
              AllowDrop="True" MouseDown="UserControl_MouseDown"
-             Name="MiscLayerControl"
+                x:Name="MiscLayerControl"
              >
     <UserControl.Resources>
+        <local:LayerType x:Key="LayerType">MiscLayer</local:LayerType>
         <ControlTemplate x:Key="NoScroll">
             <ItemsPresenter></ItemsPresenter>
         </ControlTemplate>
@@ -95,7 +96,7 @@
                                         <local:ResizeThumb Width="2" Cursor="SizeWE" Margin="-2 0 0 0"
            VerticalAlignment="Stretch" HorizontalAlignment="Left"/>
                                         <local:ResizeThumb Width="2" Cursor="SizeWE" Margin="0 0 -2 0"
-           VerticalAlignment="Stretch" HorizontalAlignment="Right" Background="Blue"/>
+           VerticalAlignment="Stretch" HorizontalAlignment="Right" Background="{StaticResource SelectionBrush}"/>
                                         <local:ResizeThumb Height="2" Cursor="SizeNS" Margin="0 0 0 -2"
            VerticalAlignment="Bottom"  HorizontalAlignment="Stretch"/>
                                         <local:ResizeThumb Width="2" Height="2" Cursor="SizeNWSE" Margin="-2 -2 0 0"
@@ -122,4 +123,4 @@
             </ItemsControl.ItemContainerStyle>
         </ListBox>
     </Grid>
-</UserControl>
+</local:MapLayer>
