@@ -1,6 +1,12 @@
 ﻿Public Class XObjectLayer
     Inherits MapLayer
 
+    Private ReadOnly Property Map As MapData
+        Get
+            Return DirectCast(DataContext, MapData)
+        End Get
+    End Property
+
     Public Property Tint As Color
         Get
             Return GetValue(TintProperty)
@@ -29,6 +35,8 @@
         If sender.CaptureMouse() Then
             SelectionRect.Visibility = Windows.Visibility.Visible
             'DeselectAll()
+            ObjectListBox.Focus()
+
             e.Handled = True
         End If
     End Sub
@@ -91,6 +99,46 @@
     End Sub
 #End Region
 
+    Private _StartObjectDrag As New Point
+
+    Private Sub ItemContainer_MouseLeftButtonDown(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
+        Debug.Print("FUCK YOU!")
+        _StartObjectDrag = Mouse.GetPosition(ObjectCanvas)
+        ObjectListBox.SelectedItem = sender.Content
+        For Each ZObj As ZObject In ObjectListBox.SelectedItems
+            ZObj.PreviousVersion = ZObj.Clone
+        Next
+        If sender.CaptureMouse() Then
+            e.Handled = True
+        End If
+    End Sub
+
+    Private Sub ItemContainer_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs)
+        If Mouse.Captured Is sender Then
+            Dim CurPoint = Mouse.GetPosition(ObjectCanvas)
+            Dim Diff = CurPoint - _StartObjectDrag
+
+            For Each ZObj As ZObject In ObjectListBox.SelectedItems
+                Dim StartX = SPASMHelper.Eval(ZObj.PreviousVersion.Args(0).Value)
+                Dim StartY = SPASMHelper.Eval(ZObj.PreviousVersion.Args(1).Value)
+
+                ZObj.Args(0).Value = CInt(Math.Round(StartX + Diff.X))
+                ZObj.Args(1).Value = CInt(Math.Round(StartY + Diff.Y))
+            Next
+
+            e.Handled = True
+        End If
+    End Sub
+
+
+    Private Sub ItemContainer_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
+        If Mouse.Captured Is sender Then
+            sender.ReleaseMouseCapture()
+
+            Debug.Print("DONE DRAGGING")
+        End If
+    End Sub
+
     Public Overrides Sub DeselectAll()
 
     End Sub
@@ -100,4 +148,20 @@
             Return LayerType.ObjectLayer
         End Get
     End Property
+
+    Private Sub UserControl_MouseDoubleClick(sender As Object, e As MouseButtonEventArgs)
+        Dim Frm = New ObjectProperties()
+        Frm.Owner = Window.GetWindow(Me)
+
+        Dim Map As MapData = Me.DataContext
+
+        Dim ObjClone As ZObject = ObjectListBox.SelectedItem.Clone
+        Frm.DataContext = ObjClone
+        If Frm.ShowDialog() = True Then
+            'ObjClone.UpdatePosition(ObjClone.Args(0).Value, ObjClone.Args(1).Value)
+            Map.ZObjects(ObjectListBox.SelectedIndex) = ObjClone
+            ObjectListBox.SelectedItem = ObjClone
+        End If
+        Mouse.Capture(Nothing)
+    End Sub
 End Class

@@ -59,8 +59,7 @@ Public Structure AZMisc
     Public Aux As UShort
 End Structure
 
-Public Interface IGeneralObject(Of ZBase)
-    Sub FromStruct(Obj As ZBase)
+Public Interface IBaseGeneralObject
     Property Definition As ZDef
     Property Args As ArgsCollection
     Property Name As String
@@ -71,11 +70,22 @@ Public Interface IGeneralObject(Of ZBase)
     Property H As Byte
     Property Z As Byte
     Property D As Byte
+
+    Sub UpdatePosition(X As Double, Y As Double, Optional Assemble As Boolean = True, Optional UpdateArgs As Boolean = True)
+End Interface
+
+Public Interface IGeneralObject(Of ZBase)
+    Inherits IBaseGeneralObject
+
+    Sub FromStruct(Obj As ZBase)
 End Interface
 
 Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)})
     Implements IGeneralObject(Of ZBase)
     Implements ICloneable
+    Implements INotifyPropertyChanged
+
+    Public Property PreviousVersion As ZBaseObject(Of ZBase, Base)
 
     Protected _Name As String
 
@@ -152,7 +162,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Return ZObj
     End Function
 
-    Public Sub UpdatePosition(X As Double, Y As Double, Optional Assemble As Boolean = True)
+    Public Sub UpdatePosition(X As Double, Y As Double, Optional Assemble As Boolean = True, Optional UpdateArgs As Boolean = True) Implements IBaseGeneralObject.UpdatePosition
         X = Math.Min(255.0, Math.Max(0.0, X))
         Y = Math.Min(255.0, Math.Max(0.0, Y))
         If Assemble Then
@@ -161,13 +171,17 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
             NewArgs.InsertRange(0, {CByte(X), CByte(Y)})
             ZType.FromMacro(_Name, NewArgs.Cast(Of Object), Obj)
             FromStruct(Obj)
-            Args(0).Value = CInt(Me.X)
-            Args(1).Value = CInt(Me.Y)
+            If UpdateArgs Then
+                Args(0).Value = CInt(Me.X)
+                Args(1).Value = CInt(Me.Y)
+            End If
         Else
             Me.X = X
             Me.Y = Y
-            Args(0).Value = CInt(Math.Round(X))
-            Args(1).Value = CInt(Math.Round(Y))
+            If UpdateArgs Then
+                Args(0).Value = CInt(Math.Round(X))
+                Args(1).Value = CInt(Math.Round(Y))
+            End If
         End If
     End Sub
 
@@ -189,6 +203,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Definition = Def
         _Name = Def.Macro
         Me.Args = Def.Args.Clone
+        Me.Args.Base = Me
         For i = 0 To Args.Count - 1
             Me.Args(i).Value = Args(i).ToString().ToUpper()
         Next
@@ -204,9 +219,38 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         FromStruct(Obj)
     End Sub
 
+    Private _X As Byte
     Public Property X As Byte Implements IGeneralObject(Of ZBase).X
+        Get
+            Return _X
+        End Get
+        Set(value As Byte)
+            _X = value
+            RaisePropertyChanged("X")
+        End Set
+    End Property
+
+    Private _Y As Byte
     Public Property Y As Byte Implements IGeneralObject(Of ZBase).Y
+        Get
+            Return _Y
+        End Get
+        Set(value As Byte)
+            _Y = value
+            RaisePropertyChanged("Y")
+        End Set
+    End Property
+
+    Private _Z As Byte
     Public Property Z As Byte Implements IGeneralObject(Of ZBase).Z
+        Get
+            Return _Z
+        End Get
+        Set(value As Byte)
+            _Z = value
+            RaisePropertyChanged("Z")
+        End Set
+    End Property
 
 
     Public Property W As Byte Implements IGeneralObject(Of ZBase).W
@@ -230,6 +274,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Copy.Name = _Name
         Copy.Definition = Definition
         Copy.Args = Args.Clone
+        Copy.Args.Base = Copy
         Copy.Image = Image
         With Copy
             .X = X : .W = W
@@ -238,15 +283,44 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         End With
         Return Copy
     End Function
+
+    Private Sub RaisePropertyChanged(PropName As String)
+        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropName))
+    End Sub
+
+    Public Event PropertyChanged(sender As Object, e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
 End Class
 
 #Region "Args collection and types"
 Public Class ArgsCollection
-    Inherits ObservableCollection(Of Object)
+    Inherits ObservableCollection(Of ZDefArg)
     Implements ICloneable
 
+    Private _Base As IBaseGeneralObject
+    Public Property Base As IBaseGeneralObject
+        Get
+            Return _Base
+        End Get
+        Set(value As IBaseGeneralObject)
+            _Base = value
+            Me.ToList().ForEach(Sub(m) m.Base = value)
+        End Set
+    End Property
+
+
+    Public Sub New(Base As IBaseGeneralObject)
+        Me.Base = Base
+    End Sub
+
+    Protected Overrides Sub InsertItem(Index As Integer, Item As ZDefArg)
+        If TypeOf Item Is ZDefArg Then
+            DirectCast(Item, ZDefArg).Base = Base
+        End If
+        MyBase.InsertItem(Index, Item)
+    End Sub
+
     Public Function Clone() As Object Implements System.ICloneable.Clone
-        Dim Copy As New ArgsCollection
+        Dim Copy As New ArgsCollection(Base)
         For Each Elem In Me
             Copy.Add(Elem.Clone)
         Next
@@ -365,11 +439,38 @@ Public Class ZDefArg
     'Public Shared ReadOnly DescriptionProperty = DependencyProperty.Register("Description", GetType(String), GetType(ZDefArg))
     'Public Shared ReadOnly ValueProperty = DependencyProperty.Register("Value", GetType(String), GetType(ZDefArg))
 
+    Public Property Base As IBaseGeneralObject
+
     Public IsOptional As Boolean
 
     Public Property Name As String
     Public Property Description As String
+
+    Private _Value As String
     Public Property Value As String
+        Get
+            Return _Value
+        End Get
+        Set(value As String)
+            If _Value <> value Then
+                _Value = value
+
+                If Base IsNot Nothing AndAlso _Value IsNot Nothing Then
+                    Dim Pos As Byte = SPASMHelper.Eval(_Value)
+                    Select Case Name
+                        Case "X"
+                            If Base.X <> Pos Then
+                                Base.UpdatePosition(Pos, Base.Y, UpdateArgs:=False)
+                            End If
+                        Case "Y"
+                            If Base.Y <> Pos Then
+                                Base.UpdatePosition(Base.X, Pos, UpdateArgs:=False)
+                            End If
+                    End Select
+                End If
+            End If
+        End Set
+    End Property
 
     Public Sub New(Name As String, Description As String)
         Me.Name = Name
@@ -377,11 +478,11 @@ Public Class ZDefArg
     End Sub
 
     Public Sub New()
-
     End Sub
 
     Public Function Clone() As Object Implements System.ICloneable.Clone
         Dim Copy As New ZDefArg(Name, Description)
+        Copy.Base = Base
         Copy.Value = Value
         Return Copy
     End Function
@@ -407,7 +508,7 @@ Public Class ZDef
         Me.Name = Name
         Me.Macro = Macro
         Me.Description = Description
-        Args = New ArgsCollection
+        Args = New ArgsCollection(Nothing)
 
         Dim M = ObjType.BaseType.GetMethod("FromMacro")
 

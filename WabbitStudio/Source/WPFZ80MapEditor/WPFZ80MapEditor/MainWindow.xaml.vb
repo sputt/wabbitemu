@@ -29,7 +29,7 @@ Public Class MainWindow
 
         If ZeldaFolder IsNot Nothing Then
             Dim HillScenario As New Scenario
-            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\hill.asm"))
+            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\forest.asm"))
             Model.Scenario = HillScenario
         End If
     End Sub
