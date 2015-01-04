@@ -225,8 +225,10 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
             Return _X
         End Get
         Set(value As Byte)
-            _X = value
-            RaisePropertyChanged("X")
+            If value <> _X Then
+                _X = value
+                RaisePropertyChanged("X")
+            End If
         End Set
     End Property
 
@@ -236,8 +238,10 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
             Return _Y
         End Get
         Set(value As Byte)
-            _Y = value
-            RaisePropertyChanged("Y")
+            If value <> _Y Then
+                _Y = value
+                RaisePropertyChanged("Y")
+            End If
         End Set
     End Property
 
@@ -247,15 +251,52 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
             Return _Z
         End Get
         Set(value As Byte)
-            _Z = value
-            RaisePropertyChanged("Z")
+            If value <> _Z Then
+                _Z = value
+                RaisePropertyChanged("Z")
+            End If
         End Set
     End Property
 
 
+    Private _W As Byte
     Public Property W As Byte Implements IGeneralObject(Of ZBase).W
+        Get
+            Return _W
+        End Get
+        Set(value As Byte)
+            If value <> _W Then
+                _W = value
+                RaisePropertyChanged("W")
+            End If
+        End Set
+    End Property
+
+    Private _H As Byte
     Public Property H As Byte Implements IGeneralObject(Of ZBase).H
+        Get
+            Return _H
+        End Get
+        Set(value As Byte)
+            If value <> _H Then
+                _H = value
+                RaisePropertyChanged("H")
+            End If
+        End Set
+    End Property
+
+    Private _D As Byte
     Public Property D As Byte Implements IGeneralObject(Of ZBase).D
+        Get
+            Return _D
+        End Get
+        Set(value As Byte)
+            If value <> _D Then
+                _D = value
+                RaisePropertyChanged("D")
+            End If
+        End Set
+    End Property
 
     Public ReadOnly Property Bounds As Rect
         Get
@@ -263,7 +304,18 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         End Get
     End Property
 
+    Private _Image As Integer
     Public Property Image As Integer Implements IGeneralObject(Of ZBase).Image
+        Get
+            Return _Image
+        End Get
+        Set(value As Integer)
+            If value <> _Image Then
+                _Image = value
+                RaisePropertyChanged("Image")
+            End If
+        End Set
+    End Property
 
     Sub Move(Dx As Integer, Dy As Integer, Optional Dz As Integer = 0)
         X += Dx : Y += Dy : Z += Dz
@@ -335,7 +387,7 @@ Public Class ZDefArgGenState
         MyBase.New(Name, Description)
     End Sub
 
-    Public Overloads Function Clone() As Object
+    Public Overrides Function Clone() As Object
         Dim Copy As New ZDefArgGenState(Name, Description)
         Copy.Value = Value
         Return Copy
@@ -352,7 +404,7 @@ Public Class ZDefArgGraphic
         Me.Graphics = Graphics
     End Sub
 
-    Public Overloads Function Clone() As Object
+    Public Overrides Function Clone() As Object
         Dim Copy As New ZDefArgGraphic(Name, Description, Graphics)
         Copy.Value = Value
         Copy.Graphics = Graphics
@@ -363,24 +415,23 @@ End Class
 Public Class ZDefArgObjectID
     Inherits ZDefArg
 
-    'Public Shared ReadOnly ObjectIDsProperty = DependencyProperty.Register("ObjectIDs", GetType(IEnumerable(Of String)), GetType(ZDefArg))
-
-    Public ObjectIDs As IEnumerable(Of String)
+    Public Property ObjectIDs As IEnumerable(Of String)
 
     Public Sub New(Name As String, Description As String)
         MyBase.New(Name, Description)
         Dim ObjectIDs As New List(Of String)
 
         For Each Label In SPASMHelper.Labels
-            If Char.ToUpper(Label.Key.Chars(0)) = "K" And Label.Value < &H4000 Then
+            If Char.ToUpper(Label.Key.Chars(0)) = "K" And Label.Value < &H4000 And Not Label.Key.Contains("_GFX") Then
                 ObjectIDs.Add(Label.Key)
             End If
         Next
 
         ObjectIDs.Sort()
+        Me.ObjectIDs = ObjectIDs
     End Sub
 
-    Public Overloads Function Clone() As Object
+    Public Overrides Function Clone() As Object
         Dim Copy As New ZDefArgObjectID(Name, Description)
         Copy.Value = Value
         Copy.ObjectIDs = ObjectIDs
@@ -396,7 +447,7 @@ Public Class ZDefArgObjectFlags
         Me.Value = "0"
     End Sub
 
-    Public Overloads Function Clone() As Object
+    Public Overrides Function Clone() As Object
         Dim Copy As New ZDefArgObjectFlags(Name, Description)
         Copy.Value = Value
         Return Copy
@@ -411,7 +462,7 @@ Public Class ZDefArgEnemyFlags
         Me.Value = "0"
     End Sub
 
-    Public Overloads Function Clone() As Object
+    Public Overrides Function Clone() As Object
         Dim Copy As New ZDefArgEnemyFlags(Name, Description)
         Copy.Value = Value
         Return Copy
@@ -425,7 +476,7 @@ Public Class ZDefArg8Bit
         MyBase.New(Name, Description)
     End Sub
 
-    Public Overloads Function Clone() As Object
+    Public Overrides Function Clone() As Object
         Dim Copy As New ZDefArg8Bit(Name, Description)
         Copy.Value = Value
         Return Copy
@@ -434,10 +485,6 @@ End Class
 
 Public Class ZDefArg
     Implements ICloneable
-
-    'Public Shared ReadOnly NameProperty = DependencyProperty.Register("Name", GetType(String), GetType(ZDefArg))
-    'Public Shared ReadOnly DescriptionProperty = DependencyProperty.Register("Description", GetType(String), GetType(ZDefArg))
-    'Public Shared ReadOnly ValueProperty = DependencyProperty.Register("Value", GetType(String), GetType(ZDefArg))
 
     Public Property Base As IBaseGeneralObject
 
@@ -455,8 +502,8 @@ Public Class ZDefArg
             If _Value <> value Then
                 _Value = value
 
-                If Base IsNot Nothing AndAlso _Value IsNot Nothing Then
-                    Dim Pos As Byte = SPASMHelper.Eval(_Value)
+                If Base IsNot Nothing AndAlso _Value IsNot Nothing AndAlso _Value <> "" Then
+                    Dim Pos As Byte = Math.Max(0, Math.Min(255, SPASMHelper.Eval(_Value)))
                     Select Case Name
                         Case "X"
                             If Base.X <> Pos Then
@@ -480,7 +527,7 @@ Public Class ZDefArg
     Public Sub New()
     End Sub
 
-    Public Function Clone() As Object Implements System.ICloneable.Clone
+    Public Overridable Function Clone() As Object Implements System.ICloneable.Clone
         Dim Copy As New ZDefArg(Name, Description)
         Copy.Base = Base
         Copy.Value = Value
@@ -526,8 +573,8 @@ Public Class ZDef
     End Sub
 
     Public Sub AddArg(Name As String, Description As String, images As ObservableCollection(Of ZeldaImage), Optional IsOptional As Boolean = False)
-        Dim NewArg As Object
-        Select Case Name
+        Dim NewArg As ZDefArg
+        Select Case Name.ToLower
             Case "x", "y", "z", "w", "h", "d", "ac", "cc"
                 NewArg = New ZDefArg8Bit(Name, Description)
             Case "of"

@@ -10,43 +10,7 @@ Public Class Scenario
 
     Public ScenarioName As String
 
-    Public ActiveLayerType As System.Type
-
-    Private _MapCount As Integer
-
-    'Public Shared ReadOnly ImagesProperty As DependencyProperty =
-    '    DependencyProperty.Register("Images", GetType(ObservableCollection(Of ZeldaImage)), GetType(Scenario),
-    '    New PropertyMetadata(New ObservableCollection(Of ZeldaImage)))
-    'Public Shared ReadOnly AnimDefsProperty As DependencyProperty =
-    '    DependencyProperty.Register("AnimDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
-    '    New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
-    'Public Shared ReadOnly ObjectDefsProperty As DependencyProperty =
-    '    DependencyProperty.Register("ObjectDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
-    '    New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
-    'Public Shared ReadOnly EnemyDefsProperty As DependencyProperty =
-    '    DependencyProperty.Register("EnemyDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
-    '    New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
-    'Public Shared ReadOnly MiscDefsProperty As DependencyProperty =
-    '    DependencyProperty.Register("MiscDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
-    '    New PropertyMetadata(New ObservableDictionary(Of String, ZDef)))
-
-    'Public Shared ReadOnly TilesetsProperty As DependencyProperty =
-    '    DependencyProperty.Register("Tilesets", GetType(ObservableCollection(Of Tileset)), GetType(Scenario))
-
-    '' Player starting position and map
-    'Public Shared ReadOnly StartXProperty As DependencyProperty =
-    '    DependencyProperty.Register("StartX", GetType(Byte), GetType(Scenario))
-    'Public Shared ReadOnly StartYProperty As DependencyProperty =
-    '    DependencyProperty.Register("StartY", GetType(Byte), GetType(Scenario))
-    'Public Shared ReadOnly StartMapIndexProperty As DependencyProperty =
-    '    DependencyProperty.Register("StartMapIndex", GetType(Integer), GetType(Scenario))
-    'Public Shared ReadOnly MapsProperty As DependencyProperty = _
-    '                   DependencyProperty.Register("Maps", _
-    '                   GetType(ObservableCollection(Of MapData)), GetType(Scenario), _
-    '                   New PropertyMetadata(New ObservableCollection(Of MapData)()))
-
     Private _Maps As New ObservableCollection(Of MapData)
-
     Public Property Maps As ObservableCollection(Of MapData)
         Get
             Return _Maps
@@ -60,32 +24,11 @@ Public Class Scenario
     End Property
 
     Public Property Images As New ObservableCollection(Of ZeldaImage)
-
     Public Property AnimDefs As New ObservableDictionary(Of String, ZDef)
     Public Property ObjectDefs As New ObservableDictionary(Of String, ZDef)
     Public Property EnemyDefs As New ObservableDictionary(Of String, ZDef)
     Public Property MiscDefs As New ObservableDictionary(Of String, ZDef)
-
-
     Public Property Tilesets As New ObservableCollection(Of Tileset)
-
-
-    'Public ReadOnly Property AllDefs As Collection(Of ZDef)
-    '    Get
-    '        Return ObjectDefs.Values.Union(EnemyDefs.Values).Union(MiscDefs.Values).Union(AnimDefs.Values)
-    '    End Get
-    'End Property
-
-    Public ReadOnly Property ActiveLayer As IMapLayer
-        Get
-            'Return (From containers As MapContainer In MainWindow.Instance.LayerContainer.Children
-            '        From m As IMapLayer In containers.Children
-            '        Where m.GetType() = ActiveLayerType
-            '        Select m).First()
-            Return Nothing
-        End Get
-    End Property
-
 
     Private _FileName As String
 
@@ -160,7 +103,6 @@ Public Class Scenario
 
         Dim MaxX = -1
         Dim MaxY = -1
-        _MapCount = 0
         Dim CurShiftX = 0, CurShiftY = 0
 
         For Each Label In SPASMHelper.Labels.Keys

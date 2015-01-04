@@ -185,7 +185,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate DataType="{x:Type local:ZDefArg}">
+        <!--<DataTemplate DataType="{x:Type local:ZDefArg}">
             <StackPanel Orientation="Horizontal" Height="31">
                 <StackPanel Orientation="Horizontal" Width="125">
                     <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
@@ -193,7 +193,7 @@
                 </StackPanel>
                 <TextBox Text="{Binding Path=Value}" Margin="10,0,0,0" Height="23" Width="40" Tag="ObjProp"/>
             </StackPanel>
-        </DataTemplate>
+        </DataTemplate>-->
     </Window.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>

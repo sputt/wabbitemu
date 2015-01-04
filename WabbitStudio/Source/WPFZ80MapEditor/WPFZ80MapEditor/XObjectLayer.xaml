@@ -147,9 +147,9 @@
                     </Setter>
                     <Setter Property="Template" Value="{StaticResource ObjectTemplate}"/>
                     
-                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ItemContainer_MouseLeftButtonDown"/>
+                    <!--<EventSetter Event="PreviewMouseLeftButtonDown" Handler="ItemContainer_MouseLeftButtonDown"/>
                     <EventSetter Event="MouseMove" Handler="ItemContainer_MouseMove"/>
-                    <EventSetter Event="MouseLeftButtonUp" Handler="ItemContainer_MouseLeftButtonUp"/>
+                    <EventSetter Event="MouseLeftButtonUp" Handler="ItemContainer_MouseLeftButtonUp"/>-->
                     
                     <Style.Triggers>
                         <Trigger Property="IsSelected" Value="True">

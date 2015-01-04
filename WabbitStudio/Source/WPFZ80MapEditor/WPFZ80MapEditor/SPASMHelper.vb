@@ -27,11 +27,17 @@ Public Class SPASMHelper
     End Sub
 
     Public Shared Function Eval(ByVal Expr As String) As Integer
-        If Expr Is Nothing Then
+        If Expr Is Nothing Or Expr = "" Then
             Expr = "0"
         End If
-        Dim Bytes = Assemble(".dw " & Expr)
-        Return CInt(BitConverter.ToUInt16(Bytes, 0))
+
+        Dim Result As Integer
+        If Integer.TryParse(Expr, Result) Then
+            Return Result
+        Else
+            Dim Bytes = Assemble(".dw " & Expr)
+            Return CInt(BitConverter.ToUInt16(Bytes, 0))
+        End If
     End Function
 
     Private Shared Sub Log(LogStr As String)
