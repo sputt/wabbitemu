@@ -66,14 +66,14 @@ Public Class ResizeThumb
                 MiscHeight += VDelta
             ElseIf VerticalAlignment = Windows.VerticalAlignment.Top Then
                 MiscHeight -= VDelta
-                Misc.UpdatePosition(Misc.X, Y + VDelta, False)
+                Misc.UpdatePosition(Misc.X, Y + VDelta)
             End If
 
             If HorizontalAlignment = Windows.HorizontalAlignment.Right Then
                 MiscWidth += HDelta
             ElseIf HorizontalAlignment = Windows.HorizontalAlignment.Left Then
                 MiscWidth -= HDelta
-                Misc.UpdatePosition(X + HDelta, Misc.Y, False)
+                Misc.UpdatePosition(X + HDelta, Misc.Y)
             End If
 
             Misc.Args(2).Value = Math.Round(MiscWidth)

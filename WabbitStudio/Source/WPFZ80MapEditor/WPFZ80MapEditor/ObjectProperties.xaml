@@ -8,7 +8,7 @@
              mc:Ignorable="d" 
         Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
         Title="{Binding Path=Definition.Name}"
-             d:DesignHeight="382" d:DesignWidth="300" WindowStyle="ToolWindow" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
+             d:DesignHeight="382" d:DesignWidth="300" WindowStyle="ToolWindow" SizeToContent="WidthAndHeight" ResizeMode="NoResize" ShowInTaskbar="False">
     <Window.Resources>
         <localconverters:BitValueConverter x:Key="BitConverter"/>
         <!--<localconverters:GraphicsConverter x:Key="GraphicsConverter"/>-->

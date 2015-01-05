@@ -71,7 +71,8 @@ Public Interface IBaseGeneralObject
     Property Z As Byte
     Property D As Byte
 
-    Sub UpdatePosition(X As Double, Y As Double, Optional Assemble As Boolean = True, Optional UpdateArgs As Boolean = True)
+    Sub Update()
+    Sub UpdatePosition(X As Double, Y As Double)
 End Interface
 
 Public Interface IGeneralObject(Of ZBase)
@@ -105,6 +106,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Dim Result As String = Me._Name
         Result &= "("
         Dim NewArgs = (From a In Args Select a.Value).ToList()
+
         For i = 0 To NewArgs.Count - 1
             Result &= NewArgs(i)
 
@@ -153,6 +155,23 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Return ZObj
     End Function
 
+    Public Shared Function FromDef(Def As ZDef, Args As IEnumerable(Of Object)) As Base
+        Dim Obj As New ZBase
+        ZType.FromMacro(Def.Macro, Args, Obj)
+
+        Dim ZObj = BaseFromZBase(Obj)
+        ZObj.Name = Def.Macro
+        ZObj.Definition = Def
+        ZObj.Args = Def.Args.Clone
+        ZObj.Args.Base = ZObj
+        If ZObj.Args.Count > 0 Then
+            For i = 0 To Args.Count - 1
+                ZObj.Args(i).Value = Args(i)
+            Next
+        End If
+        Return ZObj
+    End Function
+
     Public Shared Function FromData(Data() As Byte) As Base
         Dim h = GCHandle.Alloc(Data, GCHandleType.Pinned)
         Dim Obj As ZBase = Marshal.PtrToStructure(h.AddrOfPinnedObject, GetType(ZBase))
@@ -162,27 +181,15 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Return ZObj
     End Function
 
-    Public Sub UpdatePosition(X As Double, Y As Double, Optional Assemble As Boolean = True, Optional UpdateArgs As Boolean = True) Implements IBaseGeneralObject.UpdatePosition
-        X = Math.Min(255.0, Math.Max(0.0, X))
-        Y = Math.Min(255.0, Math.Max(0.0, Y))
-        If Assemble Then
-            Dim Obj As New ZBase
-            Dim NewArgs = (From a In Args Select a.Value).Skip(2).ToList()
-            NewArgs.InsertRange(0, {CByte(X), CByte(Y)})
-            ZType.FromMacro(_Name, NewArgs.Cast(Of Object), Obj)
-            FromStruct(Obj)
-            If UpdateArgs Then
-                Args(0).Value = CInt(Me.X)
-                Args(1).Value = CInt(Me.Y)
-            End If
-        Else
-            Me.X = X
-            Me.Y = Y
-            If UpdateArgs Then
-                Args(0).Value = CInt(Math.Round(X))
-                Args(1).Value = CInt(Math.Round(Y))
-            End If
-        End If
+    Public Sub Update() Implements IBaseGeneralObject.Update
+        Dim Obj As New ZBase
+        ZType.FromMacro(_Name, Args.ToList().Select(Function(a) a.Value), Obj)
+        FromStruct(Obj)
+    End Sub
+
+    Public Sub UpdatePosition(X As Double, Y As Double) Implements IBaseGeneralObject.UpdatePosition
+        Args(0).Value = CInt(Math.Round(X))
+        Args(1).Value = CInt(Math.Round(Y))
     End Sub
 
     Sub Jump(Dx As Integer, Dy As Integer)
@@ -257,7 +264,6 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
             End If
         End Set
     End Property
-
 
     Private _W As Byte
     Public Property W As Byte Implements IGeneralObject(Of ZBase).W
@@ -499,21 +505,12 @@ Public Class ZDefArg
             Return _Value
         End Get
         Set(value As String)
+            value = Trim(value)
+            If value = "" Then value = Nothing
             If _Value <> value Then
                 _Value = value
-
-                If Base IsNot Nothing AndAlso _Value IsNot Nothing AndAlso _Value <> "" Then
-                    Dim Pos As Byte = Math.Max(0, Math.Min(255, SPASMHelper.Eval(_Value)))
-                    Select Case Name
-                        Case "X"
-                            If Base.X <> Pos Then
-                                Base.UpdatePosition(Pos, Base.Y, UpdateArgs:=False)
-                            End If
-                        Case "Y"
-                            If Base.Y <> Pos Then
-                                Base.UpdatePosition(Base.X, Pos, UpdateArgs:=False)
-                            End If
-                    End Select
+                If Base IsNot Nothing Then
+                    Base.Update()
                 End If
             End If
         End Set
@@ -537,19 +534,14 @@ End Class
 #End Region
 
 Public Class ZDef
-    '    Inherits DependencyObject
-
-    'Public Shared ReadOnly NameProperty = DependencyProperty.Register("Name", GetType(String), GetType(ZDef))
-    'Public Shared ReadOnly MacroProperty = DependencyProperty.Register("Macro", GetType(String), GetType(ZDef))
-    'Public Shared ReadOnly DescriptionProperty = DependencyProperty.Register("Description", GetType(String), GetType(ZDef))
-    'Public Shared ReadOnly ArgsProperty = DependencyProperty.Register("Args", GetType(ArgsCollection), GetType(ZDef))
-    'Public Shared ReadOnly DefaultImageProperty = DependencyProperty.Register("DefaultImage", GetType(Integer), GetType(ZDef))
-
     Public Property Name As String
     Public Property Macro As String
     Public Property Description As String
     Public Property Args As ArgsCollection
     Public Property DefaultImage As Integer
+
+    Public Property DefaultW As Byte
+    Public Property DefaultH As Byte
 
     Public Sub New(Name As String, Macro As String, Description As String, ObjType As Type)
         Me.Name = Name
@@ -570,6 +562,8 @@ Public Class ZDef
         End If
 
         DefaultImage = ObjectInstance.Image
+        DefaultW = ObjectInstance.W
+        DefaultH = ObjectInstance.H
     End Sub
 
     Public Sub AddArg(Name As String, Description As String, images As ObservableCollection(Of ZeldaImage), Optional IsOptional As Boolean = False)
@@ -607,15 +601,26 @@ Class ZType
     End Sub
 
     Public Shared Sub FromMacro(ByVal Name As String, Args As IEnumerable(Of Object), ByRef ZObj As Object)
+        Dim ArgsToTrim = 0
+        For i = Args.Count - 1 To 0 Step -1
+            If Args(i) = Nothing Or (TypeOf Args(i) is String andalso Args(i) = "") Then
+                ArgsToTrim += 1
+            Else
+                Exit For
+            End If
+        Next
+
+        Dim TrimmedArgs = Args.Take(Args.Count - ArgsToTrim)
+
         Dim Macro As String = " " & Name & "("
-        For i = 0 To Args.Count - 1
-            If Args(i) Is Nothing Then
+        For i = 0 To TrimmedArgs.Count - 1
+            If TrimmedArgs(i) Is Nothing Then
                 i = i + 1
                 Macro = Left(Macro, Len(Macro) - 1)
             Else
-                Macro &= Args(i).ToString()
+                Macro &= TrimmedArgs(i).ToString()
             End If
-            If i < Args.Count - 1 Then
+            If i < TrimmedArgs.Count - 1 Then
                 Macro &= ","
             End If
         Next

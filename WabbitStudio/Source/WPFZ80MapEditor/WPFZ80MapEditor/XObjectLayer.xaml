@@ -7,7 +7,7 @@
       xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
              mc:Ignorable="d"
              Width="256" Height="256"
-             d:DesignHeight="300" d:DesignWidth="300" x:Name="ObjectLayer" MouseLeftButtonDown="ObjectCanvas_MouseLeftButtonDown" MouseLeftButtonUp="ObjectCanvas_MouseLeftButtonUp" MouseMove="ObjectCanvas_MouseMove">
+             d:DesignHeight="300" d:DesignWidth="300" x:Name="ObjectLayer" MouseLeftButtonDown="ObjectCanvas_MouseLeftButtonDown" MouseLeftButtonUp="ObjectCanvas_MouseLeftButtonUp" MouseMove="ObjectCanvas_MouseMove" AllowDrop="True" Drop="Object_Drop">
 
     <local:MapLayer.Resources>
         <converters:XImageConverter x:Key="ImageConverter"/>

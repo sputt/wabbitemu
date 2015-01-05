@@ -17,7 +17,7 @@
 
         _owner = owner
         _brush = New VisualBrush(adornElement)
-        _brush.Opacity = 0.5
+        _brush.Opacity = 0.8
         Dim r As New Rectangle()
         r.RadiusX = 3
         r.RadiusY = 3

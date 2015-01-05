@@ -164,4 +164,22 @@
         End If
         Mouse.Capture(Nothing)
     End Sub
+
+    Private Sub Object_Drop(sender As Object, e As DragEventArgs)
+        Dim Pos = e.GetPosition(ObjectListBox)
+        Dim Def As ZDef = e.Data.GetData("WPFZ80MapEditor.ZDef")
+
+        Dim Args As New List(Of Object)
+
+        Dim ImageW = Map.Scenario.Images(Def.DefaultImage).Image.Width
+        Dim ImageH = Map.Scenario.Images(Def.DefaultImage).Image.Height
+
+        Args.Add(CInt(Math.Floor(Pos.X - (Def.DefaultW / 2))))
+        Args.Add(CInt(Math.Floor(Pos.Y + (ImageH / 2) - (Def.DefaultH))))
+        Dim Obj As ZObject = ZObject.FromDef(Def, Args)
+
+
+        Map.ZObjects.Add(Obj)
+        Debug.Print("DROPPING " + Def.Name)
+    End Sub
 End Class
