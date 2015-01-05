@@ -74,9 +74,9 @@ Public Class MainWindow
         Dim clock As Clock = sender
 
         If clock.CurrentState <> ClockState.Active Then
-            'Dim st As ScaleTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is ScaleTransform)
-            'Dim conv = New DoubleToZoomLevelConverter
-            'CurrentZoomLevelItem.Content = conv.Convert(st.ScaleX, GetType(String), Nothing, Nothing)
+            Dim st As ScaleTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is ScaleTransform)
+            Dim conv = New DoubleToZoomLevelConverter
+            CurrentZoomLevelItem.Content = conv.Convert(st.ScaleX, GetType(String), Nothing, Nothing)
         End If
     End Sub
 
@@ -113,57 +113,48 @@ Public Class MainWindow
         End If
     End Sub
 
-    'Private Sub ZoomLevelCombo_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles ZoomLevelCombo.SelectionChanged
-    '    Dim combo As ComboBox = sender
+    Private Sub ZoomLevelCombo_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles ZoomLevelCombo.SelectionChanged
+        Dim combo As ComboBox = sender
 
-    '    Dim newzoom As Double
-    '    Dim sel As String = combo.SelectedItem.Content
-    '    Try
-    '        Dim NumStr As String = sel.Replace("%", "")
-    '        newzoom = Double.Parse(NumStr) / 100.0
-    '    Catch ex As Exception
-    '        Debug.WriteLine(ex)
-    '    End Try
+        Dim newzoom As Double
+        Dim sel As String = combo.SelectedItem.Content
+        Try
+            Dim NumStr As String = sel.Replace("%", "")
+            newzoom = Double.Parse(NumStr) / 100.0
+        Catch ex As Exception
+            Debug.WriteLine(ex)
+        End Try
 
-    '    Try
-    '        If Not LayerContainer Is Nothing AndAlso Not LayerContainer.RenderTransform Is Nothing Then
-    '            Dim tt As TranslateTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is TranslateTransform)
-    '            Dim st As ScaleTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is ScaleTransform)
+        Try
+            If Not LayerContainer Is Nothing AndAlso Not LayerContainer.RenderTransform Is Nothing Then
+                Dim tt As TranslateTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is TranslateTransform)
+                Dim st As ScaleTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is ScaleTransform)
 
-    '            Dim PhysPos As New Point(Background.ActualWidth / 2, Background.ActualHeight / 2)
-    '            Dim MousePos = LayerContainer.RenderTransform.Inverse.Transform(PhysPos)
-    '            tt.BeginAnimation(TranslateTransform.XProperty, CreateZoomAnimation(-1 * (MousePos.X * newzoom - PhysPos.X)), HandoffBehavior.Compose)
-    '            tt.BeginAnimation(TranslateTransform.YProperty, CreateZoomAnimation(-1 * (MousePos.Y * newzoom - PhysPos.Y)), HandoffBehavior.Compose)
+                Dim PhysPos As New Point(MapCanvas.ActualWidth / 2, MapCanvas.ActualHeight / 2)
+                Dim MousePos = LayerContainer.RenderTransform.Inverse.Transform(PhysPos)
+                tt.BeginAnimation(TranslateTransform.XProperty, CreateZoomAnimation(-1 * (MousePos.X * newzoom - PhysPos.X)), HandoffBehavior.Compose)
+                tt.BeginAnimation(TranslateTransform.YProperty, CreateZoomAnimation(-1 * (MousePos.Y * newzoom - PhysPos.Y)), HandoffBehavior.Compose)
 
-    '            st.BeginAnimation(ScaleTransform.ScaleXProperty, CreateZoomAnimation(newzoom), HandoffBehavior.Compose)
-    '            st.BeginAnimation(ScaleTransform.ScaleYProperty, CreateZoomAnimation(newzoom), HandoffBehavior.Compose)
-    '        End If
-    '    Catch ex As Exception
+                st.BeginAnimation(ScaleTransform.ScaleXProperty, CreateZoomAnimation(newzoom), HandoffBehavior.Compose)
+                st.BeginAnimation(ScaleTransform.ScaleYProperty, CreateZoomAnimation(newzoom), HandoffBehavior.Compose)
+            End If
+        Catch ex As Exception
 
-    '    End Try
-    'End Sub
+        End Try
+    End Sub
 
-    'Private Sub ZoomLevelCombo_DropDownClosed(sender As Object, e As EventArgs) Handles ZoomLevelCombo.DropDownClosed
-    '    CurrentZoomLevelItem.ClearValue(HeightProperty)
-    'End Sub
+    Private Sub ZoomLevelCombo_DropDownClosed(sender As Object, e As EventArgs) Handles ZoomLevelCombo.DropDownClosed
+        CurrentZoomLevelItem.ClearValue(HeightProperty)
+    End Sub
 
-    'Private Sub ZoomLevelCombo_DropDownOpened(sender As Object, e As EventArgs) Handles ZoomLevelCombo.DropDownOpened
-    '    CurrentZoomLevelItem.Height = 0
-    'End Sub
-
-    'Private Sub LayerRadioButton_Checked(sender As Object, e As RoutedEventArgs) _
-    '    Handles RadioMapSet.Checked, RadioMapView.Checked, RadioObjectLayer.Checked, RadioMiscLayer.Checked, RadioEnemyLayer.Checked
-    '    If sender.tag IsNot Nothing Then
-    '        Dim result = VisualStateManager.GoToState(Me, sender.Tag, True)
-    '        Debug.WriteLine("Result: " & result)
-    '    End If
-    'End Sub
+    Private Sub ZoomLevelCombo_DropDownOpened(sender As Object, e As EventArgs) Handles ZoomLevelCombo.DropDownOpened
+        CurrentZoomLevelItem.Height = 0
+    End Sub
 
     Private Sub MapsetNew_Click(sender As Object, e As RoutedEventArgs)
         If Model.SelectedMap Is Nothing Then Exit Sub
 
         If Model.SelectedMap.Exists Then
-            MessageBox.Show("This map already exists", "Error", MessageBoxButton.OK)
             Exit Sub
         End If
 

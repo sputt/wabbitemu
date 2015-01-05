@@ -84,6 +84,10 @@ Public Class XLayerContainer
                            New FrameworkPropertyMetadata(8.0, FrameworkPropertyMetadataOptions.AffectsMeasure Or FrameworkPropertyMetadataOptions.AffectsArrange))
 
     Public Sub ListBoxItem_MouseDown(Sender As Object, Args As MouseButtonEventArgs)
+
+        If Active Or Sender.DataContext.Exists Then
+            LayerContainer.SelectedItem = Sender.DataContext
+        End If
         Args.Handled = False
     End Sub
 

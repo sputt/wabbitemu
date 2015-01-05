@@ -4,6 +4,9 @@ Imports System.Linq
 
 Public Class TilesPanel
 
+    Public Sub Tile_Clicked(sender As Object, args As Object)
+        DataContext.CurrentLayer = LayerType.MapLayer
+    End Sub
 End Class
 
 ' Convert from TileImageSource -> TileSelection

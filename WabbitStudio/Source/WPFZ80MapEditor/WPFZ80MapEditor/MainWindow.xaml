@@ -40,6 +40,64 @@
             </Style.Triggers>
             <Setter Property="IsHitTestVisible" Value="False"/>
         </Style>
+
+        <Style x:Key="RadioButtonListItem" TargetType="{x:Type ListBoxItem}" >
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <DockPanel LastChildFill="True" Background="{TemplateBinding Background}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="6,0" >
+                            <RadioButton IsChecked="{TemplateBinding IsSelected}" Focusable="False" IsHitTestVisible="False" VerticalAlignment="Center" Margin="0,0,2,0" />
+                            <ContentPresenter
+                                Content             = "{TemplateBinding ContentControl.Content}"
+                                ContentTemplate     = "{TemplateBinding ContentControl.ContentTemplate}"
+                                ContentStringFormat = "{TemplateBinding ContentControl.ContentStringFormat}"
+                                HorizontalAlignment = "{TemplateBinding Control.HorizontalContentAlignment}"
+                                VerticalAlignment   = "{TemplateBinding Control.VerticalContentAlignment}"
+                                SnapsToDevicePixels = "{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                        </DockPanel>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RadioButtonList" TargetType="ListBox">
+
+            <Style.Resources>
+                <Style TargetType="Label">
+                    <Setter Property="Padding" Value="0" />
+                </Style>
+            </Style.Resources>
+
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background"      Value="Transparent" />
+
+            <Setter Property="ItemContainerStyle" Value="{StaticResource RadioButtonListItem}" />
+
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBox}">
+                        <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="TextBlock.Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                </Trigger>
+            </Style.Triggers>
+
+        </Style>
+
+        <Style x:Key="HorizontalRadioButtonList" BasedOn="{StaticResource RadioButtonList}" TargetType="ListBox">
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Background="Transparent" Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <AdornerDecorator>
@@ -116,12 +174,6 @@
                             <MenuItem Header="_Left" Name="AddColumnLeft"/>
                             <MenuItem Header="_Right" Name="AddColumnRight"/>
                         </MenuItem>
-                        <MenuItem Header="Add _row">
-                            <MenuItem Header="_Top" Name="AddRowTop"/>
-                            <MenuItem Header="_Bottom" Name="AddRowBottom"/>
-                        </MenuItem>
-                        <MenuItem Header="Delete c_olumn" Name="DeleteMapColumn"/>
-                        <MenuItem Header="Delete ro_w" Name="DeleteMapRow"/>
                     </MenuItem>
                     <MenuItem Header="_Map">
 
@@ -148,11 +200,14 @@
                         </Button>
                         <Button Name="TestButton">Test</Button>
                         <Separator></Separator>
-                        <RadioButton IsChecked="True" Name="RadioMapSet" Tag="{x:Static local:LayerType.MapsetLayer}" Click="RadioMapSet_Click">Mapset</RadioButton>
-                        <RadioButton IsChecked="False" Name="RadioMapView" Tag="{x:Static local:LayerType.MapLayer}" Click="RadioMapSet_Click">Map</RadioButton>
-                        <RadioButton IsChecked="False" Name="RadioObjectLayer" Tag="{x:Static local:LayerType.ObjectLayer}" Click="RadioMapSet_Click">Objects</RadioButton>
-                        <RadioButton IsChecked="False" Name="RadioEnemyLayer">Enemies</RadioButton>
-                        <RadioButton IsChecked="False" Name="RadioMiscLayer" Tag="{x:Static local:LayerType.MiscLayer}" Click="RadioMapSet_Click">Misc</RadioButton>
+
+                        <ListBox Style="{StaticResource HorizontalRadioButtonList}" ItemContainerStyle="{StaticResource RadioButtonListItem}" SelectedValue="{Binding CurrentLayer}" SelectedValuePath="Tag">
+                            <ListBoxItem Tag="{x:Static local:LayerType.MapsetLayer}">Mapset</ListBoxItem>
+                            <ListBoxItem Tag="{x:Static local:LayerType.MapLayer}">Map</ListBoxItem>
+                            <ListBoxItem Tag="{x:Static local:LayerType.ObjectLayer}">Objects</ListBoxItem>
+                            <ListBoxItem Tag="{x:Static local:LayerType.EnemyLayer}">Enemies</ListBoxItem>
+                            <ListBoxItem Tag="{x:Static local:LayerType.MiscLayer}">Misc</ListBoxItem>
+                        </ListBox>
                     </ToolBar>
                 </WrapPanel>
 
@@ -172,7 +227,7 @@
                         </TextBlock>
                     </StatusBarItem>
                     <StatusBarItem HorizontalAlignment="Right" Width="75">
-                        <ComboBox Name="ZoomLevelCombo" FontSize="10" SelectedIndex="0" Padding="8,2,0,3" Width="50" HorizontalAlignment="Right" IsEditable="False" IsTabStop="False">
+                        <ComboBox Name="ZoomLevelCombo" FontSize="10" SelectedIndex="0" Padding="8,2,0,3" Width="50" HorizontalAlignment="Right" IsEditable="False" IsTabStop="False" SelectionChanged="ZoomLevelCombo_SelectionChanged">
                             <ComboBoxItem Content="100%" Name="CurrentZoomLevelItem"/>
                             <ComboBoxItem Content="50%" />
                             <ComboBoxItem Content="75%" />

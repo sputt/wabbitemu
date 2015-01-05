@@ -17,7 +17,7 @@
         <local:AnimatedTileSelectionConverter x:Key="AnimatedTileSelectionConverter"/>
         <converters:TileConverter x:Key="TileConverter"/>
     </UserControl.Resources>
-
+    
     <DockPanel>
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="0,5" VerticalAlignment="Top">
             <DockPanel>
@@ -35,7 +35,7 @@
                 <Border
                 BorderBrush="Gray"
                 BorderThickness="1">
-                    <ListBox ItemsSource="{Binding Path=SelectedItem.Tiles, ElementName=CurrentTileset}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectedItem="{Binding SelectedTile, Mode=TwoWay, Converter={StaticResource TileSelectionConverter}}" BorderThickness="0" SelectionMode="Single">
+                    <ListBox x:Name="TilesListBox" ItemsSource="{Binding Path=SelectedItem.Tiles, ElementName=CurrentTileset}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectedItem="{Binding SelectedTile, Mode=TwoWay, Converter={StaticResource TileSelectionConverter}}" BorderThickness="0" SelectionMode="Single">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel ItemWidth="{Binding ElementName=TileZoomSlider, Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" ItemHeight="{Binding ElementName=TileZoomSlider, Path=Value, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Margin="4">
@@ -44,7 +44,7 @@
                         </ListBox.ItemsPanel>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Image x:Name="TileImage" Source="{Binding Image}" Stretch="Fill" StretchDirection="Both">
+                                <Image x:Name="TileImage" Source="{Binding Image}" Stretch="Fill" StretchDirection="Both" MouseLeftButtonDown="Tile_Clicked">
                                 </Image>
                             </DataTemplate>
                         </ListBox.ItemTemplate>

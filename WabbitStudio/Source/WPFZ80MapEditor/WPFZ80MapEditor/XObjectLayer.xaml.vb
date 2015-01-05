@@ -174,8 +174,8 @@
         Dim ImageW = Map.Scenario.Images(Def.DefaultImage).Image.Width
         Dim ImageH = Map.Scenario.Images(Def.DefaultImage).Image.Height
 
-        Args.Add(CInt(Math.Floor(Pos.X - (Def.DefaultW / 2))))
-        Args.Add(CInt(Math.Floor(Pos.Y + (ImageH / 2) - (Def.DefaultH))))
+        Args.Add(CInt(Math.Round(Pos.X - (Def.DefaultW / 2))))
+        Args.Add(CInt(Math.Round(Pos.Y + (ImageH / 2) - (Def.DefaultH) + Def.DefaultZ)))
         Dim Obj As ZObject = ZObject.FromDef(Def, Args)
 
 

@@ -543,6 +543,8 @@ Public Class ZDef
     Public Property DefaultW As Byte
     Public Property DefaultH As Byte
 
+    Public Property DefaultZ As Byte
+
     Public Sub New(Name As String, Macro As String, Description As String, ObjType As Type)
         Me.Name = Name
         Me.Macro = Macro
@@ -564,6 +566,7 @@ Public Class ZDef
         DefaultImage = ObjectInstance.Image
         DefaultW = ObjectInstance.W
         DefaultH = ObjectInstance.H
+        DefaultZ = ObjectInstance.Z
     End Sub
 
     Public Sub AddArg(Name As String, Description As String, images As ObservableCollection(Of ZeldaImage), Optional IsOptional As Boolean = False)

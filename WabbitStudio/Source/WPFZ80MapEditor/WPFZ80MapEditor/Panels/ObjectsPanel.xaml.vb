@@ -74,6 +74,8 @@
         IsDragging = True
         _dragHasLeftScope = False
 
+        DataContext.CurrentLayer = LayerType.ObjectLayer
+
         DragDrop.DoDragDrop(sender, Def, DragDropEffects.Move)
 
         DragScope.AllowDrop = previousDrop
