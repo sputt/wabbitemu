@@ -147,9 +147,10 @@
                     </Setter>
                     <Setter Property="Template" Value="{StaticResource ObjectTemplate}"/>
                     
-                    <!--<EventSetter Event="PreviewMouseLeftButtonDown" Handler="ItemContainer_MouseLeftButtonDown"/>
+                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ItemContainer_MouseLeftButtonDown"/>
+                    <EventSetter Event="MouseDoubleClick" Handler="ItemContainer_MouseDoubleClick"/>
                     <EventSetter Event="MouseMove" Handler="ItemContainer_MouseMove"/>
-                    <EventSetter Event="MouseLeftButtonUp" Handler="ItemContainer_MouseLeftButtonUp"/>-->
+                    <EventSetter Event="MouseLeftButtonUp" Handler="ItemContainer_MouseLeftButtonUp"/>
                     
                     <Style.Triggers>
                         <Trigger Property="IsSelected" Value="True">
@@ -160,19 +161,17 @@
             </ItemsControl.ItemContainerStyle>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <UserControl MouseDoubleClick="UserControl_MouseDoubleClick">
-                        <Image>
-                            <Image.Source>
-                                <MultiBinding Converter="{StaticResource ImageConverter}">
-                                    <Binding Path="DataContext.Scenario" ElementName="ObjectLayer"/>
-                                    <Binding Path="Image"/>
-                                </MultiBinding>
-                            </Image.Source>
-                            <Image.Effect>
-                                <local:TintEffect Color="{StaticResource ObjectColor}"/>
-                            </Image.Effect>
-                        </Image>
-                    </UserControl>
+                    <Image>
+                        <Image.Source>
+                            <MultiBinding Converter="{StaticResource ImageConverter}">
+                                <Binding Path="DataContext.Scenario" ElementName="ObjectLayer"/>
+                                <Binding Path="Image"/>
+                            </MultiBinding>
+                        </Image.Source>
+                        <Image.Effect>
+                            <local:TintEffect Color="{StaticResource ObjectColor}"/>
+                        </Image.Effect>
+                    </Image>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

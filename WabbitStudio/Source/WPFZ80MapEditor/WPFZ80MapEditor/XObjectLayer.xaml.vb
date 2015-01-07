@@ -99,22 +99,66 @@
     End Sub
 #End Region
 
+    Private _IsDraggingObject As Boolean = False
     Private _StartObjectDrag As New Point
+    Private _StartClickTime As Long? = Nothing
+    Private _FirstClick As Boolean = True
+    Private _LastItemClicked As IBaseGeneralObject = Nothing
 
     Private Sub ItemContainer_MouseLeftButtonDown(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
-        Debug.Print("FUCK YOU!")
+        If _LastItemClicked IsNot sender.DataContext Then
+            _FirstClick = True
+        End If
+        If _StartClickTime IsNot Nothing AndAlso Environment.TickCount - _StartClickTime > 800 Then
+            _FirstClick = True
+        End If
+        If _FirstClick OrElse _StartClickTime Is Nothing Then
+            _StartClickTime = Environment.TickCount
+        End If
+
         _StartObjectDrag = Mouse.GetPosition(ObjectCanvas)
-        ObjectListBox.SelectedItem = sender.Content
-        For Each ZObj As ZObject In ObjectListBox.SelectedItems
-            ZObj.PreviousVersion = ZObj.Clone
-        Next
         If sender.CaptureMouse() Then
             e.Handled = True
+            ObjectListBox.Focus()
         End If
+
+        _LastItemClicked = sender.DataContext
+    End Sub
+
+    Private Sub ItemContainer_MouseDoubleClick(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
+        Dim Frm = New ObjectProperties()
+        Frm.Owner = Window.GetWindow(Me)
+
+        Dim Map As MapData = Me.DataContext
+
+        Dim ObjClone As ZObject = ObjectListBox.SelectedItem.Clone
+        Frm.DataContext = ObjClone
+        If Frm.ShowDialog() = True Then
+            'ObjClone.UpdatePosition(ObjClone.Args(0).Value, ObjClone.Args(1).Value)
+            Map.ZObjects(ObjectListBox.SelectedIndex) = ObjClone
+            ObjectListBox.SelectedItem = ObjClone
+        End If
+        Mouse.Capture(Nothing)
     End Sub
 
     Private Sub ItemContainer_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs)
-        If Mouse.Captured Is sender Then
+        Dim Pos = Mouse.GetPosition(ObjectCanvas)
+        If Not _IsDraggingObject And e.LeftButton = MouseButtonState.Pressed Then
+            If Math.Abs(Pos.X - _StartObjectDrag.X) > SystemParameters.MinimumHorizontalDragDistance OrElse
+               Math.Abs(Pos.Y - _StartObjectDrag.Y) > SystemParameters.MinimumVerticalDragDistance Then
+
+                _IsDraggingObject = True
+                If Not ObjectListBox.SelectedItems.Contains(sender.Content) Then
+                    ObjectListBox.SelectedItem = sender.Content
+                End If
+
+                For Each ZObj As ZObject In ObjectListBox.SelectedItems
+                    ZObj.PreviousVersion = ZObj.Clone
+                Next
+            End If
+        End If
+
+        If _IsDraggingObject Then
             Dim CurPoint = Mouse.GetPosition(ObjectCanvas)
             Dim Diff = CurPoint - _StartObjectDrag
 
@@ -134,8 +178,22 @@
     Private Sub ItemContainer_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
         If Mouse.Captured Is sender Then
             sender.ReleaseMouseCapture()
+            If Not _IsDraggingObject Then
+                ObjectListBox.SelectedItem = sender.Content
+            End If
 
-            Debug.Print("DONE DRAGGING")
+
+            If _FirstClick Then
+                _FirstClick = False
+            Else
+                If Not _IsDraggingObject And Environment.TickCount - _StartClickTime < 500 Then
+                    ItemContainer_MouseDoubleClick(sender, e)
+                End If
+                _StartClickTime = Nothing
+                _FirstClick = True
+            End If
+
+            _IsDraggingObject = False
         End If
     End Sub
 
@@ -148,22 +206,6 @@
             Return LayerType.ObjectLayer
         End Get
     End Property
-
-    Private Sub UserControl_MouseDoubleClick(sender As Object, e As MouseButtonEventArgs)
-        Dim Frm = New ObjectProperties()
-        Frm.Owner = Window.GetWindow(Me)
-
-        Dim Map As MapData = Me.DataContext
-
-        Dim ObjClone As ZObject = ObjectListBox.SelectedItem.Clone
-        Frm.DataContext = ObjClone
-        If Frm.ShowDialog() = True Then
-            'ObjClone.UpdatePosition(ObjClone.Args(0).Value, ObjClone.Args(1).Value)
-            Map.ZObjects(ObjectListBox.SelectedIndex) = ObjClone
-            ObjectListBox.SelectedItem = ObjClone
-        End If
-        Mouse.Capture(Nothing)
-    End Sub
 
     Private Sub Object_Drop(sender As Object, e As DragEventArgs)
         Dim Pos = e.GetPosition(ObjectListBox)
@@ -180,6 +222,7 @@
 
 
         Map.ZObjects.Add(Obj)
-        Debug.Print("DROPPING " + Def.Name)
+        ObjectListBox.SelectedItem = Obj
+        ObjectListBox.Focus()
     End Sub
 End Class
