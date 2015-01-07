@@ -291,22 +291,17 @@ Public Class Scenario
             Dim Xs = _Maps.Keys.Select(Function(p) p.X)
             Dim Ys = _Maps.Keys.Select(Function(p) p.Y)
 
-            Dim Width = Xs.Max() + 1 - Xs.Min()
-            Dim Height = Ys.Max() + 1 - Ys.Min()
+            Dim Width = Xs.Max + 1 - Xs.Min + 1
+            Dim Height = Ys.Max + 1 - Ys.Min + 2
 
             Stream.WriteLine("#ifdef INCLUDE_MAP_HIERARCHY")
             Stream.WriteLine("#ifndef __MAP_HIERARCHY_WIDTH_DEFINED")
             Stream.WriteLine("#define __MAP_HIERARCHY_WIDTH_DEFINED")
-            Stream.WriteLine("map_hierarchy_width = " & Width + 1)
+            Stream.WriteLine("map_hierarchy_width = " & Width)
             Stream.WriteLine("#endif")
 
-            Dim Data(0 To (Width + 1) * (Height + 2) - 1) As Byte
-            For Y = 0 To Height + 1
-                For X = 0 To Width
-                    Dim CurPoint = New Point(X + Xs.Min(), Y + Ys.Min() - 1)
-                    Data(Y * (Width + 1) + X) = If(_Maps.ContainsKey(CurPoint), _Maps(CurPoint), 255)
-                Next
-            Next
+            Dim Data = Enumerable.Repeat(CByte(255), Width * Height).ToArray()
+            _Maps.Keys.ToList().ForEach(Sub(P) Data((P.Y - Ys.Min + 1) * Width + P.X - Xs.Min) = _Maps(P))
 
             WriteAssemblyData(Stream, Data)
             Stream.WriteLine("#endif")
