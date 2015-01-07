@@ -285,6 +285,14 @@ Public Class Scenario
         Private _MaxX As Integer = -1, _MaxY As Integer = -1
         Private _MinX As Integer = Integer.MaxValue, _MinY = Integer.MaxValue
 
+        Public Sub New()
+            For y = 0 To _Maps.GetUpperBound(0)
+                For x = 0 To _Maps.GetUpperBound(1)
+                    _Maps(y, x) = 255
+                Next
+            Next
+        End Sub
+
         Public Sub AddMap(X As Integer, Y As Integer, MapIndex As Integer)
             _MaxX = Math.Max(_MaxX, X)
             _MaxY = Math.Max(_MaxY, Y)
@@ -300,13 +308,13 @@ Public Class Scenario
             Stream.WriteLine("#ifdef INCLUDE_MAP_HIERARCHY")
             Stream.WriteLine("#ifndef __MAP_HIERARCHY_WIDTH_DEFINED")
             Stream.WriteLine("#define __MAP_HIERARCHY_WIDTH_DEFINED")
-            Stream.WriteLine("map_hierarchy_width = " & Width)
+            Stream.WriteLine("map_hierarchy_width = " & Width + 1)
             Stream.WriteLine("#endif")
 
-            Dim Data(0 To Width * (Height + 1) - 1) As Byte
-            For Y = 0 To Height
-                For X = 0 To Width - 1
-                    Data(Y * Width + X) = _Maps(X + _MinX, Y + _MinY)
+            Dim Data(0 To (Width + 1) * (Height + 2) - 1) As Byte
+            For Y = 0 To Height + 1
+                For X = 0 To Width
+                    Data(Y * (Width + 1) + X) = _Maps(X + _MinX, Y + _MinY)
                 Next
             Next
 
