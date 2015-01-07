@@ -281,29 +281,18 @@ Public Class Scenario
 
 
     Private Class MapHierarchy
-        Private _Maps(0 To 15, 0 To 15) As Integer
-        Private _MaxX As Integer = -1, _MaxY As Integer = -1
-        Private _MinX As Integer = Integer.MaxValue, _MinY = Integer.MaxValue
-
-        Public Sub New()
-            For y = 0 To _Maps.GetUpperBound(0)
-                For x = 0 To _Maps.GetUpperBound(1)
-                    _Maps(y, x) = 255
-                Next
-            Next
-        End Sub
+        Private _Maps As New Dictionary(Of Point, Integer)
 
         Public Sub AddMap(X As Integer, Y As Integer, MapIndex As Integer)
-            _MaxX = Math.Max(_MaxX, X)
-            _MaxY = Math.Max(_MaxY, Y)
-            _MinX = Math.Min(_MinX, X)
-            _MinY = Math.Min(_MinY, Y)
-            _Maps(X, Y + 1) = MapIndex
+            _Maps(New Point(X, Y)) = MapIndex
         End Sub
 
         Public Sub Write(Stream As StreamWriter)
-            Dim Width = _MaxX + 1 - _MinX
-            Dim Height = _MaxY + 1 - _MinY
+            Dim Xs = _Maps.Keys.Select(Function(p) p.X)
+            Dim Ys = _Maps.Keys.Select(Function(p) p.Y)
+
+            Dim Width = Xs.Max() + 1 - Xs.Min()
+            Dim Height = Ys.Max() + 1 - Ys.Min()
 
             Stream.WriteLine("#ifdef INCLUDE_MAP_HIERARCHY")
             Stream.WriteLine("#ifndef __MAP_HIERARCHY_WIDTH_DEFINED")
@@ -314,7 +303,8 @@ Public Class Scenario
             Dim Data(0 To (Width + 1) * (Height + 2) - 1) As Byte
             For Y = 0 To Height + 1
                 For X = 0 To Width
-                    Data(Y * (Width + 1) + X) = _Maps(X + _MinX, Y + _MinY)
+                    Dim CurPoint = New Point(X + Xs.Min(), Y + Ys.Min() - 1)
+                    Data(Y * (Width + 1) + X) = If(_Maps.ContainsKey(CurPoint), _Maps(CurPoint), 255)
                 Next
             Next
 
