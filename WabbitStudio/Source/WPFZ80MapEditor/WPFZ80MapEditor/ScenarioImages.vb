@@ -10,11 +10,9 @@ Partial Public Class Scenario
         '"^#include\s+""(?<FileName>.+)""\s*" & _
         '"(^\s*|(?<ExtraDefines>(^[a-z0-9_]+\s*=\s*[a-z0-9_]+\s*)+))$", RegexOptions.Multiline Or RegexOptions.Compiled)
 
-        Dim Rx As New GraphicsRegex()
-
         Dim Path As String = Directory.GetParent(FileName).FullName
         Dim Stream = New StreamReader(FileName)
-        Dim Matches = Rx.Matches(Await Stream.ReadToEndAsync())
+        Dim Matches = GraphicsRegex.Matches(Await Stream.ReadToEndAsync())
         Stream.Close()
 
         ' Empty first image

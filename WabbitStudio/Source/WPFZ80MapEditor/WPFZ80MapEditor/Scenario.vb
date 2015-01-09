@@ -3,10 +3,32 @@ Imports System.Collections.ObjectModel
 Imports System.Text.RegularExpressions
 Imports System.Threading.Tasks
 Imports System.ComponentModel
-Imports System.Reflection
 
 Public Class Scenario
     Implements INotifyPropertyChanged
+
+    Private Shared ReadOnly ZDefRegex As New Regex("^;(?<Name>[a-zA-Z][a-zA-Z ]+) - (?<Description>.+)\s*" & _
+            "(^; (?<ArgName>\w+) - (?<ArgDesc>.+)\s*)*" & _
+            "(^;Properties\s*)?" & _
+            "(^; [a-zA-Z_]+ = .+\s*)*" & _
+            "#macro (?<MacroName>[a-z0-9_]+).*\s*$",
+            RegexOptions.Multiline Or RegexOptions.CultureInvariant Or RegexOptions.Compiled)
+
+    Private Shared ReadOnly GraphicsRegex As New Regex("^(?<Name>[a-z_]+_gfx)(\s*|\s+with\s+bm_map\s*=\s*(?<X>\d+)x(?<Y>\d+)\s*)" & _
+            "^#include\s+""(?<FileName>.+)""\s*" & _
+            "(^\s*|(?<ExtraDefines>(^[a-z0-9_]+\s*=\s*[a-z0-9_]+\s*)+))$",
+            RegexOptions.Multiline Or RegexOptions.CultureInvariant Or RegexOptions.Compiled)
+
+    Private Shared ReadOnly MapDataRegex As New Regex("^ANIMATE_SECTION\(\)" & vbLf & _
+            "(^\s+(?<AnimName>[A-Z_]+)\((?<AnimArgs>.*)\)\s*)*\s*" & _
+            "^OBJECT_SECTION\(\)" & vbLf & _
+            "(^\s+(?<ObjectName>[A-Z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
+            "^ENEMY_SECTION\(\)" & vbLf & _
+            "(^\s+(?<EnemyName>[A-Z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
+            "^MISC_SECTION\(\)" & vbLf & _
+            "(^\s+(?<MiscName>[A-Z_]+)\((?<MiscArgs>.*)\)\s*)*\s*" & _
+            "^END_SECTION\(\)",
+            RegexOptions.Multiline Or RegexOptions.CultureInvariant Or RegexOptions.Compiled)
 
     Public ScenarioName As String
 
@@ -42,6 +64,7 @@ Public Class Scenario
         Tilesets.Add(New Tileset("town", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\town.bmp")))
         Tilesets.Add(New Tileset("graveyard", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\graveyard.bmp")))
         Tilesets.Add(New Tileset("cave", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\cave.bmp")))
+        Tilesets.Add(New Tileset("indoors", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\indoors.bmp")))
 
         Log("Starting SPASM")
         SPASMHelper.Initialize(MainWindow.ZeldaFolder)
@@ -69,38 +92,6 @@ Public Class Scenario
         ScenarioContents = ScenarioContents.ToUpper().Replace(vbCrLf, vbLf)
         Reader.Close()
 
-        'Dim CompList As New List(Of RegexCompilationInfo)
-        'CompList.Add(New RegexCompilationInfo("^ANIMATE_SECTION\(\)" & vbLf & _
-        '    "(^\s+(?<AnimName>[A-Z_]+)\((?<AnimArgs>.*)\)\s*)*\s*" & _
-        '    "^OBJECT_SECTION\(\)" & vbLf & _
-        '    "(^\s+(?<ObjectName>[A-Z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
-        '    "^ENEMY_SECTION\(\)" & vbLf & _
-        '    "(^\s+(?<EnemyName>[A-Z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
-        '    "^MISC_SECTION\(\)" & vbLf & _
-        '    "(^\s+(?<MiscName>[A-Z_]+)\((?<MiscArgs>.*)\)\s*)*\s*",
-        '    RegexOptions.Multiline Or RegexOptions.CultureInvariant, _
-        '    "MapDataRegex", _
-        '    "WPFZ80MapEditor", _
-        '    True))
-        'CompList.Add(New RegexCompilationInfo("^;(?<Name>[a-zA-Z][a-zA-Z ]+) - (?<Description>.+)\s*" & _
-        '    "(^; (?<ArgName>\w+) - (?<ArgDesc>.+)\s*)*" & _
-        '    "(^;Properties\s*)?" & _
-        '    "(^; [a-zA-Z_]+ = .+\s*)*" & _
-        '    "#macro (?<MacroName>[a-z0-9_]+).*\s*$",
-        '    RegexOptions.Multiline Or RegexOptions.CultureInvariant, _
-        '    "ZDefRegex", _
-        '    "WPFZ80MapEditor", _
-        '    True))
-        'CompList.Add(New RegexCompilationInfo("^(?<Name>[a-z_]+_gfx)(\s*|\s+with\s+bm_map\s*=\s*(?<X>\d+)x(?<Y>\d+)\s*)" & _
-        '    "^#include\s+""(?<FileName>.+)""\s*" & _
-        '    "(^\s*|(?<ExtraDefines>(^[a-z0-9_]+\s*=\s*[a-z0-9_]+\s*)+))$",
-        '    RegexOptions.Multiline Or RegexOptions.CultureInvariant, _
-        '    "GraphicsRegex", _
-        '    "WPFZ80MapEditor", _
-        '    True))
-        'Dim Asm As New AssemblyName("RegexLib, Version=1.0.0.1001, Culture=neutral, PublicKeyToken=null")
-        'Regex.CompileToAssembly(CompList.ToArray(), Asm)
-
         Dim MaxX = -1
         Dim MaxY = -1
         Dim CurShiftX = 0, CurShiftY = 0
@@ -119,15 +110,15 @@ Public Class Scenario
                 Dim MapData = New MapData(RawMapData, Me, Tileset, IsCompressed)
 
                 Dim MapMacrosStart = ScenarioContents.IndexOf(Label & ":")
-                Dim MapMacrosEnd = Math.Max(ScenarioContents.IndexOf("END_SECTION()", MapMacrosStart), MapMacrosStart)
+                Dim EndSectionString = "END_SECTION()"
+                Dim MapMacrosEnd = Math.Max(ScenarioContents.IndexOf(EndSectionString, MapMacrosStart) + EndSectionString.Length, MapMacrosStart)
 
                 Dim MapContents = ScenarioContents.Substring(MapMacrosStart, MapMacrosEnd - MapMacrosStart)
 
                 Log("Loading map " & x & "," & y)
-                Dim Rx As New MapDataRegex()
 
                 Log("Running regular expression...")
-                Dim Matches = Rx.Matches(MapContents)
+                Dim Matches = MapDataRegex.Matches(MapContents)
                 Log("Done")
 
                 Dim RawScenarioData = Data.Skip(SPASMHelper.Labels(Label & "_DEFAULTS"))
@@ -287,7 +278,7 @@ Public Class Scenario
             _Maps(New Point(X, Y)) = MapIndex
         End Sub
 
-        Public Sub Write(Stream As StreamWriter)
+        Public Sub Write(Stream As StreamWriter, ScenarioName As String)
             Dim Xs = _Maps.Keys.Select(Function(p) p.X)
             Dim Ys = _Maps.Keys.Select(Function(p) p.Y)
 
@@ -295,10 +286,8 @@ Public Class Scenario
             Dim Height = Ys.Max + 1 - Ys.Min + 2
 
             Stream.WriteLine("#ifdef INCLUDE_MAP_HIERARCHY")
-            Stream.WriteLine("#ifndef __MAP_HIERARCHY_WIDTH_DEFINED")
-            Stream.WriteLine("#define __MAP_HIERARCHY_WIDTH_DEFINED")
-            Stream.WriteLine("map_hierarchy_width = " & Width)
-            Stream.WriteLine("#endif")
+            Stream.WriteLine(ScenarioName & "_MAP_HIERARCHY:")
+            Stream.WriteLine(ScenarioName & "_MAP_HIERARCHY_WIDTH = " & Width)
 
             Dim Data = Enumerable.Repeat(CByte(255), Width * Height).ToArray()
             _Maps.Keys.ToList().ForEach(Sub(P) Data((P.Y - Ys.Min + 1) * Width + P.X - Xs.Min) = _Maps(P))
@@ -385,37 +374,30 @@ Public Class Scenario
             MapIndex = MapIndex + 1
         Next
 
-        MapHierarchy.Write(Stream)
+        MapHierarchy.Write(Stream, ScenarioName)
 
         Stream.WriteLine("")
 
         Stream.WriteLine("#ifdef INCLUDE_MAPS_TABLE")
+        Stream.WriteLine(ScenarioName & "_MAP_TABLE:")
         Stream.Write(MapsTable)
         Stream.WriteLine("#endif")
 
         Stream.WriteLine("")
 
         Stream.WriteLine("#ifdef INCLUDE_DEFAULTS_TABLE")
+        Stream.WriteLine(ScenarioName & "_DEFAULTS_TABLE:")
         Stream.Write(DefaultsTable)
         Stream.WriteLine("#endif")
 
         Stream.WriteLine("")
 
         Stream.WriteLine("#ifdef INCLUDE_TILESET_TABLE")
+        Stream.WriteLine(ScenarioName & "_TILESET_TABLE:")
         For Each tileset In TilesetTable
-            Stream.Write(vbTab & ".db " & tileset & vbCrLf)
+            Stream.WriteLine(vbTab & ".db " & tileset)
         Next
         Stream.WriteLine("#endif")
-
-        Stream.WriteLine("")
-
-
-        Stream.WriteLine("#undefine INCLUDE_MAPS")
-        Stream.WriteLine("#undefine INCLUDE_DEFAULTS")
-        Stream.WriteLine("#undefine INCLUDE_MAPS_TABLE")
-        Stream.WriteLine("#undefine INCLUDE_DEFAULTS_TABLE")
-        Stream.WriteLine("#undefine INCLUDE_TILESET_TABLE")
-        Stream.WriteLine("#undefine INCLUDE_MAP_HIERARCHY")
 
         Stream.Close()
     End Sub

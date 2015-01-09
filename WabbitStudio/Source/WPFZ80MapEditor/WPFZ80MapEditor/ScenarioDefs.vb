@@ -11,10 +11,8 @@ Partial Class Scenario
         '    "(^; [a-zA-Z_]+ = .+\s*)*" & _
         '    "#macro (?<MacroName>[a-z0-9_]+).*\s*$", RegexOptions.Multiline Or RegexOptions.Compiled)
 
-        Dim Rx As New ZDefRegex()
-
         Dim Stream = New StreamReader(FileName)
-        Dim Matches = Rx.Matches(Await Stream.ReadToEndAsync())
+        Dim Matches = ZDefRegex.Matches(Await Stream.ReadToEndAsync())
         Stream.Close()
 
         For Each Match As Match In Matches
