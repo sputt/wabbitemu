@@ -8,7 +8,7 @@ Public Class ResizeThumb
         AddHandler Me.MouseLeftButtonUp, AddressOf Drag_MouseLeftButtonUp
         AddHandler Me.MouseMove, AddressOf Drag_MouseMove
 
-        Background = New SolidColorBrush(Color.FromRgb(&H40, &H40, &HFF))
+        Background = WPFZ80MapEditor.Application.Current.Resources("SelectionBrush")
     End Sub
 
     Private _IsDraggingMisc As Boolean = False
@@ -23,8 +23,9 @@ Public Class ResizeThumb
 
         Obj.CaptureMouse()
         _StartDrag = e.GetPosition(Layer)
-
         _IsDraggingMisc = True
+
+        Misc.PreviousVersion = Misc.Clone()
 
         'Misc.SetValue(MiscLayer.LeftProperty, CDbl(Misc.Args(0).Value))
         'Misc.SetValue(MiscLayer.TopProperty, CDbl(Misc.Args(1).Value))
@@ -57,31 +58,32 @@ Public Class ResizeThumb
 
             Dim Misc As ZMisc = DataContext
 
-            Dim X As Double '= Misc.GetValue(MiscLayer.LeftProperty)
-            Dim Y As Double ' = Misc.GetValue(MiscLayer.TopProperty)
-            Dim MiscWidth As Double '= Misc.GetValue(MiscLayer.MiscWidthProperty)
-            Dim MiscHeight As Double ' = Misc.GetValue(MiscLayer.MiscHeightProperty)
+            Dim PrevX = SPASMHelper.Eval(Misc.PreviousVersion.Args(0).Value)
+            Dim PrevY = SPASMHelper.Eval(Misc.PreviousVersion.Args(1).Value)
+            Dim PrevW = SPASMHelper.Eval(Misc.PreviousVersion.Args(2).Value)
+            Dim PrevH = SPASMHelper.Eval(Misc.PreviousVersion.Args(3).Value)
+
+            Dim CurX = SPASMHelper.Eval(Misc.Args(0).Value)
+            Dim CurY = SPASMHelper.Eval(Misc.Args(1).Value)
+            Dim CurW = SPASMHelper.Eval(Misc.Args(2).Value)
+            Dim CurH = SPASMHelper.Eval(Misc.Args(3).Value)
 
             If VerticalAlignment = Windows.VerticalAlignment.Bottom Then
-                MiscHeight += VDelta
+                CurH = PrevH + VDelta
+                Misc.UpdatePosition(CurX, PrevY, CurW, CurH)
             ElseIf VerticalAlignment = Windows.VerticalAlignment.Top Then
-                MiscHeight -= VDelta
-                Misc.UpdatePosition(Misc.X, Y + VDelta)
+                CurY = PrevY + VDelta
+                CurH = PrevH - VDelta
+                Misc.UpdatePosition(CurX, CurY, CurW, CurH)
             End If
 
             If HorizontalAlignment = Windows.HorizontalAlignment.Right Then
-                MiscWidth += HDelta
+                Misc.UpdatePosition(PrevX, CurY, PrevW + HDelta, CurH)
             ElseIf HorizontalAlignment = Windows.HorizontalAlignment.Left Then
-                MiscWidth -= HDelta
-                Misc.UpdatePosition(X + HDelta, Misc.Y)
+                Misc.UpdatePosition(PrevX + HDelta, CurY, PrevW - HDelta, CurH)
             End If
 
-            Misc.Args(2).Value = Math.Round(MiscWidth)
-            Misc.Args(3).Value = Math.Round(MiscHeight)
-
             Layer.SetValue(MiscLayer.SelectionOpacityProperty, 0.25)
-
-            Debug.WriteLine("Width: " & MiscWidth & " (" & HDelta & ") = " & Misc.Args(2).Value)
             e.Handled = True
         End If
     End Sub

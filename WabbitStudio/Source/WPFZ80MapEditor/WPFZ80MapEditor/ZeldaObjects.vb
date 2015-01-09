@@ -73,6 +73,8 @@ Public Interface IBaseGeneralObject
 
     Sub Update()
     Sub UpdatePosition(X As Double, Y As Double)
+    Sub UpdatePosition(X As Double, Y As Double, W As Double, H As Double)
+
 End Interface
 
 Public Interface IGeneralObject(Of ZBase)
@@ -190,6 +192,13 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
     Public Sub UpdatePosition(X As Double, Y As Double) Implements IBaseGeneralObject.UpdatePosition
         Args(0).Value = CInt(Math.Round(X))
         Args(1).Value = CInt(Math.Round(Y))
+    End Sub
+
+    Public Sub UpdatePosition(X As Double, Y As Double, W As Double, H As Double) Implements IBaseGeneralObject.UpdatePosition
+        Args(0).Value = CInt(Math.Round(X))
+        Args(1).Value = CInt(Math.Round(Y))
+        Args(2).Value = CInt(Math.Round(W))
+        Args(3).Value = CInt(Math.Round(H))
     End Sub
 
     Sub Jump(Dx As Integer, Dy As Integer)

@@ -39,7 +39,7 @@
         
         <DataTemplate DataType="{x:Type local:ZMisc}">
             <ContentControl Template="{StaticResource MiscItemTemplate}">
-                <Border Width="{Binding Args[2].Value}" Height="{Binding Args[3].Value}" BorderThickness="2" BorderBrush="Green"
+                <Border Width="{Binding W}" Height="{Binding H}" BorderThickness="2" BorderBrush="Green"
                         MouseLeftButtonDown="Misc_MouseLeftButtonDown" MouseLeftButtonUp="Misc_MouseLeftButtonUp" MouseMove="Misc_MouseMove">
                     <Border.Background>
                         <SolidColorBrush Color="#1A10EF10"/>
@@ -60,13 +60,13 @@
             </ListBox.ItemsPanel>
             <ItemsControl.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
-                    <Setter Property="Canvas.Left" Value="{Binding Args[0].Value}"/>
-                    <Setter Property="Canvas.Top" Value="{Binding Args[1].Value}"/>
+                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
                     <Setter Property="Panel.ZIndex">
                         <Setter.Value>
                             <MultiBinding Converter="{StaticResource VolumeConverter}">
-                                <Binding Path="Args[2].Value"/>
-                                <Binding Path="Args[3].Value"/>
+                                <Binding Path="W"/>
+                                <Binding Path="H"/>
                             </MultiBinding>
                         </Setter.Value>
                     </Setter>
