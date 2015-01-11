@@ -99,7 +99,7 @@
     </local:MapLayer.Resources>
     
     <Canvas Name="ObjectCanvas" Background="Transparent">
-        <ListBox Name="ObjectListBox" ItemsSource="{Binding ZObjects}" SelectionMode="Extended">
+        <ListBox Name="ObjectListBox" ItemsSource="{Binding ZObjects}" SelectionMode="Extended" KeyDown="ObjectListBox_KeyDown">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>

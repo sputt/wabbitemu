@@ -225,4 +225,13 @@
         ObjectListBox.SelectedItem = Obj
         ObjectListBox.Focus()
     End Sub
+
+    Private Sub ObjectListBox_KeyDown(sender As Object, e As KeyEventArgs)
+        If e.Key = Key.Delete Then
+            Dim SelectedObjs As New List(Of ZObject)(ObjectListBox.SelectedItems.OfType(Of ZObject))
+            For Each ZObj In SelectedObjs
+                Map.ZObjects.Remove(ZObj)
+            Next
+        End If
+    End Sub
 End Class

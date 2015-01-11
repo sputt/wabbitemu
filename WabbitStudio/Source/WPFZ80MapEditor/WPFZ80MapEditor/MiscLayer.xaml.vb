@@ -63,8 +63,7 @@
         ItemsControl.SelectedItem = ZMisc
         ItemsControl.Focus()
 
-        'MiscLayer.SetLeft(ZMisc, ZMisc.X)
-        'MiscLayer.SetTop(ZMisc, ZMisc.Y)
+        ZMisc.PreviousVersion = ZMisc.Clone()
 
         _IsDraggingMisc = True
         e.Handled = True
@@ -75,10 +74,10 @@
             Dim CurPoint As Point = e.GetPosition(Me)
             Dim DragDelta = CurPoint - _StartDrag
 
-            'Dim NewX = MiscLayer.GetLeft(ItemsControl.SelectedValue) + DragDelta.X
-            'Dim NewY = MiscLayer.GetTop(ItemsControl.SelectedValue) + DragDelta.Y
+            Dim NewX = SPASMHelper.Eval(ItemsControl.SelectedValue.PreviousVersion.Args(0).Value) + DragDelta.X
+            Dim NewY = SPASMHelper.Eval(ItemsControl.SelectedValue.PreviousVersion.Args(1).Value) + DragDelta.Y
 
-            'ItemsControl.SelectedValue.UpdatePosition(NewX, NewY, False)
+            ItemsControl.SelectedValue.UpdatePosition(NewX, NewY)
 
             SetValue(SelectionOpacityProperty, 0.25)
 
