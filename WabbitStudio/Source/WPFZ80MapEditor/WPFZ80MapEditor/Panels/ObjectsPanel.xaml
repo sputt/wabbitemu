@@ -29,8 +29,8 @@
     </UserControl.Resources>
     <Grid >
         
-        <TabControl>
-            <TabItem Header="Objects" Name="TilesTab">
+        <TabControl Name="ObjectsTabControl">
+            <TabItem Header="Objects" Name="TilesTab" Tag="{x:Static local:LayerType.ObjectLayer}">
                 <ScrollViewer Margin="0,0,0,0" VerticalScrollBarVisibility="Auto">
                     <StackPanel Orientation="Vertical">
                         <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Scenario.ObjectDefs.Values}" Name="ObjProperties" IsTabStop="False" Padding="0,0,0,0" 
@@ -68,9 +68,9 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
-            <!--<TabItem Header="Enemies">
+            <TabItem Header="Enemies" Tag="{x:Static local:LayerType.EnemyLayer}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=EnemyDefs}" IsTabStop="False" Padding="0,0,0,0" 
+                    <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Scenario.EnemyDefs.Values}" IsTabStop="False" Padding="0,0,0,0" 
                           Background="#FFF9F9F9">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -85,7 +85,8 @@
                                         </StackPanel.Triggers>
                                         <Image Stretch="None" Width="40" x:Name="ObjectImage" UseLayoutRounding="True">
                                             <Image.Source>
-                                                <MultiBinding Converter="{StaticResource convertImageIndex}">
+                                                <MultiBinding Converter="{StaticResource ImageConverter}">
+                                                    <Binding Path="DataContext.Scenario" ElementName="ObjectsPanel"/>
                                                     <Binding Path="DefaultImage"/>
                                                 </MultiBinding>
                                             </Image.Source>
@@ -98,10 +99,10 @@
                     </ItemsControl>
                 </ScrollViewer>
             </TabItem>
-            <TabItem Header="Misc">
+            <TabItem Header="Misc" Tag="{x:Static local:LayerType.MiscLayer}">
                 <ScrollViewer Margin="0,0,0,0" VerticalScrollBarVisibility="Auto">
                     <StackPanel Orientation="Vertical">
-                        <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=MiscDefs}" IsTabStop="False" Padding="0,0,0,0" 
+                        <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Scenario.MiscDefs.Values}" IsTabStop="False" Padding="0,0,0,0" 
                           Background="#FFF9F9F9">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -118,7 +119,7 @@
                         </ItemsControl>
                     </StackPanel>
                 </ScrollViewer>
-            </TabItem>-->
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

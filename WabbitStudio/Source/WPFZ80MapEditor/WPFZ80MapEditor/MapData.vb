@@ -92,18 +92,18 @@ Public Class MapData
 
     Public Property ZAnims As ObservableCollection(Of ZAnim)
 
-    'Private _ZObjects As ObservableCollection(Of ZObject)
+    Private _ZObjects As ObservableCollection(Of ZObject)
     Public Property ZObjects As ObservableCollection(Of ZObject)
-    '    Get
-    '        Return _ZObjects
-    '    End Get
-    '    Set(value As ObservableCollection(Of ZObject))
-    '        If value IsNot _ZObjects Then
-    '            _ZObjects = value
-    '            RaisePropertyChanged("ZObjects")
-    '        End If
-    '    End Set
-    'End Property
+        Get
+            Return _ZObjects
+        End Get
+        Set(value As ObservableCollection(Of ZObject))
+            If value IsNot _ZObjects Then
+                _ZObjects = value
+                RaisePropertyChanged("ZObjects")
+            End If
+        End Set
+    End Property
 
     Public Property ZEnemies As ObservableCollection(Of ZEnemy)
 

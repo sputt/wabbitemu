@@ -52,7 +52,7 @@
     <Grid Width="256" Height="256">
         <ListBox Name="ItemsControl" Template="{StaticResource NoScroll}" ItemsSource="{Binding Path=ZMisc}" 
                  SelectionMode="Single" Background="Transparent" BorderThickness="0" 
-                 UseLayoutRounding="True">
+                 UseLayoutRounding="True" KeyDown="ItemsControl_KeyDown">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>

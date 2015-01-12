@@ -175,6 +175,9 @@
     <Compile Include="TileSelection.vb" />
     <Compile Include="Tileset.vb" />
     <Compile Include="Utils.vb" />
+    <Compile Include="XEnemyLayer.xaml.vb">
+      <DependentUpon>XEnemyLayer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="XLayerContainer.xaml.vb">
       <DependentUpon>XLayerContainer.xaml</DependentUpon>
     </Compile>
@@ -187,6 +190,7 @@
     <Compile Include="XTile.xaml.vb">
       <DependentUpon>XTile.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ZBaseLayer.vb" />
     <Compile Include="ZeldaImage.vb" />
     <Compile Include="ZeldaObjects.vb" />
     <Compile Include="ValueConverters.vb" />
@@ -232,6 +236,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Panels\TilesPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="XEnemyLayer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

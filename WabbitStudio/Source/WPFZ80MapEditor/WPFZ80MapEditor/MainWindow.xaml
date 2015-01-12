@@ -144,8 +144,9 @@
                                         </local:XMapView.ShowNewMaps>
                                     </local:XMapView>
 
-                                    <local:XObjectLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
-                                    <local:MiscLayer Panel.ZIndex="3" Style="{StaticResource LayerStyle}"/>
+                                    <local:MiscLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
+                                    <local:XObjectLayer Panel.ZIndex="2" Style="{StaticResource LayerStyle}" CollectionName="ZObjects"/>
+                                    <local:XEnemyLayer Panel.ZIndex="3" Style="{StaticResource LayerStyle}" CollectionName="ZEnemies"/>
                                 </Grid>
                             </UserControl>
                         </DataTemplate>

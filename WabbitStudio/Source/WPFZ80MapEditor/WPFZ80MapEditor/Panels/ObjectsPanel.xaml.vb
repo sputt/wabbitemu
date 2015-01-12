@@ -74,7 +74,7 @@
         IsDragging = True
         _dragHasLeftScope = False
 
-        DataContext.CurrentLayer = LayerType.ObjectLayer
+        DataContext.CurrentLayer = ObjectsTabControl.SelectedItem.Tag
 
         DragDrop.DoDragDrop(sender, Def, DragDropEffects.Move)
 

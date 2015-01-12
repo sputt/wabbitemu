@@ -130,4 +130,5 @@
             Return WPFZ80MapEditor.LayerType.MiscLayer
         End Get
     End Property
+
 End Class

@@ -13,6 +13,7 @@
                          Color="{Binding Color, Source={x:Static SystemColors.InactiveBorderBrush}}"/>
         
         <Color x:Key="ObjectColor">#FF4040FF</Color>
+        <Color x:Key="EnemyColor">#FFFF8020</Color>
         <Color x:Key="AnimColor">#FFFF40FF</Color>
         <Color x:Key="CollisionColor">#FFFF0000</Color>
         <local:TintEffect Color="{StaticResource CollisionColor}" x:Key="CollisionTint"/>

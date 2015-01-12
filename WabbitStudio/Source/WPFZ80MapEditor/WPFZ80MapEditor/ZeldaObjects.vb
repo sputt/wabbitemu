@@ -60,6 +60,8 @@ Public Structure AZMisc
 End Structure
 
 Public Interface IBaseGeneralObject
+    Property PreviousVersion As IBaseGeneralObject
+
     Property Definition As ZDef
     Property Args As ArgsCollection
     Property Name As String
@@ -70,6 +72,8 @@ Public Interface IBaseGeneralObject
     Property H As Byte
     Property Z As Byte
     Property D As Byte
+
+    ReadOnly Property Bounds As Rect
 
     Sub Update()
     Sub UpdatePosition(X As Double, Y As Double)
@@ -88,7 +92,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
     Implements ICloneable
     Implements INotifyPropertyChanged
 
-    Public Property PreviousVersion As ZBaseObject(Of ZBase, Base)
+    Public Property PreviousVersion As IBaseGeneralObject Implements IGeneralObject(Of ZBase).PreviousVersion
 
     Protected _Name As String
 
@@ -313,7 +317,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         End Set
     End Property
 
-    Public ReadOnly Property Bounds As Rect
+    Public ReadOnly Property Bounds As Rect Implements IGeneralObject(Of ZBase).Bounds
         Get
             Return New Rect(X, Y, W, H)
         End Get
