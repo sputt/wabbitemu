@@ -9,8 +9,9 @@
              mc:Ignorable="d" 
              d:DesignHeight="256" d:DesignWidth="256"
              Background="#01FFFFFF"
-             AllowDrop="True" MouseDown="UserControl_MouseDown"
+             MouseDown="UserControl_MouseDown"
                 x:Name="MiscLayerControl"
+                AllowDrop="{Binding Active, ElementName=MiscLayerControl}" Drop="Misc_Drop"
              >
     <UserControl.Resources>
         <local:LayerType x:Key="LayerType">MiscLayer</local:LayerType>

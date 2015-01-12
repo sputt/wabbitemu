@@ -1,6 +1,12 @@
 ﻿Public Class MiscLayer
     Implements IMapLayer
 
+    Protected ReadOnly Property Map As MapData
+        Get
+            Return DirectCast(DataContext, MapData)
+        End Get
+    End Property
+
     Public Shared ReadOnly LeftProperty As DependencyProperty =
         DependencyProperty.RegisterAttached("Left", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(-1)))
 
@@ -16,27 +22,30 @@
     Public Shared ReadOnly SelectionOpacityProperty As DependencyProperty =
         DependencyProperty.RegisterAttached("SelectionOpacity", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(0.6)))
 
-    Public Shared Sub SetLeft(d As DependencyObject, value As Double)
-        d.SetValue(LeftProperty, value)
-    End Sub
-
-    Public Shared Function GetLeft(d As DependencyObject) As Double
-        Return d.GetValue(LeftProperty)
-    End Function
-
-    Public Shared Sub SetTop(d As DependencyObject, value As Double)
-        d.SetValue(TopProperty, value)
-    End Sub
-
-    Public Shared Function GetTop(d As DependencyObject) As Double
-        Return d.GetValue(TopProperty)
-    End Function
-
     Private _IsActive As Boolean
 
     Private Sub UserControl_MouseDown(sender As Object, e As MouseButtonEventArgs)
         If e.ChangedButton = MouseButton.Left Then
             DeselectAll()
+        End If
+    End Sub
+
+    Private Sub Misc_Drop(sender As Object, e As DragEventArgs)
+        Dim Pos = e.GetPosition(sender)
+        Dim Def As ZDef = e.Data.GetData("WPFZ80MapEditor.ZDef")
+
+        Dim Args As New List(Of Object)
+
+        Args.Add(CInt(Math.Round(Pos.X)))
+        Args.Add(CInt(Math.Round(Pos.Y)))
+        Args.Add(32)
+        Args.Add(32)
+
+        Dim Misc As ZMisc = ZMisc.FromDef(Def, Args)
+        If Misc IsNot Nothing Then
+            Map.ZMisc.Add(Misc)
+            ItemsControl.SelectedItem = Misc
+            ItemsControl.Focus()
         End If
     End Sub
 
