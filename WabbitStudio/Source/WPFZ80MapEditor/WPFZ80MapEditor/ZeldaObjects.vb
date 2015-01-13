@@ -79,6 +79,8 @@ Public Interface IBaseGeneralObject
     Sub UpdatePosition(X As Double, Y As Double)
     Sub UpdatePosition(X As Double, Y As Double, W As Double, H As Double)
 
+    Property IsInitializating As Boolean
+
 End Interface
 
 Public Interface IGeneralObject(Of ZBase)
@@ -220,6 +222,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
     End Sub
 
     Public Sub New(Def As ZDef, Args() As Object, Optional Data As Stream = Nothing)
+        IsInitializating = True
         Definition = Def
         _Name = Def.Macro
         Me.Args = Def.Args.Clone
@@ -237,6 +240,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
             ZType.FromData(ObjData, Obj)
         End If
         FromStruct(Obj)
+        IsInitializating = False
     End Sub
 
     Private _X As Byte
@@ -360,6 +364,8 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
     End Sub
 
     Public Event PropertyChanged(sender As Object, e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+
+    Public Property IsInitializating As Boolean Implements IBaseGeneralObject.IsInitializating
 End Class
 
 #Region "Args collection and types"
@@ -522,7 +528,7 @@ Public Class ZDefArg
             If value = "" Then value = Nothing
             If _Value <> value Then
                 _Value = value
-                If Base IsNot Nothing Then
+                If Base IsNot Nothing AndAlso Not Base.IsInitializating Then
                     Base.Update()
                 End If
             End If

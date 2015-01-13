@@ -73,7 +73,7 @@ Public Class Scenario
         Await LoadImages(MainWindow.ZeldaFolder & "\graphics.asm")
 
         _FileName = FileName
-        SPASMHelper.Assembler.Defines.Add("INCLUDE_ALL", 1)
+        SPASMHelper.Defines.Add("INCLUDE_ALL", 1)
 
         Log("Assembling map")
         Dim Data = SPASMHelper.AssembleFile(FileName)
@@ -315,7 +315,7 @@ Public Class Scenario
         Dim TilesetTable As New List(Of String)
 
         Dim MapIndex As Integer = 0
-        For Each MapData In Maps.ToList().Where(Function(m) m.Exists)
+        For Each MapData In Maps.ToList().Where(Function(m) m.Exists).OrderBy(Function(m) m.X).OrderBy(Function(m) m.Y)
             Dim MapId = String.Format("{0:D2}", MapIndex)
             Dim MapPrefix = ScenarioName & "_MAP_" & MapId
 

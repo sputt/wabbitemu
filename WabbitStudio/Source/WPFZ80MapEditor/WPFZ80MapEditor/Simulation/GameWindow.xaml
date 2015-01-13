@@ -4,19 +4,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:WPFZ80MapEditor"
     xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
+    xmlns:simconverters="clr-namespace:WPFZ80MapEditor.SimConverters"
     Title="GameWindow" Height="600" Width="524" Loaded="Window_Loaded" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
     <Window.Resources>
         <!--<localconverters:ImageIndexConverter x:Key="convertImageIndex"/>-->
-        <converters:XImageConverter x:Key="ImageConverter"/>
+        <simconverters:ImageConverter x:Key="ImageConverter"/>
         <converters:YConverter x:Key="YConverter"/>
         <converters:XConverter x:Key="XConverter"/>
         <converters:ZConverter x:Key="ZConverter"/>
+        
+        <simconverters:ShadowScalingConverter x:Key="ShadowScalingConverter"/>
 
         <DataTemplate DataType="{x:Type local:ZDrawEntry}">
             <Image>
                 <Image.Source>
                     <MultiBinding Converter="{StaticResource ImageConverter}">
-                        <Binding Path="DataContext.Scenario" ElementName="GameWindow"/>
+                        <Binding Path="DataContext" ElementName="GameWindow"/>
                         <Binding Path="Image"/>
                     </MultiBinding>
                 </Image.Source>
@@ -41,7 +44,7 @@
                 </TransformGroup>
             </Canvas.RenderTransform>
             <local:XMapView Panel.ZIndex="0" DataContext="{Binding Map}" Canvas.Left="0" Canvas.Top="0" ShowNewMaps="False"/>
-            <ItemsControl Panel.ZIndex="1" ItemsSource="{Binding Path=DrawEntries}">
+            <ItemsControl Panel.ZIndex="2" ItemsSource="{Binding Path=DrawEntries}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas Width="256" Height="256"/>
@@ -83,7 +86,30 @@
                     </Style>
                 </ItemsControl.ItemContainerStyle>
             </ItemsControl>
-            <Border Panel.ZIndex="2" Width="96" Height="64" BorderThickness="1" BorderBrush="#80FF0000" Background="Transparent" Canvas.Left="{Binding ScreenX}" Canvas.Top="{Binding ScreenY}">
+            <ItemsControl Panel.ZIndex="1" ItemsSource="{Binding Path=DrawEntries}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas Width="256" Height="256"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                        <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Width="{Binding W}" Height="{Binding H}" HorizontalAlignment="Center">
+                            <Ellipse Width="{Binding ., Converter={StaticResource ShadowScalingConverter}, ConverterParameter=16}"
+                                     Height="{Binding ., Converter={StaticResource ShadowScalingConverter}, ConverterParameter=6}"
+                                     Fill="Black">
+                            </Ellipse>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Border Panel.ZIndex="3" Width="96" Height="64" BorderThickness="1" BorderBrush="#80FF0000" Background="Transparent" Canvas.Left="{Binding ScreenX}" Canvas.Top="{Binding ScreenY}">
             </Border>
         </Canvas>
     </StackPanel>

@@ -171,6 +171,7 @@
       <DependentUpon>TilesPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Scenario.vb" />
+    <Compile Include="Simulation\SimConverters.vb" />
     <Compile Include="SPASMHelper.vb" />
     <Compile Include="TileSelection.vb" />
     <Compile Include="Tileset.vb" />

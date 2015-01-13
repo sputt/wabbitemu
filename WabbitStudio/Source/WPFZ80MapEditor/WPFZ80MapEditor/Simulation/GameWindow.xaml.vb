@@ -55,12 +55,13 @@ Public Class GameWindow
 
         Model = New GameModel(Scenario, _Asm, _Calc)
 
-        For Each Define As String In SPASMHelper.Assembler.Defines
+        For Each Define As String In SPASMHelper.Defines
             Dim DefineKey As String = Define.ToUpper()
+            Debug.WriteLine("Processing: " & Define)
             If DefineKey Like "*_GFX?" Or DefineKey Like "*_GFX" Then
                 Dim Address As UShort = _Asm.Labels(Define.ToUpper()) And &HFFFF
                 If Not Model.ImageMap.ContainsKey(Address) Then
-                    Model.ImageMap.Add(Address, SPASMHelper.Assembler.Defines(Define))
+                    Model.ImageMap.Add(Address, SPASMHelper.Defines(Define))
                 End If
             End If
         Next

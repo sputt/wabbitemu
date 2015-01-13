@@ -8,6 +8,9 @@ Public Class GameModel
     Inherits DependencyObject
     Implements IDisposable
 
+    Public Const P_PUSHING As Byte = 1 << 2
+    Public Const P_SHIELD As Byte = 1 << 4
+
     Public Shared ReadOnly ScreenXProperty As DependencyProperty =
         DependencyProperty.Register("ScreenX", GetType(Byte), GetType(GameModel))
     Public Shared ReadOnly ScreenYProperty As DependencyProperty =
@@ -21,6 +24,8 @@ Public Class GameModel
 
     Public ScreenX As Byte
     Public ScreenY As Byte
+
+    Public GameFlags As Byte
 
     ' Public PlayerX As Byte
     'Public PlayerY As Byte
@@ -50,6 +55,7 @@ Public Class GameModel
     Private ScreenPosAddr As UShort
     Private DrawEntryCountAddr As UShort
     Private MapDataAddr As UShort
+    Private FlagsAddr As UShort
     Private Memory As IMemoryContext
 
     Private FrameProcessThread As New Thread(AddressOf FrameProcess)
@@ -63,6 +69,7 @@ Public Class GameModel
         ScreenPosAddr = Asm.Labels("SCREEN_XC")
         DrawEntryCountAddr = Asm.Labels("DRAW_COUNT")
         MapDataAddr = Asm.Labels("MAP_DATA")
+        FlagsAddr = Asm.Labels("GAME_FLAGS")
         Memory = Calc.Memory
 
         Me.Scenario = scenario
@@ -115,6 +122,8 @@ Public Class GameModel
         Dim ScreenPos = Memory.Read(ScreenPosAddr, 2)
         ScreenX = ScreenPos(0)
         ScreenY = ScreenPos(1)
+
+        GameFlags = Memory.ReadByte(FlagsAddr)
 
         ProcessEvent.Set()
     End Sub

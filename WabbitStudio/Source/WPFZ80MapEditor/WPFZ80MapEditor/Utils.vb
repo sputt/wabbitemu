@@ -50,3 +50,23 @@
         End If
     End Function
 End Class
+
+Public MustInherit Class OneWayConverter
+    Implements IValueConverter
+
+    Public MustOverride Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Return Nothing
+    End Function
+End Class
+
+Public MustInherit Class OneWayMultiValueConverter
+    Implements IMultiValueConverter
+
+    Public MustOverride Function Convert(values() As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
+
+    Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As Globalization.CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+        Return Nothing
+    End Function
+End Class

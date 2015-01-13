@@ -1,9 +1,33 @@
 ﻿Imports SPASM
 
 Public Class SPASMHelper
-    Public Shared Assembler As IZ80Assembler
+    Private Shared Assembler As IZ80Assembler
 
     Public Shared Labels As New Dictionary(Of String, Integer)
+
+    Public Class AssemblerDefines
+        Implements IEnumerable
+
+        Private _Map As New Dictionary(Of String, String)
+
+        Public Sub Add(Name As String, Value As String)
+            SPASMHelper.Assembler.Defines.Add(Name, Value)
+            _Map.Add(Name, Value)
+        End Sub
+
+        Public Function GetEnumerator() As IEnumerator Implements IEnumerable.GetEnumerator
+            Return _Map.Keys.GetEnumerator()
+        End Function
+
+        Default Public ReadOnly Property Fetch(Name As String)
+            Get
+                Return _Map(Name)
+            End Get
+        End Property
+
+    End Class
+
+    Public Shared Property Defines As AssemblerDefines
 
     Public Shared Sub Initialize(Path As String)
         Try
@@ -11,6 +35,8 @@ Public Class SPASMHelper
         Catch e As System.Runtime.InteropServices.COMException
             Exit Sub
         End Try
+
+        Defines = New AssemblerDefines()
 
         Assembler.CurrentDirectory = Path
 

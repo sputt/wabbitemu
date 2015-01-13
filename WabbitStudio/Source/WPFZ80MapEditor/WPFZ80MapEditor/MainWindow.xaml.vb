@@ -31,7 +31,7 @@ Public Class MainWindow
 
         If ZeldaFolder IsNot Nothing Then
             Dim HillScenario As New Scenario
-            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\hill.asm"))
+            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\jim.asm"))
             Model.Scenario = HillScenario
         End If
     End Sub
@@ -228,6 +228,7 @@ Public Class MainWindow
 
     Private Sub TestButton_Click(sender As Object, e As RoutedEventArgs)
         Dim Game = New GameWindow()
+        Game.Owner = Window.GetWindow(Me)
         Game.Scenario = Model.Scenario
         Game.Show()
     End Sub
