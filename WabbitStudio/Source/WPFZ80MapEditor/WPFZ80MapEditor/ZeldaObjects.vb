@@ -607,7 +607,7 @@ Public Class ZDef
         Select Case Name.ToLower
             Case "x", "y", "z", "w", "h", "d", "ac", "cc"
                 NewArg = New ZDefArg8Bit(Name, Description)
-            Case "ap", "cp"
+            Case "ap", "cp", "ax"
                 NewArg = New ZDefArg16Bit(Name, Description)
             Case "of"
                 NewArg = New ZDefArgObjectFlags(Name, Description)
@@ -617,7 +617,7 @@ Public Class ZDef
                 NewArg = New ZDefArgObjectID(Name, Description)
             Case "ap"
                 NewArg = New ZDefArgGraphic(Name, Description, images)
-            Case "g"
+            Case "g", "gg"
                 NewArg = New ZDefArgGenState(Name, Description)
             Case Else
                 NewArg = New ZDefArg(Name, Description)
