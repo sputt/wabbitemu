@@ -68,7 +68,17 @@
                 <TextBox Text="{Binding Path=Value}" Margin="10,0,0,0" Height="23" Tag="ObjProp" MaxLength="3" Width="40" TextAlignment="Right" />
             </StackPanel>
         </DataTemplate>
-        
+
+        <DataTemplate DataType="{x:Type local:ZDefArg16Bit}">
+            <StackPanel Orientation="Horizontal" Height="31">
+                <StackPanel Orientation="Horizontal" Width="125">
+                    <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
+                    <Label Content=":" Height="28" Padding="0,5,5,5" />
+                </StackPanel>
+                <TextBox Text="{Binding Path=Value}" Margin="10,0,0,0" Height="23" Tag="ObjProp" Width="160" />
+            </StackPanel>
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type local:ZDefArgObjectFlags}">
             <StackPanel Orientation="Horizontal" Height="60">
                 <StackPanel Orientation="Horizontal" Width="125">

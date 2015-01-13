@@ -508,6 +508,20 @@ Public Class ZDefArg8Bit
     End Function
 End Class
 
+Public Class ZDefArg16Bit
+    Inherits ZDefArg
+
+    Public Sub New(Name As String, Description As String)
+        MyBase.New(Name, Description)
+    End Sub
+
+    Public Overrides Function Clone() As Object
+        Dim Copy As New ZDefArg16Bit(Name, Description)
+        Copy.Value = Value
+        Return Copy
+    End Function
+End Class
+
 Public Class ZDefArg
     Implements ICloneable
 
@@ -593,6 +607,8 @@ Public Class ZDef
         Select Case Name.ToLower
             Case "x", "y", "z", "w", "h", "d", "ac", "cc"
                 NewArg = New ZDefArg8Bit(Name, Description)
+            Case "ap", "cp"
+                NewArg = New ZDefArg16Bit(Name, Description)
             Case "of"
                 NewArg = New ZDefArgObjectFlags(Name, Description)
             Case "ef"
