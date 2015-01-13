@@ -176,13 +176,12 @@ Public Class MapData
     End Sub
 
     Public Sub New(Data As IEnumerable(Of Byte), newScenario As Scenario, newTileset As Integer, isCompressed As Boolean)
-
         TileData = New ObservableCollection(Of Byte)(If(isCompressed, MapCompressor.Decompress(Data), Data.Take(16 * 16)))
         Initialize(newScenario, newTileset)
     End Sub
 
     Public Sub New(newScenario As Scenario, newTileset As Integer)
-        TileData = New ObservableCollection(Of Byte)(Enumerable.Repeat(CByte(0), LayerContainer.MapSize.Width * LayerContainer.MapSize.Height))
+        TileData = New ObservableCollection(Of Byte)(Enumerable.Repeat(CByte(0), 256))
         Initialize(newScenario, newTileset)
     End Sub
 

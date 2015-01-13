@@ -27,6 +27,8 @@ Public Class MainWindow
         DataContext = Model
         Model.CurrentLayer = LayerType.MapsetLayer
 
+        RomPath = "C:\Users\Spencer\Documents\ti83p.sav"
+
         If ZeldaFolder IsNot Nothing Then
             Dim HillScenario As New Scenario
             Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\hill.asm"))
@@ -222,5 +224,11 @@ Public Class MainWindow
 
     Private Sub Save_Click(sender As Object, e As RoutedEventArgs)
         Model.Scenario.SaveScenario()
+    End Sub
+
+    Private Sub TestButton_Click(sender As Object, e As RoutedEventArgs)
+        Dim Game = New GameWindow()
+        Game.Scenario = Model.Scenario
+        Game.Show()
     End Sub
 End Class

@@ -199,7 +199,7 @@
                         <Button Name="Button1" Click="Save_Click">
                             <Image Source="Toolbar/save.bmp"  OpacityMask="#A8E61D"/>
                         </Button>
-                        <Button Name="TestButton">Test</Button>
+                        <Button Name="TestButton" Click="TestButton_Click">Test</Button>
                         <Separator></Separator>
 
                         <ListBox Style="{StaticResource HorizontalRadioButtonList}" ItemContainerStyle="{StaticResource RadioButtonListItem}" SelectedValue="{Binding CurrentLayer}" SelectedValuePath="Tag">

@@ -55,6 +55,8 @@ Public Class GameModel
     Private FrameProcessThread As New Thread(AddressOf FrameProcess)
     Private ProcessEvent As New AutoResetEvent(False)
 
+    Public Property Scenario As Scenario
+
     Public Sub New(scenario As Scenario, Asm As Z80Assembler, Calc As IWabbitemu)
         DrawQueueAddr = Asm.Labels("DRAW_QUEUE")
         DrawEntrySize = Asm.Labels("DRAW_ENTRY_WIDTH")
@@ -62,6 +64,8 @@ Public Class GameModel
         DrawEntryCountAddr = Asm.Labels("DRAW_COUNT")
         MapDataAddr = Asm.Labels("MAP_DATA")
         Memory = Calc.Memory
+
+        Me.Scenario = scenario
 
         Map = New MapData(scenario, 0)
 

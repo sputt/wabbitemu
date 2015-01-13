@@ -46,10 +46,10 @@ Public Class GameWindow
         _Calc.LoadFile(_Asm.OutputFile)
 
         _Calc.Run()
+        _Calc.Reset()
 
-        _Calc.Keypad.PressKey(CalcKey.KEY_ON)
-        Thread.Sleep(200)
-        _Calc.Keypad.ReleaseKey(CalcKey.KEY_ON)
+        _Calc.TurnCalcOn()
+        _Calc.TurnCalcOn()
 
         LaunchApp("Zelda   ")
 
@@ -102,13 +102,13 @@ Public Class GameWindow
         If e.Key = Key.LeftAlt Then
             Exit Sub
         End If
-        _Calc.Keypad.PressVirtKey(KeyInterop.VirtualKeyFromKey(e.Key))
+        '_Calc.Keypad.PressVirtKey(KeyInterop.VirtualKeyFromKey(e.Key))
     End Sub
 
     Private Sub Window_KeyUp(sender As Object, e As KeyEventArgs)
         If e.Key = Key.LeftAlt Then
             Exit Sub
         End If
-        _Calc.Keypad.ReleaseVirtKey(KeyInterop.VirtualKeyFromKey(e.Key))
+        '_Calc.Keypad.ReleaseVirtKey(KeyInterop.VirtualKeyFromKey(e.Key))
     End Sub
 End Class
