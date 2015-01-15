@@ -2,6 +2,7 @@
 
 Public Enum LayerType
     MapsetLayer
+    TilegroupLayer
     MapLayer
     ObjectLayer
     EnemyLayer

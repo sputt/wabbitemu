@@ -5,6 +5,9 @@ Public Class TileSelection
         AnimatedTile
     End Enum
 
+    Public Sub New()
+    End Sub
+
     Public Sub New(Tileset As Tileset, Index As Byte)
         Me.Tileset = Tileset
         Type = SelectionType.Tile

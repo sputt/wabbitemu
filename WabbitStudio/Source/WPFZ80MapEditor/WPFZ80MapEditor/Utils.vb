@@ -51,12 +51,16 @@
     End Function
 End Class
 
-Public MustInherit Class OneWayConverter
+Public MustInherit Class OneWayConverter(Of InputType, TargetType)
     Implements IValueConverter
 
-    Public MustOverride Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+    Public MustOverride Function Convert(Value As InputType, Parameter As Object) As TargetType
 
-    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+    Private Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+        Return Convert(value, parameter)
+    End Function
+
+    Private Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
         Return Nothing
     End Function
 End Class

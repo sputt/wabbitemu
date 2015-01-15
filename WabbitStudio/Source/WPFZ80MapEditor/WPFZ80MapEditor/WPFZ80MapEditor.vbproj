@@ -173,6 +173,10 @@
     <Compile Include="Scenario.vb" />
     <Compile Include="Simulation\SimConverters.vb" />
     <Compile Include="SPASMHelper.vb" />
+    <Compile Include="TilegroupLayer.xaml.vb">
+      <DependentUpon>TilegroupLayer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TilegroupSelection.vb" />
     <Compile Include="TileSelection.vb" />
     <Compile Include="Tileset.vb" />
     <Compile Include="Utils.vb" />
@@ -237,6 +241,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Panels\TilesPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TilegroupLayer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

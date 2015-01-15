@@ -1,11 +1,9 @@
 ﻿Namespace SimConverters
 
     Public Class ShadowScalingConverter
-        Inherits OneWayConverter
+        Inherits OneWayConverter(Of ZDrawEntry, Double)
 
-        Public Overrides Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object
-            Dim Entry As ZDrawEntry = value
-
+        Public Overrides Function Convert(Entry As ZDrawEntry, parameter As Object) As Double
             If Entry.D = 0 Or Entry.Z = 0 Or (Entry.Flags And ZDrawEntry.D_NOSHADOW) Then
                 Return 0.0
             End If

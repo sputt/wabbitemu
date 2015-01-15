@@ -1,0 +1,71 @@
+﻿<local:MapLayer x:Class="TilegroupLayer"
+                x:Name="TilegroupLayer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPFZ80MapEditor"
+             xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
+             mc:Ignorable="d" 
+                MouseLeftButtonDown="ObjectCanvas_MouseLeftButtonDown"
+                  MouseLeftButtonUp="ObjectCanvas_MouseLeftButtonUp" MouseMove="ObjectCanvas_MouseMove"
+             Width="256" Height="256">
+    <UserControl.Resources>
+        <local:TilegroupSelection x:Key="TilegroupTest" Tileset="{x:Null}">
+            <local:TilegroupSelection.TilegroupEntries>
+                <local:TilegroupEntryCollection>
+                    <local:TilegroupEntry Index="117">
+                        <local:TilegroupEntry.Tile>
+                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                        </local:TilegroupEntry.Tile>
+                    </local:TilegroupEntry>
+                    <local:TilegroupEntry Index="118">
+                        <local:TilegroupEntry.Tile>
+                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                        </local:TilegroupEntry.Tile>
+                    </local:TilegroupEntry>
+                    <local:TilegroupEntry Index="134">
+                        <local:TilegroupEntry.Tile>
+                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                        </local:TilegroupEntry.Tile>
+                    </local:TilegroupEntry>
+                    <local:TilegroupEntry Index="135">
+                        <local:TilegroupEntry.Tile>
+                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                        </local:TilegroupEntry.Tile>
+                    </local:TilegroupEntry>
+                </local:TilegroupEntryCollection>
+            </local:TilegroupSelection.TilegroupEntries>
+        </local:TilegroupSelection>
+        
+        <local:SegmentConverter x:Key="SegmentConverter"/>
+    </UserControl.Resources>
+
+    <Canvas x:Name="ObjectCanvas" Width="256" Height="256" Background="Transparent">
+        <Path x:Name="TilegroupSelectionShape" DataContext="{Binding TilegroupSelection, ElementName=TilegroupLayer}"
+                  Canvas.Left="{Binding MapOffset.X}"
+                  Canvas.Top="{Binding MapOffset.Y}"
+                  Stroke="{StaticResource SelectionBrush}" Opacity="{StaticResource SelectionOpacity}" StrokeThickness="2" Cursor="SizeAll" Fill="#20FFFFFF"
+              MouseLeftButtonDown="TilegroupSelectionShape_MouseLeftButtonDown"
+              MouseLeftButtonUp="TilegroupSelectionShape_MouseLeftButtonUp"
+              MouseMove="TilegroupSelectionShape_MouseMove"
+              >
+            <Path.Data>
+                <PathGeometry>
+                    <PathGeometry.Figures>
+                        <PathFigureCollection>
+                            <PathFigure IsClosed="True" StartPoint="{Binding Path=Vertices[0]}"
+                                            Segments="{Binding Path=Vertices, Converter={StaticResource SegmentConverter}}">
+                            </PathFigure>
+                        </PathFigureCollection>
+                    </PathGeometry.Figures>
+                </PathGeometry>
+            </Path.Data>
+        </Path>
+        <Border Name="SelectionRect" BorderBrush="{StaticResource SelectionBrush}" BorderThickness="1" Height="150" Width="150" Canvas.Left="10" Canvas.Top="50" Visibility="Hidden">
+            <Border.Background>
+                <SolidColorBrush Color="{Binding Color, Source={StaticResource SelectionBrush}}" Opacity="0.4"/>
+            </Border.Background>
+        </Border>
+    </Canvas>
+</local:MapLayer>

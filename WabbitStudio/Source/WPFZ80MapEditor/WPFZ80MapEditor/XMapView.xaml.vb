@@ -59,6 +59,7 @@
 
         If Keyboard.IsKeyDown(Key.LeftCtrl) Then
             SelectedTile = New TileSelection(Map.Tileset, Map.TileData(Index))
+            e.Handled = True
         Else
             If e.MiddleButton = MouseButtonState.Pressed Then
                 Map.TileData(Index) = Map.TileData(Index) Xor &H80

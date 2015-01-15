@@ -1,11 +1,5 @@
 ﻿Public Class MiscLayer
-    Implements IMapLayer
-
-    Protected ReadOnly Property Map As MapData
-        Get
-            Return DirectCast(DataContext, MapData)
-        End Get
-    End Property
+    Inherits MapLayer
 
     Public Shared ReadOnly LeftProperty As DependencyProperty =
         DependencyProperty.RegisterAttached("Left", GetType(Double), GetType(MiscLayer), New UIPropertyMetadata(CDbl(-1)))

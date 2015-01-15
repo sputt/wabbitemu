@@ -143,6 +143,7 @@
                                             </MultiBinding>
                                         </local:XMapView.ShowNewMaps>
                                     </local:XMapView>
+                                    <local:TilegroupLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
 
                                     <local:MiscLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
                                     <local:XObjectLayer Panel.ZIndex="2" Style="{StaticResource LayerStyle}" CollectionName="ZObjects"/>
@@ -204,6 +205,7 @@
 
                         <ListBox Style="{StaticResource HorizontalRadioButtonList}" ItemContainerStyle="{StaticResource RadioButtonListItem}" SelectedValue="{Binding CurrentLayer}" SelectedValuePath="Tag">
                             <ListBoxItem Tag="{x:Static local:LayerType.MapsetLayer}">Mapset</ListBoxItem>
+                            <ListBoxItem Tag="{x:Static local:LayerType.TilegroupLayer}">Tilegroup</ListBoxItem>
                             <ListBoxItem Tag="{x:Static local:LayerType.MapLayer}">Map</ListBoxItem>
                             <ListBoxItem Tag="{x:Static local:LayerType.ObjectLayer}">Objects</ListBoxItem>
                             <ListBoxItem Tag="{x:Static local:LayerType.EnemyLayer}">Enemies</ListBoxItem>

@@ -3,7 +3,7 @@
 
     Protected Sub Object_Drop(sender As Object, e As DragEventArgs)
         Dim Pos = e.GetPosition(ObjectListBox)
-        Dim Def As ZDef = e.Data.GetData("WPFZ80MapEditor.ZDef")
+        Dim Def As ZDef = e.Data.GetData(GetType(ZDef))
 
         Dim Args As New List(Of Object)
 

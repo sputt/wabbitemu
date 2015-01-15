@@ -27,6 +27,12 @@ Public Class MapLayer
                            DependencyProperty.Register("Active", _
                            GetType(Boolean), GetType(MapLayer), _
                            New PropertyMetadata(False))
+
+    Protected ReadOnly Property Map As MapData
+        Get
+            Return DirectCast(DataContext, MapData)
+        End Get
+    End Property
 End Class
 
 Public Interface IMapLayer
