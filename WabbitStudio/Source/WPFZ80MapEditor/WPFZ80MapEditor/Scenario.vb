@@ -315,7 +315,7 @@ Public Class Scenario
         Dim TilesetTable As New List(Of String)
 
         Dim MapIndex As Integer = 0
-        For Each MapData In Maps.ToList().Where(Function(m) m.Exists).OrderBy(Function(m) m.X).OrderBy(Function(m) m.Y)
+        For Each MapData In Maps.ToList().Where(Function(m) m.Exists).OrderBy(Function(m) m.Y).ThenBy(Function(m) m.X)
             Dim MapId = String.Format("{0:D2}", MapIndex)
             Dim MapPrefix = ScenarioName & "_MAP_" & MapId
 

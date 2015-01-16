@@ -2,7 +2,7 @@
 Imports System.Linq
 Imports System.IO
 Imports WPFZ80MapEditor.ValueConverters
-Imports System.Threading.Tasks
+Imports Microsoft.Win32
 
 <TemplatePart(Name:="PART_LayerContainer", Type:=GetType(XLayerContainer))>
 Public Class MainWindow
@@ -27,7 +27,7 @@ Public Class MainWindow
         DataContext = Model
         Model.CurrentLayer = LayerType.MapsetLayer
 
-        RomPath = "C:\Users\Spencer\Documents\ti83p.sav"
+        RomPath = Registry.GetValue("HKEY_CURRENT_USER\Software\Wabbitemu", "rom_path", "")
 
         If ZeldaFolder IsNot Nothing Then
             Dim HillScenario As New Scenario
