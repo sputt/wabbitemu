@@ -6,6 +6,12 @@
     Name="MainWindow"
     Title="Z80 Scenario Editor" Height="800" Width="1200" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" Background="White">
 
+    <Window.CommandBindings>
+        <CommandBinding Command="Undo"
+                        CanExecute="UndoCanExecute"
+                        Executed="UndoExecuted"/>
+    </Window.CommandBindings>
+    
     <Window.Resources>
         <localconverters:DoubleToZoomLevelConverter x:Key="convertZoomLevel2"/>
         <localconverters:GapConverter x:Key="GapConverter"/>

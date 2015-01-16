@@ -193,35 +193,6 @@ Namespace ValueConverters
         End Function
     End Class
 
-    Public Class AnimDefStoryboardConverter
-        Implements IValueConverter
-
-        Public Function Convert1(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
-            Dim Tileset = 0
-            Dim ZAnim As ZDef = value
-
-            Dim Anim As New DoubleAnimationUsingKeyFrames()
-            Anim.Duration = New Duration(TimeSpan.FromMilliseconds(500))
-
-            Anim.KeyFrames.Add(New DiscreteDoubleKeyFrame(ZAnim.DefaultImage, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(250))))
-            Anim.KeyFrames.Add(New DiscreteDoubleKeyFrame(ZAnim.DefaultImage + 1, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(250))))
-
-            Anim.RepeatBehavior = RepeatBehavior.Forever
-
-            Storyboard.SetTargetProperty(Anim, New PropertyPath(XTile.IndexProperty))
-
-            ' Create a storyboard to apply the animation.
-            Dim AnimStoryboard As New Storyboard()
-            AnimStoryboard.Children.Add(Anim)
-
-            Return AnimStoryboard
-        End Function
-
-        Public Function ConvertBack1(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
-            Return Nothing
-        End Function
-    End Class
-
     Public Class TileConverter
         Implements IMultiValueConverter
 

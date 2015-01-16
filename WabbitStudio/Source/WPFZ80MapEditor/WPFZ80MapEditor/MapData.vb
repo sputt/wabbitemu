@@ -9,6 +9,13 @@ Public Class MapData
     Inherits Freezable
     Implements INotifyPropertyChanged
 
+    Private _ID As Guid
+    Public ReadOnly Property ID As Guid
+        Get
+            Return _ID
+        End Get
+    End Property
+
     Private _Exists As Boolean = True
     Private _X As Double
     Private _Y As Double
@@ -49,31 +56,6 @@ Public Class MapData
             End If
         End Set
     End Property
-
-    'Public Shared ReadOnly TileDataProperty As DependencyProperty =
-    '    DependencyProperty.Register("TileData", GetType(ObservableCollection(Of Byte)), GetType(MapData))
-
-    'Public Shared ReadOnly TilesetProperty As DependencyProperty =
-    '    DependencyProperty.Register("Tileset", GetType(Tileset), GetType(MapData))
-
-    'Public Shared ReadOnly ZAnimsProperty As DependencyProperty =
-    '    DependencyProperty.Register("ZAnims",
-    '                                GetType(ObservableCollection(Of ZAnim)), GetType(MapData))
-
-    'Public Shared ReadOnly ZObjectsProperty As DependencyProperty =
-    '    DependencyProperty.Register("ZObjects",
-    '                                GetType(ObservableCollection(Of ZObject)), GetType(MapData))
-
-    'Public Shared ReadOnly ZEnemiesProperty As DependencyProperty =
-    '    DependencyProperty.Register("ZEnemies",
-    '                                GetType(ObservableCollection(Of ZEnemy)), GetType(MapData))
-
-    'Public Shared ReadOnly ZMiscProperty As DependencyProperty =
-    '    DependencyProperty.Register("ZMisc",
-    '                                GetType(ObservableCollection(Of ZMisc)), GetType(MapData))
-
-    'Public Shared ReadOnly ScenarioProperty As DependencyProperty =
-    '    DependencyProperty.Register("Scenario", GetType(Scenario), GetType(MapData))
 
     Private _Scenario As Scenario
     Public Property Scenario As Scenario
@@ -146,15 +128,6 @@ Public Class MapData
         End Set
     End Property
 
-    'Public Property Scenario As Scenario
-    '    Get
-    '        Return GetValue(ScenarioProperty)
-    '    End Get
-    '    Set(value As Scenario)
-    '        SetValue(ScenarioProperty, value)
-    '    End Set
-    'End Property
-
     Private Sub Initialize(newScenario As Scenario, NewTileset As Integer)
         Scenario = newScenario
         If Scenario IsNot Nothing Then
@@ -164,15 +137,8 @@ Public Class MapData
         ZObjects = New ObservableCollection(Of ZObject)
         ZEnemies = New ObservableCollection(Of ZEnemy)
         ZMisc = New ObservableCollection(Of ZMisc)
-    End Sub
 
-
-    Public Sub New(FileName As String, newScenario As Scenario, newTileset As Integer)
-        Dim FullPath = System.IO.Path.GetFullPath(FileName)
-        Dim CompMapData = SPASMHelper.AssembleFile(FullPath)
-        TileData = New ObservableCollection(Of Byte)(MapCompressor.Decompress(CompMapData))
-
-        Initialize(newScenario, newTileset)
+        _ID = Guid.NewGuid()
     End Sub
 
     Public Sub New(Data As IEnumerable(Of Byte), newScenario As Scenario, newTileset As Integer, isCompressed As Boolean)
@@ -208,6 +174,11 @@ Public Class MapData
 
     Public Event PropertyChanged(sender As Object, e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
 
+
+    Private Function CloneAll(Of BaseType As {IBaseGeneralObject, ICloneable})(CollectionToClone As ICollection(Of BaseType)) As ICollection(Of BaseType)
+        Return New ObservableCollection(Of BaseType)(CollectionToClone.Select(Function(z) CType(z.Clone(), BaseType)).ToList())
+    End Function
+
     Protected Overrides Function CreateInstanceCore() As Freezable
         Dim Map As New MapData(Scenario, 0)
         Map.Tileset = Tileset
@@ -216,10 +187,11 @@ Public Class MapData
         Map.Y = Y
         Map.Exists = Exists
         Map.TileData = New ObservableCollection(Of Byte)(TileData)
-        Map.ZAnims = New ObservableCollection(Of ZAnim)(ZAnims)
-        Map.ZObjects = New ObservableCollection(Of ZObject)(ZObjects)
-        Map.ZEnemies = New ObservableCollection(Of ZEnemy)(ZEnemies)
-        Map.ZMisc = New ObservableCollection(Of ZMisc)(ZMisc)
+        Map.ZAnims = CloneAll(ZAnims)
+        Map.ZObjects = CloneAll(ZObjects)
+        Map.ZEnemies = CloneAll(ZEnemies)
+        Map.ZMisc = CloneAll(ZMisc)
+        Map._ID = ID
 
         Return Map
     End Function

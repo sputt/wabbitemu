@@ -232,4 +232,15 @@ Public Class MainWindow
         Game.Scenario = Model.Scenario
         Game.Show()
     End Sub
+
+    Private Sub UndoCanExecute(sender As Object, e As CanExecuteRoutedEventArgs)
+        e.CanExecute = UndoManager.CanUndo()
+        e.Handled = True
+    End Sub
+
+    Private Sub UndoExecuted(sender As Object, e As ExecutedRoutedEventArgs)
+        UndoManager.Undo(Model)
+        e.Handled = True
+    End Sub
+
 End Class

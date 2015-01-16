@@ -164,6 +164,8 @@
 
         _StartObjectDrag = Mouse.GetPosition(ObjectCanvas)
         If sender.CaptureMouse() Then
+            UndoManager.PushUndoState(Map, UndoManager.TypeFlagFromType(GetType(BaseType)))
+
             e.Handled = True
             ObjectListBox.Focus()
         End If
@@ -255,6 +257,8 @@
 
     Protected Sub ObjectListBox_KeyDown(sender As Object, e As KeyEventArgs)
         If e.Key = Key.Delete Then
+            UndoManager.PushUndoState(Map, UndoManager.TypeFlagFromType(GetType(BaseType)))
+
             Dim SelectedObjs As New List(Of BaseType)(ObjectListBox.SelectedItems.OfType(Of BaseType))
             For Each ZObj In SelectedObjs
                 ObjectCollection.Remove(ZObj)

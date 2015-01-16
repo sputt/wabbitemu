@@ -122,9 +122,15 @@
     Private _TileDataBackup As New List(Of Byte)
 
     Private Sub TilegroupSelectionShape_MouseLeftButtonDown(sender As Object, evt As MouseButtonEventArgs)
+        If Keyboard.IsKeyDown(Key.LeftCtrl) Then
+            Exit Sub
+        End If
+
         _StartGroupDrag = Mouse.GetPosition(sender)
 
         If sender.CaptureMouse() Then
+            UndoManager.PushUndoState(Map, UndoManager.TypeFlags.Anims)
+
             _TileDataBackup.AddRange(Map.TileData)
             evt.Handled = True
         End If
@@ -137,35 +143,35 @@
         End If
     End Sub
 
-        Private Sub TilegroupSelectionShape_MouseMove(sender As Object, evt As MouseEventArgs)
-            If Mouse.Captured Is sender Then
-                Dim Diff As Point = Mouse.GetPosition(sender) - _StartGroupDrag
-                Dim Dx = Math.Round(Diff.X / 16.0)
-                Dim Dy = Math.Round(Diff.Y / 16.0)
+    Private Sub TilegroupSelectionShape_MouseMove(sender As Object, evt As MouseEventArgs)
+        If Mouse.Captured Is sender Then
+            Dim Diff As Point = Mouse.GetPosition(sender) - _StartGroupDrag
+            Dim Dx = Math.Round(Diff.X / 16.0)
+            Dim Dy = Math.Round(Diff.Y / 16.0)
 
-                Dim Di = Dy * 16 + Dx
+            Dim Di = Dy * 16 + Dx
 
-                ' Assign the tiles
-                Dim Entries As New List(Of TilegroupEntry)
+            ' Assign the tiles
+            Dim Entries As New List(Of TilegroupEntry)
 
-                Dim Replacements As New Dictionary(Of Integer, Byte)
+            Dim Replacements As New Dictionary(Of Integer, Byte)
             TilegroupSelection.TilegroupEntries.ToList().ForEach(
                 Sub(e)
-                        If Replacements.ContainsKey(e.Index + Di) Then
-                            Replacements.Remove(e.Index + Di)
-                        End If
-                        Map.TileData(e.Index + Di) = e.Tile.TileIndex
-                        ' Put back the original data where it was
-                        Replacements.Add(e.Index, _TileDataBackup(e.Index))
-                        Entries.Add(New TilegroupEntry(e.Index + Di, e.Tile))
-                    End Sub)
+                    If Replacements.ContainsKey(e.Index + Di) Then
+                        Replacements.Remove(e.Index + Di)
+                    End If
+                    Map.TileData(e.Index + Di) = e.Tile.TileIndex
+                    ' Put back the original data where it was
+                    Replacements.Add(e.Index, _TileDataBackup(e.Index))
+                    Entries.Add(New TilegroupEntry(e.Index + Di, e.Tile))
+                End Sub)
 
             For Each Index In Replacements.Keys.Except(Entries.Select(Function(e) e.Index))
                 Map.TileData(Index) = Replacements(Index)
             Next
 
-                TilegroupSelection = New TilegroupSelection(Map.Tileset, Entries)
-                evt.Handled = True
-            End If
-        End Sub
-    End Class
+            TilegroupSelection = New TilegroupSelection(Map.Tileset, Entries)
+            evt.Handled = True
+        End If
+    End Sub
+End Class

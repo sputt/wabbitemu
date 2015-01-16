@@ -71,6 +71,7 @@
                             Exit Sub
                         End If
 
+                        UndoManager.PushUndoState(Map, UndoManager.TypeFlags.Anims)
                         Map.TileData(Index) = SelectedTile.TileIndex
 
                         Dim X = (Index Mod 16) * 16
