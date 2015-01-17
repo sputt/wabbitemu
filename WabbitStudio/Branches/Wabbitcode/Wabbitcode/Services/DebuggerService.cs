@@ -59,14 +59,14 @@ namespace Revsoft.Wabbitcode.Services
 
         public void EndDebugging()
         {
-            CurrentDebugger.EndDebug();
-            CurrentDebugger.Dispose();
-            CurrentDebugger = null;
-
             if (OnDebuggingEnded != null)
             {
                 OnDebuggingEnded(this, new DebuggingEventArgs(CurrentDebugger));
             }
+
+            CurrentDebugger.EndDebug();
+            CurrentDebugger.Dispose();
+            CurrentDebugger = null;
         }
 
         private static string GetOutputFileDetails(IProject project)

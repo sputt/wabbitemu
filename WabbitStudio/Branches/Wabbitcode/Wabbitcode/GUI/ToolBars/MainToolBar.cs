@@ -130,7 +130,8 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
             });
             Dock = DockStyle.Left;
             RenderMode = ToolStripRenderMode.System;
-            GripStyle = ToolStripGripStyle.Hidden;
+            LayoutStyle = ToolStripLayoutStyle.Flow;
+            GripStyle = ToolStripGripStyle.Visible;
             Text = "Main Toolbar";
 
             _dockingService = DependencyFactory.Resolve<IDockingService>();

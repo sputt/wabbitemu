@@ -302,6 +302,11 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             {
                 LaunchApp(app.Name);
             }
+
+            if (DebuggerRunningChanged != null)
+            {
+                DebuggerRunningChanged(this, new DebuggerRunningEventArgs(null, true));
+            }
         }
 
         public void Step()
@@ -563,8 +568,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             newBreakpoint.Page = location.Page;
             newBreakpoint.Address = location.Address;
             newBreakpoint.IsRam = location.IsRam;
+            byte page = location.IsRam ? location.Page : (byte) (_appPage - newBreakpoint.Page);
             newBreakpoint.WabbitemuBreakpoint = _debugger.SetBreakpoint(newBreakpoint.IsRam,
-                (byte) (_appPage - newBreakpoint.Page), newBreakpoint.Address);
+                page, newBreakpoint.Address);
             return false;
         }
 

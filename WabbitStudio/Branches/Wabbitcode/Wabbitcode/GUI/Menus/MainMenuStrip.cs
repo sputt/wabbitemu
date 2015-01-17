@@ -558,6 +558,8 @@ namespace Revsoft.Wabbitcode.GUI.Menus
                 _helpMenuItem
             });
 
+            LayoutStyle = ToolStripLayoutStyle.Flow;
+
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             _dockingService = DependencyFactory.Resolve<IDockingService>();
             _projectService = DependencyFactory.Resolve<IProjectService>();

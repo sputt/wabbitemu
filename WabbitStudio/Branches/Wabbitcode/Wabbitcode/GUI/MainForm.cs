@@ -179,9 +179,9 @@ namespace Revsoft.Wabbitcode.GUI
             fileTypeMethodFactory.RegisterDefaultHandler(path => DocumentWindows.TextEditor.OpenDocument(path) != null); 
 
             _dockingService.LoadConfig(GetContentFromPersistString);
+            _menuService.RegisterMenu(MainMenuName, new MainMenuStrip());
             _toolBarService.RegisterToolbar(DebugToolBarName, new DebugToolBar());
             _toolBarService.RegisterToolbar(MainToolBarName, new MainToolBar());
-            _menuService.RegisterMenu(MainMenuName, new MainMenuStrip());
         }
 
         private static void HandleArgs(ICollection<string> args)
