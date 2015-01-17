@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Revsoft.TextEditor.Document;
-using Revsoft.TextEditor.Src.Document.HighlightingStrategy.SyntaxModes;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
@@ -12,8 +11,6 @@ namespace Revsoft.Wabbitcode.Utils
 {
     public static class HighlightingUtils
     {
-        private const int HighlightingFileSize = 8192;
-
         private static readonly string[] Punctuation =
                 {
                     "?", ",", "(", ")", "[", "]", "{", "}", "+", "-",
@@ -106,13 +103,12 @@ namespace Revsoft.Wabbitcode.Utils
 
             try
             {
-                MemoryStream memoryStream = new MemoryStream(HighlightingFileSize);
                 XmlWriterSettings writerSettings = new XmlWriterSettings
                 {
                     Encoding = Encoding.UTF8
                 };
 
-                XmlWriter writer = XmlWriter.Create(memoryStream, writerSettings);
+                XmlWriter writer = XmlWriter.Create(FileLocations.DefaultHighlightingFile, writerSettings);
                 writer.WriteStartDocument();
                 writer.WriteComment("Z80 Asm syntax highlighting file");
                 writer.WriteStartElement("SyntaxDefinition");
@@ -438,13 +434,8 @@ namespace Revsoft.Wabbitcode.Utils
                 writer.Flush();
                 writer.Close();
 
-                // reset memory stream so it can be read
-                memoryStream.Position = 0;
-
                 // Create new provider with the temp directory
-                SyntaxMode syntaxMode = new SyntaxMode("MemoryStream", "Z80 Assembly", Extensions);
-                StreamSyntaxModeProvider provider = new StreamSyntaxModeProvider();
-                provider.AddSyntaxMode(syntaxMode, memoryStream);
+                FileSyntaxModeProvider provider = new FileSyntaxModeProvider(Path.GetDirectoryName(FileLocations.DefaultHighlightingFile));
 
                 // Attach to the text editor
                 HighlightingManager.Manager.AddSyntaxModeFileProvider(provider);

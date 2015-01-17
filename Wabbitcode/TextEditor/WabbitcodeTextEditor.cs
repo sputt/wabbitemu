@@ -464,7 +464,8 @@ namespace Revsoft.Wabbitcode.TextEditor
             {
                 if (!string.IsNullOrEmpty(FileName))
                 {
-                    Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
+                    IHighlightingStrategy strategy = HighlightingManager.Manager.FindHighlighterForFile(FileName);
+                    SetHighlighting(strategy.Name);
                 }
                 else
                 {
