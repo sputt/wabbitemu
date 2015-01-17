@@ -549,6 +549,11 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 FilePath fileName = newBreakpoint.File;
                 int lineNumber = newBreakpoint.LineNumber;
                 CalcLocation value = _symbolService.ListTable.GetNextNearestCalcLocation(fileName, lineNumber + 1);
+                if (value == null)
+                {
+                    return false;
+                }
+
                 DocumentLocation newLocation = _symbolService.ListTable.GetFileLocation(value.Page, value.Address, value.IsRam);
                 WabbitcodeBreakpointManager.RemoveBreakpoint(fileName, lineNumber);
                 WabbitcodeBreakpointManager.AddBreakpoint(newLocation.FileName, newLocation.LineNumber - 1);

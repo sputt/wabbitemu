@@ -1021,7 +1021,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private void ProjectService_OnProjectOpened(object sender, EventArgs eventArgs)
         {
-            UpdateProjectMenuItems(!_projectService.Project.IsInternal);
+            this.Invoke(() => UpdateProjectMenuItems(!_projectService.Project.IsInternal));
         }
 
         private void UpdateProjectMenuItems(bool showProjectMenu)

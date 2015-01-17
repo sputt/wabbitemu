@@ -34,8 +34,18 @@ namespace Revsoft.Wabbitcode.Extensions
 
         public static string GetRelativePath(string absolutePath, string relativeTo)
         {
-            Uri uri1 = new Uri(absolutePath);
-            Uri uri2 = new Uri(relativeTo);
+            Uri uri1;
+            Uri uri2; 
+            try
+            {
+                uri1 = new Uri(absolutePath);
+                uri2 = new Uri(relativeTo);
+            }
+            catch (UriFormatException)
+            {
+                return relativeTo;
+            }
+
             Uri relativeUri = uri1.MakeRelativeUri(uri2);
             var uriString = Uri.UnescapeDataString(Uri.UnescapeDataString(relativeUri.OriginalString));
             var dir = Path.GetFileName(absolutePath);
