@@ -110,7 +110,7 @@ namespace WeifenLuo.WinFormsUI.Docking
         private const int _DocumentIconGapLeft = 8;
         private const int _DocumentIconGapRight = 0;
         private const int _DocumentIconHeight = 16;
-        private const int _DocumentIconWidth = 0;
+        private const int _DocumentIconWidth = 16;
         private const int _DocumentTextGapRight = 6;
 
         #endregion
@@ -135,6 +135,7 @@ namespace WeifenLuo.WinFormsUI.Docking
         private static string m_toolTipClose;
         private bool m_closeButtonVisible = false;
         private Rectangle _activeClose;
+        private int _selectMenuMargin = 5;
 
         #endregion
 
@@ -197,6 +198,12 @@ namespace WeifenLuo.WinFormsUI.Docking
         private ContextMenuStrip SelectMenu
         {
             get { return m_selectMenu; }
+        }
+
+        public int SelectMenuMargin
+        {
+            get { return _selectMenuMargin; }
+            set { _selectMenuMargin = value; }
         }
 
         private static Bitmap ImageButtonClose
@@ -1012,7 +1019,10 @@ namespace WeifenLuo.WinFormsUI.Docking
             {
                 rectTab = GetTabRectangle(Tabs.IndexOf(tabActive));
                 if (rectTab.IntersectsWith(rectTabOnly))
+                {
+                    rectTab.Intersect(rectTabOnly);
                     DrawTab(g, tabActive, rectTab);
+                }
             }
         }
 
@@ -1093,6 +1103,11 @@ namespace WeifenLuo.WinFormsUI.Docking
         {
             GraphicsPath.Reset();
             Rectangle rect = GetTabRectangle(Tabs.IndexOf(tab));
+            
+            // Shorten TabOutline so it doesn't get overdrawn by icons next to it
+            rect.Intersect(TabsRectangle);
+            rect.Width--;
+
             if (rtlTransform)
                 rect = DrawHelper.RtlTransform(this, rect);
             if (toScreen)
@@ -1219,11 +1234,11 @@ namespace WeifenLuo.WinFormsUI.Docking
         protected override void OnMouseClick(MouseEventArgs e)
         {
             base.OnMouseClick(e);
-            if (e.Button != MouseButtons.Left)
+            if (e.Button != MouseButtons.Left || Appearance != DockPane.AppearanceStyle.Document)
                 return;
 
             var indexHit = HitTest();
-            if (indexHit > -1 && Appearance != DockPane.AppearanceStyle.ToolWindow)
+            if (indexHit > -1)
                 TabCloseButtonHit(indexHit);
         }
 
@@ -1233,23 +1248,24 @@ namespace WeifenLuo.WinFormsUI.Docking
             var tabRect = GetTabRectangle(index);
             var closeButtonRect = GetCloseButtonRect(tabRect);
             var mouseRect = new Rectangle(mousePos, new Size(1, 1));
-
             if (closeButtonRect.IntersectsWith(mouseRect))
                 DockPane.CloseActiveContent();
         }
 
         private Rectangle GetCloseButtonRect(Rectangle rectTab)
         {
-            const int gap = 5;
-            var dimension = rectTab.Height - gap;
-            return new Rectangle(rectTab.X + rectTab.Width - dimension - gap / 2 - 1, rectTab.Y + gap / 2 + 1, dimension, dimension);
+            if (Appearance != Docking.DockPane.AppearanceStyle.Document)
+            {
+                return Rectangle.Empty;
+            }
+
+            const int gap = 3;
+            const int imageSize = 15;
+            return new Rectangle(rectTab.X + rectTab.Width - imageSize - gap - 1, rectTab.Y + gap, imageSize, imageSize);
         }
 
         private void WindowList_Click(object sender, EventArgs e)
         {
-            int x = 0;
-            int y = ButtonWindowList.Location.Y + ButtonWindowList.Height;
-
             SelectMenu.Items.Clear();
             foreach (TabVS2012Light tab in Tabs)
             {
@@ -1258,9 +1274,33 @@ namespace WeifenLuo.WinFormsUI.Docking
                 item.Tag = tab.Content;
                 item.Click += new EventHandler(ContextMenuItem_Click);
             }
-            SelectMenu.Show(ButtonWindowList, x, y);
-        }
 
+            var workingArea = Screen.GetWorkingArea(ButtonWindowList.PointToScreen(new Point(ButtonWindowList.Width / 2, ButtonWindowList.Height / 2)));
+            var menu = new Rectangle(ButtonWindowList.PointToScreen(new Point(0, ButtonWindowList.Location.Y + ButtonWindowList.Height)), SelectMenu.Size);
+            var menuMargined = new Rectangle(menu.X - SelectMenuMargin, menu.Y - SelectMenuMargin, menu.Width + SelectMenuMargin, menu.Height + SelectMenuMargin);
+            if (workingArea.Contains(menuMargined))
+            {
+                SelectMenu.Show(menu.Location);
+            }
+            else
+            {
+                var newPoint = menu.Location;
+                newPoint.X = DrawHelper.Balance(SelectMenu.Width, SelectMenuMargin, newPoint.X, workingArea.Left, workingArea.Right);
+                newPoint.Y = DrawHelper.Balance(SelectMenu.Size.Height, SelectMenuMargin, newPoint.Y, workingArea.Top, workingArea.Bottom);
+                var button = ButtonWindowList.PointToScreen(new Point(0, ButtonWindowList.Height));
+                if (newPoint.Y < button.Y)
+                {
+                    // flip the menu up to be above the button.
+                    newPoint.Y = button.Y - ButtonWindowList.Height;
+                    SelectMenu.Show(newPoint, ToolStripDropDownDirection.AboveRight);
+                }
+                else
+                {
+                    SelectMenu.Show(newPoint);
+                }
+            }
+        }
+        
         private void ContextMenuItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
