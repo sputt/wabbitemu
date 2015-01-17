@@ -255,6 +255,8 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 throw new DebuggingException("Unable to pause here");
             }
 
+            UpdateStack();
+
             if (DebuggerRunningChanged != null)
             {
                 DebuggerRunningChanged(this, new DebuggerRunningEventArgs(key, false));
@@ -479,8 +481,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 return null;
             }
 
-            string callTypeString = info.Command + " " + info.Condition;
-            return new CallStackEntry(callTypeString, info.CallName, info.DocumentLocation);
+            return new CallStackEntry(info, info.DocumentLocation);
         }
 
         private void UpdateStack()

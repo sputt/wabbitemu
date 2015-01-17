@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
 using WabbitemuLib;
 
@@ -22,14 +23,12 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
     public class CallStackEntry
     {
-        public string CallType { get; private set; }
-        public string CallName { get; private set; }
+        public CallerInformation CallerInformation { get; private set; }
         public DocumentLocation CallLocation { get; private set; }
 
-        public CallStackEntry(string callType, string callName, DocumentLocation location)
+        public CallStackEntry(CallerInformation callerInfo, DocumentLocation location)
         {
-            CallType = callType;
-            CallName = callName;
+            CallerInformation = callerInfo;
             CallLocation = location;
         }
     }
