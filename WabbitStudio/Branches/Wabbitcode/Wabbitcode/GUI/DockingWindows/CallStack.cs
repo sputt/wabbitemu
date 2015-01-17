@@ -7,6 +7,7 @@ using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
@@ -35,7 +36,19 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             };
             _debugger.DebuggerRunningChanged += (o, args) =>
             {
-                this.Invoke(UpdateStack);
+                if (!args.Running)
+                {
+                    this.Invoke(UpdateStack);
+                }
+                else
+                {
+                    this.Invoke(() =>
+                    {
+                        _callLocations.Clear();
+                        callStackView.Rows.Clear();
+                    });
+                }
+
                 EnablePanel(!args.Running);
             };
         }
@@ -43,16 +56,30 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         private void UpdateStack()
         {
             _callLocations.Clear();
+
+            // Add instruction pointer first
+            DocumentLocation currentLoc = _debugger.GetAddressLocation(_debugger.CPU.PC);
+            _callLocations.Add(new DocumentLocation(currentLoc.FileName, currentLoc.LineNumber - 1));
+
             callStackView.Rows.Clear();
             var dataGridViewRows = new List<DataGridViewRow>();
             foreach (var call in _debugger.CallStack.Reverse())
             {
                 var row = new DataGridViewRow();
-                row.CreateCells(callStackView, call.CallType, call.CallName);
+
+                CallerInformation callerInformation = call.CallerInformation;
+                string callType = callerInformation.Command + " " + callerInformation.Condition;
+                row.CreateCells(callStackView, callType, callerInformation.CallName);
                 dataGridViewRows.Add(row);
-                _callLocations.Add(call.CallLocation);
+
+                currentLoc = call.CallerInformation.DocumentLocation;
+                _callLocations.Add(new DocumentLocation(currentLoc.FileName, currentLoc.LineNumber - 1));
             }
 
+            // We added an extra location for the instruction pointer, so add an extra row for the top level call
+            var appRow = new DataGridViewRow();
+            appRow.CreateCells(callStackView, "Top level", "OS");
+            dataGridViewRows.Add(appRow);
             callStackView.Rows.AddRange(dataGridViewRows.ToArray());
         }
 

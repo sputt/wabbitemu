@@ -20,10 +20,5 @@ namespace Revsoft.Wabbitcode.Services.Symbols
             Command = command;
             DocumentLocation = location;
         }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Symbols
@@ -157,7 +158,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
             _callerInformation = callerInfo;
         }
 
-        private CallerInformation ParseCallLine(string codeLine, DocumentLocation location)
+        private static CallerInformation ParseCallLine(string codeLine, DocumentLocation location)
         {
             Match match = CallRegex.Match(codeLine);
             if (!match.Success)
@@ -171,20 +172,25 @@ namespace Revsoft.Wabbitcode.Services.Symbols
         public CallerInformation CheckValidCall(ushort callerLocation, bool isCallerInRam, byte calleePage)
         {
             CalcLocation location = new CalcLocation(callerLocation, calleePage, isCallerInRam);
+            return CheckValidCall(location);
+        }
+
+        public CallerInformation CheckValidCall(CalcLocation location)
+        {
             CallerInformation info = GetCallInfo(location);
-            if (isCallerInRam || info != null)
+            if (location.IsRam || info != null)
             {
                 return info;
             }
 
             for (byte page = 0; page < 0x20; page++)
             {
-                if (page == calleePage)
+                if (page == location.Page)
                 {
                     continue;
                 }
 
-                location = new CalcLocation(callerLocation, page, false);
+                location = new CalcLocation(location.Address, page, false);
                 info = GetCallInfo(location);
                 if (info != null)
                 {
