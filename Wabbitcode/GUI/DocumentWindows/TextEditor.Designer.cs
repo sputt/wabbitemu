@@ -20,12 +20,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 				}
 			}
 
-            if (_debuggerService.CurrentDebugger != null)
-            {
-                _debuggerService.CurrentDebugger.DebuggerRunningChanged -= Debugger_OnDebuggerRunningChanged;
-                _debuggerService.CurrentDebugger.DebuggerStep -= Debugger_OnDebuggerStep;
-            }
-
 			base.Dispose(disposing);
 		}
 

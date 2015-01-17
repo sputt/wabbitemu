@@ -142,33 +142,45 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
             editorBox.IsIconBarVisible = true;
             editorBox.TextChanged += editorBox_TextChanged;
-            editorBox.ContextMenu = new EditorContextMenu(editorBox, _debuggerService,
-                _parserService, _projectService);
+            editorBox.ContextMenu = new EditorContextMenu(editorBox, _debuggerService, _parserService, _projectService);
 
             WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
             WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
-            _debuggerService.OnDebuggingStarted += (sender, e) => SetDebugging(true);
-            _debuggerService.OnDebuggingEnded += (sender, e) => SetDebugging(false);
+            _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
+            _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
 
             if (_debuggerService.CurrentDebugger != null)
             {
-                SetDebugging(true);
+                SetDebugging(_debuggerService.CurrentDebugger, true);
             }
         }
 
-        private void SetDebugging(bool debugging)
+        private void DebuggerService_OnDebuggingEnded(object sender, DebuggingEventArgs e)
+        {
+            SetDebugging(_debuggerService.CurrentDebugger, false);
+        }
+
+        private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
+        {
+            SetDebugging(_debuggerService.CurrentDebugger, true);
+        }
+
+        private void SetDebugging(IWabbitcodeDebugger debugger, bool debugging)
         {
             editorBox.Document.ReadOnly = debugging;
             editorBox.RemoveDebugHighlight();
 
-            if (!debugging)
+            if (debugging)
             {
-                return;
+                debugger.DebuggerRunningChanged += Debugger_OnDebuggerRunningChanged;
+                debugger.DebuggerStep += Debugger_OnDebuggerStep;
+                UpdateDebugHighlight();
             }
-
-            _debuggerService.CurrentDebugger.DebuggerRunningChanged += Debugger_OnDebuggerRunningChanged;
-            _debuggerService.CurrentDebugger.DebuggerStep += Debugger_OnDebuggerStep;
-            UpdateDebugHighlight();
+            else
+            {
+                debugger.DebuggerRunningChanged -= Debugger_OnDebuggerRunningChanged;
+                debugger.DebuggerStep -= Debugger_OnDebuggerStep;
+            }
         }
 
         private void UpdateDebugHighlight()
@@ -240,13 +252,13 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 }
                 else
                 {
+                    AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
                     if (e.Location.FileName != FileName)
                     {
                         return;
                     }
 
                     Activate();
-                    AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
                     editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
                 }
             });
@@ -358,6 +370,14 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
             document.BreakpointManager.RemoveMark(breakpoint);
             UpdateDocument(lineNum);
+        }
+
+        private void UpdateAllBreakpoints()
+        {
+            foreach (var breakpoint in WabbitcodeBreakpointManager.Breakpoints.Where(br => br.File == FileName))
+            {
+                AddBreakpoint(breakpoint.LineNumber);
+            }
         }
 
         #region Breakpoint Manager
@@ -599,6 +619,15 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             editorBox.Document.MarkerStrategy.RemoveAll(s => true);
             WabbitcodeBreakpointManager.OnBreakpointAdded -= WabbitcodeBreakpointManager_OnBreakpointAdded;
             WabbitcodeBreakpointManager.OnBreakpointRemoved -= WabbitcodeBreakpointManager_OnBreakpointRemoved;
+
+            if (_debuggerService.CurrentDebugger != null)
+            {
+                _debuggerService.CurrentDebugger.DebuggerRunningChanged -= Debugger_OnDebuggerRunningChanged;
+                _debuggerService.CurrentDebugger.DebuggerStep -= Debugger_OnDebuggerStep;
+            }
+
+            _debuggerService.OnDebuggingStarted -= DebuggerService_OnDebuggingStarted;
+            _debuggerService.OnDebuggingEnded -= DebuggerService_OnDebuggingEnded;
         }
 
         private void UpdateDocument(int line)
@@ -630,6 +659,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             UpdateTabText();
             LoadFoldings();
             UpdateDebugHighlight();
+            UpdateAllBreakpoints();
         }
 
         public override void SaveFile()

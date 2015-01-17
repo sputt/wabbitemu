@@ -1,7 +1,7 @@
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 
-namespace Revsoft.Wabbitcode.GUI
+namespace Revsoft.Wabbitcode.GUI.ToolBars
 {
     public sealed class WabbitcodeToolStripContainer : ToolStripContainer
     {
@@ -14,7 +14,7 @@ namespace Revsoft.Wabbitcode.GUI
             BottomToolStripPanel.Controls.Add(statusBar);
             ContentPanel.Controls.Add(dockPanel);
             ContentPanel.Size = new System.Drawing.Size(990, 511);
-            Dock = System.Windows.Forms.DockStyle.Fill;
+            Dock = DockStyle.Fill;
             LeftToolStripPanelVisible = false;
             Location = new System.Drawing.Point(0, 0);
             Name = "toolStripContainer";

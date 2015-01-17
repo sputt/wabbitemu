@@ -98,6 +98,7 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
                 _stepOutToolButton
             });
             RenderMode = ToolStripRenderMode.System;
+            GripStyle = ToolStripGripStyle.Visible;
 
             _runDebuggerToolButton.Click += runDebuggerToolButton_Click;
             _pauseToolButton.Click += pauseToolButton_Click;
