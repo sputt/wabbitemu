@@ -302,11 +302,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             {
                 LaunchApp(app.Name);
             }
-
-            if (DebuggerRunningChanged != null)
-            {
-                DebuggerRunningChanged(this, new DebuggerRunningEventArgs(null, true));
-            }
         }
 
         public void Step()
