@@ -14,8 +14,7 @@
     <AssemblyOriginatorKeyFile>dockpanelsuite.snk</AssemblyOriginatorKeyFile>
     <DelaySign>False</DelaySign>
     <AssemblyOriginatorKeyMode>File</AssemblyOriginatorKeyMode>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,13 +28,14 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Wabbitcode\bin\X86\Release\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -75,7 +75,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ResourcesVS2003.resx</DependentUpon>
     </Compile>
-    <Compile Include="Docking\Skins\Style.cs" />
     <Compile Include="Docking\StringsVS2003.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -270,13 +269,9 @@
     <None Include="Docking\Resources\LostFocusTab_Close.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Docking\Resources\Dockindicator_PaneDiamond_Bottom_VS2012.bmp" />
     <Content Include="Docking\Resources\Dockindicator_PaneDiamond_Fill_VS2012.bmp" />
     <Content Include="Docking\Resources\DockIndicator_PaneDiamond_HotspotIndex_VS2012.bmp" />
     <Content Include="Docking\Resources\Dockindicator_PaneDiamond_Hotspot_VS2012.bmp" />
-    <Content Include="Docking\Resources\Dockindicator_PaneDiamond_Left_VS2012.bmp" />
-    <Content Include="Docking\Resources\Dockindicator_PaneDiamond_Right_VS2012.bmp" />
-    <Content Include="Docking\Resources\Dockindicator_PaneDiamond_Top_VS2012.bmp" />
     <Content Include="Docking\Resources\Dockindicator_PaneDiamond_VS2012.bmp" />
     <Content Include="Docking\Resources\DockIndicator_PanelBottom_VS2012.bmp" />
     <Content Include="Docking\Resources\DockIndicator_PanelFill_VS2012.bmp" />
@@ -285,6 +280,10 @@
     <Content Include="Docking\Resources\DockIndicator_PanelTop_VS2012.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <UsingTask Condition=" '$(Configuration)' == 'Release' AND '$(OS)' == 'Windows_NT' AND Exists('..\gendarme\GendarmeMsBuild.dll')" AssemblyFile="..\gendarme\GendarmeMsBuild.dll" TaskName="GendarmeMsBuild.Gendarme" />
+  <Target Name="AfterBuild">
+    <Gendarme Condition=" '$(Configuration)' == 'Release' AND '$(OS)' == 'Windows_NT' AND Exists('..\gendarme\gendarme.exe')" GendarmeExeFilename="..\gendarme\gendarme.exe" Assemblies="$(TargetPath)" WarningsAsErrors="False" IntegrateWithVisualStudio="True" GendarmeIgnoreFilename="gendarme.ignore" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

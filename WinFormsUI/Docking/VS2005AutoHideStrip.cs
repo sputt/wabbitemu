@@ -319,14 +319,12 @@ namespace WeifenLuo.WinFormsUI.Docking
             DockState dockState = tab.Content.DockHandler.DockState;
             IDockContent content = tab.Content;
 
-            using (GraphicsPath path = GetTabOutline(tab, false, true))
-            {
-                Color startColor = DockPanel.Skin.AutoHideStripSkin.TabGradient.StartColor;
-                Color endColor = DockPanel.Skin.AutoHideStripSkin.TabGradient.EndColor;
-                LinearGradientMode gradientMode = DockPanel.Skin.AutoHideStripSkin.TabGradient.LinearGradientMode;
-                g.FillPath(new LinearGradientBrush(rectTabOrigin, startColor, endColor, gradientMode), path);
-                g.DrawPath(PenTabBorder, path);
-            }
+            GraphicsPath path = GetTabOutline(tab, false, true);
+            Color startColor = DockPanel.Skin.AutoHideStripSkin.TabGradient.StartColor;
+            Color endColor = DockPanel.Skin.AutoHideStripSkin.TabGradient.EndColor;
+            LinearGradientMode gradientMode = DockPanel.Skin.AutoHideStripSkin.TabGradient.LinearGradientMode;
+            g.FillPath(new LinearGradientBrush(rectTabOrigin, startColor, endColor, gradientMode), path);
+            g.DrawPath(PenTabBorder, path);
 
             // Set no rotate for drawing icon and text
             using (Matrix matrixRotate = g.Transform)
@@ -383,6 +381,64 @@ namespace WeifenLuo.WinFormsUI.Docking
                 // Set rotate back
                 g.Transform = matrixRotate;
             }
+        }
+
+        private Rectangle GetLogicalTabStripRectangle(DockState dockState)
+        {
+            return GetLogicalTabStripRectangle(dockState, false);
+        }
+
+        private Rectangle GetLogicalTabStripRectangle(DockState dockState, bool transformed)
+        {
+            if (!DockHelper.IsDockStateAutoHide(dockState))
+                return Rectangle.Empty;
+
+            int leftPanes = GetPanes(DockState.DockLeftAutoHide).Count;
+            int rightPanes = GetPanes(DockState.DockRightAutoHide).Count;
+            int topPanes = GetPanes(DockState.DockTopAutoHide).Count;
+            int bottomPanes = GetPanes(DockState.DockBottomAutoHide).Count;
+
+            int x, y, width, height;
+
+            height = MeasureHeight();
+            if (dockState == DockState.DockLeftAutoHide && leftPanes > 0)
+            {
+                x = 0;
+                y = (topPanes == 0) ? 0 : height;
+                width = Height - (topPanes == 0 ? 0 : height) - (bottomPanes == 0 ? 0 : height);
+            }
+            else if (dockState == DockState.DockRightAutoHide && rightPanes > 0)
+            {
+                x = Width - height;
+                if (leftPanes != 0 && x < height)
+                    x = height;
+                y = (topPanes == 0) ? 0 : height;
+                width = Height - (topPanes == 0 ? 0 : height) - (bottomPanes == 0 ? 0 : height);
+            }
+            else if (dockState == DockState.DockTopAutoHide && topPanes > 0)
+            {
+                x = leftPanes == 0 ? 0 : height;
+                y = 0;
+                width = Width - (leftPanes == 0 ? 0 : height) - (rightPanes == 0 ? 0 : height);
+            }
+            else if (dockState == DockState.DockBottomAutoHide && bottomPanes > 0)
+            {
+                x = leftPanes == 0 ? 0 : height;
+                y = Height - height;
+                if (topPanes != 0 && y < height)
+                    y = height;
+                width = Width - (leftPanes == 0 ? 0 : height) - (rightPanes == 0 ? 0 : height);
+            }
+            else
+                return Rectangle.Empty;
+
+            if (width == 0 || height == 0)
+            {
+                return Rectangle.Empty;
+            }
+
+            var rect = new Rectangle(x, y, width, height);
+            return transformed ? GetTransformedRectangle(dockState, rect) : rect;
         }
 
         private Rectangle GetTabRectangle(TabVS2005 tab)
