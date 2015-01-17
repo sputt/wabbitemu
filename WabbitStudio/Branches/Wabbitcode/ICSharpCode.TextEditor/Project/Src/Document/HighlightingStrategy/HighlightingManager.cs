@@ -68,6 +68,10 @@ namespace Revsoft.TextEditor.Document
 				extensionsToName[extension.ToUpperInvariant()] = highlightingStrategy.Name;
 			}
 		}
+
+        public void ClearSyntaxModeFileProvider() {
+            syntaxModeFileProviders.Clear();
+        }
 		
 		public void ReloadSyntaxModes()
 		{

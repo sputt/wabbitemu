@@ -163,7 +163,6 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
 
             _browsing = true;
             externalHighBox.Text = openFileDialog.FileName;
-            _tempSettings.ExternalHighlight = openFileDialog.FileName;
         }
 
         private void browseProjButton_Click(object sender, EventArgs e)
@@ -378,10 +377,11 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
                 return;
             }
 
-            if (!string.IsNullOrEmpty(_tempSettings.ExternalHighlight))
+            if (!string.IsNullOrEmpty(Settings.Default.ExternalHighlight))
             {
-                FileSyntaxModeProvider fsmProvider = new FileSyntaxModeProvider(Path.GetDirectoryName(_tempSettings.ExternalHighlight));
-                HighlightingManager.Manager.AddSyntaxModeFileProvider(fsmProvider);
+                Settings.Default.ExternalHighlight = _tempSettings.ExternalHighlight;
+                HighlightingManager.Manager.ClearSyntaxModeFileProvider();
+                HighlightingUtils.MakeHighlightingFile();
                 HighlightingManager.Manager.ReloadSyntaxModes();
             }
 
@@ -401,6 +401,11 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
         private void inverseScrollingBox_CheckedChanged(object sender, EventArgs e)
         {
             _tempSettings.InverseScrolling = inverseScrollingBox.Checked;
+        }
+
+        private void externalHighBox_TextChanged(object sender, EventArgs e)
+        {
+            _tempSettings.ExternalHighlight = externalHighBox.Text;
         }
 
         // private void checkUpdatesBox_CheckedChanged(object sender, EventArgs e)

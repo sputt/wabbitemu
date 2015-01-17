@@ -390,6 +390,7 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             this.externalHighBox.Name = "externalHighBox";
             this.externalHighBox.Size = new System.Drawing.Size(212, 20);
             this.externalHighBox.TabIndex = 0;
+            this.externalHighBox.TextChanged += new System.EventHandler(this.externalHighBox_TextChanged);
             // 
             // highlightBox
             // 

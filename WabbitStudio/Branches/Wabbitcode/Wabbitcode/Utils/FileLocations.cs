@@ -54,6 +54,11 @@ namespace Revsoft.Wabbitcode.Utils
             get { return Path.Combine(AppDataFolder, "wabbitemu.exe"); }
         }
 
+        public static string DefaultHighlightingFile
+        {
+            get { return Path.Combine(AppDataFolder, "Z80Asm.xshd"); }
+        }
+
         internal static void InitDirs()
         {
             if (!Settings.Default.CreateFolders)
