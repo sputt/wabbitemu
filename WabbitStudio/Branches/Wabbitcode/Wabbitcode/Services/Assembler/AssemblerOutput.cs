@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Utils;
 
@@ -33,11 +34,18 @@ namespace Revsoft.Wabbitcode.Services.Assembler
             {
                 Regex errorRegex = new Regex("(?<file>.+):(?<lineNum>\\d+):(?<type>.+):(?<description>.+)");
                 Match match = errorRegex.Match(line);
-                if (!match.Success) {
+                if (!match.Success)
+                {
                     continue;
                 }
 
-                FilePath file = new FilePath(match.Groups["file"].Value);
+                string filePath = match.Groups["file"].Value;
+                if (filePath.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+                {
+                    continue;
+                }
+
+                FilePath file = new FilePath(filePath);
                 string lineNumString = match.Groups["lineNum"].Value;
                 string type = match.Groups["type"].Value;
                 string description = match.Groups["description"].Value;

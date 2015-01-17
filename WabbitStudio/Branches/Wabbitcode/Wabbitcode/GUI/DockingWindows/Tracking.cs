@@ -266,13 +266,13 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                         outputValue += Convert.ToString(baseValue, convertMethod);
                         break;
                     case VariableDisplayMethod.Binary:
-                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(16, '0');
-                        break;
-                    case VariableDisplayMethod.Octal:
                         outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(8, '0');
                         break;
-                    default:
+                    case VariableDisplayMethod.Octal:
                         outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(4, '0');
+                        break;
+                    default:
+                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(2, '0');
                         break;
                 }
                 outputValue += " ";

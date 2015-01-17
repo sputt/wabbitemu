@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Utils;
 
@@ -19,6 +20,18 @@ namespace Revsoft.Wabbitcode.Services.Symbols
         private Dictionary<DocumentLocation, CalcLocation> _fileToCalc;
         private Dictionary<CalcLocation, CallerInformation> _callerInformation;
 
+        private class FcreateFile
+        {
+            public StringBuilder Builder { get; private set; }
+            public int Lines { get; set; }
+
+            public FcreateFile()
+            {
+                Builder = new StringBuilder();
+                Lines = 0;
+            }
+        }
+
         public ListTable()
         {
             _calcToFile = new Dictionary<CalcLocation, DocumentLocation>();
@@ -30,10 +43,10 @@ namespace Revsoft.Wabbitcode.Services.Symbols
             var calcToFile = new Dictionary<CalcLocation, DocumentLocation>(700000);
             var fileToCalc = new Dictionary<DocumentLocation, CalcLocation>(700000);
             var callerInfo = new Dictionary<CalcLocation, CallerInformation>();
-            StreamWriter writer = null;
+            FcreateFile currentFcreateFile = null;
             FilePath currentFile = new FilePath(string.Empty);
             var lines = listFileContents.Split('\n');
-            var fcreateForFile = new Dictionary<FilePath, int>();
+            var fcreateForFile = new Dictionary<FilePath, FcreateFile>();
             CallerInformation callInfoToAdd = null;
 
             for (int i = 0; i < lines.Length; i++)
@@ -50,27 +63,17 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                     string file = fileMatch.Groups["file"].Value.Trim();
                     if (file == "fcreate")
                     {
-                        int fcreateNum;
-                        if (!fcreateForFile.TryGetValue(currentFile, out fcreateNum))
+                        if (!fcreateForFile.TryGetValue(currentFile, out currentFcreateFile))
                         {
-                            fcreateForFile[currentFile] = 0;
+                            currentFcreateFile = new FcreateFile();
+                            fcreateForFile[currentFile] = currentFcreateFile;
                         }
-                        else
-                        {
-                            fcreateForFile[currentFile] = ++fcreateNum;
-                        }
-                        currentFile = new FilePath(currentFile + fcreateNum + ".fcreate");
-                        writer = new StreamWriter(currentFile);
+                        currentFile = new FilePath(currentFile + ".fcreate");
                     }
                     else
                     {
                         currentFile = new FilePath(file);
-                        if (writer != null)
-                        {
-                            writer.Flush();
-                            writer.Close();
-                        }
-                        writer = null;
+                        currentFcreateFile = null;
                     }
                 }
                 else
@@ -93,9 +96,11 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                         page = 1;
                     }
 
-                    if (writer != null)
+                    if (currentFcreateFile != null)
                     {
-                        writer.WriteLine(listingMatch.Groups["line"].Value.TrimEnd());
+                        lineNumber += currentFcreateFile.Lines;
+                        currentFcreateFile.Builder.AppendLine(listingMatch.Groups["line"].Value.TrimEnd());
+                        currentFcreateFile.Lines++;
                     }
 
                     if (listingMatch.Groups["byte1"].Value.Contains("-") || string.IsNullOrWhiteSpace(listingMatch.Groups["byte1"].Value))
@@ -110,11 +115,13 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                     {
                         line = lines[i + 1];
                         listingMatch = ListingContRegex.Match(line);
-                        if (listingMatch.Success)
+                        if (!listingMatch.Success)
                         {
-                            i++;
-                            codeLine = listingMatch.Groups["line"].Value;
+                            continue;
                         }
+
+                        i++;
+                        codeLine = listingMatch.Groups["line"].Value;
                     } while (listingMatch.Success);
 
                     if (callInfoToAdd != null)
@@ -136,10 +143,13 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                 }
             }
 
-            if (writer != null)
+            foreach (var file in fcreateForFile)
             {
-                writer.Flush();
-                writer.Close();
+                var filePath = new FilePath(file.Key + ".fcreate");
+                using (var writer = new StreamWriter(filePath))
+                {
+                    writer.Write(file.Value.Builder.ToString());
+                }
             }
 
             _fileToCalc = fileToCalc;

@@ -134,6 +134,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         {
             InitializeComponent();
 
+            editorBox.IsIconBarVisible = true;
             editorBox.TextChanged += editorBox_TextChanged;
             editorBox.ContextMenu = new EditorContextMenu(editorBox, _debuggerService,
                 _parserService, _projectService);
@@ -194,6 +195,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         private void Debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
         {
+            if (!IsHandleCreated || IsDisposed)
+            {
+                return;
+            }
+
             this.Invoke(() =>
             {
                 editorBox.RemoveDebugHighlight();
@@ -210,7 +216,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         private void Debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
         {
-            if (!IsHandleCreated)
+            if (!IsHandleCreated || IsDisposed)
             {
                 return;
             }
