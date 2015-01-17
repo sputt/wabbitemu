@@ -2,11 +2,11 @@
 using System.Windows.Forms;
 using Microsoft.Win32;
 using Revsoft.Wabbitcode.Exceptions;
-using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.TextEditor.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Actions

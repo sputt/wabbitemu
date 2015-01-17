@@ -699,7 +699,7 @@ namespace WeifenLuo.WinFormsUI.Docking
                 {
                     if (DockPanel.ActiveAutoHideContent != Content)
                     {
-                        DockPanel.ActiveAutoHideContent = null;
+                        DockPanel.ActiveAutoHideContent = Content;
                         return;
                     }
                 }

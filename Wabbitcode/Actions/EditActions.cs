@@ -4,6 +4,7 @@ using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.TextEditor.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Actions

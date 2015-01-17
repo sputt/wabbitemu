@@ -4,8 +4,8 @@ using System.IO;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Annotations;
-using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.TextEditor.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -166,7 +166,10 @@ namespace Revsoft.Wabbitcode.Services
                 return;
             }
 
-            _openDocuments.Remove(editor.FileName);
+            editor.FilePathChanged += Editor_FilePathChanged;
+
+            FilePath filePath = editor.FileName ?? GetTempFilePath(editor);
+            _openDocuments.Remove(filePath);
         }
 
         private void DockingService_DocumentWindowAdded(object sender, DockContentEventArgs e)
@@ -177,7 +180,21 @@ namespace Revsoft.Wabbitcode.Services
                 return;
             }
 
-            _openDocuments.Add(editor.FileName, editor.Document);
+            editor.FilePathChanged += Editor_FilePathChanged;
+
+            FilePath filePath = editor.FileName ?? GetTempFilePath(editor);
+            _openDocuments.Add(filePath, editor.Document);
+        }
+        private void Editor_FilePathChanged(ITextEditor sender, FilePathEventArgs e)
+        {
+            FilePath oldFilePath = e.OldFilePath ?? GetTempFilePath(sender);
+            _openDocuments.Remove(oldFilePath);
+            _openDocuments.Add(e.NewFilePath, sender.Document);
+        }
+
+        private static FilePath GetTempFilePath(ITextEditor editor)
+        {
+            return new FilePath(editor.GetHashCode().ToString());
         }
     }
 }

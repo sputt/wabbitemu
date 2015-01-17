@@ -4,14 +4,13 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
-using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.GUI.DockingWindows;
-using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.TextEditor;
+using Revsoft.Wabbitcode.TextEditor.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Actions

@@ -14,6 +14,7 @@ using Revsoft.Wabbitcode.Interfaces;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.TextEditor.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 

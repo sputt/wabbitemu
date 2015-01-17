@@ -19,6 +19,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
+using Revsoft.Wabbitcode.TextEditor.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 using GotoNextBookmark = Revsoft.TextEditor.Actions.GotoNextBookmark;
@@ -82,6 +83,12 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         #endregion
 
+        #region Events
+
+        public event FilePathEvent FilePathChanged;
+
+        #endregion
+
         #region Properties
 
         protected override bool DocumentChanged
@@ -89,7 +96,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             get { return _stackTop != editorBox.Document.UndoStack.UndoItemCount || _documentChanged; }
             set { _documentChanged = value; }
         }
-
 
         public int CaretLine
         {
@@ -649,6 +655,24 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
             base.SaveFile();
+        }
+
+        public override void SaveFile(FilePath filePath)
+        {
+            FilePath oldFilePath = FileName;
+            bool notifyChanged = filePath != FileName;
+            
+            base.SaveFile();
+
+            if (!notifyChanged)
+            {
+                return;
+            }
+
+            if (FilePathChanged != null)
+            {
+                FilePathChanged(this, new FilePathEventArgs(oldFilePath, filePath));
+            }
         }
 
         protected override void ReloadFile()
