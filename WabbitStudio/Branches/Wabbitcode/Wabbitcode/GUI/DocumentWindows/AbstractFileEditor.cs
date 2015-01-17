@@ -75,7 +75,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
         }
 
-        public void SaveFile(FilePath fileName)
+        public virtual void SaveFile(FilePath fileName)
         {
             if (string.IsNullOrEmpty(fileName))
             {
