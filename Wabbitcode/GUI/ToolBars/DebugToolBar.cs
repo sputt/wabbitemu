@@ -111,12 +111,35 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
 
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
+            _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
         }
+
+        private bool _isDebugging;
 
         private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
-            e.Debugger.DebuggerRunningChanged += (o, args) => EnableIcons();
-            e.Debugger.DebuggerStep += (o, args) => EnableIcons();
+            _isDebugging = true;
+            e.Debugger.DebuggerRunningChanged += Debugger_OnDebuggerRunningChanged;
+            e.Debugger.DebuggerStep += Debugger_OnDebuggerStep;
+            EnableIcons();
+        }
+
+        private void DebuggerService_OnDebuggingEnded(object sender, DebuggingEventArgs e)
+        {
+            _isDebugging = false;
+            e.Debugger.DebuggerRunningChanged += Debugger_OnDebuggerRunningChanged;
+            e.Debugger.DebuggerStep += Debugger_OnDebuggerStep;
+            EnableIcons();
+        }
+
+        private void Debugger_OnDebuggerStep(object o, DebuggerStepEventArgs args)
+        {
+            EnableIcons();
+        }
+
+        private void Debugger_OnDebuggerRunningChanged(object o, DebuggerRunningEventArgs args)
+        {
+            EnableIcons();
         }
 
         private void EnableIcons()
@@ -127,18 +150,17 @@ namespace Revsoft.Wabbitcode.GUI.ToolBars
                 return;
             }
 
-            bool isDebugging = _debuggerService.CurrentDebugger != null;
-            bool isRunning = isDebugging && _debuggerService.CurrentDebugger.IsRunning;
-            bool enabled = isDebugging && !isRunning;
-            bool hasCallStack = isDebugging && _debuggerService.CurrentDebugger.CallStack.Count > 0;
+            bool isRunning = _isDebugging && _debuggerService.CurrentDebugger.IsRunning;
+            bool enabled = _isDebugging && !isRunning;
+            bool hasCallStack = _isDebugging && _debuggerService.CurrentDebugger.CallStack.Count > 0;
 
             _gotoCurrentToolButton.Enabled = enabled;
             _stepToolButton.Enabled = enabled;
             _stepOverToolButton.Enabled = enabled;
             _stepOutToolButton.Enabled = enabled && hasCallStack;
-            _stopDebugToolButton.Enabled = isDebugging;
-            _restartToolStripButton.Enabled = isDebugging;
-            _runDebuggerToolButton.Enabled = enabled || !isDebugging;
+            _stopDebugToolButton.Enabled = _isDebugging;
+            _restartToolStripButton.Enabled = _isDebugging;
+            _runDebuggerToolButton.Enabled = enabled || !_isDebugging;
             _pauseToolButton.Enabled = isRunning;
         }
 
