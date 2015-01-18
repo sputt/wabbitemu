@@ -104,10 +104,10 @@ namespace Revsoft.Wabbitcode.GUI
         /// <summary>
         /// Updates the title of the app with the filename.
         /// </summary>
-        private void UpdateTitle()
+        private void UpdateTitle(bool isDebugging)
         {
             string debugString = string.Empty;
-            if (_debuggerService.CurrentDebugger != null)
+            if (isDebugging)
             {
                 debugString = " (Debugging)";
             }
@@ -136,7 +136,7 @@ namespace Revsoft.Wabbitcode.GUI
                 _statusBarService.SetCodeCountInfo(null);
             }
 
-            UpdateTitle();
+            UpdateTitle(_debuggerService.CurrentDebugger != null);
         }
 
         #region Initalization
@@ -147,7 +147,7 @@ namespace Revsoft.Wabbitcode.GUI
             {
                 _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
                 _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
-                _debuggerService.OnDebuggingEnded += (sender, args) => EndDebug();
+                _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
                 _projectService.ProjectOpened += ProjectService_OnProjectOpened;
 
                 LoadStartupProject();
@@ -298,6 +298,11 @@ namespace Revsoft.Wabbitcode.GUI
             this.Invoke(ShowDebugPanels);
         }
 
+        private void DebuggerService_OnDebuggingEnded(object sender, DebuggingEventArgs e)
+        {
+            EndDebug();
+        }
+
         private void EndDebug()
         {
             if (InvokeRequired)
@@ -306,7 +311,7 @@ namespace Revsoft.Wabbitcode.GUI
                 return;
             }
 
-            UpdateTitle();
+            UpdateTitle(false);
             HideDebugPanels();
         }
 
@@ -324,7 +329,7 @@ namespace Revsoft.Wabbitcode.GUI
             _dockingService.ShowDockPanel<ExpressionWindow, StackViewer>(DockAlignment.Left);
             _dockingService.ShowDockPanel<CallStack, StackViewer>();
             _dockingService.ShowDockPanel<TrackingWindow, ExpressionWindow>();
-            UpdateTitle();
+            UpdateTitle(true);
         }
 
         private void HideDebugPanels()
