@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Revsoft.TextEditor;
@@ -106,6 +107,7 @@ namespace Revsoft.Wabbitcode.Actions
     public class GotoLabelAction : AbstractUiAction
     {
         private readonly IParserData _parserData;
+        private readonly IProjectService _projectService = DependencyFactory.Resolve<IProjectService>();
 
         public GotoLabelAction(IParserData parserData)
         {
@@ -116,7 +118,17 @@ namespace Revsoft.Wabbitcode.Actions
         {
             ParserInformation info = _parserData.Parent;
             FilePath file = info.SourceFile;
-            RunCommand(new GotoLineAction(file, _parserData.Location.Line));
+            IIncludeFile includedFile = _parserData as IIncludeFile;
+            if (includedFile != null)
+            {
+                string path = Path.Combine(_projectService.Project.ProjectDirectory, includedFile.IncludedFile);
+                FilePath filePath = new FilePath(path);
+                RunCommand(new OpenFileAction(filePath));
+            }
+            else
+            {
+                RunCommand(new GotoLineAction(file, _parserData.Location.Line));
+            }
         }
     }
 
