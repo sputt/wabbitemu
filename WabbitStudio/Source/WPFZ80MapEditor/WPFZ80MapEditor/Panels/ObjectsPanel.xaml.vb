@@ -84,42 +84,8 @@
 
         RemoveHandler DragScope.PreviewDragOver, draghandler
 
-        'DragSource.GiveFeedback -= feedbackhandler;
-        'DragScope.DragLeave -= dragleavehandler;
-        'DragScope.QueryContinueDrag -= queryhandler;
-        'DragScope.PreviewDragOver -= draghandler;  
-
         IsDragging = False
     End Sub
-
-
-
-    '    private bool _dragHasLeftScope = false; 
-    'void DragScope_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
-    '{
-    '    if (this._dragHasLeftScope)
-    '    {
-    '        e.Action = DragAction.Cancel;
-    '        e.Handled = true; 
-    '    }
-
-    '}
-
-
-    'void DragScope_DragLeave(object sender, DragEventArgs e)
-    '{
-    '    if (e.OriginalSource == DragScope)
-    '    {
-    '        Point p = e.GetPosition(DragScope);
-    '        Rect r = VisualTreeHelper.GetContentBounds(DragScope);
-    '        if (!r.Contains(p))
-    '        {
-    '            this._dragHasLeftScope = true;
-    '            e.Handled = true;
-    '        }
-    '    }
-
-    '} 
 
     Sub Window1_DragOver(sender As Object, args As DragEventArgs)
         If Not _adorner Is Nothing Then
@@ -127,12 +93,6 @@
             _adorner.TopOffset = args.GetPosition(DragScope).Y
         End If
     End Sub
-
-
-
-
-
-
 
     Private Sub Object_MouseUp(sender As System.Object, e As System.Windows.Input.MouseEventArgs)
         Debug.WriteLine("MouseUp")

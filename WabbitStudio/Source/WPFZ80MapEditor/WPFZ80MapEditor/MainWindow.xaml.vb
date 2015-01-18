@@ -76,7 +76,8 @@ Public Class MainWindow
         Dim clock As Clock = sender
 
         If clock.CurrentState <> ClockState.Active Then
-            Dim st As ScaleTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is ScaleTransform)
+            Dim RenderTransform As TransformGroup = Resources("MapCanvasRenderTransform")
+            Dim st As ScaleTransform = RenderTransform.Children.First(Function(t) TypeOf t Is ScaleTransform)
             Dim conv = New DoubleToZoomLevelConverter
             CurrentZoomLevelItem.Content = conv.Convert(st.ScaleX, GetType(String), Nothing, Nothing)
         End If
@@ -231,6 +232,8 @@ Public Class MainWindow
         Game.Owner = Window.GetWindow(Me)
         Game.Scenario = Model.Scenario
         Game.Show()
+
+        VisualStateManager.GoToElementState(Me, "Editing", True)
     End Sub
 
     Private Sub UndoCanExecute(sender As Object, e As CanExecuteRoutedEventArgs)
@@ -240,6 +243,16 @@ Public Class MainWindow
 
     Private Sub UndoExecuted(sender As Object, e As ExecutedRoutedEventArgs)
         UndoManager.Undo(Model)
+        e.Handled = True
+    End Sub
+
+    Private Sub RedoCanExecute(sender As Object, e As CanExecuteRoutedEventArgs)
+        e.CanExecute = UndoManager.CanRedo()
+        e.Handled = True
+    End Sub
+
+    Private Sub RedoExecuted(sender As Object, e As ExecutedRoutedEventArgs)
+        UndoManager.Redo(Model)
         e.Handled = True
     End Sub
 

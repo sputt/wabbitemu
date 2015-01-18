@@ -31,13 +31,21 @@
                            GetType(Boolean), GetType(XMapView), _
                            New PropertyMetadata(False))
 
-    Private Sub TileGrid_MouseEnter(sender As Object, e As MouseEventArgs)
-        Dim result = VisualStateManager.GoToState(sender, "MouseOver", True)
-    End Sub
+    Public Property ShowCollisions As Boolean
+        Get
+            Return GetValue(ShowCollisionsProperty)
+        End Get
 
-    Private Sub TileGrid_MouseLeave(sender As Object, e As MouseEventArgs)
-        Dim result = VisualStateManager.GoToState(sender, "Normal", True)
-    End Sub
+        Set(ByVal value As Boolean)
+            SetValue(ShowCollisionsProperty, value)
+        End Set
+    End Property
+
+    Public Shared ReadOnly ShowCollisionsProperty As DependencyProperty = _
+                           DependencyProperty.Register("ShowCollisions", _
+                           GetType(Boolean), GetType(XMapView), _
+                           New PropertyMetadata(False))
+
 
     Public Overrides Sub DeselectAll()
 
@@ -52,10 +60,6 @@
     Private Sub TileImage_MouseLeftButtonDown(sender As Object, e As MouseButtonEventArgs)
         Dim Index = TileContainer.ItemContainerGenerator.IndexFromContainer(VisualTreeHelper.GetParent(sender))
         If Index = -1 Then Exit Sub
-
-
-
-        Dim Map As MapData = DataContext
 
         If Keyboard.IsKeyDown(Key.LeftCtrl) Then
             SelectedTile = New TileSelection(Map.Tileset, Map.TileData(Index))

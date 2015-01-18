@@ -13,7 +13,7 @@
                 x:Name="MiscLayerControl"
                 AllowDrop="{Binding Active, ElementName=MiscLayerControl}" Drop="Misc_Drop"
              >
-    <UserControl.Resources>
+    <local:MapLayer.Resources>
         <local:LayerType x:Key="LayerType">MiscLayer</local:LayerType>
         <ControlTemplate x:Key="NoScroll">
             <ItemsPresenter></ItemsPresenter>
@@ -48,7 +48,7 @@
                 </Border>
             </ContentControl>
         </DataTemplate>
-    </UserControl.Resources>
+    </local:MapLayer.Resources>
     
     <Grid Width="256" Height="256">
         <ListBox Name="ItemsControl" Template="{StaticResource NoScroll}" ItemsSource="{Binding Path=ZMisc}" 

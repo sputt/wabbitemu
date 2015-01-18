@@ -9,8 +9,8 @@
              mc:Ignorable="d" 
                 MouseLeftButtonDown="ObjectCanvas_MouseLeftButtonDown"
                   MouseLeftButtonUp="ObjectCanvas_MouseLeftButtonUp" MouseMove="ObjectCanvas_MouseMove"
-             Width="256" Height="256">
-    <UserControl.Resources>
+             Width="256" Height="256" Focusable="True" KeyUp="TilegroupLayer_KeyUp" KeyDown="TilegroupLayer_KeyDown_1">
+    <local:MapLayer.Resources>
         <local:TilegroupSelection x:Key="TilegroupTest" Tileset="{x:Null}">
             <local:TilegroupSelection.TilegroupEntries>
                 <local:TilegroupEntryCollection>
@@ -39,23 +39,23 @@
         </local:TilegroupSelection>
         
         <local:SegmentConverter x:Key="SegmentConverter"/>
-    </UserControl.Resources>
+    </local:MapLayer.Resources>
 
-    <Canvas x:Name="ObjectCanvas" Width="256" Height="256" Background="Transparent">
+    <Canvas x:Name="ObjectCanvas" Width="256" Height="256" Background="Transparent" >
         <Path x:Name="TilegroupSelectionShape" DataContext="{Binding TilegroupSelection, ElementName=TilegroupLayer}"
-                  Canvas.Left="{Binding MapOffset.X}"
-                  Canvas.Top="{Binding MapOffset.Y}"
-                  Stroke="{StaticResource SelectionBrush}" Opacity="{StaticResource SelectionOpacity}" StrokeThickness="2" Cursor="SizeAll" Fill="#20FFFFFF"
-              MouseLeftButtonDown="TilegroupSelectionShape_MouseLeftButtonDown"
-              MouseLeftButtonUp="TilegroupSelectionShape_MouseLeftButtonUp"
-              MouseMove="TilegroupSelectionShape_MouseMove"
-              >
+                      Canvas.Left="{Binding MapOffset.X}"
+                      Canvas.Top="{Binding MapOffset.Y}"
+                      Stroke="{StaticResource SelectionBrush}" Opacity="{StaticResource SelectionOpacity}" StrokeThickness="2" Cursor="SizeAll" Fill="#20FFFFFF"
+                  MouseLeftButtonDown="TilegroupSelectionShape_MouseLeftButtonDown"
+                  MouseLeftButtonUp="TilegroupSelectionShape_MouseLeftButtonUp"
+                  MouseMove="TilegroupSelectionShape_MouseMove"
+                  >
             <Path.Data>
                 <PathGeometry>
                     <PathGeometry.Figures>
                         <PathFigureCollection>
                             <PathFigure IsClosed="True" StartPoint="{Binding Path=Vertices[0]}"
-                                            Segments="{Binding Path=Vertices, Converter={StaticResource SegmentConverter}}">
+                                                Segments="{Binding Path=Vertices, Converter={StaticResource SegmentConverter}}">
                             </PathFigure>
                         </PathFigureCollection>
                     </PathGeometry.Figures>

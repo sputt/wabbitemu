@@ -7,8 +7,6 @@
         End Get
     End Property
 
-
-
     Public Property TilegroupSelection As TilegroupSelection
         Get
             Return GetValue(TilegroupSelectionProperty)
@@ -22,6 +20,21 @@
     Public Shared ReadOnly TilegroupSelectionProperty As DependencyProperty = _
                            DependencyProperty.Register("TilegroupSelection", _
                            GetType(TilegroupSelection), GetType(TilegroupLayer), _
+                           New PropertyMetadata(Nothing))
+
+    Public Property SelectedTile As TileSelection
+        Get
+            Return GetValue(SelectedTileProperty)
+        End Get
+
+        Set(ByVal value As TileSelection)
+            SetValue(SelectedTileProperty, value)
+        End Set
+    End Property
+
+    Public Shared ReadOnly SelectedTileProperty As DependencyProperty = _
+                           DependencyProperty.Register("SelectedTile", _
+                           GetType(TileSelection), GetType(TilegroupLayer), _
                            New PropertyMetadata(Nothing))
 
 #Region "Canvas events"
@@ -42,6 +55,7 @@
 
         If sender.CaptureMouse() Then
             SelectionRect.Visibility = Windows.Visibility.Visible
+            TilegroupLayer.Focus()
             e.Handled = True
         End If
     End Sub
@@ -58,7 +72,7 @@
             SelRect.Height = SelectionRect.Height
 
             SelectObjectsInRect(SelRect)
-
+            TilegroupLayer.Focus()
             e.Handled = True
         End If
     End Sub
@@ -171,6 +185,21 @@
             Next
 
             TilegroupSelection = New TilegroupSelection(Map.Tileset, Entries)
+            evt.Handled = True
+        End If
+    End Sub
+
+    Private Sub TilegroupLayer_KeyUp(sender As Object, e As KeyEventArgs)
+        Debug.Print("KEY UP")
+    End Sub
+
+    Private Sub TilegroupLayer_KeyDown_1(sender As Object, evt As KeyEventArgs)
+        If evt.Key = Key.Delete AndAlso TilegroupSelection IsNot Nothing AndAlso SelectedTile IsNot Nothing AndAlso SelectedTile.Type = TileSelection.SelectionType.Tile Then
+            UndoManager.PushUndoState(Map, 0)
+            TilegroupSelection.TilegroupEntries.ToList().ForEach(
+                Sub(e)
+                    Map.TileData(e.Index) = SelectedTile.TileIndex
+                End Sub)
             evt.Handled = True
         End If
     End Sub

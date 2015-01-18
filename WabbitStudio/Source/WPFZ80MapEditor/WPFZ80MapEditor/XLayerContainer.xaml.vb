@@ -91,12 +91,6 @@ Public Class XLayerContainer
         Args.Handled = False
     End Sub
 
-    Private Sub LayerContainer_PreviewMouseDown(sender As Object, e As MouseButtonEventArgs)
-        'If Keyboard.IsKeyDown(Key.LeftCtrl) Then
-        '    e.Handled = True
-        '    Exit Sub
-        'End If
-    End Sub
 End Class
 
 Public Class MapPositionConverter

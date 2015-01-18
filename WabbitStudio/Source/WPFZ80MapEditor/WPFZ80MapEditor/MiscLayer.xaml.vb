@@ -115,19 +115,6 @@
         Mouse.Capture(Nothing)
     End Sub
 
-    'Private Sub ItemsControl_PreviewKeyDown(sender As System.Object, e As System.Windows.Input.KeyEventArgs) Handles ItemsControl.PreviewKeyDown
-    '    Dim SelectedMisc As ZMisc = CType(sender, ListBox).SelectedItem
-    '    Debug.WriteLine("Misc previewkeydown")
-    '    If SelectedMisc IsNot Nothing Then
-    '        Select Case e.Key
-    '            Case Key.Delete
-    '                CType(Me.DataContext, MapData).ZMisc.Remove(SelectedMisc)
-    '        End Select
-    '    Else
-    '        e.Handled = False
-    '    End If
-    'End Sub
-
     Public Overrides ReadOnly Property LayerType As LayerType
         Get
             Return WPFZ80MapEditor.LayerType.MiscLayer

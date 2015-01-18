@@ -1,16 +1,11 @@
-﻿<Window x:Class="MainWindow"
+﻿<Window
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:WPFZ80MapEditor"
     xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
-    Name="MainWindow"
-    Title="Z80 Scenario Editor" Height="800" Width="1200" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" Background="White">
-
-    <Window.CommandBindings>
-        <CommandBinding Command="Undo"
-                        CanExecute="UndoCanExecute"
-                        Executed="UndoExecuted"/>
-    </Window.CommandBindings>
+    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" x:Class="MainWindow"
+    x:Name="MainWindow"
+    Title="Z80 Scenario Editor" Height="497" Width="723" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" Background="White">
     
     <Window.Resources>
         <localconverters:DoubleToZoomLevelConverter x:Key="convertZoomLevel2"/>
@@ -21,71 +16,69 @@
         <local:MapPositionConverter x:Key="MapPositionConverter"/>
         
         <local:LayerType x:Key="MapsetLayer">MapsetLayer</local:LayerType>
+        <local:LayerType x:Key="MapLayer">MapLayer</local:LayerType>
+        <local:LayerType x:Key="TilegroupLayer">TilegroupLayer</local:LayerType>
 
         <TransformGroup x:Key="MapCanvasRenderTransform">
-            <ScaleTransform/>
-            <TranslateTransform/>
+        	<ScaleTransform/>
+        	<TranslateTransform/>
         </TransformGroup>
 
-        <Style x:Key="LayerStyle" TargetType="local:MapLayer">
+        <Style x:Key="LayerStyle" TargetType="{x:Type local:MapLayer}">
+        	<Setter Property="IsHitTestVisible" Value="False"/>
             <Style.Triggers>
                 <DataTrigger Value="True">
                     <DataTrigger.Binding>
                         <MultiBinding Converter="{StaticResource ActiveLayerConverter}">
-                            <Binding Path="DataContext.CurrentLayer">
-                                <Binding.RelativeSource>
-                                    <RelativeSource AncestorType="{x:Type local:MainWindow}"/>
-                                </Binding.RelativeSource>
-                            </Binding>
+                            <Binding Path="DataContext.CurrentLayer" RelativeSource="{RelativeSource AncestorType={x:Type local:MainWindow}}"/>
                             <Binding Path="LayerType" RelativeSource="{x:Static RelativeSource.Self}"/>
                         </MultiBinding>
                     </DataTrigger.Binding>
                     <Setter Property="IsHitTestVisible" Value="True"/>
-                    <Setter Property="Active" Value="true"/>
+                    <Setter Property="Active" Value="True"/>
                 </DataTrigger>
             </Style.Triggers>
-            <Setter Property="IsHitTestVisible" Value="False"/>
         </Style>
 
         <Style x:Key="RadioButtonListItem" TargetType="{x:Type ListBoxItem}" >
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                        <DockPanel LastChildFill="True" Background="{TemplateBinding Background}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="6,0" >
-                            <RadioButton IsChecked="{TemplateBinding IsSelected}" Focusable="False" IsHitTestVisible="False" VerticalAlignment="Center" Margin="0,0,2,0" />
-                            <ContentPresenter
-                                Content             = "{TemplateBinding ContentControl.Content}"
-                                ContentTemplate     = "{TemplateBinding ContentControl.ContentTemplate}"
-                                ContentStringFormat = "{TemplateBinding ContentControl.ContentStringFormat}"
-                                HorizontalAlignment = "{TemplateBinding Control.HorizontalContentAlignment}"
-                                VerticalAlignment   = "{TemplateBinding Control.VerticalContentAlignment}"
-                                SnapsToDevicePixels = "{TemplateBinding UIElement.SnapsToDevicePixels}" />
-                        </DockPanel>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+        	<Setter Property="Template">
+        		<Setter.Value>
+        			<ControlTemplate TargetType="{x:Type ListBoxItem}">
+        				<DockPanel LastChildFill="True" Background="{TemplateBinding Background}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="6,0" >
+        					<RadioButton IsChecked="{TemplateBinding IsSelected}" Focusable="False" IsHitTestVisible="False" VerticalAlignment="Center" Margin="0,0,2,0" />
+        					<ContentPresenter
+        						Content             = "{TemplateBinding Content}"
+        						ContentTemplate     = "{TemplateBinding ContentTemplate}"
+        						ContentStringFormat = "{TemplateBinding ContentStringFormat}"
+        						HorizontalAlignment = "{TemplateBinding HorizontalContentAlignment}"
+        						VerticalAlignment   = "{TemplateBinding VerticalContentAlignment}"
+        						SnapsToDevicePixels = "{TemplateBinding SnapsToDevicePixels}" />
+        				</DockPanel>
+        			</ControlTemplate>
+        		</Setter.Value>
+        	</Setter>
         </Style>
 
-        <Style x:Key="RadioButtonList" TargetType="ListBox">
+        <Style x:Key="RadioButtonList" TargetType="{x:Type ListBox}">
 
             <Style.Resources>
-                <Style TargetType="Label">
+                <Style TargetType="{x:Type Label}">
                     <Setter Property="Padding" Value="0" />
                 </Style>
             </Style.Resources>
 
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Background"      Value="Transparent" />
+        	<Setter Property="BorderThickness" Value="0" />
+        	<Setter Property="Background"      Value="Transparent" />
 
-            <Setter Property="ItemContainerStyle" Value="{StaticResource RadioButtonListItem}" />
+        	<Setter Property="ItemContainerStyle" Value="{StaticResource RadioButtonListItem}" />
 
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ListBox}">
-                        <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+        	<Setter Property="Template">
+        		<Setter.Value>
+        			<ControlTemplate TargetType="{x:Type ListBox}">
+        				<ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+        			</ControlTemplate>
+        		</Setter.Value>
+        	</Setter>
 
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
@@ -95,175 +88,236 @@
 
         </Style>
 
-        <Style x:Key="HorizontalRadioButtonList" BasedOn="{StaticResource RadioButtonList}" TargetType="ListBox">
-            <Setter Property="ItemsPanel">
-                <Setter.Value>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel Background="Transparent" Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </Setter.Value>
-            </Setter>
+        <Style x:Key="HorizontalRadioButtonList" BasedOn="{StaticResource RadioButtonList}" TargetType="{x:Type ListBox}">
+        	<Setter Property="ItemsPanel">
+        		<Setter.Value>
+        			<ItemsPanelTemplate>
+        				<VirtualizingStackPanel Background="Transparent" Orientation="Horizontal" />
+        			</ItemsPanelTemplate>
+        		</Setter.Value>
+        	</Setter>
         </Style>
+
+        <DataTemplate x:Key="MapLayersTemplate">
+            <Grid>
+                <local:XMapView x:Name="MapView" Panel.ZIndex="0"
+										SelectedTile="{Binding DataContext.SelectedTile, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type local:MainWindow}}}">
+                    <local:XMapView.Style>
+                        <Style TargetType="local:XMapView" BasedOn="{StaticResource LayerStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
+                                             Value="{StaticResource MapsetLayer}">
+                                    <DataTrigger.Setters>
+                                        <Setter Property="ShowNewMaps" Value="True"/>
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
+                                             Value="{StaticResource MapLayer}">
+                                    <DataTrigger.Setters>
+                                        <Setter Property="ShowCollisions" Value="True"/>
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
+                                             Value="{StaticResource TilegroupLayer}">
+                                    <DataTrigger.Setters>
+                                        <Setter Property="ShowCollisions" Value="True"/>
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </local:XMapView.Style>
+                </local:XMapView>
+                <local:TilegroupLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}" SelectedTile="{Binding DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}}">
+
+                </local:TilegroupLayer>
+
+                <local:MiscLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
+                <local:XObjectLayer Panel.ZIndex="2" Style="{StaticResource LayerStyle}" CollectionName="ZObjects"/>
+                <local:XEnemyLayer Panel.ZIndex="3" Style="{StaticResource LayerStyle}" CollectionName="ZEnemies"/>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
-    <AdornerDecorator>
+    <Window.CommandBindings>
+        <CommandBinding Command="Undo"
+                        CanExecute="UndoCanExecute"
+                        Executed="UndoExecuted"/>
+        <CommandBinding Command="Redo"
+                        CanExecute="RedoCanExecute"
+                        Executed="RedoExecuted"/>
+    </Window.CommandBindings>
+
+    <AdornerDecorator x:Name="TopLevelControl">
+		<VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="VisualStateGroup">
+                    <VisualState x:Name="Editing">
+                    	<Storyboard>
+                    		<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="StopButton">
+                    			<DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
+                    		</ObjectAnimationUsingKeyFrames>
+                    	</Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Testing">
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TilesSelectorGridItem">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
+                            </ObjectAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="ObjectSelectorGridItem">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
+                            </ObjectAnimationUsingKeyFrames>
+                            <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.IsEnabled)" Storyboard.TargetName="LayerListBox">
+                            	<DiscreteBooleanKeyFrame KeyTime="0" Value="False"/>
+                            </BooleanAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestButton">
+                            	<DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
         <Grid>
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click" SourceName="TestButton">
+                    <ei:GoToStateAction StateName="Testing"/>
+                </i:EventTrigger>
+                <i:EventTrigger EventName="Click" SourceName="StopButton">
+                	<ei:GoToStateAction StateName="Editing"/>
+                </i:EventTrigger>
+                <i:EventTrigger>
+                	<ei:GoToStateAction StateName="Editing"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            
             <Canvas x:Name="MapCanvas" Background="Gray" Panel.ZIndex="0" MouseMove="Background_MouseMove" MouseWheel="Background_MouseWheel" PreviewMouseRightButtonDown="Background_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Background_PreviewMouseRightButtonUp">
-                <local:XLayerContainer x:Name="LayerContainer" Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, Mode=TwoWay, ElementName=MainWindow}"
-                                       Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
-                                               RenderTransform="{StaticResource MapCanvasRenderTransform}" MouseDoubleClick="Map_MouseDoubleClick" >
+				<local:XLayerContainer 
+                    x:Name="LayerContainer"
+                    Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, ElementName=MainWindow, Mode=TwoWay}"
+					Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
+					RenderTransform="{StaticResource MapCanvasRenderTransform}" MouseDoubleClick="Map_MouseDoubleClick" ItemTemplate="{StaticResource MapLayersTemplate}" >
                     <local:XLayerContainer.Style>
-                        <Style TargetType="local:XLayerContainer">
-                        <Style.Triggers>
-                            <DataTrigger Value="True">
-                                <DataTrigger.Binding>
-                                    <MultiBinding Converter="{StaticResource ActiveLayerConverter}">
-                                        <Binding Path="DataContext.CurrentLayer">
-                                            <Binding.RelativeSource>
-                                                <RelativeSource AncestorType="{x:Type local:MainWindow}"/>
-                                            </Binding.RelativeSource>
-                                        </Binding>
+                        <Style TargetType="{x:Type local:XLayerContainer}">
+                            <Setter Property="Selectable" Value="False"/>
+                            <Style.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <MultiBinding Converter="{StaticResource ActiveLayerConverter}">
+                                            <Binding Path="DataContext.CurrentLayer" RelativeSource="{RelativeSource AncestorType={x:Type local:MainWindow}}"/>
                                             <Binding Source="{StaticResource MapsetLayer}"/>
                                         </MultiBinding>
-                                </DataTrigger.Binding>
+                                    </DataTrigger.Binding>
                                     <Setter Property="Selectable" Value="True"/>
                                 </DataTrigger>
-                        </Style.Triggers>
-                            <Setter Property="Selectable" Value="False"/>
+                            </Style.Triggers>
                         </Style>
                     </local:XLayerContainer.Style>
-                    <local:XLayerContainer.ItemTemplate>
-                        <DataTemplate>
-                            <UserControl Width="256" Height="260">
-                                <Grid>
-                                    <local:XMapView     Panel.ZIndex="0" Style="{StaticResource LayerStyle}" 
-                                                        SelectedTile="{Binding Path=DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}, Mode=TwoWay}">
-                                        <local:XMapView.ShowNewMaps>
-                                            <MultiBinding Converter="{StaticResource ActiveLayerConverter}">
-                                                <Binding Source="{StaticResource MapsetLayer}"/>
-                                                <Binding Path="DataContext.CurrentLayer">
-                                                    <Binding.RelativeSource>
-                                                        <RelativeSource AncestorType="{x:Type local:MainWindow}"/>
-                                                    </Binding.RelativeSource>
-                                                </Binding>
-                                            </MultiBinding>
-                                        </local:XMapView.ShowNewMaps>
-                                    </local:XMapView>
-                                    <local:TilegroupLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
-
-                                    <local:MiscLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
-                                    <local:XObjectLayer Panel.ZIndex="2" Style="{StaticResource LayerStyle}" CollectionName="ZObjects"/>
-                                    <local:XEnemyLayer Panel.ZIndex="3" Style="{StaticResource LayerStyle}" CollectionName="ZEnemies"/>
-                                </Grid>
-                            </UserControl>
-                        </DataTemplate>
-                    </local:XLayerContainer.ItemTemplate>
                 </local:XLayerContainer>
-            </Canvas>
+			</Canvas>
 
 
-            <DockPanel Panel.ZIndex="1">
-                <Menu DockPanel.Dock="Top" Name="MainMenu" Height="20" Panel.ZIndex="1">
-                    <MenuItem Header="_File">
-                        <MenuItem Name="NewScenario" Header="_New" Click="NewScenario_Click" />
-                        <MenuItem Name="OpenScenario" Header="_Open" Click="OpenScenario_Click"/>
-                        <MenuItem Header="_Save" Click="Save_Click"/>
-                        <MenuItem Header="E_xit" />
-                    </MenuItem>
-                    <MenuItem Header="_Edit">
-                        <MenuItem Header="_Undo" Command="Undo"/>
-                        <MenuItem Header="_Redo" Command="Redo"/>
-                    </MenuItem>
-                    <MenuItem Header="_Mapset" Name="MapsetMenu">
-                        <MenuItem Name="MapsetNew" Header="_New map" Click="MapsetNew_Click"/>
-                        <MenuItem Name="MapsetNewFromFile" Header="New map from _file..."/>
-                        <MenuItem Name="MapsetDelete" Header="_Delete map" Click="MapsetDelete_Click"/>
-                        <MenuItem Header="Add _column">
-                            <MenuItem Header="_Left" Name="AddColumnLeft"/>
-                            <MenuItem Header="_Right" Name="AddColumnRight"/>
-                        </MenuItem>
-                    </MenuItem>
-                    <MenuItem Header="_Map">
+			<DockPanel Panel.ZIndex="1">
+				<Menu DockPanel.Dock="Top" x:Name="MainMenu" Height="20" Panel.ZIndex="1">
+					<MenuItem Header="_File">
+						<MenuItem Command="ApplicationCommands.New" />
+						<MenuItem Command="ApplicationCommands.Open"/>
+						<MenuItem Command="ApplicationCommands.Save"/>
+						<MenuItem Header="E_xit" />
+					</MenuItem>
+					<MenuItem Header="_Edit">
+						<MenuItem Command="Undo"/>
+						<MenuItem Command="Redo"/>
+						<Separator/>
+						<MenuItem Command="ApplicationCommands.Copy"/>
+						<MenuItem Command="ApplicationCommands.Paste"/>
 
-                    </MenuItem>
-                    <MenuItem Header="_View">
-                        <MenuItem Name="TilesMenuItem" Header="Show _tiles panel" IsCheckable="True" IsChecked="True"/>
-                        <MenuItem Name="PaddingMenuItem" Header="Show map _padding" IsCheckable="True" IsChecked="True"/>
-                    </MenuItem>
-                    <MenuItem Header="_Help">
-                        <MenuItem Header="_About"/>
-                    </MenuItem>
-                </Menu>
+					</MenuItem>
+					<MenuItem Header="_Mapset" x:Name="MapsetMenu">
+						<MenuItem x:Name="MapsetNew" Header="_New map" Click="MapsetNew_Click"/>
+						<MenuItem x:Name="MapsetNewFromFile" Header="New map from _file..."/>
+						<MenuItem x:Name="MapsetDelete" Header="_Delete map" Click="MapsetDelete_Click"/>
+						<MenuItem Header="Add _column">
+							<MenuItem Header="_Left" x:Name="AddColumnLeft"/>
+							<MenuItem Header="_Right" x:Name="AddColumnRight"/>
+						</MenuItem>
+					</MenuItem>
+					<MenuItem Header="_Map"/>
+					<MenuItem Header="_View">
+						<MenuItem x:Name="TilesMenuItem" Header="Show _tiles panel" IsCheckable="True" IsChecked="True"/>
+						<MenuItem x:Name="PaddingMenuItem" Header="Show map _padding" IsCheckable="True" IsChecked="True"/>
+					</MenuItem>
+					<MenuItem Header="_Help">
+						<MenuItem Header="_About"/>
+					</MenuItem>
+				</Menu>
 
-                <WrapPanel DockPanel.Dock="Top" Height="26" Panel.ZIndex="1" Background="White">
-                    <WrapPanel.Effect>
-                        <DropShadowEffect Direction="270" Opacity="0.25" ShadowDepth="5" />
-                    </WrapPanel.Effect>
-                    <ToolBar DockPanel.Dock="top" ToolBarTray.IsLocked="True" Name="MainToolBar" Height="26">
-                        <Button Click="OpenScenario_Click">
-                            <Image Source="Toolbar/open.bmp" OpacityMask="#A8E61D"/>
-                        </Button>
-                        <Button Name="Button1" Click="Save_Click">
-                            <Image Source="Toolbar/save.bmp"  OpacityMask="#A8E61D"/>
-                        </Button>
-                        <Button Name="TestButton" Click="TestButton_Click">Test</Button>
-                        <Separator></Separator>
+				<WrapPanel x:Name="ToolbarPanel" DockPanel.Dock="Top" Height="26" Panel.ZIndex="1" Background="White">
+					<WrapPanel.Effect>
+						<DropShadowEffect Direction="270" Opacity="0.25" ShadowDepth="5" />
+					</WrapPanel.Effect>
+					<ToolBar DockPanel.Dock="top" ToolBarTray.IsLocked="True" x:Name="MainToolBar" Height="26">
+						<Button Command="ApplicationCommands.Open">
+							<Image Source="Toolbar/open.bmp" OpacityMask="#A8E61D"/>
+						</Button>
+						<Button Click="Save_Click" Command="ApplicationCommands.Save">
+							<Image x:Name="image" Source="Toolbar/save.bmp"  OpacityMask="#A8E61D"/>
+						</Button>
+						<Button x:Name="TestButton" Content="Test"/>
+						<Button x:Name="StopButton" Content="Stop"/>
+						<Separator/>
 
-                        <ListBox Style="{StaticResource HorizontalRadioButtonList}" ItemContainerStyle="{StaticResource RadioButtonListItem}" SelectedValue="{Binding CurrentLayer}" SelectedValuePath="Tag">
-                            <ListBoxItem Tag="{x:Static local:LayerType.MapsetLayer}">Mapset</ListBoxItem>
-                            <ListBoxItem Tag="{x:Static local:LayerType.TilegroupLayer}">Tilegroup</ListBoxItem>
-                            <ListBoxItem Tag="{x:Static local:LayerType.MapLayer}">Map</ListBoxItem>
-                            <ListBoxItem Tag="{x:Static local:LayerType.ObjectLayer}">Objects</ListBoxItem>
-                            <ListBoxItem Tag="{x:Static local:LayerType.EnemyLayer}">Enemies</ListBoxItem>
-                            <ListBoxItem Tag="{x:Static local:LayerType.MiscLayer}">Misc</ListBoxItem>
-                        </ListBox>
-                    </ToolBar>
-                </WrapPanel>
+						<ListBox x:Name="LayerListBox" Style="{StaticResource HorizontalRadioButtonList}" ItemContainerStyle="{StaticResource RadioButtonListItem}" SelectedValue="{Binding CurrentLayer}" SelectedValuePath="Tag">
+							<ListBoxItem Tag="{x:Static local:LayerType.MapsetLayer}" Content="Mapset"/>
+							<ListBoxItem Tag="{x:Static local:LayerType.TilegroupLayer}" Content="Tilegroup"/>
+							<ListBoxItem Tag="{x:Static local:LayerType.MapLayer}" Content="Map"/>
+							<ListBoxItem Tag="{x:Static local:LayerType.ObjectLayer}" Content="Objects"/>
+							<ListBoxItem Tag="{x:Static local:LayerType.EnemyLayer}" Content="Enemies"/>
+							<ListBoxItem Tag="{x:Static local:LayerType.MiscLayer}" Content="Misc"/>
+						</ListBox>
+					</ToolBar>
+				</WrapPanel>
 
-                <StatusBar DockPanel.Dock="Bottom" Name="StatusBar" Margin="0" Padding="0" Panel.ZIndex="1">
-                    <StatusBar.Effect>
-                        <DropShadowEffect Direction="90" Opacity="0.25" ShadowDepth="2" />
-                    </StatusBar.Effect>
-                    <StatusBarItem HorizontalAlignment="Left" >
-                        <WrapPanel Height="19" VerticalAlignment="Center">
-                            <Label Padding="0" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom">Tile:</Label>
-                            <Rectangle Width="6"/>
-                            <Label Padding="0" Content="{Binding Path=SelectedTile}"></Label>
-                        </WrapPanel>
-                    </StatusBarItem>
-                    <StatusBarItem>
-                        <TextBlock x:Name="StatusTextBlock" Text="{Binding Status}">
-                        </TextBlock>
-                    </StatusBarItem>
-                    <StatusBarItem HorizontalAlignment="Right" Width="75">
-                        <ComboBox Name="ZoomLevelCombo" FontSize="10" SelectedIndex="0" Padding="8,2,0,3" Width="50" HorizontalAlignment="Right" IsEditable="False" IsTabStop="False" SelectionChanged="ZoomLevelCombo_SelectionChanged">
-                            <ComboBoxItem Content="100%" Name="CurrentZoomLevelItem"/>
-                            <ComboBoxItem Content="50%" />
-                            <ComboBoxItem Content="75%" />
-                            <ComboBoxItem Content="100%" />
-                            <ComboBoxItem Content="150%" />
-                            <ComboBoxItem Content="200%" />
-                            <ComboBoxItem Content="400%" />
-                        </ComboBox>
-                    </StatusBarItem>
-                </StatusBar>
+				<StatusBar DockPanel.Dock="Bottom" x:Name="StatusBar" Margin="0" Padding="0" Panel.ZIndex="1">
+					<StatusBar.Effect>
+						<DropShadowEffect Direction="90" Opacity="0.25" ShadowDepth="2" />
+					</StatusBar.Effect>
+					<StatusBarItem HorizontalAlignment="Left" >
+						<WrapPanel Height="19" VerticalAlignment="Center">
+							<Label Padding="0" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom" Content="Tile:"/>
+							<Rectangle Width="6"/>
+							<Label Padding="0" Content="{Binding SelectedTile}"/>
+						</WrapPanel>
+					</StatusBarItem>
+					<StatusBarItem>
+						<TextBlock x:Name="StatusTextBlock" Text="{Binding Status}"/>
+					</StatusBarItem>
+					<StatusBarItem HorizontalAlignment="Right" Width="75">
+						<ComboBox x:Name="ZoomLevelCombo" FontSize="10" SelectedIndex="0" Padding="8,2,0,3" Width="50" HorizontalAlignment="Right" IsEditable="False" IsTabStop="False" SelectionChanged="ZoomLevelCombo_SelectionChanged">
+							<ComboBoxItem Content="100%" x:Name="CurrentZoomLevelItem"/>
+							<ComboBoxItem Content="50%" />
+							<ComboBoxItem Content="75%" />
+							<ComboBoxItem Content="100%" />
+							<ComboBoxItem Content="150%" />
+							<ComboBoxItem Content="200%" />
+							<ComboBoxItem Content="400%" />
+						</ComboBox>
+					</StatusBarItem>
+				</StatusBar>
 
-                <Grid x:Name="TilesSelectorGridItem" DockPanel.Dock="Left" Panel.ZIndex="2" Background="White" Width="170">
-                    <Grid.Effect>
-                        <DropShadowEffect Direction="0" Opacity="0.25" ShadowDepth="2" />
-                    </Grid.Effect>
-                    <local:TilesPanel x:Name="TileSelectorPanel"/>
-                </Grid>
+				<Grid x:Name="TilesSelectorGridItem" DockPanel.Dock="Left" Panel.ZIndex="2" Background="White" Width="170">
+					<Grid.Effect>
+						<DropShadowEffect Direction="0" Opacity="0.25" ShadowDepth="2" />
+					</Grid.Effect>
+					<local:TilesPanel x:Name="TileSelectorPanel"/>
+				</Grid>
 
-                <Grid DockPanel.Dock="Right" Panel.ZIndex="2" Background="White" Width="170">
-                    <Grid.Effect>
-                        <DropShadowEffect Direction="180" Opacity="0.25" ShadowDepth="2" />
-                    </Grid.Effect>
-                    <local:ObjectsPanel x:Name="ObjectsPanel"/>
-                </Grid>
+				<Grid x:Name="ObjectSelectorGridItem" DockPanel.Dock="Right" Panel.ZIndex="2" Background="White" Width="170">
+					<Grid.Effect>
+						<DropShadowEffect Direction="180" Opacity="0.25" ShadowDepth="2" />
+					</Grid.Effect>
+					<local:ObjectsPanel x:Name="ObjectsPanel"/>
+				</Grid>
 
-                <Grid IsHitTestVisible="False"/>
-            </DockPanel>
-        </Grid>
-    </AdornerDecorator>
+				<Grid IsHitTestVisible="False"/>
+			</DockPanel>
+		</Grid>
+	</AdornerDecorator>
 </Window>

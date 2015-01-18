@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              x:Name="LayerContainer"
-            ItemsSource="{Binding Maps}" SelectionMode="Single" PreviewMouseDown="LayerContainer_PreviewMouseDown">
+            ItemsSource="{Binding Maps}" SelectionMode="Single">
 
     <ListBox.Resources>
         <local:MapPositionConverter x:Key="MapPositionConverter"/>
