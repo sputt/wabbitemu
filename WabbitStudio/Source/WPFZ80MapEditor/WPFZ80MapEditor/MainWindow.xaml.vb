@@ -253,4 +253,12 @@ Public Class MainWindow
         Model.GameModel = New GameModel(Model.Scenario)
         Model.GameModel.Start()
     End Sub
+
+    Public Sub StopTesting()
+        Model.GameModel.Pause()
+        'Model.GameModel.Dispose()
+        Model.GameModel.StopSimulation()
+
+        Model.GameModel = Nothing
+    End Sub
 End Class

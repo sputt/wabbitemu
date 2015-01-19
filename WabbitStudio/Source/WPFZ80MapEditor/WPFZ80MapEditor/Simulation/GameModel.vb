@@ -8,10 +8,13 @@ Imports System.ComponentModel
 Public Class GameModel
     Inherits DependencyObject
     Implements INotifyPropertyChanged
-    Implements IDisposable
+    'Implements IDisposable
 
-    Dim _Calc As Wabbitemu
-    Dim _Asm As IZ80Assembler
+    Private _Calc As Wabbitemu
+    Private _Asm As IZ80Assembler
+
+    Private _RunningLock As New Object
+    Private _Running As Boolean = True
 
     Public Const P_PUSHING As Byte = 1 << 2
     Public Const P_SHIELD As Byte = 1 << 4
@@ -66,7 +69,6 @@ Public Class GameModel
     Private FlagsAddr As UShort
     Private CurrentMapAddr As UShort
     Private PrepareChangeAddr As UShort
-    Private Memory As IMemoryContext
 
     Private FrameProcessThread As New Thread(AddressOf FrameProcess)
     Private ProcessEvent As New AutoResetEvent(False)
@@ -123,7 +125,6 @@ Public Class GameModel
         MapDataAddr = _Asm.Labels("MAP_DATA")
         FlagsAddr = _Asm.Labels("GAME_FLAGS")
         CurrentMapAddr = _Asm.Labels("CURRENT_MAP")
-        Memory = _Calc.Memory
 
         Me.Scenario = scenario
 
@@ -163,7 +164,7 @@ Public Class GameModel
         _Calc.Breakpoints.Add(PrepareChange)
 
         _Calc.Run()
-        _Calc.Visible = True
+        '_Calc.Visible = True
 
         Map = New MapData(scenario, 0)
 
@@ -179,18 +180,22 @@ Public Class GameModel
         _Calc.Break()
     End Sub
 
-    Private Sub Calc_Breakpoint(Calc As Wabbitemu, Breakpoint As IBreakpoint)
-        If Breakpoint.Address.Address <> PrepareChangeAddr Then
-            UpdateModel(_Asm, Calc)
-        End If
+    Private Sub Calc_Breakpoint(Calc As Object, Breakpoint As Object)
+        SyncLock _RunningLock
+            If _Running Then
+                If Breakpoint.Address.Address <> PrepareChangeAddr Then
+                    UpdateModel(_Asm, Calc)
+                End If
 
-        Calc.Step()
-        Calc.Run()
+                Calc.Step()
+                Calc.Run()
+            End If
+        End SyncLock
     End Sub
 
     Private Sub FrameProcess()
-        While ProcessEvent.WaitOne()
-            Me.Dispatcher.Invoke(
+        While ProcessEvent.WaitOne() AndAlso _Running
+            Me.Dispatcher.InvokeAsync(
                 Sub()
                     Dim FrameDrawEntries As New ObservableCollection(Of ZDrawEntry)
                     While DrawEntryRawData.Any()
@@ -227,6 +232,7 @@ Public Class GameModel
     Private MapRawData() As Byte
 
     Public Sub UpdateModel(Asm As IZ80Assembler, Calc As IWabbitemu)
+        Dim Memory = Calc.Memory
         Dim DrawEntryCount = Memory.ReadByte(DrawEntryCountAddr)
 
         DrawEntryRawData = Memory.Read(DrawQueueAddr, DrawEntryCount * DrawEntrySize)
@@ -254,36 +260,78 @@ Public Class GameModel
         End Get
     End Property
 
-#Region "IDisposable Support"
-    Private disposedValue As Boolean ' To detect redundant calls
+    Public Sub StopSimulation()
+        RemoveHandler _Calc.Breakpoint, AddressOf Calc_Breakpoint
 
-    ' IDisposable
-    Protected Overridable Sub Dispose(disposing As Boolean)
-        If Not Me.disposedValue Then
-            If disposing Then
-                ' TODO: dispose managed state (managed objects).
-            End If
+        SyncLock _RunningLock
+            _Running = False
+            _Calc.Break()
+        End SyncLock
 
-            ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
-            ' TODO: set large fields to null.
-        End If
-        Me.disposedValue = True
+        ' Wait a few frame's worth for final breakpoints
+        Thread.Sleep(300)
+
+        _Calc.Break()
+
+        _Calc = Nothing
+        _Asm = Nothing
+
+        ProcessEvent.Set()
+
+        FrameProcessThread.Join()
+
+        ' Wait for Wabbitemu to be collected
+        System.GC.Collect()
+        System.GC.WaitForPendingFinalizers()
     End Sub
 
-    ' TODO: override Finalize() only if Dispose(ByVal disposing As Boolean) above has code to free unmanaged resources.
-    'Protected Overrides Sub Finalize()
-    '    ' Do not change this code.  Put cleanup code in Dispose(ByVal disposing As Boolean) above.
-    '    Dispose(False)
-    '    MyBase.Finalize()
-    'End Sub
+    '#Region "IDisposable Support"
+    '    Private disposedValue As Boolean ' To detect redundant calls
 
-    ' This code added by Visual Basic to correctly implement the disposable pattern.
-    Public Sub Dispose() Implements IDisposable.Dispose
-        ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
-        Dispose(True)
-        GC.SuppressFinalize(Me)
-    End Sub
-#End Region
+    '    ' IDisposable
+    '    Protected Overridable Sub Dispose(disposing As Boolean)
+    '        If Not Me.disposedValue Then
+    '            If disposing Then
+    '                RemoveHandler _Calc.Breakpoint, AddressOf Calc_Breakpoint
+
+    '                SyncLock _RunningLock
+    '                    _Running = False
+    '                    _Calc.Break()
+    '                End SyncLock
+
+    '                ' Wait a few frame's worth for final breakpoints
+    '                Thread.Sleep(300)
+
+    '                _Calc.Break()
+
+    '                _Calc = Nothing
+    '                _Asm = Nothing
+
+    '                ProcessEvent.Set()
+
+    '                FrameProcessThread.Join()
+    '            End If
+
+    '            ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+    '            ' TODO: set large fields to null.
+    '        End If
+    '        Me.disposedValue = True
+    '    End Sub
+
+    '    ' TODO: override Finalize() only if Dispose(ByVal disposing As Boolean) above has code to free unmanaged resources.
+    '    'Protected Overrides Sub Finalize()
+    '    '    ' Do not change this code.  Put cleanup code in Dispose(ByVal disposing As Boolean) above.
+    '    '    Dispose(False)
+    '    '    MyBase.Finalize()
+    '    'End Sub
+
+    '    ' This code added by Visual Basic to correctly implement the disposable pattern.
+    '    Public Sub Dispose() Implements IDisposable.Dispose
+    '        ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+    '        Dispose(True)
+    '        GC.SuppressFinalize(Me)
+    '    End Sub
+    '#End Region
 
     Public Event PropertyChanged(sender As Object, e As PropertyChangedEventArgs) Implements INotifyPropertyChanged.PropertyChanged
     Private Sub RaisePropertyChanged(PropName As String)

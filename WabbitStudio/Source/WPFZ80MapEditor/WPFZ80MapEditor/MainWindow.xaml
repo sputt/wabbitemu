@@ -189,6 +189,7 @@
                 </i:EventTrigger>
                 <i:EventTrigger EventName="Click" SourceName="StopButton">
                 	<ei:GoToStateAction StateName="Editing"/>
+                    <ei:CallMethodAction MethodName="StopTesting" TargetObject="{Binding ., ElementName=MainWindow}"/>
                 </i:EventTrigger>
                 <i:EventTrigger>
                 	<ei:GoToStateAction StateName="Editing"/>
