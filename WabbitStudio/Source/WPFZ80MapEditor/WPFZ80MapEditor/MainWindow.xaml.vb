@@ -31,7 +31,7 @@ Public Class MainWindow
 
         If ZeldaFolder IsNot Nothing Then
             Dim HillScenario As New Scenario
-            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\pete.asm"))
+            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\hill.asm"))
             Model.Scenario = HillScenario
         End If
     End Sub
@@ -227,15 +227,6 @@ Public Class MainWindow
         Model.Scenario.SaveScenario()
     End Sub
 
-    Private Sub TestButton_Click(sender As Object, e As RoutedEventArgs)
-        Dim Game = New GameWindow()
-        Game.Owner = Window.GetWindow(Me)
-        Game.Scenario = Model.Scenario
-        Game.Show()
-
-        VisualStateManager.GoToElementState(Me, "Editing", True)
-    End Sub
-
     Private Sub UndoCanExecute(sender As Object, e As CanExecuteRoutedEventArgs)
         e.CanExecute = UndoManager.CanUndo()
         e.Handled = True
@@ -256,4 +247,10 @@ Public Class MainWindow
         e.Handled = True
     End Sub
 
+    Public Sub StartTesting()
+        Model.Scenario.SaveScenario()
+
+        Model.GameModel = New GameModel(Model.Scenario)
+        Model.GameModel.Start()
+    End Sub
 End Class

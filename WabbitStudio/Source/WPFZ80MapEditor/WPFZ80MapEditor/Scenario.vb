@@ -45,6 +45,14 @@ Public Class Scenario
         End Set
     End Property
 
+    Public Function GetMap(HierarchyIndex As Byte) As MapData
+        Dim MapHier As New MapHierarchy
+        GetExistingMaps().ToList().ForEach(Sub(m) MapHier.AddMap(m.X, m.Y, m.Index))
+
+        Dim RealIndex = MapHier.GetArray()(HierarchyIndex)
+        Return Maps.FirstOrDefault(Function(m) m.Index = RealIndex)
+    End Function
+
     Public Property Images As New ObservableCollection(Of ZeldaImage)
     Public Property AnimDefs As New ObservableDictionary(Of String, ZDef)
     Public Property ObjectDefs As New ObservableDictionary(Of String, ZDef)
@@ -280,21 +288,28 @@ Public Class Scenario
 
         Public Sub Write(Stream As StreamWriter, ScenarioName As String)
             Dim Xs = _Maps.Keys.Select(Function(p) p.X)
-            Dim Ys = _Maps.Keys.Select(Function(p) p.Y)
-
             Dim Width = Xs.Max + 1 - Xs.Min + 1
-            Dim Height = Ys.Max + 1 - Ys.Min + 2
 
             Stream.WriteLine("#ifdef INCLUDE_MAP_HIERARCHY")
             Stream.WriteLine(ScenarioName & "_MAP_HIERARCHY:")
             Stream.WriteLine(ScenarioName & "_MAP_HIERARCHY_WIDTH = " & Width)
 
+            WriteAssemblyData(Stream, GetArray())
+            Stream.WriteLine("#endif")
+        End Sub
+
+        Public Function GetArray() As Byte()
+            Dim Xs = _Maps.Keys.Select(Function(p) p.X)
+            Dim Ys = _Maps.Keys.Select(Function(p) p.Y)
+
+            Dim Width = Xs.Max + 1 - Xs.Min + 1
+            Dim Height = Ys.Max + 1 - Ys.Min + 2
+
             Dim Data = Enumerable.Repeat(CByte(255), Width * Height).ToArray()
             _Maps.Keys.ToList().ForEach(Sub(P) Data((P.Y - Ys.Min + 1) * Width + P.X - Xs.Min) = _Maps(P))
 
-            WriteAssemblyData(Stream, Data)
-            Stream.WriteLine("#endif")
-        End Sub
+            Return Data
+        End Function
     End Class
 
     Public Sub SaveScenario()
@@ -318,6 +333,8 @@ Public Class Scenario
         For Each MapData In Maps.ToList().Where(Function(m) m.Exists).OrderBy(Function(m) m.Y).ThenBy(Function(m) m.X)
             Dim MapId = String.Format("{0:D2}", MapIndex)
             Dim MapPrefix = ScenarioName & "_MAP_" & MapId
+
+            MapData.Index = MapIndex
 
             Dim X = MapData.X
             Dim Y = MapData.Y

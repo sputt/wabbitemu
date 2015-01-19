@@ -145,6 +145,9 @@
     </Compile>
     <Compile Include="ResizeThumb.vb" />
     <Compile Include="ScenarioDefs.vb" />
+    <Compile Include="Simulation\GameMapView.xaml.vb">
+      <DependentUpon>GameMapView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Simulation\GameWindow.xaml.vb">
       <DependentUpon>GameWindow.xaml</DependentUpon>
     </Compile>
@@ -201,6 +204,10 @@
     <Page Include="MiscLayer.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Simulation\GameMapView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Simulation\GameWindow.xaml">
       <SubType>Designer</SubType>

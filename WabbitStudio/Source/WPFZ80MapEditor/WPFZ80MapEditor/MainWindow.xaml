@@ -100,7 +100,7 @@
 
         <DataTemplate x:Key="MapLayersTemplate">
             <Grid>
-                <local:XMapView x:Name="MapView" Panel.ZIndex="0"
+                <local:XMapView Panel.ZIndex="0"
 										SelectedTile="{Binding DataContext.SelectedTile, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type local:MainWindow}}}">
                     <local:XMapView.Style>
                         <Style TargetType="local:XMapView" BasedOn="{StaticResource LayerStyle}">
@@ -155,7 +155,10 @@
                     		<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="StopButton">
                     			<DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
                     		</ObjectAnimationUsingKeyFrames>
-                    	</Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestView">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Hidden}"/>
+                            </ObjectAnimationUsingKeyFrames>
+                    </Storyboard>
                     </VisualState>
                     <VisualState x:Name="Testing">
                         <Storyboard>
@@ -171,7 +174,10 @@
                             <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestButton">
                             	<DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
                             </ObjectAnimationUsingKeyFrames>
-                        </Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestView">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}"/>
+                            </ObjectAnimationUsingKeyFrames>
+                    </Storyboard>
                     </VisualState>
                 </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
@@ -179,6 +185,7 @@
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="Click" SourceName="TestButton">
                     <ei:GoToStateAction StateName="Testing"/>
+                    <ei:CallMethodAction MethodName="StartTesting" TargetObject="{Binding ., ElementName=MainWindow}"/>
                 </i:EventTrigger>
                 <i:EventTrigger EventName="Click" SourceName="StopButton">
                 	<ei:GoToStateAction StateName="Editing"/>
@@ -211,10 +218,14 @@
                         </Style>
                     </local:XLayerContainer.Style>
                 </local:XLayerContainer>
-			</Canvas>
+
+                <local:GameMapView x:Name="TestView" Panel.ZIndex="1" Width="256" Height="256" RenderTransform="{StaticResource MapCanvasRenderTransform}" DataContext="{Binding GameModel}"
+                    Canvas.Left="{Binding Path=SourceMap.X, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"
+                    Canvas.Top="{Binding Path=SourceMap.Y, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"/>
+            </Canvas>
 
 
-			<DockPanel Panel.ZIndex="1">
+			<DockPanel Panel.ZIndex="2">
 				<Menu DockPanel.Dock="Top" x:Name="MainMenu" Height="20" Panel.ZIndex="1">
 					<MenuItem Header="_File">
 						<MenuItem Command="ApplicationCommands.New" />

@@ -55,6 +55,7 @@
 
         If sender.CaptureMouse() Then
             SelectionRect.Visibility = Windows.Visibility.Visible
+
             TilegroupLayer.Focus()
             e.Handled = True
         End If
@@ -146,6 +147,12 @@
             UndoManager.PushUndoState(Map, UndoManager.TypeFlags.Anims)
 
             _TileDataBackup.AddRange(Map.TileData)
+            If SelectedTile IsNot Nothing AndAlso SelectedTile.Type = TileSelection.SelectionType.Tile Then
+                TilegroupSelection.TilegroupEntries.ToList().ForEach(
+                    Sub(e)
+                        _TileDataBackup(e.Index) = SelectedTile.TileIndex
+                    End Sub)
+            End If
             evt.Handled = True
         End If
     End Sub
@@ -171,12 +178,11 @@
             Dim Replacements As New Dictionary(Of Integer, Byte)
             TilegroupSelection.TilegroupEntries.ToList().ForEach(
                 Sub(e)
-                    If Replacements.ContainsKey(e.Index + Di) Then
-                        Replacements.Remove(e.Index + Di)
-                    End If
                     Map.TileData(e.Index + Di) = e.Tile.TileIndex
-                    ' Put back the original data where it was
-                    Replacements.Add(e.Index, _TileDataBackup(e.Index))
+                    If Di <> 0 Then
+                        ' Put back the original data where it was
+                        Replacements(e.Index) = _TileDataBackup(e.Index)
+                    End If
                     Entries.Add(New TilegroupEntry(e.Index + Di, e.Tile))
                 End Sub)
 

@@ -70,6 +70,14 @@ Public Class MapData
         End Set
     End Property
 
+    ''' <summary>
+    ''' Used during debugging
+    ''' </summary>
+    ''' <value></value>
+    ''' <returns></returns>
+    ''' <remarks></remarks>
+    Public Property Index As Byte
+
     Public Property TileData As ObservableCollection(Of Byte)
 
     Public Property ZAnims As ObservableCollection(Of ZAnim)
@@ -192,6 +200,7 @@ Public Class MapData
         Map.ZEnemies = CloneAll(ZEnemies)
         Map.ZMisc = CloneAll(ZMisc)
         Map._ID = ID
+        Map.Index = Index
 
         Return Map
     End Function

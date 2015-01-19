@@ -5,7 +5,9 @@ Imports System.Linq
 Public Class TilesPanel
 
     Public Sub Tile_Clicked(sender As Object, args As Object)
-        DataContext.CurrentLayer = LayerType.MapLayer
+        If DataContext.CurrentLayer <> LayerType.MapLayer And DataContext.CurrentLayer <> LayerType.TilegroupLayer Then
+            DataContext.CurrentLayer = LayerType.MapLayer
+        End If
     End Sub
 End Class
 

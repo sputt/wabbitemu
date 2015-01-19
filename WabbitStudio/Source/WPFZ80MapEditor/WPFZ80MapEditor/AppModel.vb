@@ -106,7 +106,18 @@ Public Class AppModel
         End Set
     End Property
 
-
+    Private _GameModel As GameModel
+    Public Property GameModel As GameModel
+        Get
+            Return _GameModel
+        End Get
+        Set(value As GameModel)
+            If value IsNot _GameModel Then
+                _GameModel = value
+                RaisePropertyChanged("GameModel")
+            End If
+        End Set
+    End Property
 
     Private Sub RaisePropertyChanged(PropName As String)
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropName))
