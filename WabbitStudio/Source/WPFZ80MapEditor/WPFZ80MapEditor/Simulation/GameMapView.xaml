@@ -8,18 +8,19 @@
                 xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
                 xmlns:simconverters="clr-namespace:WPFZ80MapEditor.SimConverters"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256">
+             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" Focusable="True" KeyDown="GameWindow_KeyDown" KeyUp="GameWindow_KeyUp" MouseLeftButtonDown="GameWindow_MouseLeftButtonDown">
     <UserControl.Resources>
         <!--<localconverters:ImageIndexConverter x:Key="convertImageIndex"/>-->
         <simconverters:ImageConverter x:Key="ImageConverter"/>
         <converters:YConverter x:Key="YConverter"/>
         <converters:XConverter x:Key="XConverter"/>
         <converters:ZConverter x:Key="ZConverter"/>
+        <local:InvertEffect x:Key="InvertEffect"/>
 
         <simconverters:ShadowScalingConverter x:Key="ShadowScalingConverter"/>
 
         <DataTemplate DataType="{x:Type local:ZDrawEntry}">
-            <Image>
+            <Image x:Name="DrawEntryImage">
                 <Image.Source>
                     <MultiBinding Converter="{StaticResource ImageConverter}">
                         <Binding Path="DataContext" ElementName="GameWindow"/>
@@ -27,6 +28,11 @@
                     </MultiBinding>
                 </Image.Source>
             </Image>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Inverted}" Value="True">
+                    <Setter TargetName="DrawEntryImage" Property="Effect" Value="{StaticResource InvertEffect}"/>
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
     </UserControl.Resources>
 

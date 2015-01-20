@@ -128,7 +128,7 @@
                     </local:XMapView.Style>
                 </local:XMapView>
                 <local:TilegroupLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}" SelectedTile="{Binding DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}}">
-
+                    
                 </local:TilegroupLayer>
 
                 <local:MiscLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
@@ -177,6 +177,7 @@
                             <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestView">
                                 <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}"/>
                             </ObjectAnimationUsingKeyFrames>
+                            
                     </Storyboard>
                     </VisualState>
                 </VisualStateGroup>

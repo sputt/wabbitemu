@@ -139,6 +139,7 @@
     </ApplicationDefinition>
     <Compile Include="AppModel.vb" />
     <Compile Include="DragAdorner.vb" />
+    <Compile Include="Effects\InvertEffect.vb" />
     <Compile Include="Effects\TintEffect.vb" />
     <Compile Include="MiscLayer.xaml.vb">
       <DependentUpon>MiscLayer.xaml</DependentUpon>
@@ -147,9 +148,6 @@
     <Compile Include="ScenarioDefs.vb" />
     <Compile Include="Simulation\GameMapView.xaml.vb">
       <DependentUpon>GameMapView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Simulation\GameWindow.xaml.vb">
-      <DependentUpon>GameWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Simulation\GameModel.vb" />
     <Compile Include="MapCompressor.vb" />
@@ -206,10 +204,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Simulation\GameMapView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Simulation\GameWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -301,6 +295,8 @@
     </EmbeddedResource>
     <Resource Include="Effects\Tint.ps" />
     <None Include="app.config" />
+    <Fakes Include="Fakes\LearnWPF.Effects.fakes" />
+    <Resource Include="Effects\Invert.ps" />
     <None Include="My Project\app.manifest" />
     <None Include="My Project\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -347,8 +343,12 @@
   <ItemGroup>
     <Resource Include="Scenario\question.bmp" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Effects\Invert.fx" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
-    <PreBuildEvent>"C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Utilities\bin\x64\fxc.exe" /T ps_2_0 /E main /Fo "$(ProjectDir)Effects\Tint.ps" "$(ProjectDir)Effects\Tint.fx"</PreBuildEvent>
+    <PreBuildEvent>"C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Utilities\bin\x64\fxc.exe" /T ps_2_0 /E main /Fo "$(ProjectDir)Effects\Tint.ps" "$(ProjectDir)Effects\Tint.fx"
+"C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Utilities\bin\x64\fxc.exe" /T ps_2_0 /E main /Fo "$(ProjectDir)Effects\Invert.ps" "$(ProjectDir)Effects\Invert.fx"</PreBuildEvent>
   </PropertyGroup>
 </Project>

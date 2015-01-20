@@ -17,7 +17,13 @@ Public Class ZDrawEntry
     Public Const D_PLAYER As Byte = 1 << 4
     Public Const D_HORIZONTAL As Byte = 1 << 2
 
-    Public Flags As Byte
+    Public Property Flags As Byte
+
+    Public ReadOnly Property Inverted As Boolean
+        Get
+            Return (Flags And D_INVERT) > 0
+        End Get
+    End Property
 
     Protected Overrides Sub FromStruct(Obj As AZDrawEntry)
         With Obj.Position

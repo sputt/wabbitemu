@@ -59,7 +59,7 @@ Public Class GameModel
         End Set
     End Property
 
-    Public ImageMap As New Dictionary(Of UShort, Integer)
+    Private ImageMap As New Dictionary(Of UShort, Integer)
 
     Private DrawQueueAddr As UShort
     Private DrawEntrySize As Byte
@@ -69,6 +69,7 @@ Public Class GameModel
     Private FlagsAddr As UShort
     Private CurrentMapAddr As UShort
     Private PrepareChangeAddr As UShort
+    Private Memory As IMemoryContext
 
     Private FrameProcessThread As New Thread(AddressOf FrameProcess)
     Private ProcessEvent As New AutoResetEvent(False)
@@ -151,6 +152,7 @@ Public Class GameModel
 
         _Calc.Break()
 
+        Memory = _Calc.Memory
         Dim SortDone As New CalcAddress
         SortDone.Initialize(_Calc.Memory.Flash(ZeldaApp.Page.Index - Page), _Asm.Labels("SORT_DONE") And &HFFFF)
         _Calc.Breakpoints.Add(SortDone)
@@ -172,6 +174,51 @@ Public Class GameModel
         FrameProcessThread.Start()
     End Sub
 
+    Private Function MapKey(Key As Key) As CalcKey?
+        Select Case Key
+            Case Input.Key.Down
+                Return WabbitemuLib.CalcKey.KEY_DOWN
+            Case Input.Key.Left
+                Return WabbitemuLib.CalcKey.KEY_LEFT
+            Case Input.Key.Right
+                Return WabbitemuLib.CalcKey.KEY_RIGHT
+            Case Input.Key.Up
+                Return WabbitemuLib.CalcKey.KEY_UP
+            Case Input.Key.LeftShift
+                Return WabbitemuLib.CalcKey.KEY_2ND
+            Case Input.Key.F1
+                Return WabbitemuLib.CalcKey.KEY_YEQU
+            Case Else
+                Return Nothing
+        End Select
+    End Function
+
+    Public Function PressKey(Key As Key) As Boolean
+        Dim CalcKey As CalcKey? = MapKey(Key)
+        If CalcKey IsNot Nothing Then
+            Try
+                _Calc.Keypad.PressKey(CalcKey)
+            Catch e As COMException
+            End Try
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
+    Public Function ReleaseKey(Key As Key) As Boolean
+        Dim CalcKey As CalcKey? = MapKey(Key)
+        If CalcKey IsNot Nothing Then
+            Try
+                _Calc.Keypad.ReleaseKey(CalcKey)
+            Catch e As COMException
+            End Try
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
     Public Sub Start()
         _Calc.Run()
     End Sub
@@ -184,7 +231,7 @@ Public Class GameModel
         SyncLock _RunningLock
             If _Running Then
                 If Breakpoint.Address.Address <> PrepareChangeAddr Then
-                    UpdateModel(_Asm, Calc)
+                    UpdateModel()
                 End If
 
                 Calc.Step()
@@ -231,8 +278,7 @@ Public Class GameModel
     Private DrawEntryRawData As IEnumerable(Of Byte)
     Private MapRawData() As Byte
 
-    Public Sub UpdateModel(Asm As IZ80Assembler, Calc As IWabbitemu)
-        Dim Memory = Calc.Memory
+    Public Sub UpdateModel()
         Dim DrawEntryCount = Memory.ReadByte(DrawEntryCountAddr)
 
         DrawEntryRawData = Memory.Read(DrawQueueAddr, DrawEntryCount * DrawEntrySize)
@@ -275,6 +321,7 @@ Public Class GameModel
 
         _Calc = Nothing
         _Asm = Nothing
+        Memory = Nothing
 
         ProcessEvent.Set()
 

@@ -247,18 +247,32 @@ Public Class MainWindow
         e.Handled = True
     End Sub
 
+    Private _OldLayer As LayerType
     Public Sub StartTesting()
         Model.Scenario.SaveScenario()
 
+        _OldLayer = Model.CurrentLayer
+        Model.CurrentLayer = LayerType.TestingLayer
+        Debug.Print(Me.VisualStateGroup.CurrentState.Name)
+
         Model.GameModel = New GameModel(Model.Scenario)
         Model.GameModel.Start()
+
+        TestView.Focus()
     End Sub
 
     Public Sub StopTesting()
-        Model.GameModel.Pause()
-        'Model.GameModel.Dispose()
-        Model.GameModel.StopSimulation()
+        If Model.GameModel IsNot Nothing Then
+            Model.GameModel.Pause()
+            'Model.GameModel.Dispose()
+            Model.GameModel.StopSimulation()
 
-        Model.GameModel = Nothing
+            Model.GameModel = Nothing
+            Model.CurrentLayer = _OldLayer
+        End If
+    End Sub
+
+    Private Sub MainWindow_Closed(sender As Object, e As EventArgs) Handles MyBase.Closed, MyBase.Closed
+        StopTesting()
     End Sub
 End Class
