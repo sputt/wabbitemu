@@ -64,8 +64,10 @@ Public Class MainWindow
 
         If currentZoom < 2.0 Then
             RenderOptions.SetBitmapScalingMode(LayerContainer, BitmapScalingMode.Fant)
+            RenderOptions.SetBitmapScalingMode(TestView, BitmapScalingMode.Fant)
         Else
             RenderOptions.SetBitmapScalingMode(LayerContainer, BitmapScalingMode.NearestNeighbor)
+            RenderOptions.SetBitmapScalingMode(TestView, BitmapScalingMode.NearestNeighbor)
         End If
     End Sub
 
@@ -129,12 +131,13 @@ Public Class MainWindow
         End Try
 
         Try
-            If Not LayerContainer Is Nothing AndAlso Not LayerContainer.RenderTransform Is Nothing Then
-                Dim tt As TranslateTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is TranslateTransform)
-                Dim st As ScaleTransform = CType(LayerContainer.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is ScaleTransform)
+            Dim RenderTransform As TransformGroup = Resources("MapCanvasRenderTransform")
+            If Not LayerContainer Is Nothing AndAlso Not RenderTransform Is Nothing Then
+                Dim tt As TranslateTransform = RenderTransform.Children.First(Function(t) TypeOf t Is TranslateTransform)
+                Dim st As ScaleTransform = RenderTransform.Children.First(Function(t) TypeOf t Is ScaleTransform)
 
                 Dim PhysPos As New Point(MapCanvas.ActualWidth / 2, MapCanvas.ActualHeight / 2)
-                Dim MousePos = LayerContainer.RenderTransform.Inverse.Transform(PhysPos)
+                Dim MousePos = RenderTransform.Inverse.Transform(PhysPos)
                 tt.BeginAnimation(TranslateTransform.XProperty, CreateZoomAnimation(-1 * (MousePos.X * newzoom - PhysPos.X)), HandoffBehavior.Compose)
                 tt.BeginAnimation(TranslateTransform.YProperty, CreateZoomAnimation(-1 * (MousePos.Y * newzoom - PhysPos.Y)), HandoffBehavior.Compose)
 
@@ -171,17 +174,6 @@ Public Class MainWindow
         If Model.SelectedMap Is Nothing Then Exit Sub
 
         Model.Scenario.RemoveMap(Model.SelectedMap)
-    End Sub
-
-    Private Async Sub OpenScenario_Click(sender As Object, e As RoutedEventArgs)
-        Dim dlg As New Windows.Forms.OpenFileDialog
-        If dlg.ShowDialog() = Forms.DialogResult.OK Then
-            ZeldaFolder = Path.GetDirectoryName(Path.GetDirectoryName(dlg.FileName))
-
-            Dim Scenario As New Scenario
-            Await Scenario.LoadScenario(dlg.FileName)
-            Model.Scenario = Scenario
-        End If
     End Sub
 
     Private Sub NewScenario_Click(sender As Object, e As RoutedEventArgs)
@@ -223,8 +215,31 @@ Public Class MainWindow
         MapsetNew_Click(sender, e)
     End Sub
 
-    Private Sub Save_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub SaveCanExecute(sender As Object, e As CanExecuteRoutedEventArgs)
+        e.CanExecute = True
+        e.Handled = True
+    End Sub
+
+    Private Sub OpenCanExecute(sender As Object, e As CanExecuteRoutedEventArgs)
+        e.CanExecute = True
+        e.Handled = True
+    End Sub
+
+    Private Async Sub OpenExecuted(sender As Object, e As ExecutedRoutedEventArgs)
+        Dim dlg As New Windows.Forms.OpenFileDialog
+        If dlg.ShowDialog() = Forms.DialogResult.OK Then
+            ZeldaFolder = Path.GetDirectoryName(Path.GetDirectoryName(dlg.FileName))
+
+            Dim Scenario As New Scenario
+            Await Scenario.LoadScenario(dlg.FileName)
+            Model.Scenario = Scenario
+        End If
+        e.Handled = True
+    End Sub
+
+    Private Sub SaveExecuted(sender As Object, e As ExecutedRoutedEventArgs)
         Model.Scenario.SaveScenario()
+        e.Handled = True
     End Sub
 
     Private Sub UndoCanExecute(sender As Object, e As CanExecuteRoutedEventArgs)

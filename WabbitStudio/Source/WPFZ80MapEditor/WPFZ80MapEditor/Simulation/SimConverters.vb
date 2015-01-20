@@ -8,7 +8,7 @@
                 Return 0.0
             End If
 
-            Dim Area As Double = Math.Min(12 * 12, Entry.W * Entry.H)
+            Dim Area As Double = Math.Min(12 * 12, CDbl(Entry.W) * CDbl(Entry.H))
             Dim OverallScale = 0.3 + (0.7 * Area / (12 * 12))
 
             ' Z of 1 should be 1.0, Z of 8 should be 0.6

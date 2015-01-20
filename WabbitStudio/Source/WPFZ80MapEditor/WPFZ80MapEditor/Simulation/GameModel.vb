@@ -231,7 +231,7 @@ Public Class GameModel
         SyncLock _RunningLock
             If _Running Then
                 If Breakpoint.Address.Address <> PrepareChangeAddr Then
-                    UpdateModel()
+                    UpdateModel(Calc.Memory)
                 End If
 
                 Calc.Step()
@@ -278,7 +278,7 @@ Public Class GameModel
     Private DrawEntryRawData As IEnumerable(Of Byte)
     Private MapRawData() As Byte
 
-    Public Sub UpdateModel()
+    Public Sub UpdateModel(Memory As IMemoryContext)
         Dim DrawEntryCount = Memory.ReadByte(DrawEntryCountAddr)
 
         DrawEntryRawData = Memory.Read(DrawQueueAddr, DrawEntryCount * DrawEntrySize)

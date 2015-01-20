@@ -145,6 +145,12 @@
         <CommandBinding Command="Redo"
                         CanExecute="RedoCanExecute"
                         Executed="RedoExecuted"/>
+        <CommandBinding Command="Open"
+                        CanExecute="OpenCanExecute"
+                        Executed="OpenExecuted"/>
+        <CommandBinding Command="Save"
+                        CanExecute="SaveCanExecute"
+                        Executed="SaveExecuted"/>
     </Window.CommandBindings>
 
     <AdornerDecorator x:Name="TopLevelControl">
@@ -196,38 +202,40 @@
                 	<ei:GoToStateAction StateName="Editing"/>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
-            
-            <Canvas x:Name="MapCanvas" Background="Gray" Panel.ZIndex="0" MouseMove="Background_MouseMove" MouseWheel="Background_MouseWheel" PreviewMouseRightButtonDown="Background_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Background_PreviewMouseRightButtonUp">
-				<local:XLayerContainer 
-                    x:Name="LayerContainer"
-                    Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, ElementName=MainWindow, Mode=TwoWay}"
-					Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
-					RenderTransform="{StaticResource MapCanvasRenderTransform}" MouseDoubleClick="Map_MouseDoubleClick" ItemTemplate="{StaticResource MapLayersTemplate}" >
-                    <local:XLayerContainer.Style>
-                        <Style TargetType="{x:Type local:XLayerContainer}">
-                            <Setter Property="Selectable" Value="False"/>
-                            <Style.Triggers>
-                                <DataTrigger Value="True">
-                                    <DataTrigger.Binding>
-                                        <MultiBinding Converter="{StaticResource ActiveLayerConverter}">
-                                            <Binding Path="DataContext.CurrentLayer" RelativeSource="{RelativeSource AncestorType={x:Type local:MainWindow}}"/>
-                                            <Binding Source="{StaticResource MapsetLayer}"/>
-                                        </MultiBinding>
-                                    </DataTrigger.Binding>
-                                    <Setter Property="Selectable" Value="True"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </local:XLayerContainer.Style>
-                </local:XLayerContainer>
 
-                <local:GameMapView x:Name="TestView" Panel.ZIndex="1" Width="256" Height="256" RenderTransform="{StaticResource MapCanvasRenderTransform}" DataContext="{Binding GameModel}"
-                    Canvas.Left="{Binding Path=SourceMap.X, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"
-                    Canvas.Top="{Binding Path=SourceMap.Y, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"/>
+            <Canvas x:Name="MapCanvas" Background="Gray" Panel.ZIndex="0" MouseMove="Background_MouseMove" MouseWheel="Background_MouseWheel" PreviewMouseRightButtonDown="Background_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Background_PreviewMouseRightButtonUp">
+                <Canvas x:Name="IntermediateMapCanvas" RenderTransform="{StaticResource MapCanvasRenderTransform}">
+				    <local:XLayerContainer 
+                        x:Name="LayerContainer"
+                        Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, ElementName=MainWindow, Mode=TwoWay}"
+					    Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
+					     MouseDoubleClick="Map_MouseDoubleClick" ItemTemplate="{StaticResource MapLayersTemplate}" >
+                        <local:XLayerContainer.Style>
+                            <Style TargetType="{x:Type local:XLayerContainer}">
+                                <Setter Property="Selectable" Value="False"/>
+                                <Style.Triggers>
+                                    <DataTrigger Value="True">
+                                        <DataTrigger.Binding>
+                                            <MultiBinding Converter="{StaticResource ActiveLayerConverter}">
+                                                <Binding Path="DataContext.CurrentLayer" RelativeSource="{RelativeSource AncestorType={x:Type local:MainWindow}}"/>
+                                                <Binding Source="{StaticResource MapsetLayer}"/>
+                                            </MultiBinding>
+                                        </DataTrigger.Binding>
+                                        <Setter Property="Selectable" Value="True"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </local:XLayerContainer.Style>
+                    </local:XLayerContainer>
+
+                    <local:GameMapView x:Name="TestView" Panel.ZIndex="1" Width="256" Height="256" DataContext="{Binding GameModel}"
+                        Canvas.Left="{Binding Path=SourceMap.X, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"
+                        Canvas.Top="{Binding Path=SourceMap.Y, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"/>
+                </Canvas>
             </Canvas>
 
 
-			<DockPanel Panel.ZIndex="2">
+            <DockPanel Panel.ZIndex="2">
 				<Menu DockPanel.Dock="Top" x:Name="MainMenu" Height="20" Panel.ZIndex="1">
 					<MenuItem Header="_File">
 						<MenuItem Command="ApplicationCommands.New" />
@@ -270,7 +278,7 @@
 						<Button Command="ApplicationCommands.Open">
 							<Image Source="Toolbar/open.bmp" OpacityMask="#A8E61D"/>
 						</Button>
-						<Button Click="Save_Click" Command="ApplicationCommands.Save">
+						<Button Command="ApplicationCommands.Save">
 							<Image x:Name="image" Source="Toolbar/save.bmp"  OpacityMask="#A8E61D"/>
 						</Button>
 						<Button x:Name="TestButton" Content="Test"/>
