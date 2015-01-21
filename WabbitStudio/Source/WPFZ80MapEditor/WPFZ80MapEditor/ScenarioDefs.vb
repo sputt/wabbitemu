@@ -3,7 +3,7 @@ Imports System.Text.RegularExpressions
 Imports System.Threading.Tasks
 
 Partial Class Scenario
-    Private Async Function LoadDefs(FileName As String, Dictionary As Dictionary(Of String, ZDef), InstanceType As Type) As Task
+    Private Sub LoadDefs(FileName As String, Dictionary As Dictionary(Of String, ZDef), InstanceType As Type)
         'Dim Rx As New Regex(
         '    "^;(?<Name>[a-zA-Z][a-zA-Z ]+) - (?<Description>.+)\s*" & _
         '    "(^; (?<ArgName>\w+) - (?<ArgDesc>.+)\s*)*" & _
@@ -12,7 +12,7 @@ Partial Class Scenario
         '    "#macro (?<MacroName>[a-z0-9_]+).*\s*$", RegexOptions.Multiline Or RegexOptions.Compiled)
 
         Dim Stream = New StreamReader(FileName)
-        Dim Matches = ZDefRegex.Matches(Await Stream.ReadToEndAsync())
+        Dim Matches = ZDefRegex.Matches(Stream.ReadToEnd())
         Stream.Close()
 
         For Each Match As Match In Matches
@@ -25,5 +25,5 @@ Partial Class Scenario
 
             Dictionary.Add(Def.Macro, Def)
         Next
-    End Function
+    End Sub
 End Class

@@ -56,8 +56,8 @@
         Dim image As New Image()
         Dim Src As ImageSource = Me.DataContext.Scenario.Images(Def.DefaultImage).Image
 
-        Dim Layers = Application.Current.MainWindow.FindName("LayerContainer")
-        Dim st As ScaleTransform = CType(Layers.RenderTransform, TransformGroup).Children.First(Function(t) TypeOf t Is ScaleTransform)
+        Dim RenderTransform As TransformGroup = Application.Current.MainWindow.Resources("MapCanvasRenderTransform")
+        Dim st As ScaleTransform = RenderTransform.Children.First(Function(t) TypeOf t Is ScaleTransform)
         Dim currentZoom = st.ScaleX
 
         image.Source = Src

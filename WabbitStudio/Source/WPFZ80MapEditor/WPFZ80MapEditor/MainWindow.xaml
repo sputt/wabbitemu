@@ -5,7 +5,7 @@
     xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" x:Class="MainWindow"
     x:Name="MainWindow"
-    Title="Z80 Scenario Editor" Height="497" Width="723" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" Background="White">
+    Title="Z80 Scenario Editor" Width="1650" Height="1080" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" Background="White">
     
     <Window.Resources>
         <localconverters:DoubleToZoomLevelConverter x:Key="convertZoomLevel2"/>
@@ -100,7 +100,7 @@
 
         <DataTemplate x:Key="MapLayersTemplate">
             <Grid>
-                <local:XMapView Panel.ZIndex="0"
+                <local:XMapView Panel.ZIndex="1"
 										SelectedTile="{Binding DataContext.SelectedTile, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type local:MainWindow}}}">
                     <local:XMapView.Style>
                         <Style TargetType="local:XMapView" BasedOn="{StaticResource LayerStyle}">
@@ -127,13 +127,14 @@
                         </Style>
                     </local:XMapView.Style>
                 </local:XMapView>
-                <local:TilegroupLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}" SelectedTile="{Binding DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}}">
+                
+                <local:TilegroupLayer Panel.ZIndex="2" Style="{StaticResource LayerStyle}" SelectedTile="{Binding DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}}">
                     
                 </local:TilegroupLayer>
 
-                <local:MiscLayer Panel.ZIndex="1" Style="{StaticResource LayerStyle}"/>
-                <local:XObjectLayer Panel.ZIndex="2" Style="{StaticResource LayerStyle}" CollectionName="ZObjects"/>
-                <local:XEnemyLayer Panel.ZIndex="3" Style="{StaticResource LayerStyle}" CollectionName="ZEnemies"/>
+                <local:MiscLayer Panel.ZIndex="3" Style="{StaticResource LayerStyle}"/>
+                <local:XObjectLayer Panel.ZIndex="4" Style="{StaticResource LayerStyle}" CollectionName="ZObjects"/>
+                <local:XEnemyLayer Panel.ZIndex="5" Style="{StaticResource LayerStyle}" CollectionName="ZEnemies"/>
             </Grid>
         </DataTemplate>
     </Window.Resources>

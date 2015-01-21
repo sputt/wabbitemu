@@ -43,7 +43,7 @@ Namespace ValueConverters
 
             Dim ImgSource As ImageSource = Nothing
             Dim ZImg As ZeldaImage = Nothing
-            If Not Index.Equals(DependencyProperty.UnsetValue) Then
+            If Not Index.Equals(DependencyProperty.UnsetValue) AndAlso Index < Images.Count Then
                 ZImg = Images(Index)
             End If
             If ZImg IsNot Nothing Then
@@ -94,7 +94,7 @@ Namespace ValueConverters
 
             Dim ImgSource As ImageSource = Nothing
             Dim ZImg As ZeldaImage = Nothing
-            If Not Index.Equals(DependencyProperty.UnsetValue) Then
+            If Not Index.Equals(DependencyProperty.UnsetValue) AndAlso Index < Images.Count Then
                 ZImg = Images(Index)
             End If
             If ZImg IsNot Nothing Then

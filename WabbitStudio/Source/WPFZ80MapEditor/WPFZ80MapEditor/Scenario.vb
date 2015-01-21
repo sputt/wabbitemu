@@ -24,6 +24,7 @@ Public Class Scenario
             "^OBJECT_SECTION\(\)" & vbLf & _
             "(^\s+(?<ObjectName>[A-Z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
             "^ENEMY_SECTION\(\)" & vbLf & _
+            "(^#define (?<EnemyPropName>\w+)\s+(?<EnemyPropValue>\s+))*" & _
             "(^\s+(?<EnemyName>[A-Z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
             "^MISC_SECTION\(\)" & vbLf & _
             "(^\s+(?<MiscName>[A-Z_]+)\((?<MiscArgs>.*)\)\s*)*\s*" & _
@@ -31,6 +32,8 @@ Public Class Scenario
             RegexOptions.Multiline Or RegexOptions.CultureInvariant Or RegexOptions.Compiled)
 
     Public ScenarioName As String
+
+    Private _IsLoading As Boolean
 
     Private _Maps As New ObservableCollection(Of MapData)
     Public Property Maps As ObservableCollection(Of MapData)
@@ -53,12 +56,12 @@ Public Class Scenario
         Return Maps.FirstOrDefault(Function(m) m.Index = RealIndex)
     End Function
 
-    Public Property Images As New ObservableCollection(Of ZeldaImage)
-    Public Property AnimDefs As New ObservableDictionary(Of String, ZDef)
-    Public Property ObjectDefs As New ObservableDictionary(Of String, ZDef)
-    Public Property EnemyDefs As New ObservableDictionary(Of String, ZDef)
-    Public Property MiscDefs As New ObservableDictionary(Of String, ZDef)
-    Public Property Tilesets As New ObservableCollection(Of Tileset)
+    Public Property Images As New List(Of ZeldaImage)
+    Public Property AnimDefs As New Dictionary(Of String, ZDef)
+    Public Property ObjectDefs As New Dictionary(Of String, ZDef)
+    Public Property EnemyDefs As New Dictionary(Of String, ZDef)
+    Public Property MiscDefs As New Dictionary(Of String, ZDef)
+    Public Property Tilesets As New List(Of Tileset)
 
     Private _FileName As String
 
@@ -66,8 +69,21 @@ Public Class Scenario
         Debug.Write(Now.ToFileTime & ": " & LogStr & vbCrLf)
     End Sub
 
+    Structure DefParams
+        Public FileName As String
+        Public Collection As Object
+        Public Type As Type
+        Sub New(FileName, Collection, Type)
+            Me.FileName = FileName
+            Me.Collection = Collection
+            Me.Type = Type
+        End Sub
+    End Structure
+
     Public Async Function LoadScenario(FileName As String) As Task
-        Tilesets = New ObservableCollection(Of Tileset)()
+        _IsLoading = True
+
+        Tilesets = New List(Of Tileset)()
         Tilesets.Add(New Tileset("dungeon", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\dungeon.bmp")))
         Tilesets.Add(New Tileset("town", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\town.bmp")))
         Tilesets.Add(New Tileset("graveyard", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\graveyard.bmp")))
@@ -86,14 +102,17 @@ Public Class Scenario
         Log("Assembling map")
         Dim Data = SPASMHelper.AssembleFile(FileName)
 
-        Log("Loading animate defs")
-        Await LoadDefs(MainWindow.ZeldaFolder & "\animatedef.inc", AnimDefs, GetType(ZAnim))
-        Log("Loading object defs")
-        Await LoadDefs(MainWindow.ZeldaFolder & "\objectdef.inc", ObjectDefs, GetType(ZObject))
-        Log("Loading misc defs")
-        Await LoadDefs(MainWindow.ZeldaFolder & "\miscdef.inc", MiscDefs, GetType(ZMisc))
-        Log("Loading enemy defs")
-        Await LoadDefs(MainWindow.ZeldaFolder & "\enemydef.inc", EnemyDefs, GetType(ZEnemy))
+        Log("Loading all defs")
+
+        Dim Test As New DefParams()
+        Dim DefList = {New DefParams("animatedef.inc", AnimDefs, GetType(ZAnim)),
+                New DefParams("objectdef.inc", ObjectDefs, GetType(ZObject)),
+                New DefParams("miscdef.inc", MiscDefs, GetType(ZMisc)),
+                New DefParams("enemydef.inc", EnemyDefs, GetType(ZEnemy))}
+
+        Parallel.ForEach(DefList, Sub(Item)
+                                      LoadDefs(MainWindow.ZeldaFolder & "\" & Item.FileName, Item.Collection, Item.Type)
+                                  End Sub)
 
         Dim Reader As New StreamReader(FileName)
         Dim ScenarioContents As String = Await Reader.ReadToEndAsync()
@@ -191,7 +210,7 @@ Public Class Scenario
         '    Next
         'Next
 
-
+        _IsLoading = False
     End Function
 
     Private Function AddMap(MapCollection As Collection(Of MapData), Map As MapData) As MapData
@@ -411,8 +430,8 @@ Public Class Scenario
 
         Stream.WriteLine("#ifdef INCLUDE_TILESET_TABLE")
         Stream.WriteLine(ScenarioName & "_TILESET_TABLE:")
-        For Each tileset In TilesetTable
-            Stream.WriteLine(vbTab & ".db " & tileset)
+        For Each Tileset In TilesetTable
+            Stream.WriteLine(vbTab & ".db " & Tileset)
         Next
         Stream.WriteLine("#endif")
 
@@ -420,7 +439,9 @@ Public Class Scenario
     End Sub
 
     Private Sub RaisePropertyChanged(PropName As String)
-        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropName))
+        If _IsLoading Then
+            RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropName))
+        End If
     End Sub
 
     Public Event PropertyChanged(sender As Object, e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged

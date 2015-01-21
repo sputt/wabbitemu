@@ -32,8 +32,16 @@ Public Class MainWindow
         If ZeldaFolder IsNot Nothing Then
             Dim HillScenario As New Scenario
             Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\hill.asm"))
+
+            Debug.Print("Done loading: " & (Now - DateTime.FromFileTime(Application.StartTime)).TotalMilliseconds & " ms")
+            AddHandler LayerContainer.LayoutUpdated, AddressOf LayoutChanged
             Model.Scenario = HillScenario
         End If
+    End Sub
+
+    Private Sub LayoutChanged(sender As Object, e As Object)
+        Debug.Print("Done with layout: " & (Now - DateTime.FromFileTime(Application.StartTime)).TotalMilliseconds & " ms")
+        RemoveHandler LayerContainer.LayoutUpdated, AddressOf LayoutChanged
     End Sub
 
     Private Sub Background_MouseWheel(sender As Object, e As MouseWheelEventArgs)

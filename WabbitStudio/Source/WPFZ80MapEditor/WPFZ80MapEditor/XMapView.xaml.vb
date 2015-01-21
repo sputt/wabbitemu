@@ -58,7 +58,8 @@
     End Property
 
     Private Sub TileImage_MouseLeftButtonDown(sender As Object, e As MouseButtonEventArgs)
-        Dim Index = TileContainer.ItemContainerGenerator.IndexFromContainer(VisualTreeHelper.GetParent(sender))
+        'Dim Index = TileContainer.ItemContainerGenerator.IndexFromContainer(VisualTreeHelper.GetParent(sender))
+        Dim Index = 0
         If Index = -1 Then Exit Sub
 
         If Keyboard.IsKeyDown(Key.LeftCtrl) Then

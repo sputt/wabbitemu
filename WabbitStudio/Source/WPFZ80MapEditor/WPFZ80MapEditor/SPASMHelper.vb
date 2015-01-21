@@ -71,16 +71,12 @@ Public Class SPASMHelper
     End Sub
 
     Public Shared Function Assemble(ByVal Code As String) As Byte()
-        Log("FINE: Assembling " & Code)
         Dim Output = Assembler.Assemble(Code)
-
-        Log("FINE: Reading all output")
-        Dim StdOutput = Assembler.StdOut.ReadAll()
-        Debug.Write(StdOutput)
+        'Dim StdOutput = Assembler.StdOut.ReadAll()
+        'Debug.Write(StdOutput)
 
         Dim Data As New List(Of Byte)
 
-        Log("FINE: Reading all data")
         Dim st As New tagSTATSTG
         Output.Stat(st, 0)
 
@@ -89,7 +85,6 @@ Public Class SPASMHelper
             Dim BytesRead As UInteger
             Output.RemoteRead(Result(0), st.cbSize.QuadPart, BytesRead)
         End If
-        Log("FINE: DONE " & Code)
         Return Result
     End Function
 

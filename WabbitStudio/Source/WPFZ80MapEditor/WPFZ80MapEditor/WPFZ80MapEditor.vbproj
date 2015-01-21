@@ -141,6 +141,8 @@
     <Compile Include="DragAdorner.vb" />
     <Compile Include="Effects\InvertEffect.vb" />
     <Compile Include="Effects\TintEffect.vb" />
+    <Compile Include="MapPanel.vb" />
+    <Compile Include="MapView.vb" />
     <Compile Include="MiscLayer.xaml.vb">
       <DependentUpon>MiscLayer.xaml</DependentUpon>
     </Compile>
@@ -295,7 +297,6 @@
     </EmbeddedResource>
     <Resource Include="Effects\Tint.ps" />
     <None Include="app.config" />
-    <Fakes Include="Fakes\LearnWPF.Effects.fakes" />
     <Resource Include="Effects\Invert.ps" />
     <None Include="My Project\app.manifest" />
     <None Include="My Project\Settings.settings">
@@ -345,6 +346,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Effects\Invert.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Fakes\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>

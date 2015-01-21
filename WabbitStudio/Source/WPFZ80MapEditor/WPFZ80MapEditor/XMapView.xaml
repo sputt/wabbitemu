@@ -14,8 +14,52 @@
         <converters:CollisionConverter x:Key="CollisionConverter"/>
         <local:LayerType x:Key="LayerType">MapLayer</local:LayerType>
     </local:MapLayer.Resources>
+    <Grid>
+        <Grid Background="DarkGray" Visibility="{Binding ShowNewMaps, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=MapView}">
+            <TextBlock FontSize="200" Text="+" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,50" Foreground="#FFA0A0A0"/>
+        </Grid>
         
-	<Grid >
+        <local:MapView Map="{Binding .}"/>
+        
+        <ItemsControl Panel.ZIndex="1" x:Name="AnimsControl" IsHitTestVisible="False" ItemsSource="{Binding ZAnims}" Background="{x:Null}" Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.Template>
+                <ControlTemplate>
+                    <Canvas Background="{x:Null}">
+                        <ItemsPresenter/>
+                    </Canvas>
+                </ControlTemplate>
+            </ItemsControl.Template>
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="{x:Type ContentPresenter}">
+                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Image Width="16" Height="16" Panel.ZIndex="0">
+                        <Image.Source>
+                            <MultiBinding Converter="{StaticResource TileConverter}">
+                                <Binding ElementName="MapView" Path="DataContext.Tileset"/>
+                                <Binding Path="Image"/>
+                            </MultiBinding>
+                        </Image.Source>
+                        <Image.Effect>
+                            <local:TintEffect Color="{StaticResource AnimColor}"/>
+                        </Image.Effect>
+                    </Image>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+
+    <!--<Grid >
 		<Grid Background="DarkGray" Visibility="{Binding ShowNewMaps, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=MapView}">
 			<TextBlock FontSize="200" Text="+" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,50" Foreground="#FFA0A0A0"/>
 		</Grid>
@@ -24,13 +68,13 @@
 			Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}">
 			<ItemsControl.ItemsPanel>
 				<ItemsPanelTemplate>
-					<WrapPanel x:Name="TilePanel" Orientation="Horizontal"/>
+					<local:MapPanel x:Name="TilePanel"/>
 				</ItemsPanelTemplate>
 			</ItemsControl.ItemsPanel>
             
 			<ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Grid x:Name="Tile" Background="Transparent" MouseLeftButtonDown="TileImage_MouseLeftButtonDown">
+                    <Canvas x:Name="Tile" Background="Transparent" MouseLeftButtonDown="TileImage_MouseLeftButtonDown" Width="16" Height="16">
                         <i:Interaction.Behaviors>
                             <ei:DataStateBehavior Binding="{Binding IsMouseOver, ElementName=Tile, Mode=OneWay}" Value="True" TrueState="MouseOverState" FalseState="NormalState"/>
                         </i:Interaction.Behaviors>
@@ -56,53 +100,18 @@
                                 </MultiBinding>
                             </Image.Source>
                         </Image>
-                    </Grid>
+                    </Canvas>
                 </DataTemplate>
 			</ItemsControl.ItemTemplate>
 		</ItemsControl>
+-->
 
-		<ItemsControl Panel.ZIndex="1" x:Name="AnimsControl" IsHitTestVisible="False" ItemsSource="{Binding ZAnims}" Background="{x:Null}" Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}">
-			<ItemsControl.ItemsPanel>
-				<ItemsPanelTemplate>
-					<Canvas/>
-				</ItemsPanelTemplate>
-			</ItemsControl.ItemsPanel>
-			<ItemsControl.Template>
-				<ControlTemplate>
-					<Canvas Background="{x:Null}">
-						<ItemsPresenter/>
-					</Canvas>
-				</ControlTemplate>
-			</ItemsControl.Template>
-			<ItemsControl.ItemContainerStyle>
-				<Style TargetType="{x:Type ContentPresenter}">
-					<Setter Property="Canvas.Left" Value="{Binding X}"/>
-					<Setter Property="Canvas.Top" Value="{Binding Y}"/>
-				</Style>
-			</ItemsControl.ItemContainerStyle>
-            
-			<ItemsControl.ItemTemplate>
-				<DataTemplate>
-					<Image Width="16" Height="16" Panel.ZIndex="0">
-						<Image.Source>
-							<MultiBinding Converter="{StaticResource TileConverter}">
-								<Binding ElementName="MapView" Path="DataContext.Tileset"/>
-								<Binding Path="Image"/>
-							</MultiBinding>
-						</Image.Source>
-						<Image.Effect>
-							<local:TintEffect Color="{StaticResource AnimColor}"/>
-						</Image.Effect>
-					</Image>
-				</DataTemplate>
-			</ItemsControl.ItemTemplate>
-		</ItemsControl>
-
+    <!--
         <ItemsControl Panel.ZIndex="2" x:Name="CollisionContainer" ItemsSource="{Binding TileData}"
 			Background="{x:Null}" Visibility="{Binding ShowCollisions, ElementName=MapView, Converter={StaticResource BooleanToVisibilityConverter}}">
             <ItemsControl.ItemsPanel>
 				<ItemsPanelTemplate>
-					<WrapPanel Orientation="Horizontal" Background="{x:Null}"/>
+					<local:MapPanel Background="{x:Null}"/>
 				</ItemsPanelTemplate>
 			</ItemsControl.ItemsPanel>
 			<ItemsControl.ItemTemplate>
@@ -113,5 +122,5 @@
 				</DataTemplate>
 			</ItemsControl.ItemTemplate>
 		</ItemsControl>
-	</Grid>
+	</Grid>-->
 </local:MapLayer>
