@@ -20,10 +20,10 @@ namespace Revsoft.Wabbitcode.Services
 
         private readonly DockPanel _dockPanel;
         private readonly ToolStripContainer _toolStripContainer;
+        private readonly Stack<DockContent> _contentStack = new Stack<DockContent>();
 
         private readonly Dictionary<Type, ToolWindow> _registeredDockingWindows = new Dictionary<Type, ToolWindow>();
         
-
         #endregion
 
         #region Public Properties
@@ -99,6 +99,11 @@ namespace Revsoft.Wabbitcode.Services
 
         private void DockPanelOnActiveDocumentChanged(object sender, EventArgs eventArgs)
         {
+            if (_contentStack.Count == 0 || _contentStack.Peek() != _dockPanel.ActiveDocument)
+            {
+                _contentStack.Push((DockContent)_dockPanel.ActiveDocument);
+            }
+            
             if (ActiveDocumentChanged != null)
             {
                 ActiveDocumentChanged(sender, eventArgs);
@@ -107,6 +112,20 @@ namespace Revsoft.Wabbitcode.Services
 
         private void DockPanel_ContentRemoved(object sender, DockContentEventArgs e)
         {
+            if (_contentStack.Count != 0)
+            {
+                do
+                {
+                    _contentStack.Pop();
+                } while (_contentStack.Count > 0 && !Documents.Contains(_contentStack.Peek()));
+            }
+
+            if (_contentStack.Count > 0)
+            {
+                var content = _contentStack.Peek();
+                ShowDockPanel(content);
+            }
+
             if (DocumentWindowRemoved != null)
             {
                 DocumentWindowRemoved(sender, e);
