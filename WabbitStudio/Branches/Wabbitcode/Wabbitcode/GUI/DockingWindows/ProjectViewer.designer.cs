@@ -1,4 +1,6 @@
-﻿using Revsoft.Wabbitcode.Extensions;
+﻿using System;
+using System.Windows.Forms;
+using Aga.Controls.Tree;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
@@ -30,8 +32,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         private System.Windows.Forms.MenuItem openWithMenuItem;
         private System.Windows.Forms.MenuItem pasteFMenuItem;
         private System.Windows.Forms.MenuItem pasteMenuItem;
-        private System.Windows.Forms.ImageList projectIcons;
-        private TreeView projViewer;
+        private Aga.Controls.Tree.TreeViewAdv projViewer;
+        private Aga.Controls.Tree.NodeControls.NodeStateIcon icon;
+        private Aga.Controls.Tree.NodeControls.NodeTextBox name;
         private System.Windows.Forms.MenuItem renFMenuItem;
         private System.Windows.Forms.MenuItem renMenuItem;
 
@@ -57,8 +60,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProjectViewer));
-            this.projViewer = new TreeView();
-            this.projectIcons = new System.Windows.Forms.ImageList(this.components);
+            this.projViewer = new TreeViewAdv();
+            this.icon = new Aga.Controls.Tree.NodeControls.NodeStateIcon();
+            this.name = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.folderContextMenu = new System.Windows.Forms.ContextMenu();
             this.addContextItem = new System.Windows.Forms.MenuItem();
             this.newFileContextItem = new System.Windows.Forms.MenuItem();
@@ -88,37 +92,36 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
             this.projViewer.AllowDrop = true;
             this.projViewer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.projViewer.ImageIndex = 0;
-            this.projViewer.ImageList = this.projectIcons;
-            this.projViewer.LabelEdit = false;
             this.projViewer.Location = new System.Drawing.Point(0, 2);
             this.projViewer.Name = "projViewer";
-            this.projViewer.SelectedImageIndex = 0;
-            this.projViewer.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            this.projViewer.SelectionMode = TreeViewSelectionMode.MultiSelectSameParent;
             this.projViewer.Size = new System.Drawing.Size(234, 393);
             this.projViewer.TabIndex = 0;
-            this.projViewer.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.projViewer_AfterLabelEdit);
-            this.projViewer.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.projectViewer_BeforeCollapse);
-            this.projViewer.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.projectViewer_BeforeExpand);
+            this.projViewer.SelectionMode = Aga.Controls.Tree.TreeSelectionMode.MultiSameParent;
+            this.projViewer.BorderStyle = BorderStyle.FixedSingle;
+            this.projViewer.NodeControls.Add(this.icon);
+            this.projViewer.NodeControls.Add(this.name);
             this.projViewer.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.projViewer_ItemDrag);
-            this.projViewer.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.projViewer_NodeMouseClick);
+            this.projViewer.NodeMouseClick += new System.EventHandler<TreeNodeAdvMouseEventArgs>(this.projViewer_NodeMouseClick);
             this.projViewer.DragDrop += new System.Windows.Forms.DragEventHandler(this.projViewer_DragDrop);
             this.projViewer.DragOver += new System.Windows.Forms.DragEventHandler(this.projViewer_DragOver);
             this.projViewer.DoubleClick += new System.EventHandler(this.projectViewer_DoubleClick);
             this.projViewer.KeyDown += new System.Windows.Forms.KeyEventHandler(projectViewer_KeyDown);
 
-            // projectIcons
+            // name
 
-            this.projectIcons.ImageStream = (System.Windows.Forms.ImageListStreamer)resources.GetObject("projectIcons.ImageStream");
-            this.projectIcons.TransparentColor = System.Drawing.Color.Transparent;
-            this.projectIcons.Images.SetKeyName(0, "folder_open_16.gif");
-            this.projectIcons.Images.SetKeyName(1, "folder_open_16_h.gif");
-            this.projectIcons.Images.SetKeyName(2, "folder_closed_16.gif");
-            this.projectIcons.Images.SetKeyName(3, "folder_closed_16_h.gif");
-            this.projectIcons.Images.SetKeyName(4, "new_document_16.gif");
-            this.projectIcons.Images.SetKeyName(5, "new_document_16_h.gif");
-            this.projectIcons.Images.SetKeyName(6, "new_document_16_d.png");
+            this.name.DataPropertyName = "Name";
+            this.name.EditEnabled = true;
+            this.name.IncrementalSearchEnabled = true;
+            this.name.LeftMargin = 3;
+            this.name.ParentColumn = null;
+            this.name.EditorShowing += NodeEditorShowing;
+            this.name.LabelChanged += projViewer_AfterLabelEdit;
+
+            // icon
+
+            this.icon.DataPropertyName = "Icon";
+            this.icon.LeftMargin = 1;
+            this.icon.ParentColumn = null;
 
             // folderContextMenu
 

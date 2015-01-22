@@ -8,7 +8,6 @@ namespace Revsoft.Wabbitcode.Services.Project
     {
         private FilePath _filePath;
         private readonly FilePath _projectDir;
-        private ProjectFolder _folder;
         private readonly ProjectFolder _parentFolder;
 
         public ProjectFile(ProjectFolder projectFolder, FilePath fullPath, FilePath projectDir)
@@ -19,6 +18,11 @@ namespace Revsoft.Wabbitcode.Services.Project
         }
 
         public string FileFoldings { get; set; }
+
+        public string Name
+        {
+            get { return Path.GetFileName(_filePath); }
+        }
 
         public FilePath FileFullPath
         {
@@ -43,11 +47,7 @@ namespace Revsoft.Wabbitcode.Services.Project
             set { _filePath = value; }
         }
 
-        public ProjectFolder Folder
-        {
-            get { return _folder; }
-            set { _folder = value; }
-        }
+        public ProjectFolder Folder { get; set; }
 
         public ProjectFolder ParentFolder
         {
@@ -61,8 +61,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 
         internal void Remove()
         {
-            _folder.Files.Remove(this);
-            _folder = null;
+            ParentFolder.Files.Remove(this);
+            Folder = null;
         }
     }
 }

@@ -613,6 +613,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Annotations\Annotations.cs" />
+    <Compile Include="GUI\Dialogs\RenameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Dialogs\RenameForm.designer.cs">
+      <DependentUpon>RenameForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\DockingWindows\ObjectWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\DockingWindows\ObjectWindow.designer.cs">
+      <DependentUpon>ObjectWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="Services\Symbols\CallerInformation.cs" />
     <Compile Include="TextEditor\AsmFormattingStrategy.cs" />
     <Compile Include="TextEditor\CodeCompletion.cs" />
@@ -947,20 +959,11 @@
       <DependentUpon>Preferences.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="GUI\Dialogs\RenameForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\Dialogs\RenameForm.Designer.cs">
-      <DependentUpon>RenameForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="GUI\Dialogs\NewProjectDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\Dialogs\NewProjectDialog.Designer.cs">
       <DependentUpon>NewProjectDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Extensions\TreeView.cs">
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Utils\TextEditorSearcher.cs" />
     <Compile Include="Utils\WabbitcodeBreakpointEventArgs.cs" />
@@ -969,6 +972,9 @@
     </Compile>
     <EmbeddedResource Include="GUI\Dialogs\RefactorExtractMethodForm.resx">
       <DependentUpon>RefactorExtractMethodForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Dialogs\RenameForm.resx">
+      <DependentUpon>RenameForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\DockingWindows\ExpressionWindow.resx">
       <DependentUpon>ExpressionWindow.cs</DependentUpon>
@@ -979,6 +985,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\DockingWindows\BreakpointManagerWindow.resx">
       <DependentUpon>BreakpointManagerWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\DockingWindows\ObjectWindow.resx">
+      <DependentUpon>ObjectWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\DockingWindows\StackViewer.resx">
       <DependentUpon>StackViewer.cs</DependentUpon>
@@ -1113,18 +1122,12 @@
       <DependentUpon>GotoLine.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Dialogs\RenameForm.resx">
-      <DependentUpon>RenameForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\FindAndReplaceForm.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Dialogs\NewProjectDialog.resx">
       <DependentUpon>NewProjectDialog.cs</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Extensions\TreeView.resx">
-      <DependentUpon>TreeView.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -1163,6 +1166,10 @@
     <ProjectReference Include="..\ICSharpCode.TextEditor\Project\Revsoft.TextEditor.csproj">
       <Project>{2d18be89-d210-49eb-a9dd-2246fbb3df6d}</Project>
       <Name>Revsoft.TextEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\treeviewadv\Aga.Controls\Aga.Controls.csproj">
+      <Project>{E73BB233-D88B-44A7-A98F-D71EE158381D}</Project>
+      <Name>Aga.Controls</Name>
     </ProjectReference>
     <ProjectReference Include="..\WinFormsUI\WinFormsUI.csproj">
       <Project>{c75532c4-765b-418e-b09b-46d36b2abdb1}</Project>

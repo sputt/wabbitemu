@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Aga.Controls.Tree;
+using Aga.Controls.Tree.NodeControls;
 using Revsoft.Wabbitcode.Actions;
-using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
-using Revsoft.Wabbitcode.GUI.DocumentWindows;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Utils;
@@ -20,6 +23,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         #region Private Members
 
         private readonly IProjectService _projectService;
+        private ProjectTreeModel _model;
 
         #endregion
 
@@ -28,71 +32,79 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             InitializeComponent();
 
             _projectService = DependencyFactory.Resolve<IProjectService>();
+            if (_projectService.Project != null)
+            {
+                CreateModel();
+            }
 
-            _projectService.ProjectOpened += (sender, args) => BuildProjTree();
-            _projectService.ProjectClosed += (sender, args) => CloseProject();
-            _projectService.ProjectFileAdded += (sender, args) => BuildProjTree();
-            _projectService.ProjectFileRemoved += (sender, args) => BuildProjTree();
-            _projectService.ProjectFolderAdded += (sender, args) => BuildProjTree();
-            _projectService.ProjectFolderRemoved += (sender, args) => BuildProjTree();
+            _projectService.ProjectOpened += OpenProjectTreeEvent;
+            _projectService.ProjectClosed += CloseProjectTreeEvent;
+            _projectService.ProjectFileAdded += BuildProjectTreeEvent;
+            _projectService.ProjectFileRemoved += BuildProjectTreeEvent;
+            _projectService.ProjectFolderAdded += BuildProjectTreeEvent;
+            _projectService.ProjectFolderRemoved += BuildProjectTreeEvent;
         }
 
-        private void AddFile(ProjectFile file, TreeNode parent)
+        private void OpenProjectTreeEvent(object sender, EventArgs args)
         {
-            string filePath = file.FileFullPath;
+            CreateModel();
+            BuildProjTree();
+        }
+
+        private void CreateModel()
+        {
+            _model = new ProjectTreeModel(_projectService.Project.MainFolder);
+            var sortedModel = new SortedTreeModel(_model) {Comparer = new NodeSorter()};
+            projViewer.Model = sortedModel;
+            projViewer.Root.Children.First().Expand();
+        }
+
+        private void BuildProjectTreeEvent(object sender, EventArgs args)
+        {
+            BuildProjTree();
+        }
+
+        private void CloseProjectTreeEvent(object sender, EventArgs args)
+        {
+            CloseProject();
+        }
+
+        private void NodeEditorShowing(object sender, CancelEventArgs e)
+        {
+            ProjectFolder folder = projViewer.CurrentNode.Tag as ProjectFolder;
+            if (folder == _projectService.Project.MainFolder)
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void AddFile(FilePath file, ProjectFolder folder)
+        {
+            ProjectFile fileAdded = _projectService.AddFile(folder, file);
+
+            string filePath = fileAdded.FileFullPath;
             if (string.IsNullOrEmpty(filePath))
             {
                 // should never happen
                 return;
             }
 
-            TreeNode nodeFile = new TreeNode
-            {
-                Tag = file,
-                Text = Path.GetFileName(filePath),
-                ImageIndex = 4,
-                SelectedImageIndex = 5,
-            };
-
-            if (parent == null)
-            {
-                projViewer.Nodes.Add(nodeFile);
-            }
-            else
-            {
-                parent.Nodes.Add(nodeFile);
-            }
+            _model.OnNodesChanged(fileAdded.ParentFolder);
         }
 
         private void BuildProjTree()
         {
-            if (InvokeRequired)
-            {
-                this.BeginInvoke(BuildProjTree);
-                return;
-            }
-
-            projViewer.Nodes.Clear();
-            projViewer.TreeViewNodeSorter = new NodeSorter();
-            ProjectFolder folder = _projectService.Project.MainFolder;
-            if (folder == null)
-            {
-                return;
-            }
-            RecurseAddNodes(folder, null);
-            if (projViewer.Nodes.Count > 0)
-            {
-                projViewer.Nodes[0].Expand();
-            }
-            projViewer.Sort();
+            _model.OnNodesChanged(_projectService.Project.MainFolder);
+            projViewer.Root.Children.First().Expand();
         }
 
-        private void DeleteNode(TreeNode node)
+        private void DeleteNode(TreeNodeAdv node)
         {
             var folder = node.Tag as ProjectFolder;
             if (folder != null)
             {
                 _projectService.DeleteFolder(folder.Parent, folder);
+                _model.OnNodesChanged(folder);
             }
             else
             {
@@ -104,17 +116,33 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
                 File.Delete(file.FileFullPath);
                 _projectService.DeleteFile(file.ParentFolder, file);
+                _model.OnNodesChanged(file.ParentFolder);
             }
         }
 
-        private void DeleteNodes(NodesCollection nodes)
+        private void DeleteNodes(ReadOnlyCollection<TreeNodeAdv> nodes)
         {
             if (nodes.Count < 1)
             {
                 return;
             }
+
+            string nodeName = "";
+            var singleNode = nodes.Single();
+            var projectFolder = singleNode.Tag as ProjectFolder;
+            var projectFile = singleNode.Tag as ProjectFile;
+            if (projectFile != null)
+            {
+                projectFolder = projectFile.ParentFolder;
+                nodeName = projectFile.Name;
+            }
+            else if (projectFolder != null)
+            {
+                nodeName = projectFolder.Name;
+            }
+
             string message = nodes.Count > 1 ? "Would you like to delete the selected files permanently?" :
-                "Delete '" + nodes[0].Text + "' permanently?";
+                "Delete '" + nodeName + "' permanently?";
 
             DialogResult results = MessageBox.Show(message, "Delete Contents", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
@@ -123,7 +151,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 return;
             }
 
-            foreach (TreeNode node in nodes)
+            foreach (TreeNodeAdv node in nodes)
             {
                 if (node.Parent == null)
                 {
@@ -137,25 +165,24 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 }
             }
 
-            projViewer.SelectedNodes.Clear();
+            _model.OnNodesChanged(projectFolder);
         }
 
         internal void AddExistingFile(FilePath file)
         {
             try
             {
-                TreeNode parent = projViewer.SelectedNode;
+                TreeNodeAdv parent = projViewer.SelectedNode;
                 if (parent == null)
                 {
-                    parent = projViewer.Nodes[0];
+                    parent = projViewer.Root.Children.First();
                 }
                 else if (parent.Tag is ProjectFile)
                 {
                     parent = parent.Parent;
                 }
 
-                ProjectFile fileAdded = _projectService.AddFile((ProjectFolder) parent.Tag, file);
-                AddFile(fileAdded, parent);
+                AddFile(file, (ProjectFolder)parent.Tag);
             }
             catch (Exception ex)
             {
@@ -165,10 +192,10 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         internal void AddNewFile(string fileName)
         {
-            TreeNode parent = projViewer.SelectedNode;
+            TreeNodeAdv parent = projViewer.SelectedNode;
             if (parent == null)
             {
-                parent = projViewer.Nodes[0];
+                //parent = projViewer.Nodes[0];
             }
             else if (parent.Tag is ProjectFile)
             {
@@ -177,20 +204,22 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
             if (parent == null)
             {
-                parent = projViewer.Nodes[0];
+                parent = projViewer.Root.Children.First();
             }
 
             FilePath file = _projectService.Project.ProjectDirectory.Combine(fileName);
-            StreamWriter writer = File.CreateText(file);
-            writer.Close();
-            ProjectFile fileAdded = _projectService.AddFile((ProjectFolder) parent.Tag, file);
-            AddFile(fileAdded, parent);
+            using (StreamWriter writer = File.CreateText(file))
+            {
+                writer.Close();
+            }
+
+            AddFile(file, (ProjectFolder) parent.Tag);
             AbstractUiAction.RunCommand(new OpenFileAction(file));
         }
 
         private void CloseProject()
         {
-            projViewer.Nodes.Clear();
+            //projViewer.Nodes.Clear();
         }
 
         private static void OpenAs(string file)
@@ -208,24 +237,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             process.Start();
         }
 
-        private TreeNode AddFolder(ProjectFolder folder, TreeNode parent)
+        private void AddFolder(string folderName, ProjectFolder parentFolder)
         {
-            TreeNode nodeFolder = new TreeNode
-            {
-                Tag = folder,
-                Text = folder.Name,
-                ImageIndex = 2,
-                SelectedImageIndex = 3,
-            };
-            if (parent == null)
-            {
-                projViewer.Nodes.Add(nodeFolder);
-            }
-            else
-            {
-                parent.Nodes.Add(nodeFolder);
-            }
-            return nodeFolder;
+            ProjectFolder folder = new ProjectFolder(parentFolder, folderName);
+            parentFolder.AddFolder(folder);
+            _model.OnNodesChanged(parentFolder);
         }
 
         private void copyMenuItem_Click(object sender, EventArgs e)
@@ -243,12 +259,12 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void delMenuItem_Click(object sender, EventArgs e)
         {
-            DeleteNodes(projViewer.SelectedNodes);
+            //DeleteNodes(projViewer.SelectedNodes);
         }
 
         private void excFromProj_Click(object sender, EventArgs e)
         {
-            foreach (TreeNode node in projViewer.SelectedNodes)
+            foreach (TreeNodeAdv node in projViewer.SelectedNodes)
             {
                 if (node.Tag is ProjectFolder)
                 {
@@ -265,27 +281,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             AbstractUiAction.RunCommand(new AddExistingFileAction(this));
         }
 
-        private ProjectFile GetFileFromPath(string path)
-        {
-            ProjectFile fileFound = null;
-            ProjectFolder current = _projectService.Project.MainFolder;
-            string[] folders = path.Split('\\');
-            foreach (string folder in folders)
-            {
-                ProjectFolder newFolder = current.FindFolder(folder);
-                if (newFolder == null)
-                {
-                    fileFound = current.FindFile(folder);
-                }
-                else
-                {
-                    current = newFolder;
-                }
-            }
-
-            return fileFound;
-        }
-
         private void newFileContextItem_Click(object sender, EventArgs e)
         {
             AbstractUiAction.RunCommand(new AddNewFileAction(this));
@@ -293,7 +288,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void newFolderContextItem_Click(object sender, EventArgs e)
         {
-            TreeNode parent = projViewer.SelectedNode ?? projViewer.Nodes[0];
+            TreeNodeAdv parent = projViewer.SelectedNode ?? projViewer.AllNodes.First();
 
             if (parent.Tag is ProjectFile)
             {
@@ -310,11 +305,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 return;
             }
 
-            string name = newNameForm.NewText;
-            ProjectFolder folder = new ProjectFolder((ProjectFolder) parent.Tag, name);
-            AddFolder(folder, parent);
-            ((ProjectFolder) parent.Tag).AddFolder(folder);
-            projViewer.Sort();
+            string folderName = newNameForm.NewText;
+            AddFolder(folderName, (ProjectFolder)parent.Tag);
         }
 
         private void openExplorerMenuItem_Click(object sender, EventArgs e)
@@ -329,33 +321,29 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             explorer.Start();
         }
 
-        private string CurrentFileName(TreeNode node)
+        private static string CurrentFileName(TreeNodeAdv node)
         {
-            string projectDir = Path.GetDirectoryName(_projectService.Project.ProjectDirectory);
-            return projectDir != null ? Path.Combine(projectDir, node.FullPath) : string.Empty;
+            return ((ProjectFile) node.Tag).FileFullPath;
         }
 
         private void openMenuItem_Click(object sender, EventArgs e)
         {
             OpenNode(projViewer.SelectedNode);
-            foreach (TreeNode node in projViewer.SelectedNodes)
+            foreach (TreeNodeAdv node in projViewer.SelectedNodes)
             {
                 OpenNode(node);
             }
         }
 
-        private void OpenNode(TreeNode dropNode)
+        private void OpenNode(TreeNodeAdv dropNode)
         {
             if (dropNode == null || dropNode.Tag is ProjectFolder || !projViewer.SelectedNodes.Contains(dropNode))
             {
                 return;
             }
 
-            ProjectFile file = GetFileFromPath(dropNode.FullPath);
-            if (file == null)
-            {
-                return;
-            }
+            ProjectFile file = dropNode.Tag as ProjectFile;
+            Debug.Assert(file != null, "file != null");
 
             FilePath filePath = file.FileFullPath;
             if (File.Exists(filePath))
@@ -369,8 +357,10 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 {
                     return;
                 }
-                dropNode.Remove();
-                projViewer.SelectedNodes.Remove(dropNode);
+
+                ProjectFolder folder = file.Folder;
+                folder.DeleteFile(file);
+                _model.OnNodesChanged(folder);
             }
         }
 
@@ -384,21 +374,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         {
         }
 
-        private void projectViewer_BeforeCollapse(object sender, TreeViewCancelEventArgs e)
-        {
-            e.Node.ImageIndex = 2;
-            e.Node.SelectedImageIndex = 3;
-        }
-
-        private void projectViewer_BeforeExpand(object sender, TreeViewCancelEventArgs e)
-        {
-            e.Node.ImageIndex = 0;
-            e.Node.SelectedImageIndex = 1;
-        }
-
         private void projectViewer_DoubleClick(object sender, EventArgs e)
         {
-            TreeNode dropNode = projViewer.GetNodeAt(PointToClient(new Point(MousePosition.X, MousePosition.Y)));
+            TreeNodeAdv dropNode = projViewer.GetNodeAt(PointToClient(new Point(MousePosition.X, MousePosition.Y)));
             OpenNode(dropNode);
         }
 
@@ -407,7 +385,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             switch (e.KeyCode)
             {
                 case Keys.Enter:
-                    foreach (TreeNode node in projViewer.SelectedNodes)
+                    foreach (TreeNodeAdv node in projViewer.SelectedNodes)
                     {
                         OpenNode(node);
                     }
@@ -418,118 +396,131 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             }
         }
 
-        private void projViewer_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        private void projViewer_AfterLabelEdit(object sender, LabelEventArgs e)
         {
-            if (!string.IsNullOrEmpty(e.Label))
+            if (string.IsNullOrEmpty(e.NewLabel))
             {
-                if (e.Node.Tag is ProjectFolder)
-                {
-                    ProjectFolder folder = e.Node.Tag as ProjectFolder;
-                    folder.Name = e.Label;
-                }
-                else
-                {
-                    ProjectFile file = e.Node.Tag as ProjectFile;
-                    if (file == null)
-                    {
-                        return;
-                    }
-
-                    FilePath dir = file.FileFullPath.GetDirectoryName();
-                    if (string.IsNullOrEmpty(dir))
-                    {
-                        return;
-                    }
-
-                    FilePath newFile = dir.Combine(e.Label);
-                    File.Move(file.FileFullPath, newFile);
-                    file.FileFullPath = newFile;
-                }
-
                 return;
             }
 
-            MessageBox.Show("You must enter a name!");
-            e.CancelEdit = true;
+            ProjectFolder folder = e.Subject as ProjectFolder;
+            if (folder != null)
+            {
+                folder.Name = e.NewLabel;
+            }
+            else
+            {
+                ProjectFile file = e.Subject as ProjectFile;
+                if (file == null)
+                {
+                    return;
+                }
+
+                FilePath dir = file.FileFullPath.GetDirectoryName();
+                if (string.IsNullOrEmpty(dir))
+                {
+                    return;
+                }
+
+                FilePath newFile = dir.Combine(e.NewLabel);
+                File.Move(file.FileFullPath, newFile);
+                file.FileFullPath = newFile;
+            }
         }
 
         private void projViewer_DragDrop(object sender, DragEventArgs e)
         {
-            Point cursor = projViewer.PointToClient(new Point(e.X, e.Y));
-            TreeNode newNode = projViewer.GetNodeAt(cursor);
-            if (newNode == null)
+            projViewer.BeginUpdate();
+
+            var nodes = (TreeNodeAdv[])e.Data.GetData(typeof(TreeNodeAdv[]));
+            var dropNode = projViewer.DropPosition.Node;
+            ProjectFolder nodeFolder = dropNode.Tag as ProjectFolder ?? dropNode.Parent.Tag as ProjectFolder;
+            if (nodeFolder == null)
             {
                 return;
             }
-            while (!(newNode.Tag is ProjectFolder))
-            {
-                newNode = newNode.Parent;
-            }
 
-            foreach (TreeNode original in projViewer.SelectedNodes)
+            foreach (TreeNodeAdv n in nodes)
             {
-                if (newNode == original)
+                ProjectFolder folder = n.Tag as ProjectFolder;
+                if (folder == _projectService.Project.MainFolder)
                 {
-                    break;
+                    continue;
                 }
 
-                if (original.Tag is ProjectFolder)
+                if (folder != null)
                 {
-                    ProjectFolder folder = original.Tag as ProjectFolder;
-                    ProjectFolder newParent = newNode.Tag as ProjectFolder;
-                    if (folder == newParent)
+                    folder.Parent.DeleteFolder(folder);
+                    nodeFolder.AddFolder(folder);
+                }
+                else
+                {
+                    ProjectFile file = n.Tag as ProjectFile;
+                    if (file == null)
                     {
                         continue;
                     }
 
-                    folder.Parent.DeleteFolder(folder);
-                    if (newParent != null)
-                    {
-                        newParent.AddFolder(folder);
-                    }
-                    original.Remove();
-                    newNode.Nodes.Add(original);
+                    file.Remove();
+                    nodeFolder.AddFile(file);
                 }
-                else
-                {
-                    var projectFile = original.Tag as ProjectFile;
-                    if (projectFile != null)
-                    {
-                        ProjectFile file = projectFile;
-                        ProjectFolder newParent = (ProjectFolder) newNode.Tag;
-                        if (file.Folder == newParent)
-                        {
-                            continue;
-                        }
-
-                        file.Remove();
-                        newParent.AddFile(file);
-                        original.Remove();
-                        newNode.Nodes.Add(original);
-                    }
-                }
-
-                newNode.Expand();
             }
 
-            projViewer.Sort();
+            dropNode.Expand();
+
+            BuildProjTree();
+            projViewer.EndUpdate();
+        }
+
+        private static bool CheckNodeParent(TreeNodeAdv parent, TreeNodeAdv node)
+        {
+            while (parent != null)
+            {
+                if (node == parent)
+                {
+                    return false;
+                }
+
+                parent = parent.Parent;
+            }
+            return true;
         }
 
         private void projViewer_DragOver(object sender, DragEventArgs e)
         {
+            if (!e.Data.GetDataPresent(typeof (TreeNodeAdv[])) || projViewer.DropPosition.Node == null)
+            {
+                return;
+            }
+            
+            var nodes = e.Data.GetData(typeof(TreeNodeAdv[])) as TreeNodeAdv[];
+            TreeNodeAdv parent = projViewer.DropPosition.Node;
+            if (projViewer.DropPosition.Position != NodePosition.Inside)
+            {
+                parent = parent.Parent;
+            }
+
+            if (nodes != null && nodes.Any(node => !CheckNodeParent(parent, node)))
+            {
+                e.Effect = DragDropEffects.None;
+                return;
+            }
+
+            e.Effect = e.AllowedEffect;
         }
 
         private void projViewer_ItemDrag(object sender, ItemDragEventArgs e)
         {
+            projViewer.DoDragDropSelectedNodes(DragDropEffects.Move);
         }
 
-        private void projViewer_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void projViewer_NodeMouseClick(object sender, TreeNodeAdvMouseEventArgs e)
         {
             if (e.Button != MouseButtons.Right)
             {
                 return;
             }
-            openExplorerMenuItem.Enabled = Directory.Exists(CurrentFileName(e.Node));
+
             if (e.Node.Tag is ProjectFolder)
             {
                 folderContextMenu.Show(projViewer, projViewer.PointToClient(MousePosition));
@@ -540,91 +531,20 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             }
         }
 
-        private void RecurseAddNodes(ProjectFolder folder, TreeNode parentNode)
+        private static void RenameNode(TreeNodeAdv node)
         {
-            TreeNode nodeAdded = AddFolder(folder, parentNode);
-            foreach (ProjectFolder subFolder in folder.Folders)
-            {
-                RecurseAddNodes(subFolder, nodeAdded);
-            }
-            foreach (ProjectFile file in folder.Files)
-            {
-                AddFile(file, nodeAdded);
-            }
-        }
-
-        private void RenameFile(TreeNode node)
-        {
-            string oldName = node.Text;
-            RenameForm renameForm = new RenameForm();
-            DialogResult result = renameForm.ShowDialog();
-            if (result != DialogResult.OK)
-            {
-                return;
-            }
-            string newName = renameForm.NewText;
-            if (oldName == newName)
-            {
-                return;
-            }
-            ProjectFile file = (ProjectFile) node.Tag;
-            if (string.IsNullOrEmpty(file.FileFullPath))
-            {
-                return;
-            }
-
-            FilePath dir = file.FileFullPath.GetDirectoryName();
-            if (string.IsNullOrEmpty(dir))
-            {
-                return;
-            }
-
-            FilePath newFileName = dir.Combine(newName);
-            File.Move(file.FileFullPath, newFileName);
-            foreach (AbstractFileEditor editor in DockingService.Documents.OfType<AbstractFileEditor>()
-                .Where(editor => editor.FileName == file.FileFullPath))
-            {
-                editor.FileName = newFileName;
-            }
-
-            file.FileFullPath = newFileName;
-            node.Text = newName;
-            projViewer.Sort();
-        }
-
-        private void RenameFolder(TreeNode node)
-        {
-            string oldName = node.Text;
-            RenameForm renameForm = new RenameForm
-            {
-                Text = "Rename Folder"
-            };
-            DialogResult result = renameForm.ShowDialog();
-            if (result != DialogResult.OK)
-            {
-                return;
-            }
-
-            string newName = renameForm.NewText;
-            if (oldName == newName)
-            {
-                return;
-            }
-
-            ProjectFolder folder = (ProjectFolder) node.Tag;
-            folder.Name = newName;
-            node.Text = newName;
-            projViewer.Sort();
+            var textBox = node.Tree.NodeControls.OfType<NodeTextBox>().Single();
+            textBox.BeginEdit();
         }
 
         private void renFMenuItem_Click(object sender, EventArgs e)
         {
-            RenameFolder(projViewer.SelectedNode);
+            RenameNode(projViewer.SelectedNode);
         }
 
         private void renMenuItem_Click(object sender, EventArgs e)
         {
-            RenameFile(projViewer.SelectedNode);
+            RenameNode(projViewer.SelectedNode);
         }
     }
 
@@ -634,26 +554,102 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         // themselves, if they are the same length.
         public int Compare(object x, object y)
         {
-            TreeNode tx = x as TreeNode;
-            TreeNode ty = y as TreeNode;
+            ProjectFolder folderX = x as ProjectFolder;
+            ProjectFolder folderY = y as ProjectFolder;
+            ProjectFile fileX = x as ProjectFile;
+            ProjectFile fileY = y as ProjectFile;
 
-            if (tx == null || ty == null)
+            // Compare the length of the strings, returning the difference.
+            if (folderX == null)
             {
+                if (fileX != null && fileY != null)
+                {
+                    return String.CompareOrdinal(fileX.Name, fileY.Name);
+                }
+
                 return 0;
             }
 
-            // Compare the length of the strings, returning the difference.
-            if (tx.Tag is ProjectFolder && ty.Tag is ProjectFolder)
+            if (folderY != null)
             {
-                return String.CompareOrdinal(tx.Text, ty.Text);
+                // If they are the same length, call Compare.
+                return String.CompareOrdinal(folderX.Name, folderY.Name);
             }
-            if (tx.Tag is ProjectFolder)
-            {
-                return -1;
-            }
-            return ty.Tag is ProjectFolder ? 1 : String.CompareOrdinal(tx.Text, ty.Text);
 
-            // If they are the same length, call Compare.
+            return -1;
+        }
+    }
+
+    internal class ProjectTreeModel : ITreeModel
+    {
+        private readonly ProjectFolder _rootFolder;
+
+        public ProjectTreeModel(ProjectFolder rootFolder)
+        {
+            _rootFolder = rootFolder;
+        }
+
+        public IEnumerable GetChildren(TreePath treePath)
+        {
+            var items = new List<object>();
+            if (treePath.IsEmpty())
+            {
+                items.Add(_rootFolder);
+                return items;
+            }
+
+            ProjectFolder parent = treePath.LastNode as ProjectFolder;
+            if (parent == null)
+            {
+                return items;
+            }
+
+            items.AddRange(parent.Folders);
+            items.AddRange(parent.Files);
+            return items;
+        }
+
+        private static TreePath GetPath(ProjectFolder item)
+        {
+            if (item == null)
+            {
+                return TreePath.Empty;
+            }
+
+            var stack = new Stack<object>();
+            while (item != null)
+            {
+                stack.Push(item);
+                item = item.Parent;
+            }
+
+            return new TreePath(stack.ToArray());
+        }
+
+        public bool IsLeaf(TreePath treePath)
+        {
+            return treePath.LastNode is ProjectFile;
+        }
+
+        public event EventHandler<TreeModelEventArgs> NodesChanged;
+        internal void OnNodesChanged(ProjectFolder item)
+        {
+            if (NodesChanged == null)
+            {
+                return;
+            }
+
+            TreePath path = item != null ? GetPath(item.Parent) : GetPath(null);
+            NodesChanged(this, new TreeModelEventArgs(path, new object[] { item }));
+        }
+
+        public event EventHandler<TreeModelEventArgs> NodesInserted;
+        public event EventHandler<TreeModelEventArgs> NodesRemoved;
+        public event EventHandler<TreePathEventArgs> StructureChanged;
+        public void OnStructureChanged()
+        {
+            if (StructureChanged != null)
+                StructureChanged(this, new TreePathEventArgs());
         }
     }
 }

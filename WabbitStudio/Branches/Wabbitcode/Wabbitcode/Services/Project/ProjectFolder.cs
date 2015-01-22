@@ -7,6 +7,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 {
     public class ProjectFolder
     {
+        private string _name;
         public ProjectFolder(ProjectFolder parent, string folderName)
         {
             Parent = parent;
@@ -19,7 +20,19 @@ namespace Revsoft.Wabbitcode.Services.Project
 
         public List<ProjectFolder> Folders { get; private set; }
 
-        public string Name { get; set; }
+        public string Name
+        {
+            get { return _name; }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentNullException();
+                }
+
+                _name = value;
+            }
+        }
 
         public ProjectFolder Parent { get; private set; }
 
