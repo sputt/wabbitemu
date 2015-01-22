@@ -169,9 +169,9 @@
                                 <Binding Path="Image"/>
                             </MultiBinding>
                         </Image.Source>
-                        <Image.Effect>
+                        <!--<Image.Effect>
                             <local:TintEffect Color="{StaticResource EnemyColor}"/>
-                        </Image.Effect>
+                        </Image.Effect>-->
                     </Image>
                 </DataTemplate>
             </ListBox.ItemTemplate>

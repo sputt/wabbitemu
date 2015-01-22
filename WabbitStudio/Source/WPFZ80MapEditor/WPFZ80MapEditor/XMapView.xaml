@@ -50,9 +50,9 @@
                                 <Binding Path="Image"/>
                             </MultiBinding>
                         </Image.Source>
-                        <Image.Effect>
+                        <!--<Image.Effect>
                             <local:TintEffect Color="{StaticResource AnimColor}"/>
-                        </Image.Effect>
+                        </Image.Effect>-->
                     </Image>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

@@ -16,7 +16,9 @@ Public Class MapView
 
     Private Shared Function OnMapChanged(d As DependencyObject, value As Object) As Boolean
         Dim MapView As MapView = d
-        AddHandler MapView.Map.TileData.CollectionChanged, AddressOf MapView.OnTileDataCollectionChanged
+        If MapView.Map IsNot Nothing Then
+            AddHandler MapView.Map.TileData.CollectionChanged, AddressOf MapView.OnTileDataCollectionChanged
+        End If
         Return True
     End Function
 
