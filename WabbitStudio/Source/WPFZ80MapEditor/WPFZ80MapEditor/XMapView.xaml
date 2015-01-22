@@ -19,7 +19,7 @@
             <TextBlock FontSize="200" Text="+" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,50" Foreground="#FFA0A0A0"/>
         </Grid>
         
-        <local:MapView Map="{Binding .}"/>
+        <local:MapView Map="{Binding .}" ShowCollisions="{Binding ShowCollisions,ElementName=MapView}"/>
         
         <ItemsControl Panel.ZIndex="1" x:Name="AnimsControl" IsHitTestVisible="False" ItemsSource="{Binding ZAnims}" Background="{x:Null}" Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}">
             <ItemsControl.ItemsPanel>
