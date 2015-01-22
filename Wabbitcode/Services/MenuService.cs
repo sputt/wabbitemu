@@ -24,6 +24,7 @@ namespace Revsoft.Wabbitcode.Services
                 throw new ArgumentException("Menu is already registered");
             }
 
+            _menus.Add(menuName, menu);
             _panel.Join(menu, 0);
         }
 

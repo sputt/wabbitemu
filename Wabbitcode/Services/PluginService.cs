@@ -22,9 +22,9 @@ namespace Revsoft.Wabbitcode.Services
                 return;
             }
 
-            string[] dllFileNames = Directory.GetFiles(dir, "*.dll");
+            var dllFileNames = Directory.GetFiles(dir, "*.dll");
 
-            List<Assembly> assemblies = new List<Assembly>();
+            var assemblies = new List<Assembly>();
             assemblies.AddRange(dllFileNames.Select(AssemblyName.GetAssemblyName).Select(Assembly.Load));
 
             Type pluginType = typeof(IWabbitcodePlugin);
