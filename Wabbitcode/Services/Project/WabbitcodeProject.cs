@@ -78,7 +78,7 @@ namespace Revsoft.Wabbitcode.Services.Project
             return ContainsFile(fullPath) ? _fileFound : null;
         }
 
-        private void BuildXMLFile()
+        private void BuildXmlFile()
         {
             using (XmlTextWriter writer = new XmlTextWriter(ProjectFile, Encoding.Unicode)
             {
@@ -111,14 +111,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 
         public IEnumerable<ProjectFile> GetProjectFiles()
         {
-            List<ProjectFile> files = new List<ProjectFile>();
+            var files = new List<ProjectFile>();
             RecurseAddFiles(ref files, _mainFolder);
             return files;
         }
 
         public void SaveProject()
         {
-            BuildXMLFile();
+            BuildXmlFile();
             NeedsSave = false;
         }
 
@@ -267,7 +267,7 @@ namespace Revsoft.Wabbitcode.Services.Project
         /// <returns>The absolute path string. Null if an existing file cannot be found.</returns>
         public FilePath GetFilePathFromRelativePath(string relativePath)
         {
-            IEnumerable<FilePath> includeDirs = IsInternal ?
+            var includeDirs = IsInternal ?
                 Settings.Default.IncludeDirs.Cast<string>().Select(path => new FilePath(path)) :
                 IncludeDirs;
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Interfaces;
@@ -55,6 +56,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void HighlightOutput()
         {
+            int backupOffset = outputWindowBox.SelectionStart;
+            int backupLength = outputWindowBox.SelectionLength;
+
             int i = 0;
             foreach (string line in outputWindowBox.Lines)
             {
@@ -69,6 +73,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
                 if (line.Contains("warning"))
                 {
+                    
                     outputWindowBox.Select(
                         outputWindowBox.GetFirstCharIndexFromLine(i),
                         outputWindowBox.GetFirstCharIndexFromLine(i + 1) -
@@ -78,6 +83,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
                 i++;
             }
+
+            outputWindowBox.SelectionStart = backupOffset;
+            outputWindowBox.SelectionLength = backupLength;
         }
 
         private void AddText(string outputText)

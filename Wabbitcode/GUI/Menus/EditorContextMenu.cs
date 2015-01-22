@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
-using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
@@ -16,13 +15,14 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 {
     public class EditorContextMenu : ContextMenu
     {
+        private static readonly Regex IncludeRegex = new Regex("#include ((\"(?<includeFile>.*)(?<paren>\\)?)\")|((?!\")(?<includeFile>.*(?!\"))(?<paren>\\)?)))", RegexOptions.Compiled);
         private readonly MenuItem _cutContext = new MenuItem("Cut");
         private readonly MenuItem _copyContext = new MenuItem("Copy");
         private readonly MenuItem _pasteContext = new MenuItem("Paste");
         private readonly MenuItem _separator1 = new MenuItem("-");
-        private readonly MenuItem _renameContext = new MenuItem("Rename");
-        private readonly MenuItem _extractMethodContext = new MenuItem("Extract Method");
-        private readonly MenuItem _findRefContext = new MenuItem("Find References");
+        private readonly MenuItem _renameContext = new MenuItem("Rename", renameContext_Click);
+        private readonly MenuItem _extractMethodContext = new MenuItem("Extract Method", extractMethodContext_Click);
+        private readonly MenuItem _findRefContext = new MenuItem("Find References", findRefContext_Click, Shortcut.CtrlShiftG);
         private readonly MenuItem _separator2 = new MenuItem("-");
         private readonly MenuItem _selectAllContext = new MenuItem("Select All");
         private readonly MenuItem _setNextStateMenuItem = new MenuItem("Set Next Statement");
@@ -56,13 +56,11 @@ namespace Revsoft.Wabbitcode.GUI.Menus
             _cutContext.Click += cutContext_Click;
             _copyContext.Click += copyContext_Click;
             _pasteContext.Click += pasteContext_Click;
-            _renameContext.Click += renameContext_Click;
-            _extractMethodContext.Click += extractMethodContext_Click;
-            _findRefContext.Click += findRefContext_Click;
             _selectAllContext.Click += selectAllContext_Click;
             _setNextStateMenuItem.Click += setNextStateMenuItem_Click;
             _fixCaseContext.Click += fixCaseContext_Click;
             _gotoButton.Click += gotoButton_Click;
+            _gotoButton.Shortcut = Shortcut.F12;
 
             Popup += contextMenu_Popup;
             
@@ -88,43 +86,16 @@ namespace Revsoft.Wabbitcode.GUI.Menus
                 return;
             }
 
-            int lineNum = _editor.ActiveTextAreaControl.Caret.Line;
             _fixCaseContext.Visible = false;
             _fixCaseContext.MenuItems.Clear();
 
+            int lineNum = _editor.ActiveTextAreaControl.Caret.Line;
             string line = _editor.GetLineText(lineNum);
-            Match match = Regex.Match(line, "#include ((\"(?<includeFile>.*)(?<paren>\\)?)\")|((?!\")(?<includeFile>.*(?!\"))(?<paren>\\)?)))");
+            Match match = IncludeRegex.Match(line);
             bool isInclude = match.Success;
 
-            var caret = _editor.ActiveTextAreaControl.Caret;
-            var segment = _editor.Document.GetLineSegment(caret.Line);
-            var word = segment.GetWord(caret.Column);
-            string text = word == null ? string.Empty : word.Word;
-            if (word != null && !string.IsNullOrEmpty(text) && !isInclude)
-            {
-                IEnumerable<IParserData> parserData = _parserService.GetParserData(text, Settings.Default.CaseSensitive).ToList();
-                if (parserData.Any())
-                {
-                    foreach (IParserData data in parserData.Where(data => data.Name != text))
-                    {
-                        _fixCaseContext.Visible = true;
-                        MenuItem item = new MenuItem(data.Name, fixCaseContext_Click);
-                        _fixCaseContext.MenuItems.Add(item);
-                    }
-                    _gotoButton.Enabled = true;
-                }
-                else
-                {
-                    _gotoButton.Enabled = false;
-                }
-            }
-
-            string gotoLabel = isInclude ? match.Groups["includeFile"].Value.Replace('"', ' ').Trim() : text;
-            if (gotoLabel == "_")
-            {
-                match = Regex.Match(line, "(?<offset>(\\+|\\-)*)_");
-                gotoLabel = match.Groups["offset"].Value + gotoLabel;
-            }
+            bool shouldEnableButton;
+            var gotoLabel = GetParsedLabelFromLine(isInclude, match, line, out shouldEnableButton);
 
             int num;
             if (!int.TryParse(gotoLabel, out num))
@@ -135,20 +106,20 @@ namespace Revsoft.Wabbitcode.GUI.Menus
                     if (exists)
                     {
                         _gotoButton.Text = "Open " + gotoLabel;
-                        _gotoButton.Enabled = true;
+                        shouldEnableButton = true;
                     }
                     else
                     {
                         _gotoButton.Text = "File " + gotoLabel + " doesn't exist";
-                        _gotoButton.Enabled = false;
+                        shouldEnableButton = false;
                     }
                 }
                 else
                 {
-                    if (_gotoButton.Enabled)
+                    if (shouldEnableButton)
                     {
                         _gotoButton.Text = "Goto " + gotoLabel;
-                        _gotoButton.Enabled = !string.IsNullOrEmpty(gotoLabel);
+                        shouldEnableButton = !string.IsNullOrEmpty(gotoLabel);
                     }
                     else
                     {
@@ -159,8 +130,52 @@ namespace Revsoft.Wabbitcode.GUI.Menus
             else
             {
                 _gotoButton.Text = "Goto ";
-                _gotoButton.Enabled = false;
+                shouldEnableButton = false;
             }
+
+            _gotoButton.Enabled = shouldEnableButton;
+        }
+
+        private string GetParsedLabelFromLine(bool isInclude, Match match, string line, out bool shouldEnableButton)
+        {
+            var caret = _editor.ActiveTextAreaControl.Caret;
+            var segment = _editor.Document.GetLineSegment(caret.Line);
+            var word = segment.GetWord(caret.Column);
+            string text = word == null ? string.Empty : word.Word;
+            if (word != null && !string.IsNullOrEmpty(text) && !isInclude)
+            {
+                IEnumerable<IParserData> parserData =
+                    _parserService.GetParserData(text, Settings.Default.CaseSensitive).ToList();
+                if (parserData.Any())
+                {
+                    shouldEnableButton = true;
+
+                    foreach (IParserData data in parserData.Where(data => data.Name != text))
+                    {
+                        _fixCaseContext.Visible = true;
+                        MenuItem item = new MenuItem(data.Name, fixCaseContext_Click);
+                        _fixCaseContext.MenuItems.Add(item);
+                    }
+                }
+                else
+                {
+                    shouldEnableButton = false;
+                }
+            }
+            else
+            {
+                shouldEnableButton = false;
+            }
+
+            string gotoLabel = isInclude ? match.Groups["includeFile"].Value.Replace('"', ' ').Trim() : text;
+            if (gotoLabel != "_")
+            {
+                return gotoLabel;
+            }
+
+            match = Regex.Match(line, "(?<offset>(\\+|\\-)*)_");
+            gotoLabel = match.Groups["offset"].Value + gotoLabel;
+            return gotoLabel;
         }
 
         private void cutContext_Click(object sender, EventArgs e)
@@ -192,22 +207,26 @@ namespace Revsoft.Wabbitcode.GUI.Menus
 
         private void gotoButton_Click(object sender, EventArgs e)
         {
-            // no need to make a stricter regex, as we own the inputs here
-            Match match = Regex.Match(_gotoButton.Text, "(?<action>.*?) (?<name>.*)");
-            string action = match.Groups["action"].Value;
-            FilePath text = new FilePath(match.Groups["name"].Value);
+            int lineNum = _editor.ActiveTextAreaControl.Caret.Line;
+            string line = _editor.GetLineText(lineNum);
+            Match match = IncludeRegex.Match(line);
+            bool isInclude = match.Success;
 
-            if (action == "Goto")
-            {
-                FilePath filePath = new FilePath(_editor.FileName);
-                int line = _editor.ActiveTextAreaControl.Caret.Line;
-                AbstractUiAction.RunCommand(new GotoDefinitionAction(filePath, text, line));
-            }
-            else
+            bool shouldEnableButton;
+            var gotoLabel = GetParsedLabelFromLine(isInclude, match, line, out shouldEnableButton);
+            FilePath text = new FilePath(gotoLabel);
+
+            if (isInclude)
             {
                 FilePath fileFullPath = Path.IsPathRooted(text) ? text :
                     _projectService.Project.GetFilePathFromRelativePath(text).NormalizePath();
                 AbstractUiAction.RunCommand(new GotoFileAction(fileFullPath));
+            }
+            else
+            {
+                FilePath filePath = new FilePath(_editor.FileName);
+                int lineNumber = _editor.ActiveTextAreaControl.Caret.Line;
+                AbstractUiAction.RunCommand(new GotoDefinitionAction(filePath, text, lineNumber));
             }
         }
 
