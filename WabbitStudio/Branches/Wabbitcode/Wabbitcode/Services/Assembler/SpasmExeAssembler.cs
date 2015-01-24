@@ -12,7 +12,6 @@ namespace Revsoft.Wabbitcode.Services.Assembler
 
         private bool _caseSensitive;
         private readonly List<KeyValuePair<string, string>> _defines = new List<KeyValuePair<string, string>>();
-        private string _flagsString = string.Empty;
         private readonly List<string> _includeDirs = new List<string>();
         private string _inputFile;
         private string _outputFile;
@@ -51,26 +50,26 @@ namespace Revsoft.Wabbitcode.Services.Assembler
             _includeDirs.Add(path);
         }
 
-        public string Assemble()
+        public string Assemble(AssemblyFlags flags)
         {
             string arguments = Quote + _inputFile + Quote + " " + Quote + _outputFile + Quote;
-            return SetupRunAssemble(arguments);
+            return SetupRunAssemble(arguments, flags);
         }
 
-        public string Assemble(string code)
+        public string Assemble(string code, AssemblyFlags flags)
         {
             string arguments = Quote + code + Quote;
-            return SetupRunAssemble(arguments);
+            return SetupRunAssemble(arguments, flags);
         }
 
-        private string SetupRunAssemble(string arguments)
+        private string SetupRunAssemble(string arguments, AssemblyFlags flags)
         {
             string output = string.Empty;
             string includeDir = _includeDirs.Count > 0 ? "-I " : string.Empty;
             includeDir = _includeDirs.Aggregate(includeDir, (current, dir) => current + (Quote + dir + Quote + ";"));
 
             string caseString = _caseSensitive ? " -A " : " ";
-            _wabbitspasm.StartInfo.Arguments = includeDir + caseString + _flagsString + arguments;
+            _wabbitspasm.StartInfo.Arguments = includeDir + caseString + GetFlags(flags) + arguments;
             _wabbitspasm.OutputDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
             _wabbitspasm.ErrorDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
             _wabbitspasm.Start();
@@ -113,38 +112,40 @@ namespace Revsoft.Wabbitcode.Services.Assembler
             _caseSensitive = caseSensitive;
         }
 
-        public void SetFlags(AssemblyFlags flags)
+        private static string GetFlags(AssemblyFlags flags)
         {
-            _flagsString = string.Empty;
+            string flagsString = string.Empty;
             if ((flags & AssemblyFlags.CodeCounter) != 0)
             {
-                _flagsString += "-C ";
+                flagsString += "-C ";
             }
 
             if ((flags & AssemblyFlags.List) != 0)
             {
-                _flagsString += "-T ";
+                flagsString += "-T ";
             }
 
             if ((flags & AssemblyFlags.SymbolTable) != 0)
             {
-                _flagsString += "-L ";
+                flagsString += "-L ";
             }
 
             if ((flags & AssemblyFlags.Stats) != 0)
             {
-                _flagsString += "-S ";
+                flagsString += "-S ";
             }
 
             if ((flags & AssemblyFlags.Normal) == 0)
             {
-                _flagsString += "-O ";
+                flagsString += "-O ";
             }
 
             if ((flags & AssemblyFlags.Commandline) != 0)
             {
-                _flagsString += "-V ";
+                flagsString += "-V ";
             }
+
+            return flagsString;
         }
 
         public void SetInputFile(string file)

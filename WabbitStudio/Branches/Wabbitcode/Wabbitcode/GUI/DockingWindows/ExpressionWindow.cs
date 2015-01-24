@@ -73,7 +73,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void ParseLine()
         {
-            string output = _assembler.Assemble(_currentLine);
+            string output = _assembler.Assemble(_currentLine, AssemblyFlags.Normal);
             _currentLine = string.Empty;
 
             Match match = Regex.Match(output, "Pass one... \r\nPass two... \r\n(?<value>.*\r\n)*Done\r\nAssembly time: .* seconds\r\n",

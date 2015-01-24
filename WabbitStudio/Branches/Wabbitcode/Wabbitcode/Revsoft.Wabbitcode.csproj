@@ -82,6 +82,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>..\..\..\Release\</OutputPath>
@@ -619,12 +620,8 @@
     <Compile Include="GUI\Dialogs\RenameForm.designer.cs">
       <DependentUpon>RenameForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\DockingWindows\ObjectWindow.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\DockingWindows\ObjectWindow.designer.cs">
-      <DependentUpon>ObjectWindow.cs</DependentUpon>
-    </Compile>
+    <Compile Include="GUI\DockingWindows\TrackingTreeModel.cs" />
+    <Compile Include="GUI\DockingWindows\TrackingVariableRowModel.cs" />
     <Compile Include="Services\Symbols\CallerInformation.cs" />
     <Compile Include="TextEditor\AsmFormattingStrategy.cs" />
     <Compile Include="TextEditor\CodeCompletion.cs" />
@@ -856,11 +853,11 @@
     <Compile Include="GUI\DockingWindows\Find Results.designer.cs">
       <DependentUpon>Find Results.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\DockingWindows\Tracking.cs">
+    <Compile Include="GUI\DockingWindows\TrackingWindow.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\DockingWindows\Tracking.designer.cs">
-      <DependentUpon>Tracking.cs</DependentUpon>
+      <DependentUpon>TrackingWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\DockingWindows\DebugPanel.cs">
       <SubType>Form</SubType>
@@ -986,9 +983,6 @@
     <EmbeddedResource Include="GUI\DockingWindows\BreakpointManagerWindow.resx">
       <DependentUpon>BreakpointManagerWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\DockingWindows\ObjectWindow.resx">
-      <DependentUpon>ObjectWindow.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="GUI\DockingWindows\StackViewer.resx">
       <DependentUpon>StackViewer.cs</DependentUpon>
     </EmbeddedResource>
@@ -1077,7 +1071,7 @@
       <DependentUpon>ToolWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\DockingWindows\Tracking.resx">
-      <DependentUpon>Tracking.cs</DependentUpon>
+      <DependentUpon>TrackingWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

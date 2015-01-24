@@ -49,12 +49,12 @@ namespace Revsoft.Wabbitcode.Services.Assembler
             throw new NotImplementedException();
         }
 
-        public string Assemble()
+        public string Assemble(AssemblyFlags flags)
         {
             throw new NotImplementedException();
         }
 
-        public string Assemble(string code)
+        public string Assemble(string code, AssemblyFlags flags)
         {
             throw new NotImplementedException();
         }

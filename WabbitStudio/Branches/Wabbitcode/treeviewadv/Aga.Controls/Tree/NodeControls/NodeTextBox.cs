@@ -45,12 +45,18 @@ namespace Aga.Controls.Tree.NodeControls
 			textBox.BorderStyle = BorderStyle.FixedSingle;
 			textBox.TextChanged += EditorTextChanged;
 			textBox.KeyDown += EditorKeyDown;
+		    textBox.LostFocus += EditorLostFocus;
 			_label = textBox.Text;
 			SetEditControlProperties(textBox, node);
 			return textBox;
 		}
 
-		protected virtual TextBox CreateTextBox()
+	    private void EditorLostFocus(object sender, EventArgs e)
+	    {
+	        EndEdit(true);
+	    }
+
+	    protected virtual TextBox CreateTextBox()
 		{
 			return new TextBox();
 		}

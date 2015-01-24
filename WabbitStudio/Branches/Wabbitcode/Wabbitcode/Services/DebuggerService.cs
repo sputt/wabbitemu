@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Windows.Forms;
+using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Exceptions;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
@@ -35,6 +38,8 @@ namespace Revsoft.Wabbitcode.Services
             try
             {
                 CurrentDebugger = new WabbitcodeDebugger(outputFile);
+                CurrentDebugger.DebuggerStep += CurrentDebugger_DebuggerStep;
+                CurrentDebugger.DebuggerRunningChanged += CurrentDebugger_DebuggerRunningChanged;
             }
             catch (Exception)
             {
@@ -67,6 +72,18 @@ namespace Revsoft.Wabbitcode.Services
             CurrentDebugger.EndDebug();
             CurrentDebugger.Dispose();
             CurrentDebugger = null;
+        }
+
+        private static void CurrentDebugger_DebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
+        {
+            Application.OpenForms[0].Invoke(
+                () => AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1)));
+        }
+
+        private static void CurrentDebugger_DebuggerStep(object sender, DebuggerStepEventArgs e)
+        {
+            Application.OpenForms[0].Invoke(
+                () => AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1)));
         }
 
         private static string GetOutputFileDetails(IProject project)

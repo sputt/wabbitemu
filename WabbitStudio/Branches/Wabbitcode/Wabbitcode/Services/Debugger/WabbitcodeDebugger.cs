@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Symbols;
@@ -334,10 +335,13 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             byte page = GetRelativePageNum(address);
             key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
 
-            if (DebuggerStep != null)
+            Task.Factory.StartNew(() => 
             {
-                DebuggerStep(this, new DebuggerStepEventArgs(key));
-            }
+                if (DebuggerStep != null)
+                {
+                    DebuggerStep(this, new DebuggerStepEventArgs(key));
+                }
+            });
 
             _isStepping = false;
         }
@@ -381,10 +385,13 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             UpdateStack();
             _debugger.OnBreakpoint -= StepOutBreakpointEvent;
 
-            if (DebuggerStep != null)
+            Task.Factory.StartNew(() => 
             {
-                DebuggerStep(this, new DebuggerStepEventArgs(key));
-            }
+                if (DebuggerStep != null)
+                {
+                    DebuggerStep(this, new DebuggerStepEventArgs(key));
+                }
+            });
 
             _isStepping = false;
         }
@@ -452,10 +459,13 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             UpdateStack();
             _debugger.OnBreakpoint -= StepOverBreakpointEvent;
 
-            if (DebuggerStep != null)
+            Task.Factory.StartNew(() => 
             {
-                DebuggerStep(this, new DebuggerStepEventArgs(key));
-            }
+                if (DebuggerStep != null)
+                {
+                    DebuggerStep(this, new DebuggerStepEventArgs(key));
+                }
+            });
 
             _isStepping = false;
         }

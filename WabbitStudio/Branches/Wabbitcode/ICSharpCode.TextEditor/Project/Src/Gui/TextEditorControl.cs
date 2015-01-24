@@ -283,7 +283,7 @@ namespace Revsoft.TextEditor
 			if (IsInUpdate) {
 				return;
 			}
-			foreach (TextAreaUpdate update in Document.UpdateQueue) {
+			foreach (TextAreaUpdate update in Document.UpdateQueue.ToArray()) {
 				switch (update.TextAreaUpdateType) {
 					case TextAreaUpdateType.PositionToEnd:
 						this.primaryTextArea.TextArea.UpdateToEnd(update.Position.Y);
