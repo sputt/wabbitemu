@@ -30,12 +30,13 @@ namespace Revsoft.Wabbitcode.Services.Assembler
             }
         }
 
-        public string Assemble()
+        public string Assemble(AssemblyFlags flags)
         {
             lock (_spasm)
             {
                 try
                 {
+                    _spasm.Options = (uint) flags;
                     _spasm.Assemble();
                     return _spasm.StdOut.ReadAll();
                 }
@@ -46,12 +47,13 @@ namespace Revsoft.Wabbitcode.Services.Assembler
             }
         }
 
-        public string Assemble(string code)
+        public string Assemble(string code, AssemblyFlags flags)
         {
             lock (_spasm)
             {
                 try
                 {
+                    _spasm.Options = (uint) flags;
                     _spasm.Assemble(code);
                     return _spasm.StdOut.ReadAll();
                 }
@@ -83,14 +85,6 @@ namespace Revsoft.Wabbitcode.Services.Assembler
             lock (_spasm)
             {
                 _spasm.CaseSensitive = caseSensitive;
-            }
-        }
-
-        public void SetFlags(AssemblyFlags flags)
-        {
-            lock (_spasm)
-            {
-                _spasm.Options = (uint) flags;
             }
         }
 

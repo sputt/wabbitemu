@@ -45,7 +45,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             // no-op
         }
 
-        protected void EnablePanel(bool enabled)
+        protected virtual void EnablePanel(bool enabled)
         {
             if (InvokeRequired)
             {

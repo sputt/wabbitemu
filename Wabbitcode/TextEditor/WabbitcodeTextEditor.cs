@@ -27,6 +27,8 @@ namespace Revsoft.Wabbitcode.TextEditor
         private InsightWindow _insightWindow;
         private CodeCompletionWindow _codeCompletionWindow;
         private bool _inHandleKeyPress;
+        private int _debugHightlightLineNum;
+
         private static readonly Regex LineRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|\%|'|\\|\<|\>]*?)\s*(;.*)?$", RegexOptions.Compiled);
 
         private readonly Timer _textChangedTimer = new Timer
@@ -489,30 +491,17 @@ namespace Revsoft.Wabbitcode.TextEditor
 
             var lineGroup = match.Groups["line"];
             var segment = Document.GetLineSegment(lineNum);
+            _debugHightlightLineNum = lineNum;
             Document.MarkerStrategy.AddMarker(new DebugHighlightMarker(segment.Offset + lineGroup.Index, lineGroup.Length));
             Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, lineNum));
-            if (InvokeRequired)
-            {
-                this.Invoke(Refresh);
-            }
-            else
-            {
-                Refresh();
-            }
+            Document.CommitUpdate();
         }
 
         public void RemoveDebugHighlight()
         {
             Document.MarkerStrategy.RemoveAll(m => m is DebugHighlightMarker);
-            Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
-            if (InvokeRequired)
-            {
-                this.Invoke(Refresh);
-            }
-            else
-            {
-                Refresh();
-            }
+            Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, _debugHightlightLineNum));
+            Document.CommitUpdate();
         }
 
         public void ReloadFile()

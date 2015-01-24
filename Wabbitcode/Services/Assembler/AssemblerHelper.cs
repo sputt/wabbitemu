@@ -8,7 +8,7 @@ namespace Revsoft.Wabbitcode.Services.Assembler
     internal static class AssemblerHelper
     {
         public static void SetupAssembler(IAssembler assembler, FilePath inputFile, FilePath outputFile,
-            FilePath currentDirectory, IEnumerable<FilePath> includeDirs, AssemblyFlags flags)
+            FilePath currentDirectory, IEnumerable<FilePath> includeDirs)
         {
             assembler.SetWorkingDirectory(currentDirectory);
 
@@ -24,7 +24,6 @@ namespace Revsoft.Wabbitcode.Services.Assembler
             assembler.SetOutputFile(outputFile);
 
             // set flags
-            assembler.SetFlags(flags);
             assembler.SetCaseSensitive(Settings.Default.CaseSensitive);
         }
     }

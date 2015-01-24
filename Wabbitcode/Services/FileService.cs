@@ -153,7 +153,12 @@ namespace Revsoft.Wabbitcode.Services
             DateTime time = File.GetLastWriteTime(fileName);
             lock (_cachedFiles)
             {
-                _cachedFiles.Add(fileName, new Tuple<string, DateTime>(text, time));
+                string extension = Path.GetExtension(fileName);
+                // Don't match build files
+                if (extension != ".lab" && extension != ".lst")
+                {
+                    _cachedFiles.Add(fileName, new Tuple<string, DateTime>(text, time));
+                }
             }
             return text;
         }

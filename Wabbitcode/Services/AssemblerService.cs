@@ -42,8 +42,8 @@ namespace Revsoft.Wabbitcode.Services
         {
             IAssembler assembler = _assemblerFactory.CreateAssembler();
 
-            AssemblerHelper.SetupAssembler(assembler, inputFile, outputFile, originalDir, includeDirs, flags);
-            string rawOutput = assembler.Assemble();
+            AssemblerHelper.SetupAssembler(assembler, inputFile, outputFile, originalDir, includeDirs);
+            string rawOutput = assembler.Assemble(flags);
 
             // lets write it to the output window so the user knows whats happening
             string outputText = string.Format(OutputFormatting, Path.GetFileName(inputFile), inputFile, rawOutput);
@@ -57,24 +57,25 @@ namespace Revsoft.Wabbitcode.Services
 
         public void AssembleProject(IProject project)
         {
+            bool succeeded;
             lock (AssemblyLock)
             {
-                bool succeeded = project.BuildSystem.Build();
-
-                if (succeeded && !string.IsNullOrEmpty(project.BuildSystem.ListOutput))
-                {
-                    string fileText = _fileService.GetFileText(project.BuildSystem.ListOutput);
-                    _symbolService.ParseListFile(fileText);
-                }
-
-                if (succeeded && !string.IsNullOrEmpty(project.BuildSystem.LabelOutput))
-                {
-                    string fileText = _fileService.GetFileText(project.BuildSystem.LabelOutput);
-                    _symbolService.ParseSymbolFile(fileText);
-                }
-
-                OnAssemblerProjectFinished(this, new AssemblyFinishProjectEventArgs(project, project.BuildSystem.OutputText, succeeded));
+                succeeded = project.BuildSystem.Build();
             }
+
+            if (succeeded && !string.IsNullOrEmpty(project.BuildSystem.ListOutput))
+            {
+                string fileText = _fileService.GetFileText(project.BuildSystem.ListOutput);
+                _symbolService.ParseListFile(fileText);
+            }
+
+            if (succeeded && !string.IsNullOrEmpty(project.BuildSystem.LabelOutput))
+            {
+                string fileText = _fileService.GetFileText(project.BuildSystem.LabelOutput);
+                _symbolService.ParseSymbolFile(fileText);
+            }
+
+            OnAssemblerProjectFinished(this, new AssemblyFinishProjectEventArgs(project, project.BuildSystem.OutputText, succeeded));
         }
 
         public CodeCountInfo CountCode(string lines)
@@ -86,8 +87,7 @@ namespace Revsoft.Wabbitcode.Services
             string outputLines = null;
             if (!string.IsNullOrEmpty(lines))
             {
-                assembler.SetFlags(AssemblyFlags.CodeCounter | AssemblyFlags.Commandline);
-                outputLines = assembler.Assemble(lines);
+                outputLines = assembler.Assemble(lines, AssemblyFlags.CodeCounter | AssemblyFlags.Commandline);
             }
 
             if (string.IsNullOrEmpty(outputLines))

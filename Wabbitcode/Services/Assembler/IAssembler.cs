@@ -8,16 +8,14 @@
 
         void AddIncludeDir(string path);
 
-        string Assemble();
-        string Assemble(string code);
+        string Assemble(AssemblyFlags flags);
+        string Assemble(string code, AssemblyFlags flags);
 
         void ClearDefines();
 
         void ClearIncludeDirs();
 
         void SetCaseSensitive(bool caseSensitive);
-
-        void SetFlags(AssemblyFlags flags);
 
         void SetInputFile(string file);
 

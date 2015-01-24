@@ -121,38 +121,32 @@ namespace Revsoft.Wabbitcode.Services.Project
         public bool Build(IProject project)
         {
             IAssembler assembler = _assemblerFactory.CreateAssembler();
+            AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory, project.IncludeDirs);
+
             AssemblerOutput output;
             string outputString;
             switch (_stepType)
             {
                 case BuildStepType.All:
-                    AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
-                        project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.SymbolTable | AssemblyFlags.List);
-                    outputString = assembler.Assemble();
+                    outputString = assembler.Assemble(AssemblyFlags.Normal | AssemblyFlags.SymbolTable | AssemblyFlags.List);
                     output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
                     project.BuildSystem.ProjectOutput = _outputFile;
                     project.BuildSystem.ListOutput = _outputFile.ChangeExtension("lst");
                     project.BuildSystem.LabelOutput = _outputFile.ChangeExtension("lab");
                     break;
                 case BuildStepType.Assemble:
-                    AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
-                        project.IncludeDirs, AssemblyFlags.Normal);
-                    outputString = assembler.Assemble();
+                    outputString = assembler.Assemble(AssemblyFlags.Normal);
                     output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
                     project.BuildSystem.ProjectOutput = _outputFile;
                     break;
                 case BuildStepType.Listing:
-                    AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
-                        project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.List);
-                    outputString = assembler.Assemble();
+                    outputString = assembler.Assemble(AssemblyFlags.Normal | AssemblyFlags.List);
                     output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
                     project.BuildSystem.ProjectOutput = _outputFile;
                     project.BuildSystem.ListOutput = _outputFile.ChangeExtension("lst");
                     break;
                 case BuildStepType.SymbolTable:
-                    AssemblerHelper.SetupAssembler(assembler, _inputFile, _outputFile, project.ProjectDirectory,
-                        project.IncludeDirs, AssemblyFlags.Normal | AssemblyFlags.SymbolTable);
-                    outputString = assembler.Assemble();
+                    outputString = assembler.Assemble(AssemblyFlags.Normal | AssemblyFlags.SymbolTable);
                     output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
                     project.BuildSystem.ProjectOutput = _outputFile;
                     project.BuildSystem.LabelOutput = _outputFile.ChangeExtension("lab");

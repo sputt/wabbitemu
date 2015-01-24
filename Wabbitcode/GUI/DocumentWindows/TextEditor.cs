@@ -218,18 +218,13 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                 return;
             }
 
-            this.Invoke(() =>
+            editorBox.RemoveDebugHighlight();
+            if (e.Location.FileName != FileName)
             {
-                editorBox.RemoveDebugHighlight();
-                AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
+                return;
+            }
 
-                if (e.Location.FileName != FileName)
-                {
-                    return;
-                }
-
-                editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
-            });
+            editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
         }
 
         private void Debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)

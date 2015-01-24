@@ -52,13 +52,14 @@ namespace Aga.Controls.Tree
 				//Check once more if editor was closed in ApplyChanges
 				if (CurrentEditor != null)
 				{
-					CurrentEditor.Validating -= EditorValidating;
-					CurrentEditorOwner.DoDisposeEditor(CurrentEditor);
+				    var cachedEditor = CurrentEditor;
+                    CurrentEditor = null;
+                    cachedEditor.Validating -= EditorValidating;
+                    CurrentEditorOwner.DoDisposeEditor(cachedEditor);
 
-					CurrentEditor.Parent = null;
-					CurrentEditor.Dispose();
+                    cachedEditor.Parent = null;
+                    cachedEditor.Dispose();
 
-					CurrentEditor = null;
 					CurrentEditorOwner = null;
 					_editingNode = null;
 				}
