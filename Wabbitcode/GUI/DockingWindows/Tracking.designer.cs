@@ -114,7 +114,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             this.variablesDataView.TabIndex = 0;
             this.variablesDataView.UseColumns = true;
             this.variablesDataView.MouseDoubleClick += variablesDataView_MouseDoubleClick;
-            this.variablesDataView.AsyncExpanding = true;
+            this.variablesDataView.KeyDown += variablesDataView_KeyDown;
 
             // 
             // variableAddressCol

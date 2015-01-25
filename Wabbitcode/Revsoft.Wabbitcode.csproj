@@ -614,14 +614,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Annotations\Annotations.cs" />
+    <Compile Include="GUI\Dialogs\StructureDefiner.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Dialogs\StructureDefiner.Designer.cs">
+      <DependentUpon>StructureDefiner.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Dialogs\RenameForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\Dialogs\RenameForm.designer.cs">
       <DependentUpon>RenameForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Dialogs\TreeStructureModel.cs" />
     <Compile Include="GUI\DockingWindows\TrackingTreeModel.cs" />
     <Compile Include="GUI\DockingWindows\TrackingVariableRowModel.cs" />
+    <Compile Include="Services\Interfaces\DebuggingStructure.cs" />
     <Compile Include="Services\Symbols\CallerInformation.cs" />
     <Compile Include="TextEditor\AsmFormattingStrategy.cs" />
     <Compile Include="TextEditor\CodeCompletion.cs" />
@@ -967,6 +975,9 @@
     <Compile Include="GUI\ToolBars\WabbitcodeStatusBar.cs">
       <SubType>Component</SubType>
     </Compile>
+    <EmbeddedResource Include="GUI\Dialogs\StructureDefiner.resx">
+      <DependentUpon>StructureDefiner.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Dialogs\RefactorExtractMethodForm.resx">
       <DependentUpon>RefactorExtractMethodForm.cs</DependentUpon>
     </EmbeddedResource>

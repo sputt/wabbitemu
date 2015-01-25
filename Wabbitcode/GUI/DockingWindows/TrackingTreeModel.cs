@@ -5,11 +5,11 @@ using Aga.Controls.Tree;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
-    public class TrackingTreeModel : ITreeModel
+    public class TrackingTreeModel<T> : ITreeModel
     {
-        private readonly List<TrackingVariableRowModel> _nodes = new List<TrackingVariableRowModel>();
+        private readonly List<T> _nodes = new List<T>();
 
-        public List<TrackingVariableRowModel> Nodes { get { return _nodes; } }
+        public List<T> Nodes { get { return _nodes; } }
 
         public IEnumerable GetChildren(TreePath treePath)
         {
@@ -21,7 +21,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             return true;
         }
 
-        private static TreePath GetPath(TrackingVariableRowModel item)
+        private static TreePath GetPath(T item)
         {
             return item == null ? TreePath.Empty : new TreePath(new List<object>{ item });
         }
@@ -31,14 +31,24 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         public event EventHandler<TreeModelEventArgs> NodesRemoved;
         public event EventHandler<TreePathEventArgs> StructureChanged;
 
-        internal void OnNodesChanged(TrackingVariableRowModel row)
+        internal void OnNodesChanged(T row)
         {
             if (NodesChanged == null)
             {
                 return;
             }
 
-            NodesChanged(this, new TreeModelEventArgs(TreePath.Empty, new object[] { row}));
+            NodesChanged(this, new TreeModelEventArgs(TreePath.Empty, new object[] { row }));
+        }
+
+        internal void OnNodesRemoved(T row)
+        {
+            if (NodesRemoved == null)
+            {
+                return;
+            }
+
+            NodesRemoved(this, new TreeModelEventArgs(TreePath.Empty, new object[] { row }));
         }
 
         internal void OnStructureChanged()

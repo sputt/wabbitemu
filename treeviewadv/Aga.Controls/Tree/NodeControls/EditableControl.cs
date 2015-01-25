@@ -136,11 +136,25 @@ namespace Aga.Controls.Tree.NodeControls
 
 		public override void MouseDoubleClick(TreeNodeAdvMouseEventArgs args)
 		{
-			_editFlag = false;
-			_timer.Stop();
+		    if (args.Node.IsSelected)
+		    {
+		        _editFlag = true;
+                BeginEdit();
+		        args.Handled = true;
+		    }
+		    else
+		    {
+		        _editFlag = false;
+		        _timer.Stop();
+		    }
 		}
 
-		protected override void Dispose(bool disposing)
+	    public override void KeyDown(KeyEventArgs args)
+	    {
+	        base.KeyDown(args);
+	    }
+
+	    protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
 			if (disposing)

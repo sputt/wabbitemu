@@ -32,7 +32,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
     public partial class TrackingWindow : ToolWindow
     {
         private readonly List<BitmapViewer> _openBitmaps = new List<BitmapViewer>();
-        private readonly TrackingTreeModel _model;
+        private readonly TrackingTreeModel<TrackingVariableRowModel> _model;
         private readonly IDebuggerService _debuggerService;
         private readonly ExpressionEvaluator _expressionEvaluator;
 
@@ -49,7 +49,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
             _expressionEvaluator = new ExpressionEvaluator(symbolService, _debuggerService);
 
-            _model = new TrackingTreeModel();
+            _model = new TrackingTreeModel<TrackingVariableRowModel>();
             AddEmptyRow();
             variablesDataView.Model = _model;
             EnablePanel(false);
@@ -219,6 +219,23 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 _openBitmaps.Remove(test);
                 break;
             }
+        }
+
+        private void variablesDataView_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Delete)
+            {
+                return;
+            }
+
+            var currentModel = (TrackingVariableRowModel)variablesDataView.CurrentNode.Tag;
+            if (currentModel == _emptyRowModel)
+            {
+                return;
+            }
+
+            _model.Nodes.Remove(currentModel);
+            _model.OnNodesRemoved(currentModel);
         }
 
         private void variablesDataView_MouseDoubleClick(object sender, MouseEventArgs e)

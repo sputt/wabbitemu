@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Project
@@ -23,6 +24,8 @@ namespace Revsoft.Wabbitcode.Services.Project
         string ProjectName { get; set; }
 
         bool IsInternal { get; }
+
+        IList<DebuggingStructure> DebuggingStructures { get; }
 
         IEnumerable<ProjectFile> GetProjectFiles();
         bool ContainsFile(FilePath file);
