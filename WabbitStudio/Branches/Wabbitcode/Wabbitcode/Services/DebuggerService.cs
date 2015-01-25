@@ -76,14 +76,15 @@ namespace Revsoft.Wabbitcode.Services
 
         private static void CurrentDebugger_DebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
         {
-            Application.OpenForms[0].Invoke(
-                () => AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1)));
+            if (!e.Running)
+            {
+                Application.OpenForms[0].Invoke(() => AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1)));
+            }
         }
 
         private static void CurrentDebugger_DebuggerStep(object sender, DebuggerStepEventArgs e)
         {
-            Application.OpenForms[0].Invoke(
-                () => AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1)));
+            Application.OpenForms[0].Invoke(() => AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1)));
         }
 
         private static string GetOutputFileDetails(IProject project)

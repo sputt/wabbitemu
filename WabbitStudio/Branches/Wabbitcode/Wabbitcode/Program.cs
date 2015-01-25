@@ -1,7 +1,6 @@
 ﻿using System.Configuration;
 using Microsoft.Practices.Unity;
 using Revsoft.Wabbitcode.EditorExtensions;
-using Revsoft.Wabbitcode.GUI;
 using Revsoft.Wabbitcode.GUI.ToolBars;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
@@ -13,6 +12,7 @@ using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.GUI.Dialogs;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode

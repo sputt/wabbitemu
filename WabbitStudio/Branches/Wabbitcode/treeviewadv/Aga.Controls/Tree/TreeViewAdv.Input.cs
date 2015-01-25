@@ -23,7 +23,8 @@ namespace Aga.Controls.Tree
 			if (((keyData & Keys.Up) == Keys.Up)
 				|| ((keyData & Keys.Down) == Keys.Down)
 				|| ((keyData & Keys.Left) == Keys.Left)
-				|| ((keyData & Keys.Right) == Keys.Right))
+				|| ((keyData & Keys.Right) == Keys.Right)
+                || ((keyData & Keys.Tab) == Keys.Tab))
 				return true;
 			else
 				return base.IsInputKey(keyData);
@@ -55,7 +56,7 @@ namespace Aga.Controls.Tree
 			{
 				if (e.KeyCode == Keys.ShiftKey || e.KeyCode == Keys.ControlKey)
 					ChangeInput();
-				Input.KeyDown(e);
+			    Input.KeyDown(e);
 				if (!e.Handled)
 				{
 					foreach (NodeControlInfo item in GetNodeControls(CurrentNode))

@@ -214,7 +214,7 @@ namespace Revsoft.Wabbitcode.Utils
                 }
             }
 
-            return EvaluateElement(parseStack.Pop());
+            return parseStack.Count == 0 ? 0 : EvaluateElement(parseStack.Pop());
         }
 
         public static IEnumerable<string> CreateTokenList(string expression)

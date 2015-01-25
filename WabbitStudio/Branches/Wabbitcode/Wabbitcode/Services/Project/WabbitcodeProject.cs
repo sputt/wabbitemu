@@ -7,7 +7,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
+using Revsoft.Wabbitcode.GUI.Dialogs;
+using Revsoft.Wabbitcode.GUI.DockingWindows;
 using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Project
@@ -16,9 +19,10 @@ namespace Revsoft.Wabbitcode.Services.Project
     {
         private const string ProjectFileVersion = "1.0";
 
+        private readonly FileSystemWatcher _watcher;
         private ProjectFile _fileFound;
         private ProjectFolder _mainFolder;
-        private readonly FileSystemWatcher _watcher;
+        private DebuggingStructureList _debuggingStructure;
 
         public WabbitcodeProject()
         {
@@ -42,6 +46,8 @@ namespace Revsoft.Wabbitcode.Services.Project
         public event EventHandler<FileModifiedEventArgs> FileModifiedExternally;
 
         public bool IsInternal { get; set; }
+
+        public IList<DebuggingStructure> DebuggingStructures { get { return _debuggingStructure; } }
 
         public IBuildSystem BuildSystem { get; private set; }
 
@@ -92,6 +98,7 @@ namespace Revsoft.Wabbitcode.Services.Project
                 writer.WriteAttributeString("Name", ProjectName);
                 RecurseWriteFolders(writer, _mainFolder);
                 BuildSystem.WriteXML(writer);
+                _debuggingStructure.WriteXml(writer);
                 writer.WriteEndElement();
                 writer.Flush();
             }
@@ -166,6 +173,7 @@ namespace Revsoft.Wabbitcode.Services.Project
                     _mainFolder = new ProjectFolder(null, reader.GetAttribute("Name"));
                     RecurseReadFolders(reader, ref _mainFolder);
                     BuildSystem.ReadXML(reader);
+                    _debuggingStructure = DebuggingStructureList.FromXml(reader);
                 }
             }
             finally
@@ -343,6 +351,75 @@ namespace Revsoft.Wabbitcode.Services.Project
             {
                 _watcher.Dispose();
             }
+        }
+    }
+
+    public class DebuggingStructureList : List<DebuggingStructure>
+    {
+        public void WriteXml(XmlTextWriter writer)
+        {
+            writer.WriteStartElement("DebugStructs");
+            foreach (var structure in this)
+            {
+                writer.WriteStartElement("Struct");
+                writer.WriteAttributeString("Name", structure.Name);
+                foreach (var prop in structure.Properties)
+                {
+                    writer.WriteStartElement("Prop");
+                    writer.WriteAttributeString("Name", prop.Name);
+                    writer.WriteAttributeString("Size", prop.Size.ToString());
+                    writer.WriteAttributeString("Type", prop.Type.ToString());
+                    writer.WriteEndElement();
+                }
+
+                writer.WriteEndElement();
+            }
+
+            writer.WriteEndElement();
+        }
+
+        public static DebuggingStructureList FromXml(XmlTextReader reader)
+        {
+            DebuggingStructureList list = new DebuggingStructureList();
+            while (reader.MoveToNextElement())
+            {
+                if (!reader.Name.Contains("DebugStructs"))
+                {
+                    continue;
+                }
+
+                while (reader.MoveToNextElement())
+                {
+                    if (!reader.Name.Contains("Struct"))
+                    {
+                        continue;
+                    }
+
+                    var name = reader.GetAttribute("Name");
+                    var structure = new DebuggingStructure {Name = name};
+                    if (!reader.MoveToNextElement())
+                    {
+                        continue;
+                    }
+
+                    var valueType = reader.GetAttribute("Type");
+                    if (valueType == null)
+                    {
+                        continue;
+                    }
+
+                    var model = new TreeStructureModel
+                    {
+                        Name = reader.GetAttribute("Name"),
+                        Size = Convert.ToInt32(reader.GetAttribute("Size")),
+                        Type = (VariableDisplayMethod)Enum.Parse(typeof(VariableDisplayMethod), valueType)
+                    };
+
+                    structure.Properties.Add(model);
+                }
+            }
+
+            return list;
         }
     }
 }
