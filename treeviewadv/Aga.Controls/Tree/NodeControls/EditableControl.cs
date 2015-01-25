@@ -136,7 +136,7 @@ namespace Aga.Controls.Tree.NodeControls
 
 		public override void MouseDoubleClick(TreeNodeAdvMouseEventArgs args)
 		{
-		    if (args.Node.IsSelected)
+		    if (args.Node.IsSelected && Parent.UseColumns)
 		    {
 		        _editFlag = true;
                 BeginEdit();

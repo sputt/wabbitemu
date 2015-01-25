@@ -142,13 +142,11 @@ namespace Revsoft.Wabbitcode.Services.Project
                 case BuildStepType.Listing:
                     outputString = assembler.Assemble(AssemblyFlags.Normal | AssemblyFlags.List);
                     output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
-                    project.BuildSystem.ProjectOutput = _outputFile;
                     project.BuildSystem.ListOutput = _outputFile.ChangeExtension("lst");
                     break;
                 case BuildStepType.SymbolTable:
                     outputString = assembler.Assemble(AssemblyFlags.Normal | AssemblyFlags.SymbolTable);
                     output = new AssemblerOutput(outputString, !outputString.Contains("error") && !outputString.Contains("Couldn't"));
-                    project.BuildSystem.ProjectOutput = _outputFile;
                     project.BuildSystem.LabelOutput = _outputFile.ChangeExtension("lab");
                     break;
                 default:
