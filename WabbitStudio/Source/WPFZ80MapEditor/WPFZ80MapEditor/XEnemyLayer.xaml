@@ -162,16 +162,13 @@
             </ItemsControl.ItemContainerStyle>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Image>
+                    <Image Effect="{StaticResource EnemyTintEffect}">
                         <Image.Source>
                             <MultiBinding Converter="{StaticResource ImageConverter}">
                                 <Binding Path="DataContext.Scenario" ElementName="ObjectLayer"/>
                                 <Binding Path="Image"/>
                             </MultiBinding>
                         </Image.Source>
-                        <!--<Image.Effect>
-                            <local:TintEffect Color="{StaticResource EnemyColor}"/>
-                        </Image.Effect>-->
                     </Image>
                 </DataTemplate>
             </ListBox.ItemTemplate>

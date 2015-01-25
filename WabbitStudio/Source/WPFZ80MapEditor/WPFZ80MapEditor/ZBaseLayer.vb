@@ -179,12 +179,24 @@
 
         Dim Map As MapData = Me.DataContext
 
-        Dim ObjClone As BaseType = ObjectListBox.SelectedItem.Clone
+        Dim ObjOld = ObjectListBox.SelectedItem
+        Dim ObjClone As BaseType = ObjOld.Clone
         Frm.DataContext = ObjClone
         If Frm.ShowDialog() = True Then
             'ObjClone.UpdatePosition(ObjClone.Args(0).Value, ObjClone.Args(1).Value)
+            UndoManager.PushUndoState(Map, UndoManager.TypeFlagFromType(GetType(BaseType)))
+
             ObjectCollection(ObjectListBox.SelectedIndex) = ObjClone
             ObjectListBox.SelectedItem = ObjClone
+
+            If ObjClone.NamedSlot <> ObjOld.NamedSlot Then
+                If ObjClone.NamedSlot IsNot Nothing AndAlso Not Map.Scenario.NamedSlots.Contains(ObjClone.NamedSlot) Then
+                    Map.Scenario.NamedSlots.Add(ObjClone.NamedSlot)
+                End If
+                If ObjOld.NamedSlot IsNot Nothing Then
+                    Map.Scenario.NamedSlots.Remove(ObjOld.NamedSlot)
+                End If
+            End If
         End If
         Mouse.Capture(Nothing)
     End Sub

@@ -43,16 +43,13 @@
 
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Image Width="16" Height="16" Panel.ZIndex="0">
+                    <Image Width="16" Height="16" Panel.ZIndex="0" Effect="{StaticResource AnimTintEffect}">
                         <Image.Source>
                             <MultiBinding Converter="{StaticResource TileConverter}">
                                 <Binding ElementName="MapView" Path="DataContext.Tileset"/>
                                 <Binding Path="Image"/>
                             </MultiBinding>
                         </Image.Source>
-                        <!--<Image.Effect>
-                            <local:TintEffect Color="{StaticResource AnimColor}"/>
-                        </Image.Effect>-->
                     </Image>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

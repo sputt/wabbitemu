@@ -109,9 +109,7 @@
             </ListBox.ItemsPanel>
             <ListBox.Template>
                 <ControlTemplate>
-                    <Canvas>
-                        <ItemsPresenter></ItemsPresenter>
-                    </Canvas>
+                    <ItemsPresenter></ItemsPresenter>
                 </ControlTemplate>
             </ListBox.Template>
             <ItemsControl.ItemContainerStyle>
@@ -163,7 +161,7 @@
             </ItemsControl.ItemContainerStyle>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Image>
+                    <Image Effect="{StaticResource ObjectTintEffect}">
                         <Image.Source>
                             <MultiBinding Converter="{StaticResource ImageConverter}">
                                 <Binding Path="DataContext.Scenario" ElementName="ObjectLayer"/>

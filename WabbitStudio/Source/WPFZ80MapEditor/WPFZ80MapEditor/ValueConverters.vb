@@ -146,14 +146,18 @@ Namespace ValueConverters
 
         Public Function Convert(value As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.Convert
             Dim mask As Byte = parameter
-            If value IsNot Nothing And value <> "" Then
-                target = SPASMHelper.Assemble(".db " & value)(0)
-            End If
-            Return ((mask And target) <> 0)
+            target = SPASMHelper.Eval(value)
+            Return (target And mask)
         End Function
 
         Public Function ConvertBack(value As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.ConvertBack
-            target = target Xor CByte(parameter)
+            Dim newVal As Integer = 0
+            If TypeOf value Is Boolean AndAlso value = True Then
+                newVal = parameter
+            Else
+                newVal = SPASMHelper.Eval(value)
+            End If
+            target = target And (Not CByte(parameter)) Or newVal
             Return target
         End Function
     End Class
@@ -165,7 +169,6 @@ Namespace ValueConverters
             If value Is Nothing OrElse value = "" Then Return Nothing
 
             Dim dir As String = CStr(value)
-            Debug.WriteLine("dir: " & dir)
             Return SPASMHelper.Eval(dir)
         End Function
 
@@ -258,6 +261,25 @@ Namespace ValueConverters
 
         Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
             Return Nothing
+        End Function
+    End Class
+
+    Public Class GraphicsConverter
+        Implements IMultiValueConverter
+
+        Dim Images As ICollection(Of ZeldaImage)
+
+        Public Function Convert1(values() As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
+            Images = values(0)
+            Dim ImageIndex = SPASMHelper.Eval(values(1))
+            Dim ActualLabels = SPASMHelper.Defines.OfType(Of String).Where(Function(z) SPASMHelper.Defines(z) = ImageIndex).Select(Function(s) s.ToUpper)
+
+            Dim Result = From i As ZeldaImage In Images Where ActualLabels.Contains(i.Label) Select i
+            Return Result(0)
+        End Function
+
+        Public Function ConvertBack1(value As Object, targetTypes() As Type, parameter As Object, culture As Globalization.CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+            Return {Images, value.Label}
         End Function
     End Class
 

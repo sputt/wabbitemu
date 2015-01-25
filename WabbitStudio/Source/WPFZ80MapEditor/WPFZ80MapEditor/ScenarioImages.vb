@@ -12,7 +12,7 @@ Partial Public Class Scenario
         ' Empty first image
         Dim Uri As New Uri(Directory.GetCurrentDirectory() & "\Scenario\question.bmp", UriKind.Absolute)
         Dim QuestionBitmap As New BitmapImage(Uri)
-        Images.Add(New ZeldaImage("", QuestionBitmap))
+        Images.Add(New ZeldaImage("", BitmapUtils.Mask(QuestionBitmap, Color.FromArgb(255, 168, 230, 29))))
 
         Dim Index As Integer = 1
         For Each Match As Match In Matches
@@ -21,17 +21,17 @@ Partial Public Class Scenario
             SPASMHelper.Defines.Add(LabelName, Index)
             SPASMHelper.Defines.Add(Replace(LabelName, "_gfx", "_anim"), Index)
 
-            Dim Image As ImageSource = Nothing
+            Dim OriginalBitmap As BitmapImage = Nothing
             Uri = New Uri(Path & "\images\" & Groups("FileName").Value, UriKind.Absolute)
             If File.Exists(Uri.LocalPath) Then
-                Image = New BitmapImage(Uri)
-                Image = BitmapUtils.Mask(Image, Color.FromArgb(255, 168, 230, 29))
+                OriginalBitmap = New BitmapImage(Uri)
+                Dim Image = BitmapUtils.Mask(OriginalBitmap, Color.FromArgb(255, 168, 230, 29))
 
                 If Groups("X").Success And Groups("Y").Success Then
                     Dim TotalX = CInt(Groups("X").Value)
                     Dim TotalY = CInt(Groups("Y").Value)
-                    Dim EachWidth As Integer = (CInt(Image.Width) - (2 * TotalX)) / TotalX
-                    Dim EachHeight As Integer = (CInt(Image.Height) - (2 * TotalY)) / TotalY
+                    Dim EachWidth As Integer = (CInt(OriginalBitmap.PixelWidth) - (2 * TotalX)) / TotalX
+                    Dim EachHeight As Integer = (CInt(OriginalBitmap.PixelHeight) - (2 * TotalY)) / TotalY
                     SPASMHelper.Defines.Add(LabelName & "_width", EachWidth)
                     SPASMHelper.Defines.Add(LabelName & "_height", EachHeight)
 

@@ -61,8 +61,10 @@ Public Class SPASMHelper
         If Integer.TryParse(Expr, Result) Then
             Return Result
         Else
-            Dim Bytes = Assemble(".dw " & Expr)
-            Return CInt(BitConverter.ToUInt16(Bytes, 0))
+            SyncLock Assembler
+                Dim Bytes = Assemble(".dw " & Expr)
+                Return CInt(BitConverter.ToUInt16(Bytes, 0))
+            End SyncLock
         End If
     End Function
 
@@ -71,31 +73,35 @@ Public Class SPASMHelper
     End Sub
 
     Public Shared Function Assemble(ByVal Code As String) As Byte()
-        Dim Output = Assembler.Assemble(Code)
-        'Dim StdOutput = Assembler.StdOut.ReadAll()
-        'Debug.Write(StdOutput)
+        SyncLock Assembler
+            Dim Output = Assembler.Assemble(Code)
+            Dim StdOutput = Assembler.StdOut.ReadAll()
+            Debug.Write(StdOutput)
 
-        Dim Data As New List(Of Byte)
+            Dim Data As New List(Of Byte)
 
-        Dim st As New tagSTATSTG
-        Output.Stat(st, 0)
+            Dim st As New tagSTATSTG
+            Output.Stat(st, 0)
 
-        Dim Result() As Byte = New Byte(st.cbSize.QuadPart - 1) {}
-        If st.cbSize.QuadPart > 0 Then
-            Dim BytesRead As UInteger
-            Output.RemoteRead(Result(0), st.cbSize.QuadPart, BytesRead)
-        End If
-        Return Result
+            Dim Result() As Byte = New Byte(st.cbSize.QuadPart - 1) {}
+            If st.cbSize.QuadPart > 0 Then
+                Dim BytesRead As UInteger
+                Output.RemoteRead(Result(0), st.cbSize.QuadPart, BytesRead)
+            End If
+            Return Result
+        End SyncLock
     End Function
 
     Public Shared Function AssembleFile(FileName As String) As Byte()
-        Dim FullPath = System.IO.Path.GetFullPath(FileName)
-        Dim Bytes = Assemble("#include """ & FullPath & """")
-        Labels.Clear()
+        SyncLock Assembler
+            Dim FullPath = System.IO.Path.GetFullPath(FileName)
+            Dim Bytes = Assemble("#include """ & FullPath & """")
+            Labels.Clear()
 
-        For Each Label In Assembler.Labels.Keys
-            Labels.Add(Label, Assembler.Labels(Label))
-        Next
-        Return Bytes
+            For Each Label In Assembler.Labels.Keys
+                Labels.Add(Label, Assembler.Labels(Label))
+            Next
+            Return Bytes
+        End SyncLock
     End Function
 End Class

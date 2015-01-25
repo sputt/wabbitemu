@@ -81,6 +81,8 @@ Public Interface IBaseGeneralObject
 
     Property IsInitializating As Boolean
 
+    Property NamedSlot As String
+
 End Interface
 
 Public Interface IGeneralObject(Of ZBase)
@@ -108,7 +110,44 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
     End Property
 
     Public Property Definition As ZDef Implements IGeneralObject(Of ZBase).Definition
+
+    Private _Args As ArgsCollection
     Public Property Args As ArgsCollection Implements IGeneralObject(Of ZBase).Args
+        Get
+            Return _Args
+        End Get
+        Set(value As ArgsCollection)
+            _Args = value
+            _Args.Base = Me
+        End Set
+    End Property
+
+    Private _NamedSlot As String
+    Public Property NamedSlot As String Implements IGeneralObject(Of ZBase).NamedSlot
+        Get
+            Return _NamedSlot
+        End Get
+        Set(value As String)
+            If value <> _NamedSlot Then
+                _NamedSlot = value
+                RaisePropertyChanged("NamedSlot")
+            End If
+        End Set
+    End Property
+
+    Public ReadOnly Property ArgsAndLabels As ICollection(Of Object)
+        Get
+            Dim Indexes = Enumerable.Range(0, Args.Count)
+            Return Args.Cast(Of Object).Concat(Indexes.Select(Function(i) New ArgNameAndIndex(i, Args(i).LabelText))).ToList()
+        End Get
+    End Property
+
+    Public Sub Write(Stream As StreamWriter, Slot As Integer)
+        If NamedSlot IsNot Nothing Then
+            Stream.WriteLine("#define " & NamedSlot & " " & Slot)
+        End If
+        Stream.WriteLine(vbTab & ToMacro())
+    End Sub
 
     Public Function ToMacro() As String
         Dim Result As String = Me._Name
@@ -351,6 +390,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
         Copy.Args = Args.Clone
         Copy.Args.Base = Copy
         Copy.Image = Image
+        Copy.NamedSlot = NamedSlot
         With Copy
             .X = X : .W = W
             .Y = Y : .H = H
@@ -384,6 +424,8 @@ Public Class ArgsCollection
         End Set
     End Property
 
+    Public Sub New()
+    End Sub
 
     Public Sub New(Base As IBaseGeneralObject)
         Me.Base = Base
@@ -394,6 +436,11 @@ Public Class ArgsCollection
             DirectCast(Item, ZDefArg).Base = Base
         End If
         MyBase.InsertItem(Index, Item)
+
+        ' Renumber all of the args
+        For i = 0 To MyBase.Count - 1
+            MyBase.Item(i).ArgIndex = i
+        Next
     End Sub
 
     Public Function Clone() As Object Implements System.ICloneable.Clone
@@ -408,6 +455,9 @@ End Class
 Public Class ZDefArgGenState
     Inherits ZDefArg
 
+    Public Sub New()
+    End Sub
+
     Public Sub New(Name As String, Description As String)
         MyBase.New(Name, Description)
     End Sub
@@ -419,12 +469,56 @@ Public Class ZDefArgGenState
     End Function
 End Class
 
+Public Class ZDefArgBoolean
+    Inherits ZDefArg
+
+    Public Sub New()
+    End Sub
+
+    Public Sub New(Name As String, Description As String)
+        MyBase.New(Name, Description)
+    End Sub
+
+    Public Overrides Function Clone() As Object
+        Dim Copy As New ZDefArgBoolean(Name, Description)
+        Copy.Value = Value
+        Return Copy
+    End Function
+End Class
+
+Public Class ZDefArgSlot
+    Inherits ZDefArg
+
+    Private _Scenario As Scenario
+    Public Property Slots As ICollection(Of String)
+
+    Public Sub New()
+    End Sub
+
+    Public Sub New(Name As String, Description As String, Scenario As Scenario)
+        MyBase.New(Name, Description)
+        _Scenario = Scenario
+        Slots = Scenario.NamedSlots
+    End Sub
+
+    Public Overrides Function Clone() As Object
+        Dim Copy As New ZDefArgSlot(Name, Description, _Scenario)
+        Copy.Value = Value
+        Copy.Slots = Slots
+        Return Copy
+    End Function
+End Class
+
+
 Public Class ZDefArgGraphic
     Inherits ZDefArg
 
+    Public Sub New()
+    End Sub
+
     Public Property Graphics As IEnumerable(Of ZeldaImage)
 
-    Public Sub New(Name As String, Description As String, Graphics As ObservableCollection(Of ZeldaImage))
+    Public Sub New(Name As String, Description As String, Graphics As IEnumerable(Of ZeldaImage))
         MyBase.New(Name, Description)
         Me.Graphics = Graphics
     End Sub
@@ -439,6 +533,8 @@ End Class
 
 Public Class ZDefArgObjectID
     Inherits ZDefArg
+    Public Sub New()
+    End Sub
 
     Public Property ObjectIDs As IEnumerable(Of String)
 
@@ -467,6 +563,9 @@ End Class
 Public Class ZDefArgObjectFlags
     Inherits ZDefArg
 
+    Public Sub New()
+    End Sub
+
     Public Sub New(Name As String, Description As String)
         MyBase.New(Name, Description)
         Me.Value = "0"
@@ -482,9 +581,20 @@ End Class
 Public Class ZDefArgEnemyFlags
     Inherits ZDefArg
 
+    Public Property EnemyTypes As ICollection(Of String)
+
+    Public Sub New()
+    End Sub
+
     Public Sub New(Name As String, Description As String)
         MyBase.New(Name, Description)
-        Me.Value = "0"
+
+        Dim EnemyTypes = From a In SPASMHelper.Labels
+                         Where a.Key.ToUpper.StartsWith("ET_")
+                         Order By a.Value
+                         Select a.Key
+
+        Me.EnemyTypes = EnemyTypes.ToList()
     End Sub
 
     Public Overrides Function Clone() As Object
@@ -496,6 +606,9 @@ End Class
 
 Public Class ZDefArg8Bit
     Inherits ZDefArg
+
+    Public Sub New()
+    End Sub
 
     Public Sub New(Name As String, Description As String)
         MyBase.New(Name, Description)
@@ -510,6 +623,9 @@ End Class
 
 Public Class ZDefArg16Bit
     Inherits ZDefArg
+
+    Public Sub New()
+    End Sub
 
     Public Sub New(Name As String, Description As String)
         MyBase.New(Name, Description)
@@ -527,10 +643,18 @@ Public Class ZDefArg
 
     Public Property Base As IBaseGeneralObject
 
-    Public IsOptional As Boolean
+    Public Property IsOptional As Boolean = False
 
     Public Property Name As String
     Public Property Description As String
+
+    Public Property ArgIndex As Integer
+
+    Public ReadOnly Property LabelText
+        Get
+            Return If(Description.EndsWith("?"), Description, Description & ":")
+        End Get
+    End Property
 
     Private _Value As String
     Public Property Value As String
@@ -566,6 +690,16 @@ Public Class ZDefArg
 End Class
 #End Region
 
+Public Class ArgNameAndIndex
+    Public Property ArgIndex As Integer
+    Public Property Name As String
+
+    Public Sub New(Index As Integer, Name As String)
+        Me.ArgIndex = Index
+        Me.Name = Name
+    End Sub
+End Class
+
 Public Class ZDef
     Public Property Name As String
     Public Property Macro As String
@@ -578,54 +712,67 @@ Public Class ZDef
 
     Public Property DefaultZ As Byte
 
+    Public ReadOnly Property ArgsAndLabels As ICollection(Of Object)
+        Get
+            Dim Indexes = Enumerable.Range(0, Args.Count)
+            Return Args.Cast(Of Object).Concat(Indexes.Select(Function(i) New ArgNameAndIndex(i, Args(i).LabelText))).ToList()
+        End Get
+    End Property
+
+    Public Sub New()
+    End Sub
+
     Public Sub New(Name As String, Macro As String, Description As String, ObjType As Type)
         Me.Name = Name
         Me.Macro = Macro
         Me.Description = Description
         Args = New ArgsCollection(Nothing)
 
-        'Dim M = ObjType.BaseType.GetMethod("FromMacro")
+        Dim M = ObjType.BaseType.GetMethod("FromMacro")
 
-        'Dim Defs As New Dictionary(Of String, ZDef)
-        'Defs.Add(Macro, Me)
-        'Dim ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0)"})
-        'If ObjectInstance.Image = 0 Then
-        '    ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0)"})
-        '    If ObjectInstance.Image = 0 Then
-        '        ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0, 0, 0)"})
-        '    End If
-        'End If
+        If ObjType <> GetType(ZMisc) Then
+            Dim Defs As New Dictionary(Of String, ZDef)
+            Defs.Add(Macro, Me)
+            Dim ObjectInstance = M.Invoke(Nothing, {Defs, Macro & "(0, 0)"})
 
-        'DefaultImage = ObjectInstance.Image
-        'DefaultW = ObjectInstance.W
-        'DefaultH = ObjectInstance.H
-        'DefaultZ = ObjectInstance.Z
-        DefaultImage = 0
-        DefaultW = 16
-        DefaultH = 16
-        DefaultZ = 0
+            DefaultImage = ObjectInstance.Image
+            DefaultW = ObjectInstance.W
+            DefaultH = ObjectInstance.H
+            DefaultZ = ObjectInstance.Z
+        Else
+            DefaultImage = 0
+            DefaultW = 16
+            DefaultH = 16
+            DefaultZ = 0
+        End If
     End Sub
 
-    Public Sub AddArg(Name As String, Description As String, images As ICollection(Of ZeldaImage), Optional IsOptional As Boolean = False)
+    Public Sub AddArg(Name As String, Description As String, Scenario As Scenario, Optional IsOptional As Boolean = False)
         Dim NewArg As ZDefArg
-        Select Case Name.ToLower
-            Case "x", "y", "z", "w", "h", "d", "ac", "cc"
-                NewArg = New ZDefArg8Bit(Name, Description)
-            Case "ap", "cp", "ax"
-                NewArg = New ZDefArg16Bit(Name, Description)
-            Case "of"
-                NewArg = New ZDefArgObjectFlags(Name, Description)
-            Case "ef"
-                NewArg = New ZDefArgEnemyFlags(Name, Description)
-            Case "type", "ztype"
-                NewArg = New ZDefArgObjectID(Name, Description)
-            Case "ap"
-                NewArg = New ZDefArgGraphic(Name, Description, images)
-            Case "g", "gg"
-                NewArg = New ZDefArgGenState(Name, Description)
-            Case Else
-                NewArg = New ZDefArg(Name, Description)
-        End Select
+        If Description.StartsWith("Is ") Or Description.StartsWith("Are ") Then
+            NewArg = New ZDefArgBoolean(Name, Description)
+        Else
+            Select Case Name.ToLower
+                Case "x", "y", "z", "w", "h", "d", "ac", "cc"
+                    NewArg = New ZDefArg8Bit(Name, Description)
+                Case "cp", "ax", "health", "a"
+                    NewArg = New ZDefArg16Bit(Name, Description)
+                Case "of"
+                    NewArg = New ZDefArgObjectFlags(Name, Description)
+                Case "ef"
+                    NewArg = New ZDefArgEnemyFlags(Name, Description)
+                Case "type", "ztype"
+                    NewArg = New ZDefArgObjectID(Name, Description)
+                Case "ap"
+                    NewArg = New ZDefArgGraphic(Name, Description, Scenario.Images)
+                Case "g", "gg"
+                    NewArg = New ZDefArgGenState(Name, Description)
+                Case "slot"
+                    NewArg = New ZDefArgSlot(Name, Description, Scenario)
+                Case Else
+                    NewArg = New ZDefArg(Name, Description)
+            End Select
+        End If
         Args.Add(NewArg)
     End Sub
 End Class

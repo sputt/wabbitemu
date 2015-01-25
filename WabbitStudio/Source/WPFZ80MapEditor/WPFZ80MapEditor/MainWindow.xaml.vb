@@ -31,7 +31,7 @@ Public Class MainWindow
 
         If ZeldaFolder IsNot Nothing Then
             Dim HillScenario As New Scenario
-            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\hill.asm"))
+            Await HillScenario.LoadScenario(Path.Combine(ZeldaFolder, "maps\pete.asm"))
 
             Debug.Print("Done loading: " & (Now - DateTime.FromFileTime(Application.StartTime)).TotalMilliseconds & " ms")
             AddHandler LayerContainer.LayoutUpdated, AddressOf LayoutChanged

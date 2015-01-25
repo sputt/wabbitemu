@@ -51,9 +51,9 @@
     </local:MapLayer.Resources>
     
     <Grid Width="256" Height="256">
-        <ListBox Name="ItemsControl" Template="{StaticResource NoScroll}" ItemsSource="{Binding Path=ZMisc}" 
+        <ListBox Name="MiscItemsControl" Template="{StaticResource NoScroll}" ItemsSource="{Binding Path=ZMisc}" 
                  SelectionMode="Single" Background="Transparent" BorderThickness="0" 
-                 UseLayoutRounding="True" KeyDown="ItemsControl_KeyDown">
+                 UseLayoutRounding="True" KeyDown="MiscItemsControl_KeyDown">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>
@@ -76,22 +76,6 @@
                             <ControlTemplate TargetType="ListBoxItem">
                                 <Grid>
                                     <Grid Name="ThumbGrid" Visibility="Hidden" Opacity="{Binding SelectionOpacity, ElementName=MiscLayerControl}">
-                                        <!--<local:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 -3 0 0"
-           VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
-                                        <local:ResizeThumb Width="3" Cursor="SizeWE" Margin="-3 0 0 0"
-           VerticalAlignment="Stretch" HorizontalAlignment="Left"/>
-                                        <local:ResizeThumb Width="3" Cursor="SizeWE" Margin="0 0 -3 0"
-           VerticalAlignment="Stretch" HorizontalAlignment="Right" Background="Blue"/>
-                                        <local:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 0 0 -3"
-           VerticalAlignment="Bottom"  HorizontalAlignment="Stretch"/>
-                                        <local:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="-5 -5 0 0"
-           VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                                        <local:ResizeThumb Width="7" Height="7" Cursor="SizeNESW" Margin="0 -5 -5 0"
-           VerticalAlignment="Top" HorizontalAlignment="Right"/>
-                                        <local:ResizeThumb Width="7" Height="7" Cursor="SizeNESW" Margin="-5 0 0 -5"
-           VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
-                                        <local:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="0 0 -5 -5"
-           VerticalAlignment="Bottom" HorizontalAlignment="Right"/>-->
                                         <local:ResizeThumb Height="2" Cursor="SizeNS" Margin="0 -2 0 0"
            VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
                                         <local:ResizeThumb Width="2" Cursor="SizeWE" Margin="-2 0 0 0"

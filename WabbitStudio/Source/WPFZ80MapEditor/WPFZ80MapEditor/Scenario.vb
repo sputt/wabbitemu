@@ -47,6 +47,17 @@ Public Class Scenario
         End Set
     End Property
 
+    Private _NamedSlots As New ObservableCollection(Of String)
+    Public Property NamedSlots As ObservableCollection(Of String)
+        Get
+            Return _NamedSlots
+        End Get
+        Set(value As ObservableCollection(Of String))
+            _NamedSlots = value
+            RaisePropertyChanged("NamedSlots")
+        End Set
+    End Property
+
     Public Function GetMap(HierarchyIndex As Byte) As MapData
         Dim MapHier As New MapHierarchy
         GetExistingMaps().ToList().ForEach(Sub(m) MapHier.AddMap(m.X, m.Y, m.Index))
@@ -78,6 +89,13 @@ Public Class Scenario
             Me.Type = Type
         End Sub
     End Structure
+
+    Private Sub LoadProps(ByRef Obj As IBaseGeneralObject, PropName As String, PropValue As String)
+        If PropName IsNot Nothing AndAlso PropName.ToUpper.EndsWith("_SLOT") Then
+            Obj.NamedSlot = PropName.ToUpper()
+            NamedSlots.Add(Obj.NamedSlot)
+        End If
+    End Sub
 
     Public Async Function LoadScenario(FileName As String) As Task
         _IsLoading = True
@@ -170,6 +188,7 @@ Public Class Scenario
                         Dim ObjectPropValue = Groups("ObjectPropValue").Captures(i).Value
                         Dim Params = Split(Groups("ObjectArgs").Captures(i).Value, ",")
                         Dim Obj As New ZObject(ObjectDefs(Groups("ObjectName").Captures(i).Value), RawData, Params)
+                        LoadProps(Obj, ObjectPropName, ObjectPropValue)
                         MapData.ZObjects.Add(Obj)
                     Next
 
@@ -179,6 +198,7 @@ Public Class Scenario
                         Dim EnemyPropValue = Groups("EnemyPropValue").Captures(i).Value
                         Dim Params = Split(Groups("EnemyArgs").Captures(i).Value, ",")
                         Dim Enemy As New ZEnemy(EnemyDefs(Groups("EnemyName").Captures(i).Value), RawData, Params)
+                        LoadProps(Enemy, EnemyPropName, EnemyPropValue)
                         MapData.ZEnemies.Add(Enemy)
                     Next
 
@@ -188,6 +208,7 @@ Public Class Scenario
                         Dim MiscPropValue = Groups("MiscPropValue").Captures(i).Value
                         Dim Params = Split(Groups("MiscArgs").Captures(i).Value, ",")
                         Dim Misc As New ZMisc(MiscDefs(Groups("MiscName").Captures(i).Value), RawData, Params)
+                        LoadProps(Misc, MiscPropName, MiscPropValue)
                         MapData.ZMisc.Add(Misc)
                     Next
                     Log("Done")
@@ -389,20 +410,20 @@ Public Class Scenario
 
             Stream.WriteLine("object_section()")
 
-            For Each Obj In MapData.ZObjects
-                Stream.WriteLine(vbTab & Obj.ToMacro())
+            For i = 0 To MapData.ZObjects.Count - 1
+                MapData.ZObjects(i).Write(Stream, i)
             Next
 
             Stream.WriteLine("enemy_section()")
 
-            For Each Enemy In MapData.ZEnemies
-                Stream.WriteLine(vbTab & Enemy.ToMacro())
+            For i = 0 To MapData.ZEnemies.Count - 1
+                MapData.ZEnemies(i).Write(Stream, i)
             Next
 
             Stream.WriteLine("misc_section()")
 
-            For Each Misc In MapData.ZMisc
-                Stream.WriteLine(vbTab & Misc.ToMacro())
+            For i = 0 To MapData.ZMisc.Count - 1
+                MapData.ZMisc(i).Write(Stream, i)
             Next
 
             TilesetTable.Add(MapPrefix & "_TILESET")

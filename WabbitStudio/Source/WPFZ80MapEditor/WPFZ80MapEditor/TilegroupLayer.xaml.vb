@@ -146,6 +146,7 @@
         If sender.CaptureMouse() Then
             UndoManager.PushUndoState(Map, UndoManager.TypeFlags.Anims)
 
+            TilegroupLayer.Focus()
             _TileDataBackup.AddRange(Map.TileData)
             If SelectedTile IsNot Nothing AndAlso SelectedTile.Type = TileSelection.SelectionType.Tile Then
                 TilegroupSelection.TilegroupEntries.ToList().ForEach(
@@ -207,6 +208,8 @@
                     Map.TileData(e.Index) = SelectedTile.TileIndex
                 End Sub)
             evt.Handled = True
+        ElseIf evt.Key = Key.Escape Then
+            TilegroupSelection = Nothing
         End If
     End Sub
 End Class

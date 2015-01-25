@@ -38,8 +38,8 @@
         Dim Misc As ZMisc = ZMisc.FromDef(Def, Args)
         If Misc IsNot Nothing Then
             Map.ZMisc.Add(Misc)
-            ItemsControl.SelectedItem = Misc
-            ItemsControl.Focus()
+            MiscItemsControl.SelectedItem = Misc
+            MiscItemsControl.Focus()
         End If
     End Sub
 
@@ -63,8 +63,8 @@
         Obj.CaptureMouse()
         _StartDrag = e.GetPosition(Me)
 
-        ItemsControl.SelectedItem = ZMisc
-        ItemsControl.Focus()
+        MiscItemsControl.SelectedItem = ZMisc
+        MiscItemsControl.Focus()
 
         ZMisc.PreviousVersion = ZMisc.Clone()
 
@@ -77,10 +77,10 @@
             Dim CurPoint As Point = e.GetPosition(Me)
             Dim DragDelta = CurPoint - _StartDrag
 
-            Dim NewX = SPASMHelper.Eval(ItemsControl.SelectedValue.PreviousVersion.Args(0).Value) + DragDelta.X
-            Dim NewY = SPASMHelper.Eval(ItemsControl.SelectedValue.PreviousVersion.Args(1).Value) + DragDelta.Y
+            Dim NewX = SPASMHelper.Eval(MiscItemsControl.SelectedValue.PreviousVersion.Args(0).Value) + DragDelta.X
+            Dim NewY = SPASMHelper.Eval(MiscItemsControl.SelectedValue.PreviousVersion.Args(1).Value) + DragDelta.Y
 
-            ItemsControl.SelectedValue.UpdatePosition(NewX, NewY)
+            MiscItemsControl.SelectedValue.UpdatePosition(NewX, NewY)
 
             SetValue(SelectionOpacityProperty, 0.25)
 
@@ -88,7 +88,7 @@
         End If
     End Sub
 
-    Private Sub ItemsControl_KeyDown(sender As Object, e As Windows.Input.KeyEventArgs) Handles ItemsControl.KeyDown
+    Private Sub MiscItemsControl_KeyDown(sender As Object, e As Windows.Input.KeyEventArgs) Handles MiscItemsControl.KeyDown
         Dim SelectedMisc As ZMisc = CType(sender, ListBox).SelectedItem
         If SelectedMisc IsNot Nothing Then
             Select Case e.Key
@@ -100,16 +100,26 @@
         End If
     End Sub
 
-    Private Sub ItemsControl_MouseDoubleClick(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs) Handles ItemsControl.MouseDoubleClick
+    Private Sub MiscItemsControl_MouseDoubleClick(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs) Handles MiscItemsControl.MouseDoubleClick
         Dim Frm = New ObjectProperties()
         Frm.Owner = Window.GetWindow(Me)
 
-        Dim ObjClone As ZMisc = ItemsControl.SelectedItem.Clone
+        Dim ObjOld As ZMisc = MiscItemsControl.SelectedItem
+        Dim ObjClone As ZMisc = ObjOld.Clone
         Frm.DataContext = ObjClone
         If Frm.ShowDialog() = True Then
             'ObjClone.UpdatePosition(ObjClone.Args(0).Value, ObjClone.Args(1).Value)
-            Me.DataContext.ZMisc(ItemsControl.SelectedIndex) = ObjClone
-            ItemsControl.SelectedItem = ObjClone
+            Me.DataContext.ZMisc(MiscItemsControl.SelectedIndex) = ObjClone
+            MiscItemsControl.SelectedItem = ObjClone
+
+            If ObjClone.NamedSlot <> ObjOld.NamedSlot Then
+                If ObjClone.NamedSlot IsNot Nothing AndAlso Not Map.Scenario.NamedSlots.Contains(ObjClone.NamedSlot) Then
+                    Map.Scenario.NamedSlots.Add(ObjClone.NamedSlot)
+                End If
+                If ObjOld.NamedSlot IsNot Nothing Then
+                    Map.Scenario.NamedSlots.Remove(ObjOld.NamedSlot)
+                End If
+            End If
         End If
         _IsDraggingMisc = False
         Mouse.Capture(Nothing)

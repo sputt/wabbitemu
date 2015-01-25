@@ -5,7 +5,7 @@
     xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" x:Class="MainWindow"
     x:Name="MainWindow"
-    Title="Z80 Scenario Editor" Width="1650" Height="1080" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" Background="White">
+    Title="Z80 Scenario Editor" Width="1280" Height="720" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" Background="White">
     
     <Window.Resources>
         <localconverters:DoubleToZoomLevelConverter x:Key="convertZoomLevel2"/>
@@ -21,7 +21,7 @@
 
         <TransformGroup x:Key="MapCanvasRenderTransform">
         	<ScaleTransform/>
-        	<TranslateTransform/>
+        	<TranslateTransform X="-60" Y="-180"/>
         </TransformGroup>
 
         <Style x:Key="LayerStyle" TargetType="{x:Type local:MapLayer}">

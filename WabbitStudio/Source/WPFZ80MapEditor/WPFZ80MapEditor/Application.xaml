@@ -13,10 +13,14 @@
                          Color="{Binding Color, Source={x:Static SystemColors.InactiveBorderBrush}}"/>
         
         <Color x:Key="ObjectColor">#FF4040FF</Color>
-        <Color x:Key="EnemyColor">#FFD5A030</Color>
+        <Color x:Key="EnemyColor">#FFDF5003</Color>
         <Color x:Key="AnimColor">#FFFF40FF</Color>
         <Color x:Key="CollisionColor">#FFA00030</Color>
         <SolidColorBrush x:Key="CollisionBrush" Color="{StaticResource CollisionColor}"/>
+
+        <local:TintEffect x:Key="AnimTintEffect" Color="{StaticResource  AnimColor}"/>
+        <local:TintEffect x:Key="ObjectTintEffect" Color="{StaticResource  ObjectColor}"/>
+        <local:TintEffect x:Key="EnemyTintEffect" Color="{StaticResource  EnemyColor}"/>
 
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Application.Resources>
