@@ -20,16 +20,15 @@ Public Class Scenario
             RegexOptions.Multiline Or RegexOptions.CultureInvariant Or RegexOptions.Compiled)
 
     Private Shared ReadOnly MapDataRegex As New Regex("^ANIMATE_SECTION\(\)" & vbLf & _
-            "(^\s+(?<AnimName>[A-Z_]+)\((?<AnimArgs>.*)\)\s*)*\s*" & _
-            "^OBJECT_SECTION\(\)" & vbLf & _
-            "(^\s+(?<ObjectName>[A-Z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
-            "^ENEMY_SECTION\(\)" & vbLf & _
-            "(^#define (?<EnemyPropName>\w+)\s+(?<EnemyPropValue>\s+))*" & _
-            "(^\s+(?<EnemyName>[A-Z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
-            "^MISC_SECTION\(\)" & vbLf & _
-            "(^\s+(?<MiscName>[A-Z_]+)\((?<MiscArgs>.*)\)\s*)*\s*" & _
-            "^END_SECTION\(\)",
-            RegexOptions.Multiline Or RegexOptions.CultureInvariant Or RegexOptions.Compiled)
+        "(^\s+(?<AnimName>[A-Z_]+)\((?<AnimArgs>.*)\)\s*)*\s*" & _
+        "^OBJECT_SECTION\(\)" & vbLf & _
+        "((^#DEFINE\s+(?<ObjectPropName>\w+)\s+(?<ObjectPropValue>\w+)\s*|((?<ObjectPropName>)(?<ObjectPropValue>)))*^\s+(?<ObjectName>[A-Z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
+        "^ENEMY_SECTION\(\)" & vbLf & _
+        "((^#DEFINE\s+(?<EnemyPropName>\w+)\s+(?<ObjectPropValue>\w+)\s*|((?<EnemyPropName>)(?<ObjectPropValue>)))*^\s+(?<EnemyName>[A-Z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
+        "^MISC_SECTION\(\)" & vbLf & _
+        "((^#DEFINE\s+(?<MiscPropName>\w+)\s+(?<MiscPropValue>\w+)\s*|((?<ObjectPropName>)(?<ObjectPropValue>)))*^\s+(?<MiscName>[A-Z_]+)\((?<MiscArgs>.*)\)\s*)*\s*" & _
+        "^END_SECTION\(\)",
+        RegexOptions.Multiline Or RegexOptions.CultureInvariant Or RegexOptions.Compiled)
 
     Public ScenarioName As String
 
@@ -167,6 +166,8 @@ Public Class Scenario
                     Log("Loading the rest...")
                     RawData.ReadByte() : RawData.ReadByte()
                     For i = 0 To Groups("ObjectName").Captures.Count - 1
+                        Dim ObjectPropName = Groups("ObjectPropName").Captures(i).Value
+                        Dim ObjectPropValue = Groups("ObjectPropValue").Captures(i).Value
                         Dim Params = Split(Groups("ObjectArgs").Captures(i).Value, ",")
                         Dim Obj As New ZObject(ObjectDefs(Groups("ObjectName").Captures(i).Value), RawData, Params)
                         MapData.ZObjects.Add(Obj)
@@ -174,6 +175,8 @@ Public Class Scenario
 
                     RawData.ReadByte() : RawData.ReadByte()
                     For i = 0 To Groups("EnemyName").Captures.Count - 1
+                        Dim EnemyPropName = Groups("EnemyPropName").Captures(i).Value
+                        Dim EnemyPropValue = Groups("EnemyPropValue").Captures(i).Value
                         Dim Params = Split(Groups("EnemyArgs").Captures(i).Value, ",")
                         Dim Enemy As New ZEnemy(EnemyDefs(Groups("EnemyName").Captures(i).Value), RawData, Params)
                         MapData.ZEnemies.Add(Enemy)
@@ -181,6 +184,8 @@ Public Class Scenario
 
                     RawData.ReadByte() : RawData.ReadByte()
                     For i = 0 To Groups("MiscName").Captures.Count - 1
+                        Dim MiscPropName = Groups("MiscPropName").Captures(i).Value
+                        Dim MiscPropValue = Groups("MiscPropValue").Captures(i).Value
                         Dim Params = Split(Groups("MiscArgs").Captures(i).Value, ",")
                         Dim Misc As New ZMisc(MiscDefs(Groups("MiscName").Captures(i).Value), RawData, Params)
                         MapData.ZMisc.Add(Misc)

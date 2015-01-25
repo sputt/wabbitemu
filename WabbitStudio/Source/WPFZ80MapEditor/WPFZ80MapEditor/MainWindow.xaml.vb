@@ -62,7 +62,7 @@ Public Class MainWindow
         Dim conv = New DoubleToZoomLevelConverter
         currentZoom *= zoomFactor
 
-        currentZoom = Math.Min(4.0, Math.Max(0.5, currentZoom))
+        currentZoom = Math.Min(8.0, Math.Max(0.5, currentZoom))
 
         tt.BeginAnimation(TranslateTransform.XProperty, CreateZoomAnimation(-1 * (mousePosition.X * currentZoom - physicalPoint.X)), HandoffBehavior.Compose)
         tt.BeginAnimation(TranslateTransform.YProperty, CreateZoomAnimation(-1 * (mousePosition.Y * currentZoom - physicalPoint.Y)), HandoffBehavior.Compose)

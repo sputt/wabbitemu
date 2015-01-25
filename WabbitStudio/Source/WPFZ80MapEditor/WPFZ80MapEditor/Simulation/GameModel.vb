@@ -188,6 +188,8 @@ Public Class GameModel
                 Return WabbitemuLib.CalcKey.KEY_2ND
             Case Input.Key.F1
                 Return WabbitemuLib.CalcKey.KEY_YEQU
+            Case Input.Key.LeftCtrl
+                Return WabbitemuLib.CalcKey.KEY_ALPHA
             Case Else
                 Return Nothing
         End Select
