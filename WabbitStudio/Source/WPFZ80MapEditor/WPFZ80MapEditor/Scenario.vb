@@ -22,11 +22,11 @@ Public Class Scenario
     Private Shared ReadOnly MapDataRegex As New Regex("^ANIMATE_SECTION\(\)" & vbLf & _
         "(^\s+(?<AnimName>[A-Z_]+)\((?<AnimArgs>.*)\)\s*)*\s*" & _
         "^OBJECT_SECTION\(\)" & vbLf & _
-        "((^#DEFINE\s+(?<ObjectPropName>\w+)\s+(?<ObjectPropValue>\w+)\s*|((?<ObjectPropName>)(?<ObjectPropValue>)))*^\s+(?<ObjectName>[A-Z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
+        "(((^#DEFINE\s+(?<ObjectPropName>\w+)\s+(?<ObjectPropValue>\w+)\s*)|((?!#DEFINE)(?<ObjectPropName>)(?<ObjectPropValue>)))*^\s+(?<ObjectName>[A-Z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
         "^ENEMY_SECTION\(\)" & vbLf & _
-        "((^#DEFINE\s+(?<EnemyPropName>\w+)\s+(?<EnemyPropValue>\w+)\s*|((?<EnemyPropName>)(?<EnemyPropValue>)))*^\s+(?<EnemyName>[A-Z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
+        "(((^#DEFINE\s+(?<EnemyPropName>\w+)\s+(?<EnemyPropValue>\w+)\s*)|((?<EnemyPropName>)(?<EnemyPropValue>)))*^\s+(?<EnemyName>[A-Z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
         "^MISC_SECTION\(\)" & vbLf & _
-        "((^#DEFINE\s+(?<MiscPropName>\w+)\s+(?<MiscPropValue>\w+)\s*|((?<MiscPropName>)(?<MiscPropValue>)))*^\s+(?<MiscName>[A-Z_]+)\((?<MiscArgs>.*)\)\s*)*\s*" & _
+        "(((^#DEFINE\s+(?<MiscPropName>\w+)\s+(?<MiscPropValue>\w+)\s*)|((?<MiscPropName>)(?<MiscPropValue>)))*^\s+(?<MiscName>[A-Z_]+)\((?<MiscArgs>.*)\)\s*)*\s*" & _
         "^END_SECTION\(\)",
         RegexOptions.Multiline Or RegexOptions.CultureInvariant Or RegexOptions.Compiled)
 
@@ -182,30 +182,42 @@ Public Class Scenario
                     Log("Done")
 
                     Log("Loading the rest...")
+                    Dim offset = 0
                     RawData.ReadByte() : RawData.ReadByte()
                     For i = 0 To Groups("ObjectName").Captures.Count - 1
-                        Dim ObjectPropName = Groups("ObjectPropName").Captures(i).Value
-                        Dim ObjectPropValue = Groups("ObjectPropValue").Captures(i).Value
+                        Dim ObjectPropName = Groups("ObjectPropName").Captures(i + offset).Value
+                        Dim ObjectPropValue = Groups("ObjectPropValue").Captures(i + offset).Value
+                        If Not String.IsNullOrEmpty(ObjectPropName) Then
+                            offset += 1
+                        End If
                         Dim Params = Split(Groups("ObjectArgs").Captures(i).Value, ",")
                         Dim Obj As New ZObject(ObjectDefs(Groups("ObjectName").Captures(i).Value), RawData, Params)
                         LoadProps(Obj, ObjectPropName, ObjectPropValue)
                         MapData.ZObjects.Add(Obj)
                     Next
 
+                    offset = 0
                     RawData.ReadByte() : RawData.ReadByte()
                     For i = 0 To Groups("EnemyName").Captures.Count - 1
-                        Dim EnemyPropName = Groups("EnemyPropName").Captures(i).Value
-                        Dim EnemyPropValue = Groups("EnemyPropValue").Captures(i).Value
+                        Dim EnemyPropName = Groups("EnemyPropName").Captures(i + offset).Value
+                        Dim EnemyPropValue = Groups("EnemyPropValue").Captures(i + offset).Value
+                        If Not String.IsNullOrEmpty(EnemyPropName) Then
+                            offset += 1
+                        End If
                         Dim Params = Split(Groups("EnemyArgs").Captures(i).Value, ",")
                         Dim Enemy As New ZEnemy(EnemyDefs(Groups("EnemyName").Captures(i).Value), RawData, Params)
                         LoadProps(Enemy, EnemyPropName, EnemyPropValue)
                         MapData.ZEnemies.Add(Enemy)
                     Next
 
+                    offset = 0
                     RawData.ReadByte() : RawData.ReadByte()
                     For i = 0 To Groups("MiscName").Captures.Count - 1
-                        Dim MiscPropName = Groups("MiscPropName").Captures(i).Value
-                        Dim MiscPropValue = Groups("MiscPropValue").Captures(i).Value
+                        Dim MiscPropName = Groups("MiscPropName").Captures(i + offset).Value
+                        Dim MiscPropValue = Groups("MiscPropValue").Captures(i + offset).Value
+                        If Not String.IsNullOrEmpty(MiscPropName) Then
+                            offset += 1
+                        End If
                         Dim Params = Split(Groups("MiscArgs").Captures(i).Value, ",")
                         Dim Misc As New ZMisc(MiscDefs(Groups("MiscName").Captures(i).Value), RawData, Params)
                         LoadProps(Misc, MiscPropName, MiscPropValue)
