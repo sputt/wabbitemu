@@ -24,9 +24,9 @@ Public Class Scenario
         "^OBJECT_SECTION\(\)" & vbLf & _
         "((^#DEFINE\s+(?<ObjectPropName>\w+)\s+(?<ObjectPropValue>\w+)\s*|((?<ObjectPropName>)(?<ObjectPropValue>)))*^\s+(?<ObjectName>[A-Z_]+)\((?<ObjectArgs>.*)\)\s*)*\s*" & _
         "^ENEMY_SECTION\(\)" & vbLf & _
-        "((^#DEFINE\s+(?<EnemyPropName>\w+)\s+(?<ObjectPropValue>\w+)\s*|((?<EnemyPropName>)(?<ObjectPropValue>)))*^\s+(?<EnemyName>[A-Z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
+        "((^#DEFINE\s+(?<EnemyPropName>\w+)\s+(?<EnemyPropValue>\w+)\s*|((?<EnemyPropName>)(?<EnemyPropValue>)))*^\s+(?<EnemyName>[A-Z_]+)\((?<EnemyArgs>.*)\)\s*)*\s*" & _
         "^MISC_SECTION\(\)" & vbLf & _
-        "((^#DEFINE\s+(?<MiscPropName>\w+)\s+(?<MiscPropValue>\w+)\s*|((?<ObjectPropName>)(?<ObjectPropValue>)))*^\s+(?<MiscName>[A-Z_]+)\((?<MiscArgs>.*)\)\s*)*\s*" & _
+        "((^#DEFINE\s+(?<MiscPropName>\w+)\s+(?<MiscPropValue>\w+)\s*|((?<MiscPropName>)(?<MiscPropValue>)))*^\s+(?<MiscName>[A-Z_]+)\((?<MiscArgs>.*)\)\s*)*\s*" & _
         "^END_SECTION\(\)",
         RegexOptions.Multiline Or RegexOptions.CultureInvariant Or RegexOptions.Compiled)
 
