@@ -385,10 +385,12 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
 
     Public Function Clone() As Object Implements ICloneable.Clone
         Dim Copy As New Base
+        Copy.IsInitializating = True
         Copy.Name = _Name
         Copy.Definition = Definition
-        Copy.Args = Args.Clone
-        Copy.Args.Base = Copy
+        Copy.Args = New ArgsCollection(Copy)
+        Args.ToList().ForEach(Sub(a) Copy.Args.Add(a.Clone))
+
         Copy.Image = Image
         Copy.NamedSlot = NamedSlot
         With Copy
@@ -396,6 +398,7 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
             .Y = Y : .H = H
             .Z = Z : .D = D
         End With
+        Copy.IsInitializating = False
         Return Copy
     End Function
 

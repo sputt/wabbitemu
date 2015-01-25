@@ -8,7 +8,7 @@
                 xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
                 xmlns:simconverters="clr-namespace:WPFZ80MapEditor.SimConverters"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" Focusable="True" KeyDown="GameWindow_KeyDown" KeyUp="GameWindow_KeyUp" MouseLeftButtonDown="GameWindow_MouseLeftButtonDown">
+             d:DesignHeight="300" d:DesignWidth="300" Width="256" Height="256" Focusable="True" KeyDown="GameWindow_KeyDown" KeyUp="GameWindow_KeyUp" MouseLeftButtonDown="GameWindow_MouseLeftButtonDown" Background="Black">
     <UserControl.Resources>
         <!--<localconverters:ImageIndexConverter x:Key="convertImageIndex"/>-->
         <simconverters:ImageConverter x:Key="ImageConverter"/>
@@ -36,8 +36,8 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Canvas x:Name="CurrentMap">
-        <local:XMapView Panel.ZIndex="0" DataContext="{Binding Map}" Canvas.Left="0" Canvas.Top="0" ShowNewMaps="False"/>
+    <Canvas x:Name="CurrentMap"  Background="Transparent">
+        <local:XMapView Panel.ZIndex="0" DataContext="{Binding Map}" Canvas.Left="0" Canvas.Top="0" ShowNewMaps="False" IsHitTestVisible="False"/>
         <ItemsControl Panel.ZIndex="2" ItemsSource="{Binding Path=DrawEntries}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>

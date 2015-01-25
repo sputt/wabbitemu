@@ -28,6 +28,8 @@
             Dim Index As Integer = values(1)
             If Index > GameModel.Scenario.Images.Count Then
                 Return Nothing
+            ElseIf Index = 0 Then
+                Return GameModel.Scenario.Images(Index).Image
             End If
 
             Dim Img As ZeldaImage = GameModel.Scenario.Images(Index)
@@ -35,9 +37,9 @@
                 If GameModel.GameFlags And GameModel.P_PUSHING Then
                     Dim PushName = "LINK_PUSH_GFX" & Right(Img.Label, 1)
                     Return GameModel.Scenario.Images.ToList().Find(Function(i) i.Label = PushName).Image
-                    'ElseIf GameModel.GameFlags And GameModel.P_SHIELD Then
-                    '    Dim PushName = "LINK_SHIELD_GFX" & Right(Img.Label, 1)
-                    '    Return GameModel.Scenario.Images.ToList().Find(Function(i) i.Label = PushName).Image
+                ElseIf GameModel.GameFlags And GameModel.P_SHIELD Then
+                    Dim ShieldName = "LINK_SHIELD_GFX" & Right(Img.Label, 1)
+                    Return GameModel.Scenario.Images.ToList().Find(Function(i) i.Label = ShieldName).Image
                 End If
             End If
             Return Img.Image

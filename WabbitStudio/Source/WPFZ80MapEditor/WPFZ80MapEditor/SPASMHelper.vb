@@ -76,7 +76,7 @@ Public Class SPASMHelper
         SyncLock Assembler
             Dim Output = Assembler.Assemble(Code)
             Dim StdOutput = Assembler.StdOut.ReadAll()
-            Debug.Write(StdOutput)
+            '            Debug.Write(StdOutput)
 
             Dim Data As New List(Of Byte)
 
