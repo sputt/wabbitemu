@@ -68,7 +68,8 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 	else
 	{
 		m_lpMainWindow->silent_mode = TRUE;
-		int success = gui_frame_update(m_lpMainWindow);
+		//int success = gui_frame_update(m_lpMainWindow);
+		BOOL success = ShowWindow(m_lpMainWindow->hwndFrame, SW_HIDE);
 		if (success == FALSE) {
 			return E_FAIL;
 		}
