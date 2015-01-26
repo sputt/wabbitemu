@@ -25,6 +25,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 
         FilePath ListOutput { get; set; }
 
+        bool IsBuilding { get; }
+
         void CreateDefaultConfigs();
 
         bool Build();

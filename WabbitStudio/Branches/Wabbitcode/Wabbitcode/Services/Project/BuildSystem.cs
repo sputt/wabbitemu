@@ -16,6 +16,7 @@ namespace Revsoft.Wabbitcode.Services.Project
         private int _currentConfigIndex;
         private string _outputText = string.Empty;
         private readonly IProject _project;
+        private volatile bool _isBuilding;
 
         public BuildSystem(IProject project)
         {
@@ -98,6 +99,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 
         public FilePath ProjectOutput { get; set; }
 
+        public bool IsBuilding
+        {
+            get { return _isBuilding; }
+        }
+
         private InternalBuildStep GetMainBuildStep()
         {
             InternalBuildStep step = (InternalBuildStep) CurrentConfig.Steps.FirstOrDefault(s => s is InternalBuildStep);
@@ -121,9 +127,11 @@ namespace Revsoft.Wabbitcode.Services.Project
                 throw new MissingConfigException("Missing config");
             }
 
+            _isBuilding = true;
             BuildConfig config = _buildConfigs[_currentConfigIndex];
             bool succeeded = config.Build(_project);
             _outputText = config.OutputText;
+            _isBuilding = false;
             return succeeded;
         }
 

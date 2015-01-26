@@ -30,7 +30,8 @@ namespace Aga.Controls.Tree.NodeControls
 
 		public override void KeyDown(KeyEventArgs args)
 		{
-			if ((args.KeyCode == Keys.F2 || char.IsLetterOrDigit((char)args.KeyCode)) && Parent.CurrentNode != null && EditEnabled)
+            if ((args.KeyCode == Keys.F2 || (char.IsLetterOrDigit((char)args.KeyCode) && Parent.UseColumns)) &&
+                Parent.CurrentNode != null && EditEnabled)
 			{
 				args.Handled = true;
 				BeginEdit();
