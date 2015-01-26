@@ -120,7 +120,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             }
         }
 
-        private void DeleteNodes(ReadOnlyCollection<TreeNodeAdv> nodes)
+        private void DeleteNodes(List<TreeNodeAdv> nodes)
         {
             if (nodes.Count < 1)
             {
@@ -254,17 +254,17 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void delFMenuItem_Click(object sender, EventArgs e)
         {
-            DeleteNodes(projViewer.SelectedNodes);
+            DeleteNodes(projViewer.SelectedNodes.ToList());
         }
 
         private void delMenuItem_Click(object sender, EventArgs e)
         {
-            //DeleteNodes(projViewer.SelectedNodes);
+            DeleteNodes(projViewer.SelectedNodes.ToList());
         }
 
         private void excFromProj_Click(object sender, EventArgs e)
         {
-            foreach (TreeNodeAdv node in projViewer.SelectedNodes)
+            foreach (TreeNodeAdv node in projViewer.SelectedNodes.ToList())
             {
                 if (node.Tag is ProjectFolder)
                 {
@@ -391,7 +391,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                     }
                     break;
                 case Keys.Delete:
-                    DeleteNodes(projViewer.SelectedNodes);
+                    DeleteNodes(projViewer.SelectedNodes.ToList());
                     break;
             }
         }

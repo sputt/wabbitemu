@@ -83,9 +83,15 @@ namespace Revsoft.Wabbitcode.TextEditor
             Document.BreakpointManager.Added += BreakpointManager_Added;
             Document.BreakpointManager.Removed += BreakpointManager_Removed;
             Document.BreakpointManager.HighlightRegex = LineRegex;
+            Enter += WabbitcodeTextEditor_Enter;
 
             _textChangedTimer.Tick += textChangedTimer_Tick;
             _updateRefsTimer.Tick += updateRefsTimer_Tick;
+        }
+
+        void WabbitcodeTextEditor_Enter(object sender, EventArgs e)
+        {
+            
         }
 
         protected override void InitializeTextAreaControl(TextAreaControl newControl)
@@ -360,7 +366,11 @@ namespace Revsoft.Wabbitcode.TextEditor
         {
             var caret = ActiveTextAreaControl.Caret;
             var segment = Document.GetLineSegment(caret.Line);
-            var word = segment.GetWord(caret.Column);
+            var selectionManager = ActiveTextAreaControl.SelectionManager;
+            var column = selectionManager.HasSomethingSelected ? 
+                selectionManager.GetSelectionAtLine(caret.Line).StartColumn : 
+                caret.Column;
+            var word = segment.GetWord(column);
             return word == null ? string.Empty : word.Word;
         }
 
