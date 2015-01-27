@@ -5,12 +5,9 @@
 
 class ATL_NO_VTABLE CZ80Label :
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public IDispatchImpl<IZ80Label, &IID_IZ80Label, &LIBID_SPASM, /*wMajor =*/ 1, /*wMinor =*/ 2>
+	public IDispatchImpl<IZ80Label, &__uuidof(IZ80Label), &LIBID_SPASM, /*wMajor =*/ 1, /*wMinor =*/ 2>
 {
 public:
-
-	DECLARE_REGISTRY_RESOURCEID(IDR_Z80ASSEMBLER)
-
 	BEGIN_COM_MAP(CZ80Label)
 		COM_INTERFACE_ENTRY(IZ80Label)
 		COM_INTERFACE_ENTRY(IDispatch)

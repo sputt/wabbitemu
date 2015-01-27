@@ -2,7 +2,6 @@
 
 #include "stdafx.h"
 #include "Z80Assembler.h"
-#include "Z80Label.h"
 
 #include "spasm.h"
 #include "utils.h"
@@ -21,7 +20,12 @@ HRESULT CZ80Assembler::FinalConstruct()
 
 	init_storage();
 	m_pStmOutput = NULL;
-	return S_OK;
+
+	m_spStdOut.CreateInstance(__uuidof(TextStream));
+	
+	//m_spStdOut->WriteLine("Hello there I'm a text file");
+
+	return m_spDictionary.CreateInstance(__uuidof(Dictionary));
 }
 
 void CZ80Assembler::FinalRelease()
@@ -181,17 +185,17 @@ STDMETHODIMP CZ80Assembler::Assemble(VARIANT varInput, int *lpInt)
 
 void CZ80Assembler::get_label_callback(label_t *label, CComSafeArray<IDispatch *> *lpsa)
 {
-	CComObject<CZ80Label> *pLabelObj = NULL;
-	CComObject<CZ80Label>::CreateInstance(&pLabelObj);
-	pLabelObj->AddRef();
-	pLabelObj->Initialize(label);
+	//CComObject<CZ80Label> *pLabelObj = NULL;
+	//CComObject<CZ80Label>::CreateInstance(&pLabelObj);
+	//pLabelObj->AddRef();
+	//pLabelObj->Initialize(label);
 
-	IZ80Label *pLabel;
-	pLabelObj->QueryInterface(&pLabel);
-	
-	pLabelObj->Release();
+	//IZ80Label *pLabel;
+	//pLabelObj->QueryInterface(&pLabel);
+	//
+	//pLabelObj->Release();
 
-	lpsa->SetAt(m_lIndex++, pLabel, FALSE);
+	//lpsa->SetAt(m_lIndex++, pLabel, FALSE);
 }
 
 STDMETHODIMP CZ80Assembler::get_Labels(LPSAFEARRAY *ppsa)
@@ -206,4 +210,14 @@ STDMETHODIMP CZ80Assembler::get_Labels(LPSAFEARRAY *ppsa)
 
 	*ppsa = lpsa;
 	return S_OK;
+}
+
+STDMETHODIMP CZ80Assembler::get_Defines(IDictionary **ppDefines)
+{
+	return m_spDictionary->QueryInterface(ppDefines);
+}
+
+STDMETHODIMP CZ80Assembler::get_StdOut(ITextStream **ppStdOut)
+{
+	return m_spStdOut->QueryInterface(ppStdOut);
 }

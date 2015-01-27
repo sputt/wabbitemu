@@ -120,6 +120,12 @@ Public Class AppModel
         End Set
     End Property
 
+    Public Sub DeselectAll()
+        SelectedMap = Nothing
+        SelectedTile = Nothing
+        SelectedTileset = Nothing
+    End Sub
+
     Private Sub RaisePropertyChanged(PropName As String)
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropName))
     End Sub

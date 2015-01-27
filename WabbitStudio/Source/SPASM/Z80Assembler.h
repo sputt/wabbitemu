@@ -18,8 +18,8 @@ default_define_pair_t;
 
 class ATL_NO_VTABLE CZ80Assembler :
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CZ80Assembler, &CLSID_Z80Assembler>,
-	public IDispatchImpl<IZ80Assembler, &IID_IZ80Assembler, &LIBID_SPASM, 1, 2>
+	public CComCoClass<CZ80Assembler, &__uuidof(Z80Assembler)>,
+	public IDispatchImpl<IZ80Assembler, &__uuidof(IZ80Assembler), &LIBID_SPASM, 1, 2>
 {
 public:
 	DECLARE_REGISTRY_RESOURCEID(IDR_Z80ASSEMBLER)
@@ -46,6 +46,9 @@ public:
 	STDMETHOD(ClearDefines)();
 	STDMETHOD(AddDefine)(BSTR bstrName, VARIANT varValue);
 
+	STDMETHOD(get_Defines)(IDictionary **ppDefines);
+	STDMETHOD(get_StdOut)(ITextStream **ppStdOut);
+
 	STDMETHOD(ClearIncludeDirectories)();
 	STDMETHOD(AddIncludeDirectory)(BSTR bstrDirectory);
 
@@ -57,6 +60,9 @@ public:
 private:
 	static LONG m_lIndex;
 	static void get_label_callback(label_t *label, CComSafeArray<IDispatch *> *lpsa);
+
+	IDictionaryPtr m_spDictionary;
+	ITextStreamPtr m_spStdOut;
 
 	LPSTREAM m_pStmOutput;
 

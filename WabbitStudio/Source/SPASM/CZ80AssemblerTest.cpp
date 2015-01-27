@@ -41,9 +41,12 @@ public:
 		pDirObj->Release();
 
 		m_fFirstAssembly = TRUE;
+		m_fLabelsAreValid = FALSE;
 		m_dwOptions = 0;
 
 		AtlComModuleRevokeClassObjects(&_AtlComModule);
+
+		output_contents = (unsigned char *) malloc(output_buf_size);
 		return hr;
 	}
 
@@ -53,6 +56,7 @@ public:
 		{
 			free_storage();
 		}
+		free(output_contents);
 	}
 
 	STDMETHOD(get_Defines)(IDictionary **ppDictionary)
@@ -73,12 +77,17 @@ public:
 
 	STDMETHOD(get_Labels)(IDictionary **ppLabels)
 	{
-		IDictionaryPtr labels(__uuidof(Dictionary));
-		if (label_table != NULL)
+		if (m_fLabelsAreValid == FALSE)
 		{
-			hash_enum(label_table, label_enum_callback, labels.GetInterfacePtr());
+			m_labels.CreateInstance(__uuidof(Dictionary));
+			if (label_table != NULL)
+			{
+				hash_enum(label_table, label_enum_callback, m_labels.GetInterfacePtr());
+			}
+			m_fLabelsAreValid = TRUE;
 		}
-		return labels->QueryInterface(ppLabels);
+
+		return m_labels->QueryInterface(ppLabels);
 	}
 
 	STDMETHOD(get_StdOut)(ITextStream **ppStream)
@@ -155,9 +164,6 @@ public:
 
 	STDMETHOD(Assemble)(VARIANT varInput, IStream **ppOutput)
 	{
-		HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, output_buf_size); 
-		output_contents = (unsigned char *) GlobalLock(hGlobal);
-
 		mode = m_dwOptions;
 
 		if (V_VT(&varInput) == VT_BSTR)
@@ -214,12 +220,17 @@ public:
 
 		ClearSPASMErrorSessions();
 
+		long assembled_size = out_ptr - output_contents;
+
+		HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, assembled_size);
+		unsigned char *streambuf = (unsigned char *)GlobalLock(hGlobal);
+		memcpy(streambuf, output_contents, assembled_size);
 		GlobalUnlock(hGlobal);
 
 		CComPtr<IStream> pStream;
 		hr = CreateStreamOnHGlobal(hGlobal, TRUE, &pStream);
 		ULARGE_INTEGER ul;
-		ul.QuadPart = out_ptr - output_contents;
+		ul.QuadPart = assembled_size;
 		pStream->SetSize(ul);
 
 		m_fFirstAssembly = FALSE;
@@ -239,6 +250,8 @@ public:
 			free(input_contents);
 			input_contents = NULL;
 		}
+
+		m_fLabelsAreValid = FALSE;
 		return pStream->QueryInterface(ppOutput);
 	}
 
@@ -277,6 +290,8 @@ private:
 	BOOL m_fFirstAssembly;
 	DWORD m_dwOptions;
 	IDictionaryPtr m_dict;
+	IDictionaryPtr m_labels;
+	BOOL m_fLabelsAreValid;
 	CComPtr<ITextStream> m_pStdOut;
 	CComPtr<IIncludeDirectoryCollection> m_pDirectories;
 	_bstr_t m_bstrInputFile;

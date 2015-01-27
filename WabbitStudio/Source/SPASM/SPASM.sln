@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASMTests", "..\..\Tests\SPASMTests\SPASMTests.vcxproj", "{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASM", "SPASM.vcxproj", "{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}"

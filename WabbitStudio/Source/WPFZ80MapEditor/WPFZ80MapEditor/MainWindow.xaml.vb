@@ -238,6 +238,8 @@ Public Class MainWindow
         If dlg.ShowDialog() = Forms.DialogResult.OK Then
             ZeldaFolder = Path.GetDirectoryName(Path.GetDirectoryName(dlg.FileName))
 
+            Model.DeselectAll()
+
             Dim Scenario As New Scenario
             Await Scenario.LoadScenario(dlg.FileName)
             Model.Scenario = Scenario

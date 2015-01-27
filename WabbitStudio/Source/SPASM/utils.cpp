@@ -296,13 +296,13 @@ char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 				//EndSPASMErrorSession(nSession);
 			}
 		}
+		if (*ptr == ')') ptr++;
 	}
 
 	//fill in the undefined arguments
 	while (num_args < define->num_args)
 		add_arg (strdup (define->args[num_args++]), NULL, *curr_arg_set);
 
-	if (*ptr == ')') ptr++;
 	return (char *) ptr;
 }
 

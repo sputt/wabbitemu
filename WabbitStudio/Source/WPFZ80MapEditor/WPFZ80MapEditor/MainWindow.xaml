@@ -305,7 +305,7 @@
 						<WrapPanel Height="19" VerticalAlignment="Center">
 							<Label Padding="0" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom" Content="Tile:"/>
 							<Rectangle Width="6"/>
-							<Label Padding="0" Content="{Binding SelectedTile}"/>
+							<Label Padding="0" Content="{Binding SelectedTile.TileIndex}"/>
 						</WrapPanel>
 					</StatusBarItem>
 					<StatusBarItem>
