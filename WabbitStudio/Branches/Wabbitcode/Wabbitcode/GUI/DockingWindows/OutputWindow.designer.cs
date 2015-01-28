@@ -22,6 +22,7 @@
                 this.components.Dispose();
             }
 
+            _assemblerService.AssemblerProjectFinished -= AssemblerService_OnAssemblerProjectFinished;
             base.Dispose(disposing);
         }
 

@@ -25,7 +25,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 throw new MissingRomException("Could not load Wabbitemu ROM");
             }
 
+            Debug.WriteLine("Creating wabbitemu");
             _debugger = new Wabbitemu();
+            Debug.WriteLine("Loading rom file " + romFile);
             _debugger.LoadFile(romFile);
             _debugger.Breakpoint += debugger_Breakpoint;
             _debugger.Close += debugger_Close;
@@ -175,6 +177,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         public IBreakpoint SetBreakpoint(bool isRam, byte page, ushort address)
         {
+            Debug.WriteLine("Setting breakpoint " + isRam + " " + page + " " + address);
             CalcAddress calcAddr = new CalcAddress();
             IPage calcPage = GetCalcPage(isRam, page);
 
