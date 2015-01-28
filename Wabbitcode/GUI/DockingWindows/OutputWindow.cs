@@ -12,27 +12,24 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
-    public partial class OutputWindow : ToolWindow, ISelectable
+    public partial class OutputWindow : ToolWindow, IDisposable, ISelectable
     {
+        private readonly IAssemblerService _assemblerService;
+
         public OutputWindow()
         {
             InitializeComponent();
 
-            IAssemblerService assemblerService = DependencyFactory.Resolve<IAssemblerService>();
+            _assemblerService = DependencyFactory.Resolve<IAssemblerService>();
 
             outputWindowBox.ContextMenu = contextMenu1;
             Settings.Default.SettingChanging += Default_SettingChanging;
 
-            assemblerService.AssemblerProjectFinished += AssemblerService_OnAssemblerProjectFinished;
+            _assemblerService.AssemblerProjectFinished += AssemblerService_OnAssemblerProjectFinished;
         }
 
         private void AssemblerService_OnAssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
         {
-            if (!IsHandleCreated)
-            {
-                return;
-            }
-
             this.Invoke(() =>
             {
                 ClearOutput();

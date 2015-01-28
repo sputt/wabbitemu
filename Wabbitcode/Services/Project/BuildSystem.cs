@@ -138,7 +138,6 @@ namespace Revsoft.Wabbitcode.Services.Project
         public void ReadXML(XmlTextReader reader)
         {
             FilePath root = _project.ProjectDirectory;
-            reader.MoveToNextElement();
             if (reader.Name != "BuildSystem")
             {
                 throw new ArgumentException("Invalid XML Format");

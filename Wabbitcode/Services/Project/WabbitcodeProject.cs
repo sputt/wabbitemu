@@ -97,8 +97,8 @@ namespace Revsoft.Wabbitcode.Services.Project
                 writer.WriteAttributeString("Version", ProjectFileVersion);
                 writer.WriteAttributeString("Name", ProjectName);
                 RecurseWriteFolders(writer, _mainFolder);
-                BuildSystem.WriteXML(writer);
                 _debuggingStructure.WriteXml(writer);
+                BuildSystem.WriteXML(writer);
                 writer.WriteEndElement();
                 writer.Flush();
             }
@@ -172,8 +172,9 @@ namespace Revsoft.Wabbitcode.Services.Project
                     }
                     _mainFolder = new ProjectFolder(null, reader.GetAttribute("Name"));
                     RecurseReadFolders(reader, ref _mainFolder);
-                    BuildSystem.ReadXML(reader);
+                    reader.MoveToNextElement();
                     _debuggingStructure = DebuggingStructureList.FromXml(reader);
+                    BuildSystem.ReadXML(reader);
                 }
             }
             finally
@@ -381,31 +382,33 @@ namespace Revsoft.Wabbitcode.Services.Project
         public static DebuggingStructureList FromXml(XmlTextReader reader)
         {
             DebuggingStructureList list = new DebuggingStructureList();
-            while (reader.MoveToNextElement())
+            if (reader.Name != "DebugStructs")
             {
-                if (!reader.Name.Contains("DebugStructs"))
-                {
-                    continue;
-                }
+                return list;
+            }
 
-                while (reader.MoveToNextElement())
-                {
-                    if (!reader.Name.Contains("Struct"))
-                    {
-                        continue;
-                    }
+            if (reader.IsEmptyElement)
+            {
+                reader.MoveToNextElement();
+                return list;
+            }
 
-                    var name = reader.GetAttribute("Name");
-                    var structure = new DebuggingStructure {Name = name};
-                    if (!reader.MoveToNextElement())
+            reader.MoveToNextElement();
+            while (reader.Name == "Struct")
+            {
+                var name = reader.GetAttribute("Name");
+                var structure = new DebuggingStructure {Name = name};
+                if (reader.MoveToNextElement())
+                {
+                    if (reader.Name != "Prop")
                     {
-                        continue;
+                        break;
                     }
 
                     var valueType = reader.GetAttribute("Type");
                     if (valueType == null)
                     {
-                        continue;
+                        break;
                     }
 
                     var model = new TreeStructureModel
@@ -417,6 +420,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 
                     structure.Properties.Add(model);
                 }
+
+                reader.MoveToNextElement();
             }
 
             return list;

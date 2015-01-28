@@ -8,6 +8,7 @@ using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
+using System.Diagnostics;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -37,6 +38,7 @@ namespace Revsoft.Wabbitcode.Services
             string outputFile = GetOutputFileDetails(project);
             try
             {
+                Debug.WriteLine("Creating wabbitocde debugger");
                 CurrentDebugger = new WabbitcodeDebugger(outputFile);
                 CurrentDebugger.DebuggerStep += CurrentDebugger_DebuggerStep;
                 CurrentDebugger.DebuggerRunningChanged += CurrentDebugger_DebuggerRunningChanged;
@@ -54,6 +56,7 @@ namespace Revsoft.Wabbitcode.Services
 
             try
             {
+                Debug.WriteLine("Starting debug");
                 CurrentDebugger.StartDebug();
             }
             catch (DebuggingException)

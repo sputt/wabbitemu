@@ -10,6 +10,7 @@ using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
 using WabbitemuLib;
+using System.Diagnostics;
 
 namespace Revsoft.Wabbitcode.Services.Debugger
 {
@@ -90,7 +91,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
             WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
 
+            Debug.WriteLine("Creating wabbitemu debugger");
             _debugger = new WabbitemuDebugger();
+            Debug.WriteLine("Loading file " + outputFile);
             _debugger.LoadFile(outputFile);
             _debugger.Visible = true;
             _debugger.OnBreakpoint += BreakpointHit;
@@ -292,12 +295,15 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         public void StartDebug()
         {
+            Debug.WriteLine("Turning calc on");
             _debugger.TurnCalcOn();
+            Debug.WriteLine("Verifying app");
             var app = VerifyApp(CurrentDebuggingFile);
             // once we have the app we can add breakpoints
             var breakpoints = WabbitcodeBreakpointManager.Breakpoints.ToList();
             foreach (WabbitcodeBreakpoint breakpoint in breakpoints)
             {
+                Debug.WriteLine("Setting initial break" + breakpoint.File + " " + breakpoint.LineNumber);
                 SetBreakpoint(breakpoint);
             }
 
@@ -591,6 +597,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         private void BreakpointHit(object sender, BreakpointEventArgs e)
         {
             IBreakpoint breakEvent = e.Breakpoint;
+            Debug.WriteLine("Hit breakpoint ", breakEvent.Address);
             if ((breakEvent.Address == _jforceBreakpoint.Address && breakEvent.Address.Page == _jforceBreakpoint.Address.Page) ||
                 (breakEvent.Address == _ramClearBreakpoint.Address && breakEvent.Address.Page == _ramClearBreakpoint.Address.Page))
             {
@@ -796,6 +803,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         private void LaunchApp(string createdName)
         {
+            Debug.WriteLine("Lauching app");
             const ushort progToEdit = 0x84BF;
             // this is code to do
             // bcall(_CloseEditBuf)
