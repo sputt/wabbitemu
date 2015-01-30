@@ -120,6 +120,11 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             return _debugger.Memory.ReadWord(address);
         }
 
+        public byte[] ReadMemory(ushort address, ushort count)
+        {
+            return (byte[]) _debugger.Memory.Read(address, count);
+        }
+
         public ushort? GetRegisterValue(string wordHovered)
         {
             if (_debugger == null)
@@ -297,6 +302,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         {
             Debug.WriteLine("Turning calc on");
             _debugger.TurnCalcOn();
+
             Debug.WriteLine("Verifying app");
             var app = VerifyApp(CurrentDebuggingFile);
             // once we have the app we can add breakpoints
@@ -597,7 +603,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         private void BreakpointHit(object sender, BreakpointEventArgs e)
         {
             IBreakpoint breakEvent = e.Breakpoint;
-            Debug.WriteLine("Hit breakpoint ", breakEvent.Address);
+            Debug.WriteLine("Hit breakpoint " + breakEvent.Address.Address);
             if ((breakEvent.Address == _jforceBreakpoint.Address && breakEvent.Address.Page == _jforceBreakpoint.Address.Page) ||
                 (breakEvent.Address == _ramClearBreakpoint.Address && breakEvent.Address.Page == _ramClearBreakpoint.Address.Page))
             {

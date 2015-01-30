@@ -20,13 +20,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         private Aga.Controls.Tree.TreeColumn numBytesCol;
         private Aga.Controls.Tree.TreeColumn valueTypeCol;
         private Aga.Controls.Tree.TreeColumn variableValueCol;
-        private Aga.Controls.Tree.TreeColumn displayMethodCol;
         private Aga.Controls.Tree.TreeViewAdv variablesDataView;
         private Aga.Controls.Tree.NodeControls.NodeTextBox _nameBox;
         private Aga.Controls.Tree.NodeControls.NodeTextBox _addressBox;
         private Aga.Controls.Tree.NodeControls.NodeTextBox _numBytesBox;
         private Aga.Controls.Tree.NodeControls.NodeComboBox _valueTypeBox;
-        private Aga.Controls.Tree.NodeControls.NodeComboBox _displayMethodBox;
         private Aga.Controls.Tree.NodeControls.NodeTextBox _valueBox;
 
         /// <summary>
@@ -62,13 +60,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             this.variableAddressCol = new Aga.Controls.Tree.TreeColumn();
             this.numBytesCol = new Aga.Controls.Tree.TreeColumn();
             this.valueTypeCol = new Aga.Controls.Tree.TreeColumn();
-            this.displayMethodCol = new Aga.Controls.Tree.TreeColumn();
             this.variableValueCol = new Aga.Controls.Tree.TreeColumn();
             this._nameBox = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this._addressBox = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this._numBytesBox = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this._valueTypeBox = new Aga.Controls.Tree.NodeControls.NodeComboBox();
-            this._displayMethodBox = new Aga.Controls.Tree.NodeControls.NodeComboBox();
             this._valueBox = new Aga.Controls.Tree.NodeControls.NodeTextBox();
             this.SuspendLayout();
             // 
@@ -94,7 +90,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             this.variablesDataView.Columns.Add(this.variableAddressCol);
             this.variablesDataView.Columns.Add(this.numBytesCol);
             this.variablesDataView.Columns.Add(this.valueTypeCol);
-            this.variablesDataView.Columns.Add(this.displayMethodCol);
             this.variablesDataView.Columns.Add(this.variableValueCol);
             this.variablesDataView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.variablesDataView.GridLineStyle = ((Aga.Controls.Tree.GridLineStyle)((Aga.Controls.Tree.GridLineStyle.Horizontal | Aga.Controls.Tree.GridLineStyle.Vertical)));
@@ -104,7 +99,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             this.variablesDataView.NodeControls.Add(this._addressBox);
             this.variablesDataView.NodeControls.Add(this._numBytesBox);
             this.variablesDataView.NodeControls.Add(this._valueTypeBox);
-            this.variablesDataView.NodeControls.Add(this._displayMethodBox);
             this.variablesDataView.NodeControls.Add(this._valueBox);
             this.variablesDataView.LineColor = System.Drawing.SystemColors.ControlDark;
             this.variablesDataView.Location = new System.Drawing.Point(0, 0);
@@ -135,12 +129,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             this.valueTypeCol.Width = 60;
             this.valueTypeCol.SortOrder = SortOrder.None;
             // 
-            // displayMethodCol
-            // 
-            this.displayMethodCol.Header = "Display Method";
-            this.displayMethodCol.Width = 100;
-            this.displayMethodCol.SortOrder = SortOrder.None;
-            // 
             // variableValueCol
             // 
             this.variableValueCol.Header = "Value";
@@ -170,24 +158,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             //
             this._valueTypeBox.DataPropertyName = "ValueType";
             this._valueTypeBox.EditEnabled = true;
-            this._valueTypeBox.DropDownItems.Add(VariableType.Byte);
-            this._valueTypeBox.DropDownItems.Add(VariableType.Word);
-            this._valueTypeBox.DropDownItems.Add(VariableType.Image);
-            this._valueTypeBox.DropDownItems.Add(VariableType.String);
             this._valueTypeBox.ChangesApplied += ValueTypeBox_OnChangesApplied;
             this._valueTypeBox.ParentColumn = this.valueTypeCol;
-
-            //
-            // _displayMethodBox
-            //
-            this._displayMethodBox.DataPropertyName = "DisplayMethod";
-            this._displayMethodBox.EditEnabled = true;
-            this._displayMethodBox.DropDownItems.Add(VariableDisplayMethod.Binary);
-            this._displayMethodBox.DropDownItems.Add(VariableDisplayMethod.Decimal);
-            this._displayMethodBox.DropDownItems.Add(VariableDisplayMethod.Hexadecimal);
-            this._displayMethodBox.DropDownItems.Add(VariableDisplayMethod.Octal);
-            this._displayMethodBox.ParentColumn = this.displayMethodCol;
-            this._displayMethodBox.ChangesApplied += DisplayMethodBox_OnChangesApplied;
 
             //
             // _valueBox

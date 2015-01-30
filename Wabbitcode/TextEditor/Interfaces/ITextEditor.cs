@@ -47,5 +47,8 @@ namespace Revsoft.Wabbitcode.TextEditor.Interfaces
         void ConvertSpacesToTabs();
         void FormatLines();
         void GotoLine(int line);
+
+        void HighlightDebugLine(int lineNumber);
+        void RemoveDebugHighlight();
     }
 }

@@ -4,37 +4,18 @@ using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
+using Revsoft.Wabbitcode.GUI.DockingWindows.Tracking;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
-    public enum VariableDisplayMethod
-    {
-        BlackWhiteImage,
-        GrayscaleImage,
-        Binary,
-        Octal,
-        Decimal,
-        Hexadecimal,
-        String,
-    }
-
-    public enum VariableType
-    {
-        Byte,
-        Word,
-        Image,
-        String,
-    }
-
     public partial class TrackingWindow : ToolWindow
     {
         private readonly List<BitmapViewer> _openBitmaps = new List<BitmapViewer>();
-        private readonly TrackingTreeModel<TrackingVariableRowModel> _model;
+        private readonly TrackingTreeModel _model;
         private readonly IDebuggerService _debuggerService;
-        private readonly ExpressionEvaluator _expressionEvaluator;
 
         private IWabbitcodeDebugger _debugger;
         private TrackingVariableRowModel _emptyRowModel;
@@ -44,12 +25,13 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             InitializeComponent();
 
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
-            ISymbolService symbolService = DependencyFactory.Resolve<ISymbolService>();
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
             _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
-            _expressionEvaluator = new ExpressionEvaluator(symbolService, _debuggerService);
+            _valueTypeBox.DropDownItems.Clear();
+            _valueTypeBox.DropDownItems.AddRange(VariableDisplayManager.Instance.ControllerNames);
 
-            _model = new TrackingTreeModel<TrackingVariableRowModel>();
+            // TODO: fix
+            _model = new TrackingTreeModel();
             AddEmptyRow();
             variablesDataView.Model = _model;
             EnablePanel(false);
@@ -127,37 +109,16 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void ValueTypeBox_OnChangesApplied(object sender, EventArgs eventArgs)
         {
-            _displayMethodBox.DropDownItems.Clear();
-            TrackingVariableRowModel currentModel = (TrackingVariableRowModel) variablesDataView.CurrentNode.Tag;
-            switch (currentModel.ValueType)
-            {
-                case VariableType.Byte:
-                case VariableType.Word:
-                    _displayMethodBox.DropDownItems.Add(VariableDisplayMethod.Hexadecimal);
-                    _displayMethodBox.DropDownItems.Add(VariableDisplayMethod.Decimal);
-                    _displayMethodBox.DropDownItems.Add(VariableDisplayMethod.Binary);
-                    _displayMethodBox.DropDownItems.Add(VariableDisplayMethod.Octal);
-                    currentModel.DisplayMethod = VariableDisplayMethod.Hexadecimal;
-                    break;
-                case VariableType.Image:
-                    _displayMethodBox.DropDownItems.Add(VariableDisplayMethod.BlackWhiteImage);
-                    _displayMethodBox.DropDownItems.Add(VariableDisplayMethod.GrayscaleImage);
-                    currentModel.DisplayMethod = VariableDisplayMethod.BlackWhiteImage;
-                    break;
-                case VariableType.String:
-                    _displayMethodBox.DropDownItems.Add(VariableDisplayMethod.String);
-                    currentModel.DisplayMethod = VariableDisplayMethod.String;
-                    break;
-                default:
-                    throw new Exception("Invalid var type");
-            }
-
-            _model.OnNodesChanged((TrackingVariableRowModel)variablesDataView.CurrentNode.Tag);
+            var model = (TrackingVariableRowModel)variablesDataView.CurrentNode.Tag;
+            model.IsCacheValid = false;
+            _model.OnNodesChanged(model);
         }
 
         private void AddressBoxOnChangesApplied(object sender, EventArgs eventArgs)
         {
-            _model.OnNodesChanged((TrackingVariableRowModel)variablesDataView.CurrentNode.Tag);
+            var model = (TrackingVariableRowModel)variablesDataView.CurrentNode.Tag;
+            model.IsCacheValid = false;
+            _model.OnNodesChanged(model);
 
             if (!string.IsNullOrEmpty(_emptyRowModel.Address))
             {
@@ -167,7 +128,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void NumBytesBox_OnChangesApplied(object sender, EventArgs eventArgs)
         {
-            _model.OnNodesChanged((TrackingVariableRowModel)variablesDataView.CurrentNode.Tag);
+            var model = (TrackingVariableRowModel)variablesDataView.CurrentNode.Tag;
+            model.IsCacheValid = false;
+            _model.OnNodesChanged(model);
 
             if (!string.IsNullOrEmpty(_emptyRowModel.Address))
             {
@@ -177,14 +140,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void AddEmptyRow()
         {
-            _emptyRowModel = new TrackingVariableRowModel(_debuggerService, _expressionEvaluator);
+            _emptyRowModel = new TrackingVariableRowModel(_debuggerService, VariableDisplayManager.Instance);
             _model.Nodes.Add(_emptyRowModel);
             _model.OnStructureChanged();
-        }
-
-        private void DisplayMethodBox_OnChangesApplied(object sender, EventArgs eventArgs)
-        {
-            _model.OnNodesChanged((TrackingVariableRowModel)variablesDataView.CurrentNode.Tag);
         }
 
         #endregion
@@ -193,7 +151,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         {
             foreach (var model in _model.Nodes)
             {
-                model.IsCachedValueValid = false;
+                model.IsCacheValid = false;
                 var recalcedValue = model.Value;
                 if (recalcedValue == null)
                 {
@@ -210,7 +168,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 _model.OnStructureChanged();
             }
         }
-
 
         private void temp_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -252,7 +209,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 return;
             }
 
-            if (model.ValueImage != null)
+            // TODO: abstract with the controller
+            /*if (model.ValueImage != null)
             {
                 BitmapViewer temp = new BitmapViewer(model.ValueImage)
                 {
@@ -262,7 +220,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
                 temp.Show();
                 _openBitmaps.Add(temp);
                 temp.FormClosed += temp_FormClosed;
-            }
+            }*/
         }
     }
 }

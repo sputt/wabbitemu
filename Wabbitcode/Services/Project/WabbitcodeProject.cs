@@ -7,8 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
-using Revsoft.Wabbitcode.GUI.Dialogs;
-using Revsoft.Wabbitcode.GUI.DockingWindows;
+using Revsoft.Wabbitcode.GUI.DockingWindows.Tracking;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
@@ -369,7 +368,7 @@ namespace Revsoft.Wabbitcode.Services.Project
                     writer.WriteStartElement("Prop");
                     writer.WriteAttributeString("Name", prop.Name);
                     writer.WriteAttributeString("Size", prop.Size.ToString());
-                    writer.WriteAttributeString("Type", prop.Type.ToString());
+                    writer.WriteAttributeString("Type", prop.Type);
                     writer.WriteEndElement();
                 }
 
@@ -405,17 +404,12 @@ namespace Revsoft.Wabbitcode.Services.Project
                         break;
                     }
 
-                    var valueType = reader.GetAttribute("Type");
-                    if (valueType == null)
-                    {
-                        break;
-                    }
 
                     var model = new TreeStructureModel
                     {
                         Name = reader.GetAttribute("Name"),
                         Size = Convert.ToInt32(reader.GetAttribute("Size")),
-                        Type = (VariableDisplayMethod)Enum.Parse(typeof(VariableDisplayMethod), valueType)
+                        Type = reader.GetAttribute("Type")
                     };
 
                     structure.Properties.Add(model);

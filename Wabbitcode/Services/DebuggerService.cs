@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Exceptions;
@@ -9,6 +8,7 @@ using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using System.Diagnostics;
+using Revsoft.Wabbitcode.TextEditor.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -16,15 +16,17 @@ namespace Revsoft.Wabbitcode.Services
     public class DebuggerService : IDebuggerService
     {
         private readonly IProjectService _projectService;
+        private readonly IDockingService _dockingService;
 
         public event EventHandler<DebuggingEventArgs> OnDebuggingStarted;
         public event EventHandler<DebuggingEventArgs> OnDebuggingEnded;
 
         public IWabbitcodeDebugger CurrentDebugger { get; private set; }
 
-        public DebuggerService(IProjectService projectService)
+        public DebuggerService(IProjectService projectService, IDockingService dockingService)
         {
             _projectService = projectService;
+            _dockingService = dockingService;
         }
 
         public void StartDebugging()
@@ -77,17 +79,48 @@ namespace Revsoft.Wabbitcode.Services
             CurrentDebugger = null;
         }
 
-        private static void CurrentDebugger_DebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
+        private void CurrentDebugger_DebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
         {
-            if (!e.Running)
+            _dockingService.DockPanel.BeginInvoke(() =>
             {
-                Application.OpenForms[0].Invoke(() => AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1)));
-            }
+                ITextEditor editor = _dockingService.ActiveDocument as ITextEditor;
+                if (editor != null)
+                {
+                    editor.RemoveDebugHighlight();
+                }
+
+                if (e.Running)
+                {
+                    return;
+                }
+
+                AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
+                editor = _dockingService.ActiveDocument as ITextEditor;
+                if (editor != null)
+                {
+                    editor.HighlightDebugLine(e.Location.LineNumber - 1);
+                }
+            });
         }
 
-        private static void CurrentDebugger_DebuggerStep(object sender, DebuggerStepEventArgs e)
+        private void CurrentDebugger_DebuggerStep(object sender, DebuggerStepEventArgs e)
         {
-            Application.OpenForms[0].Invoke(() => AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1)));
+            _dockingService.DockPanel.BeginInvoke(() =>
+            {
+                ITextEditor editor = _dockingService.ActiveDocument as ITextEditor;
+                if (editor != null)
+                {
+                    editor.RemoveDebugHighlight();
+                }
+
+                AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
+
+                editor = _dockingService.ActiveDocument as ITextEditor;
+                if (editor != null)
+                {
+                    editor.HighlightDebugLine(e.Location.LineNumber - 1);
+                }
+            });
         }
 
         private static string GetOutputFileDetails(IProject project)

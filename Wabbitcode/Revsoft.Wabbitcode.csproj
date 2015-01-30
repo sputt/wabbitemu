@@ -626,9 +626,14 @@
     <Compile Include="GUI\Dialogs\RenameForm.designer.cs">
       <DependentUpon>RenameForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GUI\Dialogs\TreeStructureModel.cs" />
-    <Compile Include="GUI\DockingWindows\TrackingTreeModel.cs" />
-    <Compile Include="GUI\DockingWindows\TrackingVariableRowModel.cs" />
+    <Compile Include="GUI\DockingWindows\Tracking\ImageVariableDisplayController.cs" />
+    <Compile Include="GUI\DockingWindows\Tracking\NumberDisplayController.cs" />
+    <Compile Include="GUI\DockingWindows\Tracking\StringVariableDisplayController.cs" />
+    <Compile Include="GUI\DockingWindows\Tracking\TreeStructureModel.cs" />
+    <Compile Include="GUI\DockingWindows\Tracking\TrackingTreeModel.cs" />
+    <Compile Include="GUI\DockingWindows\Tracking\TrackingVariableRowModel.cs" />
+    <Compile Include="GUI\DockingWindows\Tracking\AbstractVariableDisplayController.cs" />
+    <Compile Include="GUI\DockingWindows\Tracking\VariableDisplayManager.cs" />
     <Compile Include="Services\Interfaces\DebuggingStructure.cs" />
     <Compile Include="Services\Symbols\CallerInformation.cs" />
     <Compile Include="TextEditor\AsmFormattingStrategy.cs" />

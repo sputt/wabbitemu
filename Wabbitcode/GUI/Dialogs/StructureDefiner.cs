@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.GUI.DockingWindows;
+using Revsoft.Wabbitcode.GUI.DockingWindows.Tracking;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
@@ -37,15 +37,13 @@ namespace Revsoft.Wabbitcode.GUI.Dialogs
             var cells = dataGridViewRow.Cells;
             string cellName = (string) (cells[0].Value ?? string.Empty);
             int value = cells[1] != null ? Convert.ToInt32(cells[1].Value) : 0;
-            string enumValue = cells[2] != null && cells[2].Value != null ? 
-                cells[2].Value.ToString() : 
-                VariableDisplayMethod.Hexadecimal.ToString();
-            VariableDisplayMethod method = (VariableDisplayMethod) Enum.Parse(typeof (VariableDisplayMethod), enumValue);
+            string enumValue = cells[2] != null && cells[2].Value != null
+                ? cells[2].Value.ToString()
+                : "";
             return new TreeStructureModel
             {
                 Name = cellName,
-                Size = value,
-                Type = method
+                Size = value
             };
         }
     }
