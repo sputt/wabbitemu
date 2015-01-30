@@ -151,35 +151,28 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
             if (_debuggerService.CurrentDebugger != null)
             {
-                SetDebugging(_debuggerService.CurrentDebugger, true);
+                SetDebugging(true);
             }
         }
 
         private void DebuggerService_OnDebuggingEnded(object sender, DebuggingEventArgs e)
         {
-            SetDebugging(_debuggerService.CurrentDebugger, false);
+            SetDebugging(false);
         }
 
         private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
-            SetDebugging(_debuggerService.CurrentDebugger, true);
+            SetDebugging(true);
         }
 
-        private void SetDebugging(IWabbitcodeDebugger debugger, bool debugging)
+        private void SetDebugging(bool debugging)
         {
             editorBox.Document.ReadOnly = debugging;
             editorBox.RemoveDebugHighlight();
 
             if (debugging)
             {
-                debugger.DebuggerRunningChanged += Debugger_OnDebuggerRunningChanged;
-                debugger.DebuggerStep += Debugger_OnDebuggerStep;
                 UpdateDebugHighlight();
-            }
-            else
-            {
-                debugger.DebuggerRunningChanged -= Debugger_OnDebuggerRunningChanged;
-                debugger.DebuggerStep -= Debugger_OnDebuggerStep;
             }
         }
 
@@ -211,51 +204,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
                    editorBox.ActiveTextAreaControl.HScrollBar.Value;
         }
 
-        private void Debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
-        {
-            if (!IsHandleCreated || IsDisposed)
-            {
-                return;
-            }
-
-            editorBox.RemoveDebugHighlight();
-            if (e.Location.FileName != FileName)
-            {
-                return;
-            }
-
-            editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
-        }
-
         private void Debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
         {
-            if (!IsHandleCreated || IsDisposed)
-            {
-                return;
-            }
-
             this.Invoke(() =>
             {
-                editorBox.RemoveDebugHighlight();
-                if (e.Running)
-                {
-                    Form activeForm = _dockingService.ActiveDocument as Form;
-                    if (activeForm != null)
-                    {
-                        activeForm.Refresh();
-                    }
-                }
-                else
-                {
-                    AbstractUiAction.RunCommand(new GotoLineAction(e.Location.FileName, e.Location.LineNumber - 1));
-                    if (e.Location.FileName != FileName)
-                    {
-                        return;
-                    }
-
-                    Activate();
-                    editorBox.HighlightDebugLine(e.Location.LineNumber - 1);
-                }
+                
             });
         }
 
@@ -497,6 +450,16 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             editorBox.ActiveTextAreaControl.Caret.Column = 0;
         }
 
+        public void HighlightDebugLine(int lineNumber)
+        {
+            editorBox.HighlightDebugLine(lineNumber);
+        }
+
+        public void RemoveDebugHighlight()
+        {
+            editorBox.RemoveDebugHighlight();
+        }
+
         #region Modify Selected Text
 
         public string GetSelection()
@@ -614,12 +577,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             editorBox.Document.MarkerStrategy.RemoveAll(s => true);
             WabbitcodeBreakpointManager.OnBreakpointAdded -= WabbitcodeBreakpointManager_OnBreakpointAdded;
             WabbitcodeBreakpointManager.OnBreakpointRemoved -= WabbitcodeBreakpointManager_OnBreakpointRemoved;
-
-            if (_debuggerService.CurrentDebugger != null)
-            {
-                _debuggerService.CurrentDebugger.DebuggerRunningChanged -= Debugger_OnDebuggerRunningChanged;
-                _debuggerService.CurrentDebugger.DebuggerStep -= Debugger_OnDebuggerStep;
-            }
 
             _debuggerService.OnDebuggingStarted -= DebuggerService_OnDebuggingStarted;
             _debuggerService.OnDebuggingEnded -= DebuggerService_OnDebuggingEnded;
