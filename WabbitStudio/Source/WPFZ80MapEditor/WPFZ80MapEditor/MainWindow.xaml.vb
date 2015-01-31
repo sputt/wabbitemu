@@ -37,6 +37,10 @@ Public Class MainWindow
             AddHandler LayerContainer.LayoutUpdated, AddressOf LayoutChanged
             Model.Scenario = HillScenario
         End If
+
+        LayerContainer.AddHandler(MapLayer.CoordinatesUpdatedEvent, New RoutedEventHandler(Sub(ctrl As Object, args As CoordinatesUpdatedArgs)
+                                                                                               Model.Status = args.Point.X & ", " & args.Point.Y
+                                                                                           End Sub))
     End Sub
 
     Private Sub LayoutChanged(sender As Object, e As Object)

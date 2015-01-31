@@ -12,6 +12,7 @@
     <UserControl.Resources>
         <!--<localconverters:ImageIndexConverter x:Key="convertImageIndex"/>-->
         <simconverters:ImageConverter x:Key="ImageConverter"/>
+        <converters:TileConverter x:Key="TileConverter"/>
         <converters:YConverter x:Key="YConverter"/>
         <converters:XConverter x:Key="XConverter"/>
         <converters:ZConverter x:Key="ZConverter"/>
@@ -80,6 +81,7 @@
                 </Style>
             </ItemsControl.ItemContainerStyle>
         </ItemsControl>
+        
         <ItemsControl Panel.ZIndex="1" ItemsSource="{Binding Path=DrawEntries}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -103,7 +105,70 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <Border Panel.ZIndex="3" Width="96" Height="64" BorderThickness="1" BorderBrush="#80FF0000" Background="Transparent" Canvas.Left="{Binding ScreenX}" Canvas.Top="{Binding ScreenY}">
-        </Border>
+
+        <ItemsControl Panel.ZIndex="1" ItemsSource="{Binding Path=AnimatedTiles}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas Width="256" Height="256"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Width="16" Height="16">
+                        <local:AnimatedTile Width="16" Height="16" 
+                                            x:Name="AnimatedTileImage"
+                                            MapData="{Binding DataContext.Map, ElementName=GameWindow}"
+                                            >
+                        </local:AnimatedTile>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ItemsControl Panel.ZIndex="3" ItemsSource="{Binding Path=Screen}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas Width="256" Height="256"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Panel.ZIndex="3" Width="{Binding Width}" Height="{Binding Height}" BorderThickness="1" BorderBrush="#FF4040FF" Background="Transparent" Opacity="0.7">
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ItemsControl Panel.ZIndex="3" ItemsSource="{Binding Path=EnemyScreen}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas Width="256" Height="256"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Panel.ZIndex="3" Width="{Binding Width}" Height="{Binding Height}" BorderThickness="1" BorderBrush="#FFDF5003" Background="Transparent" Opacity="0.7">
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Canvas>
 </UserControl>

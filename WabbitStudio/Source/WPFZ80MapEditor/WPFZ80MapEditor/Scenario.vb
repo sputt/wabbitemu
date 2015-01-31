@@ -58,11 +58,16 @@ Public Class Scenario
         End Set
     End Property
 
-    Public Function GetMap(HierarchyIndex As Byte) As MapData
+    Private _CachedMapHierArray() As Byte
+    Public Sub CacheMapHierarchy()
         Dim MapHier As New MapHierarchy
         GetExistingMaps().ToList().ForEach(Sub(m) MapHier.AddMap(m.X, m.Y, m.Index))
 
-        Dim RealIndex = MapHier.GetArray()(HierarchyIndex)
+        _CachedMapHierArray = MapHier.GetArray()
+    End Sub
+
+    Public Function GetMap(HierarchyIndex As Byte) As MapData
+        Dim RealIndex = _CachedMapHierArray(HierarchyIndex)
         Return Maps.FirstOrDefault(Function(m) m.Index = RealIndex)
     End Function
 

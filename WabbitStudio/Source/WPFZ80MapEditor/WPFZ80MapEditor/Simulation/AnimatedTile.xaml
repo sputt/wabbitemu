@@ -1,0 +1,34 @@
+﻿<Grid x:Class="AnimatedTile"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPFZ80MapEditor"
+             xmlns:simconverters="clr-namespace:WPFZ80MapEditor.SimConverters"
+             mc:Ignorable="d" 
+             x:Name="AnimatedTile">
+    <Grid.Resources>
+        <simconverters:AnimatedTileConverter x:Key="AnimatedTileConverter"/>
+        <local:EntryToStoryboardConverter x:Key="EntryToStoryboardConverter"/>
+    </Grid.Resources>
+    <!--<Grid.Style>
+        <Style TargetType="Grid">
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="MouseLeftButtonDown">
+                    <BeginStoryboard 
+                        Storyboard="{Binding ExtractOnCount, Converter={StaticResource EntryToStoryboardConverter}}">
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+    </Grid.Style>-->
+    <Image>
+        <Image.Source>
+            <MultiBinding Converter="{StaticResource AnimatedTileConverter}">
+                <Binding ElementName="AnimatedTile" Path="MapData.Tileset"/>
+                <Binding Path="Image"/>
+                <Binding Path="ExtractOnCount.CurrentValue"/>
+            </MultiBinding>
+        </Image.Source>
+    </Image>
+</Grid>

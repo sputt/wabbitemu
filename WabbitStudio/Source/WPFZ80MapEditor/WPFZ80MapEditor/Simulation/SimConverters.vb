@@ -14,7 +14,7 @@
             ' Z of 1 should be 1.0, Z of 8 should be 0.6
             Dim ZScale = 0.75 + 0.25 * ((7 - (Entry.Z - 1)) / 7)
 
-            Return parameter * OverallScale * ZScale
+            Return Math.Max(0, parameter * OverallScale * ZScale)
         End Function
     End Class
 
@@ -43,6 +43,30 @@
                 End If
             End If
             Return Img.Image
+        End Function
+    End Class
+
+    Public Class AnimatedTileConverter
+        Inherits OneWayMultiValueConverter
+
+        Public Overrides Function Convert(values() As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object
+            If Not TypeOf values(0) Is Tileset Then
+                Return Nothing
+            End If
+            Dim Tileset As Tileset = values(0)
+
+            If Not TypeOf values(1) Is Integer Then
+                Return Nothing
+            End If
+            Dim Index As Byte = values(1)
+            Dim CurrentAnimValue As Integer = values(2)
+
+            Index = Index Mod 128
+            If Index < Tileset.Tiles.Count Then
+                Return Tileset.Tiles(Index + (CurrentAnimValue / 32)).Image
+            Else
+                Return Nothing
+            End If
         End Function
     End Class
 

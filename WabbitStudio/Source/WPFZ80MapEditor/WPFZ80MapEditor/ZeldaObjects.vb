@@ -758,7 +758,7 @@ Public Class ZDef
             Select Case Name.ToLower
                 Case "x", "y", "z", "w", "h", "d", "ac", "cc"
                     NewArg = New ZDefArg8Bit(Name, Description)
-                Case "cp", "ax", "health", "a"
+                Case "cp", "ax", "health", "a", "code", "aux"
                     NewArg = New ZDefArg16Bit(Name, Description)
                 Case "of"
                     NewArg = New ZDefArgObjectFlags(Name, Description)
@@ -892,6 +892,8 @@ End Class
 
 Public Class ZAnim
     Inherits ZBaseObject(Of AZAnim, ZAnim)
+
+    Public Property ExtractOnCount As ExtractOnCount
 
     Protected Overrides Sub FromStruct(Obj As AZAnim)
         X = Obj.X : W = Obj.W

@@ -94,4 +94,12 @@
             End If
         End If
     End Sub
+
+    Private Sub MapView_MouseMove(sender As Object, e As MouseEventArgs)
+
+        Dim MousePoint = Mouse.GetPosition(sender)
+        Dim Point As New Point(Math.Round(MousePoint.X), Math.Round(MousePoint.Y))
+        Dim Args = New CoordinatesUpdatedArgs(MapLayer.CoordinatesUpdatedEvent, Point)
+        MyBase.RaiseEvent(Args)
+    End Sub
 End Class

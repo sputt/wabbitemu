@@ -33,12 +33,12 @@ Public Class UndoManager
     ''' <param name="TypesToSave">Which types in the map are going to be modified</param>
     ''' <remarks>Specifying types allows the UndoManager to selectively save parts of the map data</remarks>
     Public Shared Sub PushUndoState(MapToSave As MapData, TypesToSave As TypeFlags)
-        If _CurSnapshotIndex = _Snapshots.Count - 1 Then
-            _Snapshots.Add(MapToSave.Clone())
-        Else
-            _Snapshots.Insert(_CurSnapshotIndex + 1, MapToSave.Clone())
-        End If
-        _CurSnapshotIndex += 1
+        'If _CurSnapshotIndex = _Snapshots.Count - 1 Then
+        '    _Snapshots.Add(MapToSave.Clone())
+        'Else
+        '    _Snapshots.Insert(_CurSnapshotIndex + 1, MapToSave.Clone())
+        'End If
+        '_CurSnapshotIndex += 1
     End Sub
 
     Private Shared Sub RestoreFromSnapshot(Model As AppModel, IsUndo As Boolean)

@@ -147,7 +147,12 @@
       <DependentUpon>MiscLayer.xaml</DependentUpon>
     </Compile>
     <Compile Include="ResizeThumb.vb" />
+    <Compile Include="RoutedInterfaceEvents.vb" />
     <Compile Include="ScenarioDefs.vb" />
+    <Compile Include="Simulation\AnimatedTile.xaml.vb">
+      <DependentUpon>AnimatedTile.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Simulation\ExtractOnCount.vb" />
     <Compile Include="Simulation\GameMapView.xaml.vb">
       <DependentUpon>GameMapView.xaml</DependentUpon>
     </Compile>
@@ -171,7 +176,13 @@
     </Compile>
     <Compile Include="Scenario.vb" />
     <Compile Include="Simulation\SimConverters.vb" />
+    <Compile Include="Simulation\SimulationPanel.xaml.vb">
+      <DependentUpon>SimulationPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SPASMHelper.vb" />
+    <Compile Include="TestLayer.xaml.vb">
+      <DependentUpon>TestLayer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TilegroupLayer.xaml.vb">
       <DependentUpon>TilegroupLayer.xaml</DependentUpon>
     </Compile>
@@ -205,6 +216,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Simulation\AnimatedTile.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Simulation\GameMapView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -230,6 +245,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Panels\TilesPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Simulation\SimulationPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TestLayer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

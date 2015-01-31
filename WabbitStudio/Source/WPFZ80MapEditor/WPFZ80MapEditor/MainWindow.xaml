@@ -97,46 +97,6 @@
         		</Setter.Value>
         	</Setter>
         </Style>
-
-        <DataTemplate x:Key="MapLayersTemplate">
-            <Grid>
-                <local:XMapView Panel.ZIndex="1"
-										SelectedTile="{Binding DataContext.SelectedTile, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type local:MainWindow}}}">
-                    <local:XMapView.Style>
-                        <Style TargetType="local:XMapView" BasedOn="{StaticResource LayerStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
-                                             Value="{StaticResource MapsetLayer}">
-                                    <DataTrigger.Setters>
-                                        <Setter Property="ShowNewMaps" Value="True"/>
-                                    </DataTrigger.Setters>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
-                                             Value="{StaticResource MapLayer}">
-                                    <DataTrigger.Setters>
-                                        <Setter Property="ShowCollisions" Value="True"/>
-                                    </DataTrigger.Setters>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
-                                             Value="{StaticResource TilegroupLayer}">
-                                    <DataTrigger.Setters>
-                                        <Setter Property="ShowCollisions" Value="True"/>
-                                    </DataTrigger.Setters>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </local:XMapView.Style>
-                </local:XMapView>
-                
-                <local:TilegroupLayer Panel.ZIndex="2" Style="{StaticResource LayerStyle}" SelectedTile="{Binding DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}}">
-                    
-                </local:TilegroupLayer>
-
-                <local:MiscLayer Panel.ZIndex="3" Style="{StaticResource LayerStyle}"/>
-                <local:XObjectLayer Panel.ZIndex="4" Style="{StaticResource LayerStyle}" CollectionName="ZObjects"/>
-                <local:XEnemyLayer Panel.ZIndex="5" Style="{StaticResource LayerStyle}" CollectionName="ZEnemies"/>
-            </Grid>
-        </DataTemplate>
     </Window.Resources>
 
     <Window.CommandBindings>
@@ -155,40 +115,48 @@
     </Window.CommandBindings>
 
     <AdornerDecorator x:Name="TopLevelControl">
-		<VisualStateManager.VisualStateGroups>
-                <VisualStateGroup x:Name="VisualStateGroup">
-                    <VisualState x:Name="Editing">
-                    	<Storyboard>
-                    		<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="StopButton">
-                    			<DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
-                    		</ObjectAnimationUsingKeyFrames>
-                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestView">
-                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Hidden}"/>
-                            </ObjectAnimationUsingKeyFrames>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="VisualStateGroup">
+                <VisualState x:Name="Editing">
+                    <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="StopButton">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
+                        </ObjectAnimationUsingKeyFrames>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestView">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Hidden}"/>
+                        </ObjectAnimationUsingKeyFrames>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="SimulationPanelGridItem">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
+                        </ObjectAnimationUsingKeyFrames>
                     </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Testing">
-                        <Storyboard>
-                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TilesSelectorGridItem">
-                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
-                            </ObjectAnimationUsingKeyFrames>
-                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="ObjectSelectorGridItem">
-                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
-                            </ObjectAnimationUsingKeyFrames>
-                            <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.IsEnabled)" Storyboard.TargetName="LayerListBox">
-                            	<DiscreteBooleanKeyFrame KeyTime="0" Value="False"/>
-                            </BooleanAnimationUsingKeyFrames>
-                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestButton">
-                            	<DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
-                            </ObjectAnimationUsingKeyFrames>
-                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestView">
-                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}"/>
-                            </ObjectAnimationUsingKeyFrames>
-                            
+                </VisualState>
+                <VisualState x:Name="Testing">
+                    <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TilesSelectorGridItem">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
+                        </ObjectAnimationUsingKeyFrames>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="ObjectSelectorGridItem">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
+                        </ObjectAnimationUsingKeyFrames>
+                        <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.IsEnabled)" Storyboard.TargetName="LayerListBox">
+                            <DiscreteBooleanKeyFrame KeyTime="0" Value="False"/>
+                        </BooleanAnimationUsingKeyFrames>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestButton">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}"/>
+                        </ObjectAnimationUsingKeyFrames>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="TestView">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}"/>
+                        </ObjectAnimationUsingKeyFrames>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="SimulationPanelGridItem">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}"/>
+                        </ObjectAnimationUsingKeyFrames>
+                        <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="Focusable" Storyboard.TargetName="LayerContainer">
+                            <DiscreteBooleanKeyFrame KeyTime="0" Value="False"/>
+                        </BooleanAnimationUsingKeyFrames>
                     </Storyboard>
-                    </VisualState>
-                </VisualStateGroup>
-            </VisualStateManager.VisualStateGroups>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <Grid>
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="Click" SourceName="TestButton">
@@ -210,7 +178,7 @@
                         x:Name="LayerContainer"
                         Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, ElementName=MainWindow, Mode=TwoWay}"
 					    Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
-					     MouseDoubleClick="Map_MouseDoubleClick" ItemTemplate="{StaticResource MapLayersTemplate}" >
+					     MouseDoubleClick="Map_MouseDoubleClick">
                         <local:XLayerContainer.Style>
                             <Style TargetType="{x:Type local:XLayerContainer}">
                                 <Setter Property="Selectable" Value="False"/>
@@ -227,6 +195,48 @@
                                 </Style.Triggers>
                             </Style>
                         </local:XLayerContainer.Style>
+                        <local:XLayerContainer.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <local:XMapView Panel.ZIndex="1"
+										    SelectedTile="{Binding DataContext.SelectedTile, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type local:MainWindow}}}">
+                                        <local:XMapView.Style>
+                                            <Style TargetType="local:XMapView" BasedOn="{StaticResource LayerStyle}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
+                                                 Value="{StaticResource MapsetLayer}">
+                                                        <DataTrigger.Setters>
+                                                            <Setter Property="ShowNewMaps" Value="True"/>
+                                                        </DataTrigger.Setters>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
+                                                 Value="{StaticResource MapLayer}">
+                                                        <DataTrigger.Setters>
+                                                            <Setter Property="ShowCollisions" Value="True"/>
+                                                        </DataTrigger.Setters>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
+                                                 Value="{StaticResource TilegroupLayer}">
+                                                        <DataTrigger.Setters>
+                                                            <Setter Property="ShowCollisions" Value="True"/>
+                                                        </DataTrigger.Setters>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </local:XMapView.Style>
+                                    </local:XMapView>
+
+                                    <local:TilegroupLayer Panel.ZIndex="2" Style="{StaticResource LayerStyle}" SelectedTile="{Binding DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}}">
+
+                                    </local:TilegroupLayer>
+
+                                    <local:MiscLayer Panel.ZIndex="3" Style="{StaticResource LayerStyle}"/>
+                                    <local:XObjectLayer Panel.ZIndex="4" Style="{StaticResource LayerStyle}" CollectionName="ZObjects"/>
+                                    <local:XEnemyLayer Panel.ZIndex="5" Style="{StaticResource LayerStyle}" CollectionName="ZEnemies"/>
+                                    <local:TestLayer Panel.ZIndex="6" Style="{StaticResource LayerStyle}" GameModel="{Binding DataContext.GameModel, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </local:XLayerContainer.ItemTemplate>
                     </local:XLayerContainer>
 
                     <local:GameMapView x:Name="TestView" Panel.ZIndex="1" Width="256" Height="256" DataContext="{Binding GameModel}"
@@ -265,6 +275,8 @@
 					<MenuItem Header="_View">
 						<MenuItem x:Name="TilesMenuItem" Header="Show _tiles panel" IsCheckable="True" IsChecked="True"/>
 						<MenuItem x:Name="PaddingMenuItem" Header="Show map _padding" IsCheckable="True" IsChecked="True"/>
+                        <Separator/>
+                        <MenuItem x:Name="ShowMiscLayerMenuItem" Header="Show misc layer" IsCheckable="True" IsChecked="True"/>
 					</MenuItem>
 					<MenuItem Header="_Help">
 						<MenuItem Header="_About"/>
@@ -338,7 +350,14 @@
 					<local:ObjectsPanel x:Name="ObjectsPanel"/>
 				</Grid>
 
-				<Grid IsHitTestVisible="False"/>
+                <Grid x:Name="SimulationPanelGridItem" DockPanel.Dock="Right" Panel.ZIndex="2" Background="White" Width="170">
+                    <Grid.Effect>
+                        <DropShadowEffect Direction="180" Opacity="0.25" ShadowDepth="2" />
+                    </Grid.Effect>
+                    <local:SimulationPanel x:Name="SimulationPanel"/>
+                </Grid>
+
+                <Grid IsHitTestVisible="False"/>
 			</DockPanel>
 		</Grid>
 	</AdornerDecorator>

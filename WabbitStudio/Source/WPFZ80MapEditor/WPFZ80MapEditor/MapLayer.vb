@@ -3,6 +3,9 @@ Public Class MapLayer
     Inherits UserControl
     Implements IMapLayer
 
+    Public Shared ReadOnly CoordinatesUpdatedEvent As RoutedEvent =
+        EventManager.RegisterRoutedEvent("CoordinatesUpdated", RoutingStrategy.Bubble, GetType(RoutedEventHandler), GetType(MapLayer))
+
     Public Overridable Sub DeselectAll() Implements IMapLayer.DeselectAll
 
     End Sub
@@ -40,3 +43,14 @@ Public Interface IMapLayer
 
     Sub DeselectAll()
 End Interface
+
+Public Class CoordinatesUpdatedArgs
+    Inherits RoutedEventArgs
+
+    Public Property Point As Point
+
+    Public Sub New(RoutedEvent As RoutedEvent, Point As Point)
+        MyBase.New(RoutedEvent)
+        Me.Point = Point
+    End Sub
+End Class

@@ -151,6 +151,15 @@
     Private _FirstClick As Boolean = True
     Private _LastItemClicked As IBaseGeneralObject = Nothing
 
+    Private Sub RaiseCoordiantesUpdated()
+        If ObjectListBox.SelectedItems.Count > 0 Then
+
+            Dim Args = New CoordinatesUpdatedArgs(MapLayer.CoordinatesUpdatedEvent, New Point(ObjectListBox.SelectedItems(0).X, ObjectListBox.SelectedItems(0).Y))
+            MyBase.RaiseEvent(Args)
+
+        End If
+    End Sub
+
     Protected Sub ItemContainer_MouseLeftButtonDown(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
         If _LastItemClicked IsNot sender.DataContext Then
             _FirstClick = True
@@ -167,6 +176,7 @@
             UndoManager.PushUndoState(Map, UndoManager.TypeFlagFromType(GetType(BaseType)))
 
             e.Handled = True
+            RaiseCoordiantesUpdated()
             ObjectListBox.Focus()
         End If
 
@@ -230,6 +240,7 @@
                 ZObj.Args(1).Value = CInt(Math.Round(StartY + Diff.Y))
             Next
 
+            RaiseCoordiantesUpdated()
             e.Handled = True
         End If
     End Sub
@@ -240,6 +251,7 @@
             sender.ReleaseMouseCapture()
             If Not _IsDraggingObject Then
                 ObjectListBox.SelectedItem = sender.Content
+                RaiseCoordiantesUpdated()
             End If
 
 

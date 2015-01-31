@@ -29,8 +29,8 @@
     <ItemsControl.ItemContainerStyle>
         <Style TargetType="ListBoxItem">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Selectable, ElementName=LayerContainer}" Value="False">
-                    <!--<Setter Property="Focusable" Value="False"/>-->
+                <DataTrigger Binding="{Binding Focusable, ElementName=LayerContainer}" Value="False">
+                   <Setter Property="Focusable" Value="False"/>
                 </DataTrigger>
             </Style.Triggers>
             <Setter Property="Template">
@@ -40,13 +40,18 @@
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="true">
-                                <Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource SelectionBrush}"/>
-                            </Trigger>
                             <MultiTrigger>
                                 <MultiTrigger.Conditions>
-                                    <Condition Property="IsSelected" Value="true"/>
-                                    <Condition Property="Selector.IsSelectionActive" Value="false"/>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="Focusable" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource SelectionBrush}"/>
+                            </MultiTrigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                                    <Condition Property="Focusable" Value="True"/>
                                 </MultiTrigger.Conditions>
                                 <Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource InactiveSelectionBrush}"/>
                             </MultiTrigger>
