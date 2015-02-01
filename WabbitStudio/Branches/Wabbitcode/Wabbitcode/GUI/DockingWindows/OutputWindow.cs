@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Interfaces;
@@ -12,7 +11,7 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
-    public partial class OutputWindow : ToolWindow, IDisposable, ISelectable
+    public partial class OutputWindow : ToolWindow, ISelectable
     {
         private readonly IAssemblerService _assemblerService;
 

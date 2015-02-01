@@ -113,8 +113,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         private void UpdateFlags()
         {
             _updating = true;
-            IZ80 cpu = _debugger.CPU;
-            string bin = Convert.ToString(cpu.AF, 2);
+            string bin = Convert.ToString(_debugger.CPU.AF, 2);
             while (bin.Length < 16)
             {
                 bin = '0' + bin;

@@ -14,43 +14,55 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class CallStack : ToolWindow
     {
-        private IWabbitcodeDebugger _debugger;
-
         private readonly List<DocumentLocation> _callLocations = new List<DocumentLocation>();
+
+        private IWabbitcodeDebugger _debugger;
 
         public CallStack()
         {
             InitializeComponent();
 
-            IDebuggerService debuggerService = DependencyFactory.Resolve<IDebuggerService>();
+            var debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             debuggerService.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+            debuggerService.OnDebuggingEnded += mainForm_OnDebuggingEnded;
+        }
+
+        private void mainForm_OnDebuggingEnded(object sender, DebuggingEventArgs e)
+        {
+            _debugger.DebuggerRunningChanged -= OnDebuggerOnDebuggerRunningChanged;
+            _debugger.DebuggerStep -= OnDebuggerOnDebuggerStep;
+            _debugger = null;
         }
 
         private void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
             _debugger = e.Debugger;
-            _debugger.DebuggerStep += (o, args) =>
-            {
-                this.Invoke(UpdateStack);
-                EnablePanel(true);
-            };
-            _debugger.DebuggerRunningChanged += (o, args) =>
+            _debugger.DebuggerStep += OnDebuggerOnDebuggerStep;
+            _debugger.DebuggerRunningChanged += OnDebuggerOnDebuggerRunningChanged;
+        }
+
+        private void OnDebuggerOnDebuggerRunningChanged(object o, DebuggerRunningEventArgs args)
+        {
+            this.Invoke(() =>
             {
                 if (!args.Running)
                 {
-                    this.Invoke(UpdateStack);
+                    UpdateStack();
                 }
                 else
                 {
-                    this.Invoke(() =>
-                    {
-                        _callLocations.Clear();
-                        callStackView.Rows.Clear();
-                    });
+                    _callLocations.Clear();
+                    callStackView.Rows.Clear();
                 }
 
                 EnablePanel(!args.Running);
-            };
+            });
+        }
+
+        private void OnDebuggerOnDebuggerStep(object o, DebuggerStepEventArgs args)
+        {
+            this.Invoke(UpdateStack);
+            EnablePanel(true);
         }
 
         private void UpdateStack()

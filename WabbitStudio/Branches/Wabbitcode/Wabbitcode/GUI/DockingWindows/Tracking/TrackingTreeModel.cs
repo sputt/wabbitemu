@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Aga.Controls.Tree;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
@@ -39,7 +40,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 
         public bool IsLeaf(TreePath treePath)
         {
-            return ((TrackingVariableRowModel)treePath.LastNode).Children != null;
+            return !((TrackingVariableRowModel)treePath.LastNode).Children.Any();
         }
 
         internal void OnNodesChanged(TrackingVariableRowModel row)

@@ -232,7 +232,16 @@ namespace Revsoft.Wabbitcode.TextEditor
             try
             {
                 IParserData data = _parserService.GetParserData(text, Settings.Default.CaseSensitive).FirstOrDefault();
-                tooltip = data == null ? _symbolService.SymbolTable.GetAddressFromLabel(text) : data.Description;
+
+                if (data == null)
+                {
+                    var address = _symbolService.SymbolTable.GetAddressFromLabel(text);
+                    tooltip = address == null ? string.Empty : address.Value.ToString();
+                }
+                else
+                {
+                    tooltip = data.Description;
+                }
             }
             catch (Exception)
             {

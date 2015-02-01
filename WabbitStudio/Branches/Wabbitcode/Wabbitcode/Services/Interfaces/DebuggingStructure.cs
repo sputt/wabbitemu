@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.GUI.DockingWindows.Tracking;
 
 namespace Revsoft.Wabbitcode.Services.Interfaces

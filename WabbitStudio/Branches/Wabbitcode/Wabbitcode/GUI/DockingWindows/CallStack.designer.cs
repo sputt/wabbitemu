@@ -24,6 +24,12 @@
                 this.components.Dispose();
             }
 
+            if (_debugger != null)
+            {
+                _debugger.DebuggerRunningChanged -= OnDebuggerOnDebuggerRunningChanged;
+                _debugger.DebuggerStep -= OnDebuggerOnDebuggerStep;
+            }
+
             base.Dispose(disposing);
         }
 

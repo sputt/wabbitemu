@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Dynamic;
 using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services.Debugger;
@@ -11,7 +10,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
     internal abstract class ImageVariableDisplayController : AbstractVariableDisplayController<Size, Image>
     {
         protected Bitmap Screen { get; private set; }
-        protected Size Size { get; private set; }
+        protected Size ImageSize { get; private set; }
+
+        public override int Size { get { return 1; } }
 
         protected ImageVariableDisplayController(ExpressionEvaluator evaluator) : base(evaluator)
         {
@@ -51,7 +52,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 
         private Image GetVarImage(IWabbitcodeDebugger debugger, int address, Size size)
         {
-            Size = size;
+            ImageSize = size;
             Screen = new Bitmap(size.Width, size.Height);
             int row = 0, col = 0;
 
@@ -118,7 +119,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
         protected override byte[] ReadBytes(IWabbitcodeDebugger debugger, int address)
         {
             var bytes = new byte[2];
-            int grayscaleOffset = (Size.Width / 8) * Size.Height;
+            int grayscaleOffset = (ImageSize.Width / 8) * ImageSize.Height;
             bytes[0] = debugger.ReadByte((ushort) address);
             bytes[1] = debugger.ReadByte((ushort) (address + grayscaleOffset));
             return bytes;
