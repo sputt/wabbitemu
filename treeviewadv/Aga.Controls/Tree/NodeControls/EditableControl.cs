@@ -57,8 +57,9 @@ namespace Aga.Controls.Tree.NodeControls
 
 		public void BeginEdit()
 		{
-			if (Parent != null && Parent.CurrentNode != null && CanEdit(Parent.CurrentNode))
+			if (Parent != null && Parent.CurrentNode != null && Parent.CurrentEditor == null && CanEdit(Parent.CurrentNode))
 			{
+                _timer.Stop();
 				CancelEventArgs args = new CancelEventArgs();
 				OnEditorShowing(args);
 				if (!args.Cancel)

@@ -30,13 +30,19 @@ namespace Aga.Controls.Tree.NodeControls
 
 		public override void KeyDown(KeyEventArgs args)
 		{
-            if ((args.KeyCode == Keys.F2 || (char.IsLetterOrDigit((char)args.KeyCode) && Parent.UseColumns)) &&
+		    bool isCharPress = char.IsLetterOrDigit((char) args.KeyCode);
+            if ((args.KeyCode == Keys.F2 || (isCharPress && Parent.UseColumns)) &&
                 Parent.CurrentNode != null && EditEnabled)
 			{
 				args.Handled = true;
 				BeginEdit();
-			    char keyPress = (args.Modifiers & Keys.ShiftKey) != 0 ? (char) args.KeyData : char.ToLower((char) args.KeyData);
-                SendKeys.Send(keyPress.ToString());
+                if (args.KeyCode != Keys.F2)
+			    {
+			        char keyPress = (args.Modifiers & Keys.ShiftKey) != 0
+			            ? (char) args.KeyData
+			            : char.ToLower((char) args.KeyData);
+			        SendKeys.Send(keyPress.ToString());
+			    }
 			}
 		}
 
@@ -61,7 +67,7 @@ namespace Aga.Controls.Tree.NodeControls
 
 	    protected virtual TextBox CreateTextBox()
 		{
-			return new TextBox();
+            return new NodeTextBoxEditor();
 		}
 
 		protected override void DisposeEditor(Control editor)
@@ -77,6 +83,33 @@ namespace Aga.Controls.Tree.NodeControls
 				EndEdit(false);
 			else if (e.KeyCode == Keys.Enter)
 				EndEdit(true);
+            else if (e.KeyCode == Keys.Tab)
+            {
+                var currentNode = Parent.CurrentNode;
+                var controls = Parent.GetNodeControls(Parent.CurrentNode);
+                var controlsList = new List<NodeControlInfo>();
+                int index = 0;
+                int currentIndex = -1;
+                foreach (var control in controls)
+                {
+                    controlsList.Add(control);
+                    if (control.Control == this)
+                    {
+                        currentIndex = index;
+                    }
+
+                    index++;
+                }
+
+                EndEdit(true);
+
+                Parent.CurrentNode = currentNode;
+                if (currentIndex < controlsList.Count)
+                {
+                    var keyEvent = new KeyEventArgs(Keys.F2);
+                    controlsList[currentIndex + 1].Control.KeyDown(keyEvent);
+                }
+            }
 		}
 
 		private string _label;
@@ -131,5 +164,13 @@ namespace Aga.Controls.Tree.NodeControls
 			if (LabelChanged != null)
 				LabelChanged(this, new LabelEventArgs(subject, oldLabel, newLabel));
 		}
+
+        private class NodeTextBoxEditor : TextBox
+        {
+            protected override bool IsInputKey(Keys keyData)
+            {
+                return keyData == Keys.Tab || base.IsInputKey(keyData);
+            }
+        }
 	}
 }

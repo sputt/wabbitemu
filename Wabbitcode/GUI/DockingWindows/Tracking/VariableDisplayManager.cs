@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
@@ -19,15 +18,18 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 
         static VariableDisplayManager()
         {
-            ISymbolService symbolService = DependencyFactory.Resolve<ISymbolService>();
-            IDebuggerService debuggerService = DependencyFactory.Resolve<IDebuggerService>();
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(symbolService, debuggerService);
+            ExpressionEvaluator evaluator = new ExpressionEvaluator();
             Instance.RegisterVariableDisplayController(new ByteDisplayController(evaluator));
             Instance.RegisterVariableDisplayController(new WordDisplayController(evaluator));
             Instance.RegisterVariableDisplayController(new StringVariableDisplayController(evaluator));
             Instance.RegisterVariableDisplayController(new GrayImageVariableDisplayController(evaluator));
             Instance.RegisterVariableDisplayController(new BlackAndWhiteImageVariableDisplayController(evaluator));
+            Instance.RegisterVariableDisplayController(new LabelVariableDisplayController(evaluator));
+        }
 
+        private VariableDisplayManager()
+        {
+            // disallow instantiation
         }
 
         private readonly Dictionary<string, IVariableDisplayController> _controllerMap = new Dictionary<string, IVariableDisplayController>();

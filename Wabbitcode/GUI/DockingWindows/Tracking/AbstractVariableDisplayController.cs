@@ -3,17 +3,13 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 {
-    public interface IVariableDisplayController
-    {
-        string GetDisplayValue(IWabbitcodeDebugger debugger, string address, string size);
-        string Name { get; }
-    }
-
     public abstract class AbstractVariableDisplayController<TSize, TReturnValue> : IVariableDisplayController
     {
         protected readonly ExpressionEvaluator Evaluator;
 
         public abstract string Name { get; }
+
+        public abstract int Size { get; }
 
         protected AbstractVariableDisplayController(ExpressionEvaluator evaluator)
         {

@@ -14,10 +14,10 @@ namespace Revsoft.Wabbitcode.Utils
         private readonly IDebuggerService _debuggerService;
         private readonly ISymbolService _symbolService;
 
-        public ExpressionEvaluator(ISymbolService symbolService, IDebuggerService debuggerService)
+        public ExpressionEvaluator()
         {
-            _symbolService = symbolService;
-            _debuggerService = debuggerService;
+            _symbolService = DependencyFactory.Resolve<ISymbolService>();
+            _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
         }
 
         private static bool Predecessor(string firstOperator, string secondOperator)
@@ -102,10 +102,10 @@ namespace Revsoft.Wabbitcode.Utils
                 return value;
             }
 
-            string label = _symbolService.SymbolTable.GetAddressFromLabel(element);
+            var label = _symbolService.SymbolTable.GetAddressFromLabel(element);
             if (label != null)
             {
-                return int.Parse(label, NumberStyles.HexNumber);
+                return label.Value;
             }
 
             IWabbitcodeDebugger debugger = _debuggerService.CurrentDebugger;

@@ -46,8 +46,6 @@ namespace Revsoft.Wabbitcode.Services.Project
 
         public bool IsInternal { get; set; }
 
-        public IList<DebuggingStructure> DebuggingStructures { get { return _debuggingStructure; } }
-
         public IBuildSystem BuildSystem { get; private set; }
 
         public IList<FilePath> IncludeDirs { get; private set; }
@@ -172,7 +170,19 @@ namespace Revsoft.Wabbitcode.Services.Project
                     _mainFolder = new ProjectFolder(null, reader.GetAttribute("Name"));
                     RecurseReadFolders(reader, ref _mainFolder);
                     reader.MoveToNextElement();
+
                     _debuggingStructure = DebuggingStructureList.FromXml(reader);
+                    var displayManager = VariableDisplayManager.Instance;
+                    foreach (var debugEnum in _debuggingStructure.DebugEnums)
+                    {
+                        var enumController = new EnumVariableDisplayController(new ExpressionEvaluator(), debugEnum);
+                        displayManager.RegisterVariableDisplayController(enumController);
+                    }
+                    foreach (var structure in _debuggingStructure.DebugStructs)
+                    {
+                        displayManager.RegisterVariableDisplayController(new CompositeVariableDisplayController(structure));
+                    }
+
                     BuildSystem.ReadXML(reader);
                 }
             }
@@ -354,12 +364,38 @@ namespace Revsoft.Wabbitcode.Services.Project
         }
     }
 
-    public class DebuggingStructureList : List<DebuggingStructure>
+    internal class DebuggingStructureList
     {
+        public List<DebuggingStructure> DebugStructs { get; private set; }
+
+        public List<DebuggingEnum> DebugEnums { get; private set; }
+
+        public DebuggingStructureList()
+        {
+            DebugStructs = new List<DebuggingStructure>();
+            DebugEnums = new List<DebuggingEnum>();
+        }
+
         public void WriteXml(XmlTextWriter writer)
         {
             writer.WriteStartElement("DebugStructs");
-            foreach (var structure in this)
+            foreach (var debugEnum in DebugEnums)
+            {
+                writer.WriteStartElement("Enum");
+                writer.WriteAttributeString("Name", debugEnum.Name);
+                foreach (var enumValue in debugEnum.EnumMapping)
+                {
+                    writer.WriteStartElement("EnumValue");
+                    writer.WriteAttributeString("Byte", enumValue.Key.Byte.ToString());
+                    writer.WriteAttributeString("Mask", enumValue.Key.Mask.ToString());
+                    writer.WriteAttributeString("Value", enumValue.Value);
+                    writer.WriteEndElement();
+                }
+
+                writer.WriteEndElement();
+            }
+
+            foreach (var structure in DebugStructs)
             {
                 writer.WriteStartElement("Struct");
                 writer.WriteAttributeString("Name", structure.Name);
@@ -393,17 +429,46 @@ namespace Revsoft.Wabbitcode.Services.Project
             }
 
             reader.MoveToNextElement();
+            while (reader.Name == "Enum")
+            {
+                var name = reader.GetAttribute("Name");
+                var enumValues = new Dictionary<EnumByteKey, string>();
+                while (reader.MoveToNextElement())
+                {
+                    if (reader.Name != "EnumValue")
+                    {
+                        break;
+                    }
+
+                    byte byteValue;
+                    byte maskValue;
+                    if (!byte.TryParse(reader.GetAttribute("Byte"), out byteValue))
+                    {
+                        continue;
+                    }
+                    if (!byte.TryParse(reader.GetAttribute("Mask"), out maskValue))
+                    {
+                        continue;
+                    }
+
+                    var enumValue = reader.GetAttribute("Value");
+                    enumValues.Add(new EnumByteKey(byteValue, maskValue), enumValue);
+                }
+
+                var debugEnum = new DebuggingEnum(name, enumValues);
+                list.DebugEnums.Add(debugEnum);
+            }
+
             while (reader.Name == "Struct")
             {
                 var name = reader.GetAttribute("Name");
                 var structure = new DebuggingStructure {Name = name};
-                if (reader.MoveToNextElement())
+                while (reader.MoveToNextElement())
                 {
                     if (reader.Name != "Prop")
                     {
                         break;
                     }
-
 
                     var model = new TreeStructureModel
                     {
@@ -415,10 +480,22 @@ namespace Revsoft.Wabbitcode.Services.Project
                     structure.Properties.Add(model);
                 }
 
-                reader.MoveToNextElement();
+                list.DebugStructs.Add(structure);
             }
 
             return list;
+        }
+    }
+
+    internal class DebuggingEnum
+    {
+        public string Name { get; private set; }
+        public Dictionary<EnumByteKey, string> EnumMapping { get; private set; }
+
+        public DebuggingEnum(string enumName, Dictionary<EnumByteKey, string> enumMapping)
+        {
+            Name = enumName;
+            EnumMapping = enumMapping;
         }
     }
 }

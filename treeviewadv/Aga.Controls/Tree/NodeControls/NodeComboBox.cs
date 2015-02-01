@@ -130,7 +130,15 @@ namespace Aga.Controls.Tree.NodeControls
 			return listBox;
 		}
 
-		protected virtual Type GetEnumType(TreeNodeAdv node)
+	    public override void KeyDown(KeyEventArgs args)
+	    {
+	        if (args.KeyCode == Keys.F2)
+	        {
+	            BeginEdit();
+	        }
+	    }
+
+	    protected virtual Type GetEnumType(TreeNodeAdv node)
 		{
 			object value = GetValue(node);
 			return value.GetType();

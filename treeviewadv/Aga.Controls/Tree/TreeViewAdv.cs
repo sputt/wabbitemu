@@ -658,7 +658,7 @@ namespace Aga.Controls.Tree
 		{
 			Selection.Clear();
 			SelectionStart = null;
-			_root = new TreeNodeAdv(this, null);
+			_root = new TreeNodeAdv(this, new object());
 			_root.IsExpanded = true;
 			if (_root.Nodes.Count > 0)
 				CurrentNode = _root.Nodes[0];

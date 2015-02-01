@@ -120,20 +120,20 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             // numBytesCol
             // 
             this.numBytesCol.Header = "Bytes";
-            this.numBytesCol.Width = 40;
+            this.numBytesCol.Width = 80;
             this.numBytesCol.SortOrder = SortOrder.None;
             // 
             // valueTypeCol
             // 
             this.valueTypeCol.Header = "Type";
-            this.valueTypeCol.Width = 60;
+            this.valueTypeCol.Width = 150;
             this.valueTypeCol.SortOrder = SortOrder.None;
             // 
             // variableValueCol
             // 
             this.variableValueCol.Header = "Value";
             this.variableValueCol.SortOrder = SortOrder.None;
-            this.variableValueCol.Width = 300;
+            this.variableValueCol.Width = 400;
             //
             // _addressBox
             //

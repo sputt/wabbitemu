@@ -91,8 +91,8 @@ namespace Aga.Controls.Tree
 		protected override void OnKeyPress(KeyPressEventArgs e)
 		{
 			base.OnKeyPress(e);
-			if (!e.Handled)
-				_search.Search(e.KeyChar);
+		    if (!e.Handled && CurrentEditor == null)
+		        _search.Search(e.KeyChar);
 		}
 
 		#endregion

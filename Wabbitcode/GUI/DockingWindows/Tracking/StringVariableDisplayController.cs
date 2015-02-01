@@ -16,6 +16,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
             get { return "String"; }
         }
 
+        public override int Size
+        {
+            get { return 1; }
+        }
+
         protected override int ParseValidSize(string sizeString)
         {
             int resultInt;

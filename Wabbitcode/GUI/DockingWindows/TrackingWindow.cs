@@ -27,8 +27,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             _debuggerService = DependencyFactory.Resolve<IDebuggerService>();
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
             _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
-            _valueTypeBox.DropDownItems.Clear();
-            _valueTypeBox.DropDownItems.AddRange(VariableDisplayManager.Instance.ControllerNames);
 
             // TODO: fix
             _model = new TrackingTreeModel();
@@ -39,6 +37,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
+            _valueTypeBox.DropDownItems.Clear();
+            _valueTypeBox.DropDownItems.AddRange(VariableDisplayManager.Instance.ControllerNames);
+
             _debugger = e.Debugger;
             _debugger.DebuggerStep += OnDebuggerOnDebuggerStep;
             _debugger.DebuggerRunningChanged += OnDebuggerOnDebuggerRunningChanged;
@@ -111,14 +112,14 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         {
             var model = (TrackingVariableRowModel)variablesDataView.CurrentNode.Tag;
             model.IsCacheValid = false;
-            _model.OnNodesChanged(model);
+            _model.OnStructureChanged();
         }
 
         private void AddressBoxOnChangesApplied(object sender, EventArgs eventArgs)
         {
             var model = (TrackingVariableRowModel)variablesDataView.CurrentNode.Tag;
             model.IsCacheValid = false;
-            _model.OnNodesChanged(model);
+            _model.OnStructureChanged();
 
             if (!string.IsNullOrEmpty(_emptyRowModel.Address))
             {
@@ -130,7 +131,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         {
             var model = (TrackingVariableRowModel)variablesDataView.CurrentNode.Tag;
             model.IsCacheValid = false;
-            _model.OnNodesChanged(model);
+            _model.OnStructureChanged();
 
             if (!string.IsNullOrEmpty(_emptyRowModel.Address))
             {
@@ -149,6 +150,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void UpdateAllRows()
         {
+            variablesDataView.Root.IsExpanded = true;
             foreach (var model in _model.Nodes)
             {
                 model.IsCacheValid = false;

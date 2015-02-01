@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Revsoft.Wabbitcode.Annotations;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interfaces;
@@ -9,17 +10,18 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
     public class TrackingVariableRowModel : IDisposable
     {
         private readonly IDebuggerService _debuggerService;
-        private readonly List<TrackingVariableRowModel> _children = new List<TrackingVariableRowModel>();
         private readonly VariableDisplayManager _variableDisplayManager;
 
-        private IWabbitcodeDebugger _debugger;
+        protected IVariableDisplayController DisplayController;
+        protected IWabbitcodeDebugger Debugger;
+        protected string CachedValue;
         private bool _disposed;
-        private IVariableDisplayController _displayController;
-        private string _cachedValue;
 
         #region Properties
 
-        public bool IsCacheValid { get; set; }
+        internal int ChildSize { get; private set; }
+
+        public bool IsCacheValid { private get; set; }
 
         [UsedImplicitly]
         public string Address { get; set; }
@@ -30,8 +32,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
         [UsedImplicitly]
         public string ValueType
         {
-            get { return _displayController.Name; }
-            set { _displayController = _variableDisplayManager.GetVariableDisplayController(value); }
+            get { return DisplayController.Name; }
+            set { DisplayController = _variableDisplayManager.GetVariableDisplayController(value); }
         }
 
         [UsedImplicitly]
@@ -39,17 +41,17 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
         {
             get
             {
-                return IsCacheValid ? _cachedValue : CacheValue();
+                return IsCacheValid ? CachedValue : CacheValue();
             }
         }
 
-        private string CacheValue()
+        protected virtual string CacheValue()
         {
             try
             {
-                _cachedValue = _displayController.GetDisplayValue(_debugger, Address, NumBytesString);
+                CachedValue = DisplayController.GetDisplayValue(Debugger, Address, NumBytesString);
                 IsCacheValid = true;
-                return _cachedValue;
+                return CachedValue;
             }
             catch (Exception ex)
             {
@@ -57,7 +59,36 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
             }
         }
 
-        public List<TrackingVariableRowModel> Children { get { return _children; } }
+        public IEnumerable<TrackingVariableRowModel> Children
+        {
+            get
+            {
+                var compositeController = DisplayController as CompositeVariableDisplayController;
+                if (compositeController == null)
+                {
+                    return new List<TrackingVariableRowModel>();
+                }
+
+                var offset = 0;
+                var offsetArray = new int[compositeController.DebuggingStructure.Properties.Count];
+                var children = compositeController.ChildControllers.ToList();
+                for (int i = 0; i < compositeController.DebuggingStructure.Properties.Count; i++)
+                {
+                    offsetArray[i] = offset;
+                    offset += children[i].Size;
+                }
+
+                ChildSize = offset;
+                offset = 0;
+                return compositeController.DebuggingStructure.Properties.Select(p =>
+                    new ChildTrackingVariableRowModel(_debuggerService, _variableDisplayManager, this, offsetArray[offset++])
+                {
+                    Address = p.Name,
+                    NumBytesString = p.Size.ToString(),
+                    ValueType = p.Controller.Name
+                });
+            }
+        }
 
         #endregion
 
@@ -65,8 +96,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
         {
             _debuggerService = debuggerService;
             _variableDisplayManager = variableDisplayManager;
-            _displayController = variableDisplayManager.DefaultController;
-            _debugger = _debuggerService.CurrentDebugger;
+            DisplayController = variableDisplayManager.DefaultController;
+            Debugger = _debuggerService.CurrentDebugger;
 
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
             _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
@@ -100,12 +131,44 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 
         private void DebuggerService_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
-            _debugger = e.Debugger;
+            Debugger = e.Debugger;
         }
 
         private void DebuggerService_OnDebuggingEnded(object sender, DebuggingEventArgs e)
         {
-            _debugger = null;
+            Debugger = null;
+        }
+    }
+
+    class ChildTrackingVariableRowModel : TrackingVariableRowModel
+    {
+        private readonly TrackingVariableRowModel _parent;
+        private readonly int _offset;
+
+        public ChildTrackingVariableRowModel(IDebuggerService debuggerService, VariableDisplayManager variableDisplayManager, 
+            TrackingVariableRowModel parent, int offset)
+            : base(debuggerService, variableDisplayManager)
+        {
+            _offset = offset;
+            _parent = parent;
+        }
+
+        protected override string CacheValue()
+        {
+            try
+            {
+                // Generate an string that looks like:
+                // baseAddress + (offset * structSize) + childOffset
+                var addressString = _parent.Address + "+(" + _parent.NumBytesString + "*" + _parent.ChildSize + ")+" +
+                                    _offset;
+                CachedValue = DisplayController.GetDisplayValue(Debugger, addressString, NumBytesString);
+                IsCacheValid = true;
+                return CachedValue;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
     }
 }

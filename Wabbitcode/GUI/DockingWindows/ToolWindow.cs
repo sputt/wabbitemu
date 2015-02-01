@@ -1,7 +1,6 @@
 ﻿using System;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Interfaces;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
@@ -47,6 +46,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         protected virtual void EnablePanel(bool enabled)
         {
+            if (enabled == Enabled)
+            {
+                return;
+            }
+
             if (InvokeRequired)
             {
                 this.Invoke(() => EnablePanel(enabled));

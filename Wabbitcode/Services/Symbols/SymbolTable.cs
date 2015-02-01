@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Revsoft.Wabbitcode.Properties;
 
@@ -6,34 +7,34 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 {
     public class SymbolTable
     {
-        private ILookup<string, string> _labelToAddress;
-        private ILookup<string, string> _addressToLabel;
+        private ILookup<string, int> _labelToAddress;
+        private ILookup<int, string> _addressToLabel;
 
-        public IEnumerable<IGrouping<string, string>> Labels
+        public IEnumerable<IGrouping<string, int>> Labels
         {
             get { return _labelToAddress; }
         }
 
-        public List<string> GetLabelsFromAddress(string address)
+        public List<string> GetLabelsFromAddress(int address)
         {
             return _addressToLabel == null ? new List<string>() : _addressToLabel[address].ToList();
         }
 
-        public string GetAddressFromLabel(string label)
+        public int? GetAddressFromLabel(string label)
         {
             if (!Settings.Default.CaseSensitive)
             {
                 label = label.ToUpper();
             }
 
-            return _addressToLabel == null ? string.Empty : _labelToAddress[label].SingleOrDefault();
+            return _addressToLabel == null ? (int?) null : _labelToAddress[label].SingleOrDefault();
         }
 
         public void ParseSymFile(string symFileContents)
         {
-            List<KeyValuePair<string, string>> list = new List<KeyValuePair<string, string>>();
+            var list = new List<KeyValuePair<string, int>>();
 
-            string[] lines = symFileContents.Split('\n');
+            var lines = symFileContents.Split('\n');
             foreach (string line in lines)
             {
                 if (string.IsNullOrWhiteSpace(line))
@@ -47,10 +48,13 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                     continue;
                 }
 
-                list.Add(new KeyValuePair<string, string>(labelAndAddress[0].Trim(), labelAndAddress[1].Trim().Substring(1)));
+                var address = labelAndAddress[0].Trim();
+                var value = int.Parse(labelAndAddress[1].Trim().Substring(1), NumberStyles.HexNumber);
+                list.Add(new KeyValuePair<string, int>(address, value));
             }
+
             _labelToAddress = list.ToLookup(kvp => kvp.Key, kvp => kvp.Value);
-            _addressToLabel = list.ToLookup(kvp => kvp.Value, kvp => kvp.Key);
+            _addressToLabel = list.ToLookup(kvp => kvp.Value & 0xFFFF, kvp => kvp.Key);
         }
     }
 }

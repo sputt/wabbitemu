@@ -8,8 +8,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
     {
         private const int Base = 16;
 
-        protected abstract int NumberSize { get; }
-
         protected NumberDisplayController(ExpressionEvaluator evaluator) 
             : base(evaluator)
         {
@@ -17,7 +15,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 
         protected override string GetDisplayValue(IWabbitcodeDebugger debugger, int address, int size)
         {
-            return GetVarValue(debugger, address, size, NumberSize);
+            return GetVarValue(debugger, address, size, Size);
         }
 
         protected override int ParseValidSize(string sizeString)
@@ -71,7 +69,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
             return GetDisplayValue(debugger, address, size);
         }
 
-        protected override int NumberSize
+        public override int Size
         {
             get { return sizeof(byte); }
         }
@@ -94,7 +92,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
             return GetDisplayValue(debugger, address, size);
         }
 
-        protected override int NumberSize
+        public override int Size
         {
             get { return sizeof(ushort); }
         }
