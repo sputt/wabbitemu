@@ -385,10 +385,17 @@ namespace Revsoft.Wabbitcode.Services.Project
                 writer.WriteAttributeString("Name", debugEnum.Name);
                 foreach (var enumValue in debugEnum.EnumMapping)
                 {
-                    writer.WriteStartElement("EnumValue");
-                    writer.WriteAttributeString("Byte", enumValue.Key.Byte.ToString());
-                    writer.WriteAttributeString("Mask", enumValue.Key.Mask.ToString());
-                    writer.WriteAttributeString("Value", enumValue.Value);
+                    writer.WriteStartElement("EnumMask");
+                    writer.WriteAttributeString("Mask", enumValue.Key.ToString());
+
+                    var maskList = enumValue.Value;
+                    foreach (var value in maskList)
+                    {
+                        writer.WriteStartElement("EnumValue");
+                        writer.WriteString(value);
+                        writer.WriteEndElement();
+                    }
+
                     writer.WriteEndElement();
                 }
 
@@ -432,27 +439,33 @@ namespace Revsoft.Wabbitcode.Services.Project
             while (reader.Name == "Enum")
             {
                 var name = reader.GetAttribute("Name");
-                var enumValues = new Dictionary<EnumByteKey, string>();
-                while (reader.MoveToNextElement())
+                var enumValues = new Dictionary<byte, List<string>>();
+                if (!reader.MoveToNextElement())
                 {
-                    if (reader.Name != "EnumValue")
-                    {
-                        break;
-                    }
+                    break;
+                }
 
-                    byte byteValue;
+                while (reader.Name == "EnumMask")
+                {
+                    var maskList = new List<string>();
                     byte maskValue;
-                    if (!byte.TryParse(reader.GetAttribute("Byte"), out byteValue))
-                    {
-                        continue;
-                    }
                     if (!byte.TryParse(reader.GetAttribute("Mask"), out maskValue))
                     {
                         continue;
                     }
 
-                    var enumValue = reader.GetAttribute("Value");
-                    enumValues.Add(new EnumByteKey(byteValue, maskValue), enumValue);
+                    while (reader.MoveToNextElement())
+                    {
+                        if (reader.Name != "EnumValue")
+                        {
+                            break;
+                        }
+
+                        maskList.Add(reader.ReadString());
+                    }
+
+                    
+                    enumValues.Add(maskValue, maskList);
                 }
 
                 var debugEnum = new DebuggingEnum(name, enumValues);
@@ -490,9 +503,9 @@ namespace Revsoft.Wabbitcode.Services.Project
     internal class DebuggingEnum
     {
         public string Name { get; private set; }
-        public Dictionary<EnumByteKey, string> EnumMapping { get; private set; }
+        public Dictionary<byte, List<string>> EnumMapping { get; private set; }
 
-        public DebuggingEnum(string enumName, Dictionary<EnumByteKey, string> enumMapping)
+        public DebuggingEnum(string enumName, Dictionary<byte, List<string>> enumMapping)
         {
             Name = enumName;
             EnumMapping = enumMapping;
