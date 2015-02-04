@@ -68,7 +68,7 @@ Public Class Scenario
 
     Public Function GetMap(HierarchyIndex As Byte) As MapData
         Dim RealIndex = _CachedMapHierArray(HierarchyIndex)
-        Return Maps.FirstOrDefault(Function(m) m.Index = RealIndex)
+        Return Maps.FirstOrDefault(Function(m) m.Exists And m.Index = RealIndex)
     End Function
 
     Public Property Images As New List(Of ZeldaImage)

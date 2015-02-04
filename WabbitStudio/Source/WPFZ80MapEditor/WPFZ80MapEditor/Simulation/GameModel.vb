@@ -579,7 +579,8 @@ Public Class GameModel
     Public ReadOnly Property SourceMap As MapData
         Get
             If _CurrentMap > -1 Then
-                Return Scenario.GetMap(_CurrentMap)
+                Dim MapData = Scenario.GetMap(_CurrentMap)
+                Return MapData
             Else
                 Return Nothing
             End If

@@ -240,10 +240,10 @@ Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)
     End Sub
 
     Public Sub UpdatePosition(X As Double, Y As Double, W As Double, H As Double) Implements IBaseGeneralObject.UpdatePosition
-        Args(0).Value = CInt(Math.Round(X))
-        Args(1).Value = CInt(Math.Round(Y))
-        Args(2).Value = CInt(Math.Round(W))
-        Args(3).Value = CInt(Math.Round(H))
+        Args(0).Value = Math.Min(255, Math.Max(0, CInt(Math.Round(X))))
+        Args(1).Value = Math.Min(255, Math.Max(0, CInt(Math.Round(Y))))
+        Args(2).Value = Math.Min(255, Math.Max(0, CInt(Math.Round(W))))
+        Args(3).Value = Math.Min(255, Math.Max(0, CInt(Math.Round(H))))
     End Sub
 
     Sub Jump(Dx As Integer, Dy As Integer)

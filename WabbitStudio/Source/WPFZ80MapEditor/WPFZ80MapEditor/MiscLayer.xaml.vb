@@ -45,17 +45,6 @@
 
     Private _IsDraggingMisc As Boolean = False
     Private _StartDrag As New Point
-
-    Private Sub Misc_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
-        Dim Obj As FrameworkElement = sender
-
-        Obj.ReleaseMouseCapture()
-        _IsDraggingMisc = False
-        e.Handled = True
-
-        SetValue(SelectionOpacityProperty, 0.6)
-    End Sub
-
     Private Sub Misc_MouseLeftButtonDown(sender As Object, e As MouseButtonEventArgs)
         Dim Obj As FrameworkElement = sender
         Dim ZMisc As ZMisc = Obj.DataContext
@@ -72,15 +61,27 @@
         e.Handled = True
     End Sub
 
+    Private Sub Misc_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
+        Dim Obj As FrameworkElement = sender
+
+        Obj.ReleaseMouseCapture()
+        _IsDraggingMisc = False
+        e.Handled = True
+
+        SetValue(SelectionOpacityProperty, 0.6)
+    End Sub
+
+
     Private Sub Misc_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs)
         If _IsDraggingMisc Then
             Dim CurPoint As Point = e.GetPosition(Me)
             Dim DragDelta = CurPoint - _StartDrag
 
-            Dim NewX = SPASMHelper.Eval(MiscItemsControl.SelectedValue.PreviousVersion.Args(0).Value) + DragDelta.X
-            Dim NewY = SPASMHelper.Eval(MiscItemsControl.SelectedValue.PreviousVersion.Args(1).Value) + DragDelta.Y
+            Dim ZMisc As ZMisc = MiscItemsControl.SelectedValue
+            Dim NewX = SPASMHelper.Eval(ZMisc.PreviousVersion.Args(0).Value) + DragDelta.X
+            Dim NewY = SPASMHelper.Eval(ZMisc.PreviousVersion.Args(1).Value) + DragDelta.Y
 
-            MiscItemsControl.SelectedValue.UpdatePosition(NewX, NewY)
+            ZMisc.UpdatePosition(NewX, NewY, Math.Min(256 - NewX, ZMisc.PreviousVersion.W), Math.Min(256 - NewY, ZMisc.PreviousVersion.H))
 
             SetValue(SelectionOpacityProperty, 0.25)
 

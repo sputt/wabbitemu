@@ -58,6 +58,8 @@ Public Class ResizeThumb
 
             Dim Misc As ZMisc = DataContext
 
+            If Misc.PreviousVersion Is Nothing Then Exit Sub
+
             Dim PrevX = SPASMHelper.Eval(Misc.PreviousVersion.Args(0).Value)
             Dim PrevY = SPASMHelper.Eval(Misc.PreviousVersion.Args(1).Value)
             Dim PrevW = SPASMHelper.Eval(Misc.PreviousVersion.Args(2).Value)
