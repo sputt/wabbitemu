@@ -62,7 +62,7 @@ Public Class MapData
         Get
             Return _Scenario
         End Get
-        Private Set(value As Scenario)
+        Set(value As Scenario)
             If value IsNot _Scenario Then
                 _Scenario = value
                 RaisePropertyChanged("Scenario")
@@ -147,6 +147,11 @@ Public Class MapData
         ZMisc = New ObservableCollection(Of ZMisc)
 
         _ID = Guid.NewGuid()
+    End Sub
+
+    Public Sub New()
+        TileData = New ObservableCollection(Of Byte)(Enumerable.Repeat(CByte(0), 256))
+        Initialize(Nothing, 0)
     End Sub
 
     Public Sub New(Data As IEnumerable(Of Byte), newScenario As Scenario, newTileset As Integer, isCompressed As Boolean)

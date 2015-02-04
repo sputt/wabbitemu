@@ -490,3 +490,7 @@ Public Class Scenario
     Public Event PropertyChanged(sender As Object, e As System.ComponentModel.PropertyChangedEventArgs) Implements System.ComponentModel.INotifyPropertyChanged.PropertyChanged
 
 End Class
+
+Public Class TilesetList
+    Inherits List(Of Tileset)
+End Class

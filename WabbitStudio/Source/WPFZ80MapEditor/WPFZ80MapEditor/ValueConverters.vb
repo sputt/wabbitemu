@@ -283,4 +283,22 @@ Namespace ValueConverters
         End Function
     End Class
 
+    Public Enum TileIndexType
+        X
+        Y
+    End Enum
+
+    Public Class TileIndexConverter
+        Inherits OneWayConverter(Of Integer, Double)
+
+        Public Overrides Function Convert(Value As Integer, Parameter As Object) As Double
+            If Parameter = TileIndexType.X Then
+                Return (Value Mod 16) * 16
+            ElseIf Parameter = TileIndexType.Y Then
+                Return (Math.Floor(Value / 16)) * 16
+            End If
+            Return -1
+        End Function
+    End Class
+
 End Namespace

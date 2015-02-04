@@ -5,23 +5,88 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPFZ80MapEditor"
              xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" x:Class="XMapView"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             x:Class="XMapView"
              mc:Ignorable="d" 
     x:Name="MapView"
-             d:DesignHeight="256" d:DesignWidth="256" Width="256" Height="256" SnapsToDevicePixels="True" MouseMove="MapView_MouseMove">    
+             d:DesignHeight="256" d:DesignWidth="256" Width="256" Height="256" SnapsToDevicePixels="True" MouseMove="MapView_MouseMove"
+    MouseDown="MapView_MouseLeftButtonDown"
+    MouseLeave="MapView_MouseLeave"
+    Background="Transparent">    
     <local:MapLayer.Resources>
         <converters:TileConverter x:Key="TileConverter"/>
         <converters:CollisionConverter x:Key="CollisionConverter"/>
-        <local:LayerType x:Key="LayerType">MapLayer</local:LayerType>
+        <local:SegmentConverter x:Key="SegmentConverter"/>
+        <converters:TileIndexConverter x:Key="TileIndexConverter"/>
+
+        <local:Tileset Name="DUNGEON" x:Key="TilesetTest">
+            <local:Tileset.Tiles>
+                <local:TilesCollection>
+                    <local:TileImageSource Index="0">
+                        <local:TileImageSource.Image>
+                            <BitmapImage>./TestTile.bmp</BitmapImage>
+                        </local:TileImageSource.Image>
+                    </local:TileImageSource>
+                </local:TilesCollection>
+            </local:Tileset.Tiles>
+        </local:Tileset>
+
+        <local:TilegroupSelection x:Key="TilegroupTest" Tileset="{x:Null}">
+            <local:TilegroupSelection.TilegroupEntries>
+                <local:TilegroupEntryCollection>
+                    <local:TilegroupEntry Index="117">
+                        <local:TilegroupEntry.Tile>
+                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                        </local:TilegroupEntry.Tile>
+                    </local:TilegroupEntry>
+                    <local:TilegroupEntry Index="118">
+                        <local:TilegroupEntry.Tile>
+                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                        </local:TilegroupEntry.Tile>
+                    </local:TilegroupEntry>
+                    <local:TilegroupEntry Index="134">
+                        <local:TilegroupEntry.Tile>
+                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                        </local:TilegroupEntry.Tile>
+                    </local:TilegroupEntry>
+                    <local:TilegroupEntry Index="135">
+                        <local:TilegroupEntry.Tile>
+                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                        </local:TilegroupEntry.Tile>
+                    </local:TilegroupEntry>
+                </local:TilegroupEntryCollection>
+            </local:TilegroupSelection.TilegroupEntries>
+        </local:TilegroupSelection>
+
+        <local:MapData x:Key="MapDataTest" Tileset="{StaticResource TilesetTest}" Exists="True">
+            <local:MapData.Scenario>
+                <local:Scenario>
+                    <local:Scenario.Tilesets>
+                        <local:TilesetList>
+                            <StaticResourceExtension ResourceKey="TilesetTest"/>
+                        </local:TilesetList>
+                    </local:Scenario.Tilesets>
+                </local:Scenario>
+            </local:MapData.Scenario>
+            <!--<local:MapData.TileData>
+                <x:Array Type="{x:Type sys:Byte}">
+                    <sys:Byte>3</sys:Byte>
+                    <sys:Byte>2</sys:Byte>
+                </x:Array>
+            </local:MapData.TileData>-->
+        </local:MapData>
     </local:MapLayer.Resources>
-    <Grid>
-        <Grid Background="DarkGray" Visibility="{Binding ShowNewMaps, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=MapView}">
+    
+    <Canvas d:DataContext="{StaticResource MapDataTest}">
+        <Grid Background="DarkGray" Visibility="{Binding ShowNewMaps, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=MapView}" Width="256" Height="256" IsHitTestVisible="False">
             <TextBlock FontSize="200" Text="+" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,50" Foreground="#FFA0A0A0"/>
         </Grid>
         
-        <local:MapView Map="{Binding .}" ShowCollisions="{Binding ShowCollisions,ElementName=MapView}"/>
+        <local:MapView Map="{Binding .}" ShowCollisions="{Binding ShowCollisions,ElementName=MapView}" IsHitTestVisible="False"/>
         
-        <ItemsControl Panel.ZIndex="1" x:Name="AnimsControl" IsHitTestVisible="False" ItemsSource="{Binding ZAnims}" Background="{x:Null}" Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <ItemsControl Panel.ZIndex="1" x:Name="AnimsControl" IsHitTestVisible="False" ItemsSource="{Binding ZAnims}" Background="{x:Null}" Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}" Width="256" Height="256">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>
@@ -54,55 +119,42 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-    </Grid>
 
-    <!--<Grid >
-		<Grid Background="DarkGray" Visibility="{Binding ShowNewMaps, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=MapView}">
-			<TextBlock FontSize="200" Text="+" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,50" Foreground="#FFA0A0A0"/>
-		</Grid>
-
-		<ItemsControl Panel.ZIndex="0" x:Name="TileContainer" ItemsSource="{Binding TileData}" Margin="0"
-			Visibility="{Binding Exists, Converter={StaticResource BooleanToVisibilityConverter}}">
-			<ItemsControl.ItemsPanel>
-				<ItemsPanelTemplate>
-					<local:MapPanel x:Name="TilePanel"/>
-				</ItemsPanelTemplate>
-			</ItemsControl.ItemsPanel>
-            
-			<ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Canvas x:Name="Tile" Background="Transparent" MouseLeftButtonDown="TileImage_MouseLeftButtonDown" Width="16" Height="16">
-                        <i:Interaction.Behaviors>
-                            <ei:DataStateBehavior Binding="{Binding IsMouseOver, ElementName=Tile, Mode=OneWay}" Value="True" TrueState="MouseOverState" FalseState="NormalState"/>
-                        </i:Interaction.Behaviors>
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="VisualStateGroup">
-                                <VisualState x:Name="MouseOverState">
-                                    <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="TileOverlay">
-                                            <EasingDoubleKeyFrame KeyTime="0" Value="0.3"/>
-                                        </DoubleAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="NormalState"/>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                        <Rectangle x:Name="TileOverlay" Fill="White" Panel.ZIndex="2" Opacity="0" IsHitTestVisible="False" Width="16" Height="16">
-                        </Rectangle>
-                        <Image x:Name="TileImage" Panel.ZIndex="0" Width="16" Height="16" IsHitTestVisible="False" >
-                            <Image.Source>
-                                <MultiBinding Converter="{StaticResource TileConverter}">
-                                    <Binding Path="DataContext.Tileset" ElementName="MapView"/>
-                                    <Binding Path="."/>
-                                </MultiBinding>
-                            </Image.Source>
-                        </Image>
-                    </Canvas>
-                </DataTemplate>
-			</ItemsControl.ItemTemplate>
-		</ItemsControl>
--->
-
+        <Border Panel.ZIndex="2" BorderThickness="2" Margin="-2" BorderBrush="{StaticResource SelectionBrush}"
+                Background="Transparent" Width="20" Height="20"
+                DataContext="{Binding Selection, ElementName=MapView}"
+                        Canvas.Left="{Binding MapOffset.X}"
+                        Canvas.Top="{Binding MapOffset.Y}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Selection, ElementName=MapView}" Value="{x:Null}">
+                            <Setter Property="Opacity" Value="0"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Active, ElementName=MapView}" Value="False">
+                            <Setter Property="Opacity" Value="0"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                    <Setter Property="Opacity" Value="{StaticResource SelectionOpacity}"/>
+                </Style>
+            </Border.Style>
+        </Border>
+        <Border Panel.ZIndex="3" BorderThickness="2" Margin="-2" BorderBrush="{StaticResource SelectionBrush}"
+                Background="Transparent" Width="20" Height="20"
+                        Canvas.Left="{Binding HotIndex, Converter={StaticResource TileIndexConverter}, ConverterParameter={x:Static converters:TileIndexType.X}, ElementName=MapView}"
+                        Canvas.Top="{Binding HotIndex, Converter={StaticResource TileIndexConverter}, ConverterParameter={x:Static converters:TileIndexType.Y}, ElementName=MapView}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HotIndex, ElementName=MapView}" Value="-1">
+                            <Setter Property="Opacity" Value="0"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                    <Setter Property="Opacity" Value="{StaticResource MouseOverOpacity}"/>
+                </Style>
+            </Border.Style>
+        </Border>
+    </Canvas>
     <!--
         <ItemsControl Panel.ZIndex="2" x:Name="CollisionContainer" ItemsSource="{Binding TileData}"
 			Background="{x:Null}" Visibility="{Binding ShowCollisions, ElementName=MapView, Converter={StaticResource BooleanToVisibilityConverter}}">

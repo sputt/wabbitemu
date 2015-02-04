@@ -7,6 +7,9 @@ Public Class TileImageSource
     Public Property Index As Integer
     Public Property Tileset As Tileset
 
+    Public Sub New()
+    End Sub
+
     Public Sub New(Image, Index, Tileset)
         Me.Image = Image
         Me.Index = Index
@@ -22,7 +25,7 @@ Public Class Tileset
 
     Public Property Name As String
 
-    Public Property Tiles As IList(Of TileImageSource)
+    Public Property Tiles As List(Of TileImageSource)
 
     Sub New()
     End Sub
@@ -30,7 +33,7 @@ Public Class Tileset
     Sub New(Name As String, FileName As String)
         Me.Name = Name
 
-        Tiles = New Collection(Of TileImageSource)()
+        Tiles = New List(Of TileImageSource)()
 
         MainWindow.Instance.Dispatcher.Invoke(
             Sub()
@@ -53,4 +56,8 @@ Public Class Tileset
             Return Tiles.Count
         End Get
     End Property
+End Class
+
+Public Class TilesCollection
+    Inherits List(Of TileImageSource)
 End Class

@@ -1,7 +1,6 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports System.Collections.ObjectModel
 
-<Assembly: InternalsVisibleTo("WPFZ80MapEditorTest")> 
 Public Class TilegroupSelection
 
     Private Const MAP_WIDTH As Integer = 16

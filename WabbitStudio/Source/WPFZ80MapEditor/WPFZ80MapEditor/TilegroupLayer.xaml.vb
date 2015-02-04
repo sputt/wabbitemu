@@ -1,11 +1,16 @@
 ﻿Public Class TilegroupLayer
     Inherits MapLayer
+    Implements IMapLayer
 
     Public Overrides ReadOnly Property LayerType As LayerType
         Get
             Return WPFZ80MapEditor.LayerType.TilegroupLayer
         End Get
     End Property
+
+    Public Overrides Sub DeselectAll()
+        TilegroupSelection = Nothing
+    End Sub
 
     Public Property TilegroupSelection As TilegroupSelection
         Get
