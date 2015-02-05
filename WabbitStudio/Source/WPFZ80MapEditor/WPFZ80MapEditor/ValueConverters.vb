@@ -289,13 +289,24 @@ Namespace ValueConverters
     End Enum
 
     Public Class TileIndexConverter
+        Inherits TileIndexComponentConverter
+
+        Public Overrides Function Convert(Value As Integer, Parameter As Object) As Double
+            Dim Result = MyBase.Convert(Value, Parameter)
+            If Result = -1 Then Return -1
+
+            Return Result * 16
+        End Function
+    End Class
+
+    Public Class TileIndexComponentConverter
         Inherits OneWayConverter(Of Integer, Double)
 
         Public Overrides Function Convert(Value As Integer, Parameter As Object) As Double
             If Parameter = TileIndexType.X Then
-                Return (Value Mod 16) * 16
+                Return (Value Mod 16)
             ElseIf Parameter = TileIndexType.Y Then
-                Return (Math.Floor(Value / 16)) * 16
+                Return (Math.Floor(Value / 16))
             End If
             Return -1
         End Function

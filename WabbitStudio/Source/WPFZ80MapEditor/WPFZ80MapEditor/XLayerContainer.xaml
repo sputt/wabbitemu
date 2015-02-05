@@ -46,6 +46,7 @@
                                     <Condition Property="Focusable" Value="True"/>
                                 </MultiTrigger.Conditions>
                                 <Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource SelectionBrush}"/>
+                                <Setter Property="Panel.ZIndex" Value="9999"/>
                             </MultiTrigger>
                             <MultiTrigger>
                                 <MultiTrigger.Conditions>
@@ -54,6 +55,7 @@
                                     <Condition Property="Focusable" Value="True"/>
                                 </MultiTrigger.Conditions>
                                 <Setter Property="BorderBrush" TargetName="Bd" Value="{StaticResource InactiveSelectionBrush}"/>
+                                <Setter Property="Panel.ZIndex" Value="9999"/>
                             </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
