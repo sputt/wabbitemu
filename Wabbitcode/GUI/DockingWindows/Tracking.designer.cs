@@ -37,7 +37,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             if (disposing && (this.components != null))
             {
                 this.components.Dispose();
-                foreach (BitmapViewer viewer in _openBitmaps)
+                foreach (VariableFullViewer viewer in _fullViewers)
                 {
                     viewer.Dispose();
                 }

@@ -7,7 +7,7 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 {
-    internal abstract class ImageVariableDisplayController : AbstractVariableDisplayController<Size, Image>
+    internal abstract class ImageVariableDisplayController : AbstractVariableDisplayController<Size>
     {
         protected Bitmap Screen { get; private set; }
         protected Size ImageSize { get; private set; }
@@ -42,7 +42,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
             return "Double click for image";
         }
 
-        public override Image GetActualValue(IWabbitcodeDebugger debugger, int address, Size size)
+        protected override object GetActualValue(IWabbitcodeDebugger debugger, int address, Size size)
         {
             return GetVarImage(debugger, address, size);
         }

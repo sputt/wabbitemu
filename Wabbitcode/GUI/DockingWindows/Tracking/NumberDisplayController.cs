@@ -4,7 +4,7 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 {
-    public abstract class NumberDisplayController<T> : AbstractVariableDisplayController<int, T>
+    public abstract class NumberDisplayController : AbstractVariableDisplayController<int>
     {
         private const int Base = 16;
 
@@ -52,7 +52,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
         }
     }
 
-    public class ByteDisplayController : NumberDisplayController<string>
+    public class ByteDisplayController : NumberDisplayController
     {
         public override string Name
         {
@@ -64,7 +64,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
         {
         }
 
-        public override string GetActualValue(IWabbitcodeDebugger debugger, int address, int size)
+        protected override object GetActualValue(IWabbitcodeDebugger debugger, int address, int size)
         {
             return GetDisplayValue(debugger, address, size);
         }
@@ -75,7 +75,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
         }
     }
 
-    public class WordDisplayController : NumberDisplayController<string>
+    public class WordDisplayController : NumberDisplayController
     {
         public override string Name
         {
@@ -87,7 +87,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
         {
         }
 
-        public override string GetActualValue(IWabbitcodeDebugger debugger, int address, int size)
+        protected override object GetActualValue(IWabbitcodeDebugger debugger, int address, int size)
         {
             return GetDisplayValue(debugger, address, size);
         }
