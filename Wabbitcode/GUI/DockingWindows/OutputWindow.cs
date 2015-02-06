@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
+using Revsoft.TextEditor;
+using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Actions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Interfaces;
@@ -31,9 +34,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         {
             this.Invoke(() =>
             {
-                ClearOutput();
-                AddText(e.Output.OutputText);
-                HighlightOutput();
+                UpdateOutput(e.Output.OutputText);
             });
         }
 
@@ -50,49 +51,52 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             outputWindowBox.Copy();
         }
 
-        private void HighlightOutput()
+        private void UpdateOutput(string newContents)
         {
-            int backupOffset = outputWindowBox.SelectionStart;
-            int backupLength = outputWindowBox.SelectionLength;
+            var vertScrollValue = outputWindowBox.VerticalScroll.Value;
+            var horzScrollValue = outputWindowBox.HorizontalScroll.Value;
+            var selectionList = outputWindowBox.ActiveTextAreaControl.SelectionManager.SelectionCollection;
+            var caretLine = outputWindowBox.ActiveTextAreaControl.Caret.Line;
+            var caretCol = outputWindowBox.ActiveTextAreaControl.Caret.Column;
 
-            int i = 0;
-            foreach (string line in outputWindowBox.Lines)
+            outputWindowBox.Document.TextContent = newContents;
+            outputWindowBox.Document.MarkerStrategy.RemoveAll(m => true);
+            for (int i = 0; i < outputWindowBox.Document.TotalNumberOfLines; i++)
             {
-                if (line.Contains("error"))
+                LineSegment segment = outputWindowBox.Document.GetLineSegment(i);
+                string line =  outputWindowBox.Document.GetText(segment);
+                if (line.Contains("error") || line.Contains("Error"))
                 {
-                    outputWindowBox.Select(
-                        outputWindowBox.GetFirstCharIndexFromLine(i),
-                        outputWindowBox.GetFirstCharIndexFromLine(i + 1) -
-                        outputWindowBox.GetFirstCharIndexFromLine(i));
-                    outputWindowBox.SelectionColor = Color.Red;
+                    var errorMarker = new TextMarker(segment.Offset, 
+                        segment.TotalLength,
+                        TextMarkerType.SolidBlock,
+                        Color.Red);
+                    outputWindowBox.Document.MarkerStrategy.AddMarker(errorMarker);
                 }
 
-                if (line.Contains("warning"))
+                if (line.Contains("warning") || line.Contains("Warning"))
                 {
-                    
-                    outputWindowBox.Select(
-                        outputWindowBox.GetFirstCharIndexFromLine(i),
-                        outputWindowBox.GetFirstCharIndexFromLine(i + 1) -
-                        outputWindowBox.GetFirstCharIndexFromLine(i));
-                    outputWindowBox.SelectionColor = Color.Gold;
+                    var errorMarker = new TextMarker(segment.Offset,
+                        segment.TotalLength,
+                        TextMarkerType.SolidBlock,
+                        Color.Gold);
+                    outputWindowBox.Document.MarkerStrategy.AddMarker(errorMarker);
                 }
-
-                i++;
             }
 
-            outputWindowBox.SelectionStart = backupOffset;
-            outputWindowBox.SelectionLength = backupLength;
+            outputWindowBox.ActiveTextAreaControl.Caret.Line = caretLine;
+            outputWindowBox.ActiveTextAreaControl.Caret.Column = caretCol;
+            outputWindowBox.VerticalScroll.Value = vertScrollValue;
+            outputWindowBox.HorizontalScroll.Value = horzScrollValue;
+            foreach (var selection in selectionList)
+            {
+                outputWindowBox.ActiveTextAreaControl.SelectionManager.SetSelection(selection);
+            }
+
+            outputWindowBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
+            outputWindowBox.Document.CommitUpdate();
         }
 
-        private void AddText(string outputText)
-        {
-            outputWindowBox.Text += outputText;
-        }
-
-        private void ClearOutput()
-        {
-            outputWindowBox.Clear();
-        }
 
         private void copyOutputButton_Click(object sender, EventArgs e)
         {
@@ -103,8 +107,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         {
             // file:line:error code:description
             // SPASM uses the format %s:%d: %s %s%03X: %s currently
-            int errorLine = outputWindowBox.GetLineFromCharIndex(outputWindowBox.SelectionStart);
-            string lineContents = outputWindowBox.Lines[errorLine];
+            int errorLineOffset =
+                outputWindowBox.ActiveTextAreaControl.SelectionManager.SelectionCollection.First().Offset;
+            int errorLine = outputWindowBox.Document.GetLineNumberForOffset(errorLineOffset);
+            var segment = outputWindowBox.Document.GetLineSegment(errorLine);
+            string lineContents = outputWindowBox.Document.GetText(segment);
             Match match = Regex.Match(lineContents, @"(?<fileName>.+):(?<lineNum>\d+): (?<errorCode>.+): (?<description>.+)");
             if (!match.Success)
             {
@@ -123,7 +130,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         public void SelectAll()
         {
-            outputWindowBox.SelectAll();
+            var document = outputWindowBox.Document;
+            int numLines = document.TotalNumberOfLines - 1;
+            TextLocation selectStart = new TextLocation(0, 0);
+            TextLocation selectEnd = new TextLocation(document.GetLineSegment(numLines).Length, numLines);
+            outputWindowBox.ActiveTextAreaControl.SelectionManager.SetSelection(new DefaultSelection(document, selectStart, selectEnd));
         }
     }
 }

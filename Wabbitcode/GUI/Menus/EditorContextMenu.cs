@@ -16,6 +16,7 @@ namespace Revsoft.Wabbitcode.GUI.Menus
     public class EditorContextMenu : ContextMenu
     {
         private static readonly Regex IncludeRegex = new Regex("#include ((\"(?<includeFile>.*)(?<paren>\\)?)\")|((?!\")(?<includeFile>.*(?!\"))(?<paren>\\)?)))", RegexOptions.Compiled);
+
         private readonly MenuItem _cutContext = new MenuItem("Cut");
         private readonly MenuItem _copyContext = new MenuItem("Copy");
         private readonly MenuItem _pasteContext = new MenuItem("Paste");

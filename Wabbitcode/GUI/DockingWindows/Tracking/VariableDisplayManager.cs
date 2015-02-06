@@ -6,13 +6,13 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 {
     public class VariableDisplayManager
     {
-        private static readonly VariableDisplayManager instance = new VariableDisplayManager();
+        private static readonly VariableDisplayManager InstanceInternal = new VariableDisplayManager();
 
         public static VariableDisplayManager Instance
         {
             get
             {
-                return instance;
+                return InstanceInternal;
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using Aga.Controls.Tree.NodeControls;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows
@@ -143,6 +144,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             this._addressBox.UseCompatibleTextRendering = true;
             this._addressBox.ParentColumn = this.variableAddressCol;
             this._addressBox.ChangesApplied += AddressBoxOnChangesApplied;
+            this._addressBox.IsEditEnabledValueNeeded += CheckIsEditEnabledValueNeeded;
             //
             // _numBytesBox
             //
@@ -152,6 +154,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             this._numBytesBox.UseCompatibleTextRendering = true;
             this._numBytesBox.ParentColumn = this.numBytesCol;
             this._numBytesBox.ChangesApplied += NumBytesBox_OnChangesApplied;
+            this._numBytesBox.IsEditEnabledValueNeeded += CheckIsEditEnabledValueNeeded;
 
             //
             // _valueTypeBox
@@ -160,6 +163,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             this._valueTypeBox.EditEnabled = true;
             this._valueTypeBox.ChangesApplied += ValueTypeBox_OnChangesApplied;
             this._valueTypeBox.ParentColumn = this.valueTypeCol;
+            this._valueTypeBox.IsEditEnabledValueNeeded += CheckIsEditEnabledValueNeeded;
 
             //
             // _valueBox

@@ -12,7 +12,6 @@ using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.GUI.Dialogs;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode
@@ -112,7 +111,7 @@ namespace Revsoft.Wabbitcode
             DependencyFactory.RegisterType<IMenuService, MenuService>(new InjectionConstructor(toolStripContainer.TopToolStripPanel));
             DependencyFactory.RegisterType<IToolBarService, ToolBarService>(new InjectionConstructor(toolStripContainer.TopToolStripPanel));
             DependencyFactory.RegisterType<IAssemblerService, AssemblerService>();
-            DependencyFactory.RegisterType<IBackgroundAssemblerService, BackgroundAssemblerService>(new PerResolveLifetimeManager());
+            DependencyFactory.RegisterType<IBackgroundAssemblerService, BackgroundAssemblerService>(new ContainerControlledLifetimeManager());
             DependencyFactory.RegisterType<IProjectService, ProjectService>();
             DependencyFactory.RegisterType<IParserService, ParserService>();
             DependencyFactory.RegisterType<ISymbolService, SymbolService>();

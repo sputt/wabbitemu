@@ -98,7 +98,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         {
             base.OpenFile(fileName);
 
-            _originalImage = new Bitmap(fileName);
+            using (Image image = new Bitmap(fileName))
+            {
+                _originalImage = new Bitmap(image);
+            }
+
             if ((_originalImage.Size.Width < Size.Width / 4) ||
                 (_originalImage.Size.Height < Size.Height / 4))
             {

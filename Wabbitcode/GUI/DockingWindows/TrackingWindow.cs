@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using Aga.Controls.Tree.NodeControls;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.GUI.Dialogs;
 using Revsoft.Wabbitcode.GUI.DockingWindows.Tracking;
@@ -107,7 +108,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         #region Row Data
 
-
         private void ValueTypeBox_OnChangesApplied(object sender, EventArgs eventArgs)
         {
             var model = (TrackingVariableRowModel)variablesDataView.CurrentNode.Tag;
@@ -137,6 +137,12 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             {
                 AddEmptyRow();
             }
+        }
+
+
+        private void CheckIsEditEnabledValueNeeded(object sender, NodeControlValueEventArgs e)
+        {
+            e.Value = !(e.Node.Tag is ChildTrackingVariableRowModel);
         }
 
         private void AddEmptyRow()
