@@ -3,7 +3,7 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 {
-    public abstract class AbstractVariableDisplayController<TSize, TReturnValue> : IVariableDisplayController
+    public abstract class AbstractVariableDisplayController<TSize> : IVariableDisplayController
     {
         protected readonly ExpressionEvaluator Evaluator;
 
@@ -28,11 +28,16 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 
         protected abstract string GetDisplayValue(IWabbitcodeDebugger debugger, int address, TSize size);
 
-        public abstract TReturnValue GetActualValue(IWabbitcodeDebugger debugger, int address, TSize size);
+        protected abstract object GetActualValue(IWabbitcodeDebugger debugger, int address, TSize size);
 
         public string GetDisplayValue(IWabbitcodeDebugger debugger, string address, string size)
         {
             return GetDisplayValue(debugger, ParseAddress(address), ParseValidSize(size));
+        }
+
+        public object GetActualValue(IWabbitcodeDebugger debugger, string address, string size)
+        {
+            return GetActualValue(debugger, ParseAddress(address), ParseValidSize(size));
         }
     }
 }

@@ -244,7 +244,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             using (Bitmap calcBitmap = new Bitmap(128, 64, 128, PixelFormat.Format8bppIndexed, _scan0))
             {
                 var palette = calcBitmap.Palette;
-                for (int i = 0; i < 255; i++)
+                for (int i = 0; i <= 255; i++)
                 {
                     palette.Entries[i] = Color.FromArgb(0x9e * (256 - i) / 255, (0xAB * (256 - i)) / 255, (0x88 * (256 - i)) / 255);
                 }

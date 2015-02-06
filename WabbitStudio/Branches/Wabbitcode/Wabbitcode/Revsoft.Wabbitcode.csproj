@@ -683,11 +683,11 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="GUI\Dialogs\BitmapViewer.cs">
+    <Compile Include="GUI\Dialogs\VariableFullViewer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\Dialogs\BitmapViewer.Designer.cs">
-      <DependentUpon>BitmapViewer.cs</DependentUpon>
+    <Compile Include="GUI\Dialogs\VariableFullViewer.Designer.cs">
+      <DependentUpon>VariableFullViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\Dialogs\BuildSteps.cs">
       <SubType>Form</SubType>
@@ -1118,8 +1118,8 @@
     <EmbeddedResource Include="Resources\Templates.xml" />
     <EmbeddedResource Include="Resources\TemplatesSource\icon.bmp" />
     <Content Include="Resources\Wabbitcode.ico" />
-    <EmbeddedResource Include="GUI\Dialogs\BitmapViewer.resx">
-      <DependentUpon>BitmapViewer.cs</DependentUpon>
+    <EmbeddedResource Include="GUI\Dialogs\VariableFullViewer.resx">
+      <DependentUpon>VariableFullViewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Dialogs\BuildSteps.resx">
       <DependentUpon>BuildSteps.cs</DependentUpon>

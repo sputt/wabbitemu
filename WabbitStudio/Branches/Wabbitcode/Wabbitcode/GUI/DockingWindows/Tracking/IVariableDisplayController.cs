@@ -6,6 +6,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
     {
         string GetDisplayValue(IWabbitcodeDebugger debugger, string address, string size);
 
+        object GetActualValue(IWabbitcodeDebugger debugger, string address, string size);
+
         string Name { get; }
 
         int Size { get; }

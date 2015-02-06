@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -49,13 +50,14 @@ namespace Revsoft.Wabbitcode.Extensions
             return true;
         }
 
-        public static Bitmap ResizeImage(this Bitmap img, int width, int height)
+        public static Image ResizeImage(this Image img, int width, int height)
         {
             Bitmap resized = new Bitmap(width + 1, height + 1);
-            Graphics g = Graphics.FromImage(resized);
-            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            g.DrawImage(img, 0, 0, width + 1, height + 1);
-            g.Dispose();
+            using (Graphics g = Graphics.FromImage(resized))
+            {
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g.DrawImage(img, 0, 0, width + 1, height + 1);
+            }
 
             return resized;
         }

@@ -148,13 +148,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void UpdateScreen()
         {
-            Image image = _debugger.ScreenImage;
-            Image scaledImage = new Bitmap(image.Width * 2, image.Height * 2);
-            Graphics graphics = Graphics.FromImage(scaledImage);
-            graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
-            screenPicBox.Image = scaledImage;
-            graphics.DrawImage(image, new Rectangle(0, 0, scaledImage.Width, scaledImage.Height),
-                new Rectangle(0, 0, image.Width, image.Height), GraphicsUnit.Pixel);
+            var image = _debugger.ScreenImage;
+            screenPicBox.Image = image.ResizeImage(image.Width * 2, image.Height * 2);
         }
 
         private void Copy(object sender, EventArgs e)

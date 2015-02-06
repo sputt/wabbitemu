@@ -4,7 +4,7 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 {
-    class StringVariableDisplayController : AbstractVariableDisplayController<int, string>
+    class StringVariableDisplayController : AbstractVariableDisplayController<int>
     {
         private const int ReadToEnd = -1;
         public StringVariableDisplayController(ExpressionEvaluator evaluator) : base(evaluator)
@@ -63,7 +63,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
             return outputValue;
         }
 
-        public override string GetActualValue(IWabbitcodeDebugger debugger, int address, int size)
+        protected override object GetActualValue(IWabbitcodeDebugger debugger, int address, int size)
         {
             return GetDisplayValue(debugger, address, size);
         }

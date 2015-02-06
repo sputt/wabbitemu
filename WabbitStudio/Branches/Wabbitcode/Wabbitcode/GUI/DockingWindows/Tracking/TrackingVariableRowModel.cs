@@ -45,6 +45,11 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
             }
         }
 
+        public virtual object FullValue
+        {
+            get { return DisplayController.GetActualValue(Debugger, Address, NumBytesString); }
+        }
+
         protected virtual string CacheValue()
         {
             try
@@ -168,6 +173,16 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
             catch (Exception ex)
             {
                 return ex.Message;
+            }
+        }
+
+        public override object FullValue
+        {
+            get
+            {
+                var addressString = _parent.Address + "+(" + _parent.NumBytesString + "*" + _parent.ChildSize + ")+" +
+                                       _offset;
+                return DisplayController.GetActualValue(Debugger, addressString, NumBytesString);
             }
         }
     }

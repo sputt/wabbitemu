@@ -6,7 +6,7 @@ using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
 {
-    internal class LabelVariableDisplayController : AbstractVariableDisplayController<int, string>
+    internal class LabelVariableDisplayController : AbstractVariableDisplayController<int>
     {
         private readonly ISymbolService _symbolService;
 
@@ -48,7 +48,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
             return symbolList.Count == 0 ? data.ToString("X") : symbolList.First();
         }
 
-        public override string GetActualValue(IWabbitcodeDebugger debugger, int address, int size)
+        protected override object GetActualValue(IWabbitcodeDebugger debugger, int address, int size)
         {
             return GetDisplayValue(debugger, address, size);
         }

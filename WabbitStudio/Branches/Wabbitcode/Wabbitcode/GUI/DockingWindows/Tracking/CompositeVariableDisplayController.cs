@@ -32,5 +32,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows.Tracking
         {
             return string.Empty;
         }
+        public object GetActualValue(IWabbitcodeDebugger debugger, string address, string size)
+        {
+            return null;
+        }
     }
 }

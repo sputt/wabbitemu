@@ -14,7 +14,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class TrackingWindow : ToolWindow
     {
-        private readonly List<BitmapViewer> _openBitmaps = new List<BitmapViewer>();
+        private readonly List<VariableFullViewer> _fullViewers = new List<VariableFullViewer>();
         private readonly TrackingTreeModel _model;
         private readonly IDebuggerService _debuggerService;
 
@@ -29,7 +29,6 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
             _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
 
-            // TODO: fix
             _model = new TrackingTreeModel();
             AddEmptyRow();
             variablesDataView.Model = _model;
@@ -52,7 +51,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
             _debugger.DebuggerRunningChanged -= OnDebuggerOnDebuggerRunningChanged;
             _debugger = null;
             EnablePanel(false);
-            foreach (var viewer in _openBitmaps)
+            foreach (var viewer in _fullViewers)
             {
                 viewer.Close();
             }
@@ -179,9 +178,9 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void temp_FormClosed(object sender, FormClosedEventArgs e)
         {
-            foreach (BitmapViewer test in _openBitmaps.Where(test => test.Tag == ((Form) sender).Tag))
+            foreach (VariableFullViewer test in _fullViewers.Where(test => test.Tag == ((Form) sender).Tag))
             {
-                _openBitmaps.Remove(test);
+                _fullViewers.Remove(test);
                 break;
             }
         }
@@ -205,30 +204,32 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         private void variablesDataView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            var node = variablesDataView.GetNodeAt(e.Location);
-            if (node == null)
+            var node = variablesDataView.GetNodeControlInfoAt(e.Location);
+            if (node.Node == null || node.Control.ParentColumn.Index != variableValueCol.Index)
             {
                 return;
             }
 
-            var model = node.Tag as TrackingVariableRowModel;
+            var model = node.Node.Tag as TrackingVariableRowModel;
             if (model == null)
             {
                 return;
             }
 
-            // TODO: abstract with the controller
-            /*if (model.ValueImage != null)
+            var fullValue = model.FullValue;
+            if (fullValue == null)
             {
-                BitmapViewer temp = new BitmapViewer(model.ValueImage)
-                {
-                    Tag = model.ValueImage
-                };
+                return;
+            }
 
-                temp.Show();
-                _openBitmaps.Add(temp);
-                temp.FormClosed += temp_FormClosed;
-            }*/
+            VariableFullViewer temp = new VariableFullViewer(model.Address, fullValue)
+            {
+                Tag = fullValue
+            };
+
+            temp.Show();
+            _fullViewers.Add(temp);
+            temp.FormClosed += temp_FormClosed;
         }
     }
 }
