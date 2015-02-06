@@ -27,7 +27,18 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                 label = label.ToUpper();
             }
 
-            return _addressToLabel == null ? (int?) null : _labelToAddress[label].SingleOrDefault();
+            if (_labelToAddress == null)
+            {
+                return null;
+            }
+
+            var labelVal = _labelToAddress[label].ToList();
+            if (labelVal.Any())
+            {
+                return labelVal.Single();
+            }
+
+            return null;
         }
 
         public void ParseSymFile(string symFileContents)

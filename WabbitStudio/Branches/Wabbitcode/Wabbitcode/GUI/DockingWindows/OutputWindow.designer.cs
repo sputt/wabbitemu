@@ -1,4 +1,7 @@
-﻿namespace Revsoft.Wabbitcode.GUI.DockingWindows
+﻿using Revsoft.TextEditor;
+using Revsoft.Wabbitcode.TextEditor;
+
+namespace Revsoft.Wabbitcode.GUI.DockingWindows
 {
     public partial class OutputWindow
     {
@@ -8,7 +11,7 @@
         private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.ContextMenu contextMenu1;
         private System.Windows.Forms.MenuItem copyOutputButton;
-        private System.Windows.Forms.RichTextBox outputWindowBox;
+        private TextEditorControl outputWindowBox;
         private System.Windows.Forms.MenuItem selectAllOuputButton;
 
         /// <summary>
@@ -33,7 +36,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OutputWindow));
-            this.outputWindowBox = new System.Windows.Forms.RichTextBox();
+            this.outputWindowBox = new TextEditorControl();
             this.contextMenu1 = new System.Windows.Forms.ContextMenu();
             this.copyOutputButton = new System.Windows.Forms.MenuItem();
             this.selectAllOuputButton = new System.Windows.Forms.MenuItem();
@@ -44,12 +47,15 @@
             this.outputWindowBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.outputWindowBox.Location = new System.Drawing.Point(0, 2);
             this.outputWindowBox.Name = "outputWindowBox";
-            this.outputWindowBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedBoth;
+            this.outputWindowBox.HorizontalScroll.Enabled = true;
+            this.outputWindowBox.VerticalScroll.Enabled = true;
             this.outputWindowBox.Size = new System.Drawing.Size(526, 190);
             this.outputWindowBox.TabIndex = 2;
             this.outputWindowBox.Text = "";
-            this.outputWindowBox.WordWrap = false;
-            this.outputWindowBox.DoubleClick += new System.EventHandler(this.outputWindowBox_DoubleClick);
+            this.outputWindowBox.IsReadOnly = true;
+            this.outputWindowBox.ShowLineNumbers = false;
+            this.outputWindowBox.ShowVRuler = false;
+            this.outputWindowBox.ActiveTextAreaControl.TextArea.DoubleClick += new System.EventHandler(this.outputWindowBox_DoubleClick);
             // 
             // contextMenu1
             // 
