@@ -28,6 +28,7 @@
 
         <Style x:Key="LayerStyle" TargetType="{x:Type local:MapLayer}">
         	<Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="IsSelected" Value="False"/>
             <Style.Triggers>
                 <DataTrigger Value="True">
                     <DataTrigger.Binding>
@@ -38,6 +39,9 @@
                     </DataTrigger.Binding>
                     <Setter Property="IsHitTestVisible" Value="True"/>
                     <Setter Property="Active" Value="True"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                    <Setter Property="IsSelected" Value="True"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -229,8 +233,7 @@
                                     </local:XMapView>
 
                                     <local:TilegroupLayer Panel.ZIndex="2" Style="{StaticResource LayerStyle}"
-                                                          >
-                                        <!-- SourceTile="{Binding DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"-->
+                                                          SourceTile="{Binding DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MainWindow}}">
                                     </local:TilegroupLayer>
 
                                     <local:MiscLayer Panel.ZIndex="3" Style="{StaticResource LayerStyle}"/>
@@ -308,8 +311,8 @@
 						<MenuItem Command="Undo"/>
 						<MenuItem Command="Redo"/>
 						<Separator/>
-						<MenuItem Command="ApplicationCommands.Copy"/>
-						<MenuItem Command="ApplicationCommands.Paste"/>
+                        <MenuItem Command="ApplicationCommands.Copy" />
+                        <MenuItem Command="ApplicationCommands.Paste" />
 
 					</MenuItem>
 					<MenuItem Header="_Mapset" x:Name="MapsetMenu">

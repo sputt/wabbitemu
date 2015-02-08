@@ -1,11 +1,21 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports System.Collections.ObjectModel
 
+<Serializable()>
 Public Class TilegroupSelection
 
     Private Const MAP_WIDTH As Integer = 16
 
+    <NonSerialized()>
+    Private _Tileset As Tileset
     Public Property Tileset As Tileset
+        Get
+            Return _Tileset
+        End Get
+        Set(value As Tileset)
+            _Tileset = value
+        End Set
+    End Property
 
     Private _TilegroupEntries As ICollection(Of TilegroupEntry)
     Public Property TilegroupEntries As ICollection(Of TilegroupEntry)
@@ -13,42 +23,58 @@ Public Class TilegroupSelection
             Return _TilegroupEntries
         End Get
         Set(value As ICollection(Of TilegroupEntry))
-
             _TilegroupEntries = value
-            If value.Count = 0 Then Exit Property
-
-            Dim ResultList As New List(Of LineSegment)
-            BuildSegmentList(value(0), value, New HashSet(Of TilegroupEntry), ResultList)
-
-            Dim StartSegment As LineSegment = ResultList(0)
-            ResultList.Remove(StartSegment)
-            Dim CurSegment = FindConnectedSegment(StartSegment, ResultList)
-
-            ' Create the seed point
-            Dim RawVertices As New List(Of Point)
-            RawVertices.Add(StartSegment.GetNonConnectedPoint(CurSegment))
-            Do
-                ResultList.Remove(CurSegment)
-                Dim NextSegment = FindConnectedSegment(CurSegment, ResultList)
-                If NextSegment IsNot Nothing Then
-                    RawVertices.Add(CurSegment.GetNonConnectedPoint(NextSegment))
-                End If
-                CurSegment = NextSegment
-            Loop Until CurSegment Is Nothing OrElse CurSegment.IsConnectedTo(StartSegment)
-
-            If CurSegment IsNot Nothing Then RawVertices.Add(CurSegment.GetNonConnectedPoint(StartSegment))
-
-            Dim MinX As Integer = RawVertices.Select(Function(v) v.X).Min()
-            Dim MinY As Integer = RawVertices.Select(Function(v) v.Y).Min()
-
-            _MapOffset = New Point(MinX, MinY)
-
-            _Vertices.AddRange(RawVertices.Select(Function(v)
-                                                      v.Offset(-MinX, -MinY)
-                                                      Return v
-                                                  End Function))
+            RecalculateVertices()
         End Set
     End Property
+
+    Public Sub RecalculateVertices()
+        If _TilegroupEntries.Count = 0 Then Exit Sub
+
+        Dim ResultList As New List(Of LineSegment)
+        BuildSegmentList(_TilegroupEntries(0), _TilegroupEntries, New HashSet(Of TilegroupEntry), ResultList)
+
+        Dim StartSegment As LineSegment = ResultList(0)
+        ResultList.Remove(StartSegment)
+        Dim CurSegment = FindConnectedSegment(StartSegment, ResultList)
+        If CurSegment Is Nothing Then Exit Sub
+
+        ' Create the seed point
+        Dim RawVertices As New List(Of Point)
+        RawVertices.Add(StartSegment.GetNonConnectedPoint(CurSegment))
+        Do
+            ResultList.Remove(CurSegment)
+            Dim NextSegment = FindConnectedSegment(CurSegment, ResultList)
+            If NextSegment IsNot Nothing Then
+                RawVertices.Add(CurSegment.GetNonConnectedPoint(NextSegment))
+            End If
+            CurSegment = NextSegment
+        Loop Until CurSegment Is Nothing OrElse CurSegment.IsConnectedTo(StartSegment)
+
+        If CurSegment IsNot Nothing Then RawVertices.Add(CurSegment.GetNonConnectedPoint(StartSegment))
+
+        Dim MinX As Integer = RawVertices.Select(Function(v) v.X).Min()
+        Dim MinY As Integer = RawVertices.Select(Function(v) v.Y).Min()
+
+        _MapOffset = New Point(MinX, MinY)
+
+        _Vertices.AddRange(RawVertices.Select(Function(v)
+                                                  v.Offset(-MinX, -MinY)
+                                                  Return v
+                                              End Function))
+    End Sub
+
+    Public ReadOnly Property Bounds As Rect
+        Get
+            Dim MinX As Integer = _Vertices.Select(Function(v) v.X).Min()
+            Dim MinY As Integer = _Vertices.Select(Function(v) v.Y).Min()
+            Dim MaxX As Integer = _Vertices.Select(Function(v) v.X).Max()
+            Dim MaxY As Integer = _Vertices.Select(Function(v) v.Y).Max()
+
+            Return New Rect(0, 0, MaxX - MinX, MaxY - MinY)
+        End Get
+    End Property
+
 
     Private ReadOnly _Vertices As New List(Of Point)
 
@@ -68,7 +94,7 @@ Public Class TilegroupSelection
     End Property
 
     Private Function FindConnectedSegment(Segment As LineSegment, Segments As IEnumerable(Of LineSegment)) As LineSegment
-        Return Segments.First(Function(s) s.IsConnectedTo(Segment))
+        Return Segments.FirstOrDefault(Function(s) s.IsConnectedTo(Segment))
     End Function
 
     Private Class LineSegment
@@ -161,6 +187,7 @@ Public Class TilegroupSelection
     End Property
 End Class
 
+<Serializable()>
 Public Class TilegroupEntry
     ''' <summary>
     ''' Index into the map data
@@ -204,6 +231,7 @@ Public Class TilegroupEntry
     End Function
 End Class
 
+<Serializable()>
 Public Class TilegroupEntryCollection
     Inherits List(Of TilegroupEntry)
 End Class

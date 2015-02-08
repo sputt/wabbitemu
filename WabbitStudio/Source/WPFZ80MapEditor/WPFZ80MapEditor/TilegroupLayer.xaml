@@ -6,46 +6,30 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPFZ80MapEditor"
              xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
+                xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
                 MouseLeftButtonDown="ObjectCanvas_MouseLeftButtonDown"
                   MouseLeftButtonUp="ObjectCanvas_MouseLeftButtonUp" MouseMove="ObjectCanvas_MouseMove"
-             Width="256" Height="256" Focusable="True" KeyUp="TilegroupLayer_KeyUp" KeyDown="TilegroupLayer_KeyDown_1">
+             Width="256" Height="256" Focusable="True" KeyDown="TilegroupLayer_KeyDown_1">
     <local:MapLayer.Resources>
-        <local:TilegroupSelection x:Key="TilegroupTest" Tileset="{x:Null}">
-            <local:TilegroupSelection.TilegroupEntries>
-                <local:TilegroupEntryCollection>
-                    <local:TilegroupEntry Index="117">
-                        <local:TilegroupEntry.Tile>
-                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
-                        </local:TilegroupEntry.Tile>
-                    </local:TilegroupEntry>
-                    <local:TilegroupEntry Index="118">
-                        <local:TilegroupEntry.Tile>
-                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
-                        </local:TilegroupEntry.Tile>
-                    </local:TilegroupEntry>
-                    <local:TilegroupEntry Index="134">
-                        <local:TilegroupEntry.Tile>
-                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
-                        </local:TilegroupEntry.Tile>
-                    </local:TilegroupEntry>
-                    <local:TilegroupEntry Index="135">
-                        <local:TilegroupEntry.Tile>
-                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
-                        </local:TilegroupEntry.Tile>
-                    </local:TilegroupEntry>
-                </local:TilegroupEntryCollection>
-            </local:TilegroupSelection.TilegroupEntries>
-        </local:TilegroupSelection>
-        
+        <converters:DashedStrokeConverter x:Key="DashedStrokeConverter"/>
         <local:SegmentConverter x:Key="SegmentConverter"/>
     </local:MapLayer.Resources>
 
-    <Canvas x:Name="ObjectCanvas" Width="256" Height="256" Background="Transparent" >
+    <UserControl.CommandBindings>
+        <CommandBinding x:Name="Copy" Command="Copy"
+                        CanExecute="Copy_CanExecute"
+                        Executed="Copy_Executed"/>
+    </UserControl.CommandBindings>
+
+    <Canvas x:Name="ObjectCanvas" Width="256" Height="256" Background="Transparent" ClipToBounds="True" >
         <Path x:Name="TilegroupSelectionShape" DataContext="{Binding TilegroupSelection, ElementName=TilegroupLayer}"
                       Canvas.Left="{Binding MapOffset.X}"
                       Canvas.Top="{Binding MapOffset.Y}"
-                      Stroke="{StaticResource SelectionBrush}" Opacity="{StaticResource SelectionOpacity}" StrokeThickness="2" Cursor="SizeAll" Fill="#20FFFFFF"
+                      Stroke="{StaticResource SelectionBrush}"
+              Fill="Transparent"
+              StrokeDashArray="{Binding Floating, ElementName=TilegroupLayer, Converter={StaticResource DashedStrokeConverter}}"
+              StrokeThickness="2" Cursor="SizeAll"
                   MouseLeftButtonDown="TilegroupSelectionShape_MouseLeftButtonDown"
                   MouseLeftButtonUp="TilegroupSelectionShape_MouseLeftButtonUp"
                   MouseMove="TilegroupSelectionShape_MouseMove"

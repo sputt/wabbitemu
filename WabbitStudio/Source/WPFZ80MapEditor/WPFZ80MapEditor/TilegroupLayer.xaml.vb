@@ -1,6 +1,32 @@
-﻿Public Class TilegroupLayer
+﻿Imports System.Collections.ObjectModel
+
+Public Class TilegroupLayer
     Inherits MapLayer
     Implements IMapLayer
+
+    ''' <summary>
+    ''' Whether or not the selection is floating.  When floating, the delete key will simply remove the selection without applying.
+    ''' When not floating, the delete key will fill the selection with the selected tile
+    ''' </summary>
+    ''' <remarks></remarks>
+    Public Property Floating As Boolean
+        Get
+            Return GetValue(FloatingProperty)
+        End Get
+
+        Set(ByVal value As Boolean)
+            SetValue(FloatingProperty, value)
+        End Set
+    End Property
+
+    Public Shared ReadOnly FloatingProperty As DependencyProperty = _
+                           DependencyProperty.Register("Floating", _
+                           GetType(Boolean), GetType(TilegroupLayer), _
+                           New PropertyMetadata(False))
+
+    Public Sub New()
+        InitializeComponent()
+    End Sub
 
     Public Overrides ReadOnly Property LayerType As LayerType
         Get
@@ -27,18 +53,18 @@
                            GetType(TilegroupSelection), GetType(TilegroupLayer), _
                            New PropertyMetadata(Nothing))
 
-    Public Property SelectedTile As TileSelection
+    Public Property SourceTile As TileSelection
         Get
-            Return GetValue(SelectedTileProperty)
+            Return GetValue(SourceTileProperty)
         End Get
 
         Set(ByVal value As TileSelection)
-            SetValue(SelectedTileProperty, value)
+            SetValue(SourceTileProperty, value)
         End Set
     End Property
 
-    Public Shared ReadOnly SelectedTileProperty As DependencyProperty = _
-                           DependencyProperty.Register("SelectedTile", _
+    Public Shared ReadOnly SourceTileProperty As DependencyProperty = _
+                           DependencyProperty.Register("SourceTile", _
                            GetType(TileSelection), GetType(TilegroupLayer), _
                            New PropertyMetadata(Nothing))
 
@@ -133,6 +159,8 @@
                 End If
             End If
         End If
+
+        Floating = False
         TilegroupSelection = New TilegroupSelection(Map.Tileset, Result.ToList())
     End Sub
 #End Region
@@ -152,12 +180,15 @@
             UndoManager.PushUndoState(Map, UndoManager.TypeFlags.Anims)
 
             TilegroupLayer.Focus()
-            _TileDataBackup.AddRange(Map.TileData)
-            If SelectedTile IsNot Nothing AndAlso SelectedTile.Type = TileSelection.SelectionType.Tile Then
-                TilegroupSelection.TilegroupEntries.ToList().ForEach(
-                    Sub(e)
-                        _TileDataBackup(e.Index) = SelectedTile.TileIndex
+            If Not Floating Then
+                _TileDataBackup.Clear()
+                _TileDataBackup.AddRange(Map.TileData)
+                If SourceTile IsNot Nothing AndAlso SourceTile.Type = TileSelection.SelectionType.Tile AndAlso Not Floating Then
+                    TilegroupSelection.TilegroupEntries.ToList().ForEach(
+                        Sub(e)
+                        _TileDataBackup(e.Index) = SourceTile.TileIndex
                     End Sub)
+                End If
             End If
             evt.Handled = True
         End If
@@ -166,55 +197,125 @@
     Private Sub TilegroupSelectionShape_MouseLeftButtonUp(sender As Object, evt As MouseButtonEventArgs)
         If Mouse.Captured Is sender Then
             sender.ReleaseMouseCapture()
+
             evt.Handled = True
         End If
     End Sub
+
+    Private Sub ApplyTilegroupSelection(IndexOffset As Integer)
+        Dim Entries As New List(Of TilegroupEntry)
+
+        Dim Replacements As New Dictionary(Of Integer, Byte)
+        TilegroupSelection.TilegroupEntries.ToList().ForEach(
+            Sub(e)
+                If e.Index + IndexOffset >= 0 And e.Index + IndexOffset < Map.TileData.Count Then
+                    Map.TileData(e.Index + IndexOffset) = e.Tile.TileIndex
+                End If
+                If IndexOffset <> 0 Then
+                    ' Put back the original data where it was
+                    If e.Index >= 0 And e.Index < _TileDataBackup.Count Then
+                        Replacements(e.Index) = _TileDataBackup(e.Index)
+                    End If
+                End If
+                Entries.Add(New TilegroupEntry(e.Index + IndexOffset, e.Tile))
+            End Sub)
+
+        For Each Index In Replacements.Keys.Except(Entries.Select(Function(e) e.Index))
+            Map.TileData(Index) = Replacements(Index)
+        Next
+
+        If IndexOffset <> 0 Then
+            TilegroupSelection = New TilegroupSelection(Map.Tileset, Entries)
+        End If
+    End Sub
+
 
     Private Sub TilegroupSelectionShape_MouseMove(sender As Object, evt As MouseEventArgs)
         If Mouse.Captured Is sender Then
-            Dim Diff As Point = Mouse.GetPosition(sender) - _StartGroupDrag
+            Dim Pos = Mouse.GetPosition(sender)
+            Debug.Print(TilegroupSelection.MapOffset.X)
+            Pos.X = Math.Min(255, Math.Max(-TilegroupSelection.Bounds.X, Pos.X))
+
+            Dim Diff As Point = Pos - _StartGroupDrag
             Dim Dx = Math.Round(Diff.X / 16.0)
+            If (Dx < 0 And TilegroupSelection.MapOffset.X = 0) Or (Dx > 0 And TilegroupSelection.MapOffset.X + TilegroupSelection.Bounds.Width = 256) Then
+                Dx = 0
+            End If
+
             Dim Dy = Math.Round(Diff.Y / 16.0)
+            If (Dy < 0 And TilegroupSelection.MapOffset.Y = 0) Or (Dy > 0 And TilegroupSelection.MapOffset.Y + TilegroupSelection.Bounds.Height = 256) Then
+                Dy = 0
+            End If
 
             Dim Di = Dy * 16 + Dx
+            If Di <> 0 Then
+                Floating = True
+            End If
 
             ' Assign the tiles
-            Dim Entries As New List(Of TilegroupEntry)
+            ApplyTilegroupSelection(Di)
 
-            Dim Replacements As New Dictionary(Of Integer, Byte)
-            TilegroupSelection.TilegroupEntries.ToList().ForEach(
-                Sub(e)
-                    Map.TileData(e.Index + Di) = e.Tile.TileIndex
-                    If Di <> 0 Then
-                        ' Put back the original data where it was
-                        Replacements(e.Index) = _TileDataBackup(e.Index)
-                    End If
-                    Entries.Add(New TilegroupEntry(e.Index + Di, e.Tile))
-                End Sub)
-
-            For Each Index In Replacements.Keys.Except(Entries.Select(Function(e) e.Index))
-                Map.TileData(Index) = Replacements(Index)
-            Next
-
-            TilegroupSelection = New TilegroupSelection(Map.Tileset, Entries)
             evt.Handled = True
         End If
     End Sub
 
-    Private Sub TilegroupLayer_KeyUp(sender As Object, e As KeyEventArgs)
-        Debug.Print("KEY UP")
-    End Sub
 
     Private Sub TilegroupLayer_KeyDown_1(sender As Object, evt As KeyEventArgs)
-        If evt.Key = Key.Delete AndAlso TilegroupSelection IsNot Nothing AndAlso SelectedTile IsNot Nothing AndAlso SelectedTile.Type = TileSelection.SelectionType.Tile Then
+        If evt.Key = Key.Delete AndAlso TilegroupSelection IsNot Nothing Then
             UndoManager.PushUndoState(Map, 0)
-            TilegroupSelection.TilegroupEntries.ToList().ForEach(
-                Sub(e)
-                    Map.TileData(e.Index) = SelectedTile.TileIndex
-                End Sub)
+            If Floating Then
+                For i = 0 To 255
+                    Map.TileData(i) = _TileDataBackup(i)
+                Next
+                TilegroupSelection = Nothing
+            Else
+                If SourceTile IsNot Nothing AndAlso SourceTile.Type = TileSelection.SelectionType.Tile Then
+                    TilegroupSelection.TilegroupEntries.ToList().ForEach(
+                        Sub(e)
+                            Map.TileData(e.Index) = SourceTile.TileIndex
+                        End Sub)
+                End If
+                TilegroupSelection = Nothing
+            End If
             evt.Handled = True
         ElseIf evt.Key = Key.Escape Then
             TilegroupSelection = Nothing
         End If
+    End Sub
+
+    Private Sub Copy_CanExecute(sender As Object, e As CanExecuteRoutedEventArgs)
+        If Active AndAlso TilegroupSelection IsNot Nothing Then
+            e.CanExecute = True
+            e.Handled = True
+        End If
+    End Sub
+
+    Private Sub Copy_Executed(sender As Object, e As ExecutedRoutedEventArgs)
+        If Active And IsSelected Then
+            Dim ClipboardTilegroup = New TilegroupSelection()
+            ClipboardTilegroup.TilegroupEntries = New TilegroupEntryCollection()
+            For Each Entry In TilegroupSelection.TilegroupEntries
+                ClipboardTilegroup.TilegroupEntries.Add(Entry)
+            Next
+
+            Clipboard.SetData(GetType(TilegroupSelection).FullName, ClipboardTilegroup)
+            e.Handled = True
+        End If
+    End Sub
+
+    Overrides Function CanPaste() As Boolean
+        Return Clipboard.ContainsData(GetType(TilegroupSelection).FullName)
+    End Function
+
+    Public Overrides Sub Paste()
+        Dim Data As TilegroupSelection = Clipboard.GetData(GetType(TilegroupSelection).FullName)
+        Data.Tileset = Map.Tileset
+        Data.RecalculateVertices()
+        Floating = True
+        TilegroupSelection = Data
+
+        _TileDataBackup.Clear()
+        _TileDataBackup.AddRange(Map.TileData)
+        ApplyTilegroupSelection(0)
     End Sub
 End Class

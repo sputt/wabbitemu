@@ -91,6 +91,21 @@ Public Class XLayerContainer
         Args.Handled = False
     End Sub
 
+    Private ReadOnly Property Layers As IEnumerable(Of MapLayer)
+        Get
+
+            Return Utils.FindChildren(Of MapLayer)(ItemContainerGenerator.ContainerFromItem(SelectedItem))
+        End Get
+    End Property
+
+    Private Sub Paste_CanExecute(sender As Object, e As CanExecuteRoutedEventArgs)
+        e.CanExecute = SelectedItem.Exists AndAlso Layers.Select(Function(a) a.CanPaste()).Aggregate(Function(a, b) a Or b)
+        e.Handled = True
+    End Sub
+
+    Private Sub Paste_Executed(sender As Object, e As ExecutedRoutedEventArgs)
+        Layers.ToList().ForEach(Sub(a) a.Paste())
+    End Sub
 End Class
 
 Public Class MapPositionConverter

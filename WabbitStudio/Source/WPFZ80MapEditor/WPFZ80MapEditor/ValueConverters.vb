@@ -312,4 +312,15 @@ Namespace ValueConverters
         End Function
     End Class
 
+
+    Public Class DashedStrokeConverter
+        Inherits OneWayConverter(Of Boolean, DoubleCollection)
+        Public Overrides Function Convert(Value As Boolean, Parameter As Object) As DoubleCollection
+            If Value Then
+                Return New DoubleCollection({4.0, 1.5})
+            Else
+                Return New DoubleCollection({4.0, 0.0})
+            End If
+        End Function
+    End Class
 End Namespace

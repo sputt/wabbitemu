@@ -1,4 +1,5 @@
 ﻿
+<Serializable()>
 Public Class TileSelection
     Public Enum SelectionType
         Tile
@@ -23,5 +24,15 @@ Public Class TileSelection
     Public Property Type As SelectionType
     Public Property TileIndex As Byte
     Public Property AnimatedTileDef As ZDef
+
+    <NonSerialized()>
+    Private _Tileset As Tileset
     Public Property Tileset As Tileset
+        Get
+            Return _Tileset
+        End Get
+        Set(value As Tileset)
+            _Tileset = value
+        End Set
+    End Property
 End Class

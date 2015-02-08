@@ -8,6 +8,12 @@
              x:Name="LayerContainer"
             ItemsSource="{Binding Maps}" SelectionMode="Single">
 
+    <ListBox.CommandBindings>
+    <CommandBinding x:Name="Paste" Command="Paste"
+                        CanExecute="Paste_CanExecute"
+                        Executed="Paste_Executed"/>
+    </ListBox.CommandBindings>
+    
     <ListBox.Resources>
         <local:MapPositionConverter x:Key="MapPositionConverter"/>
     </ListBox.Resources>

@@ -703,6 +703,7 @@ Public Class ArgNameAndIndex
     End Sub
 End Class
 
+<Serializable()>
 Public Class ZDef
     Public Property Name As String
     Public Property Macro As String
