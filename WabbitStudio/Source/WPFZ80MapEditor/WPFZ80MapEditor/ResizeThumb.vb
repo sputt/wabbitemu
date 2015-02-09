@@ -8,7 +8,8 @@ Public Class ResizeThumb
         AddHandler Me.MouseLeftButtonUp, AddressOf Drag_MouseLeftButtonUp
         AddHandler Me.MouseMove, AddressOf Drag_MouseMove
 
-        Background = WPFZ80MapEditor.Application.Current.Resources("SelectionBrush")
+        Resources.Source = New Uri("/WPFZ80MapEditor;component/ColorsAndStoryboards.xaml", UriKind.RelativeOrAbsolute)
+        Background = Resources("SelectionBrush")
     End Sub
 
     Private _IsDraggingMisc As Boolean = False

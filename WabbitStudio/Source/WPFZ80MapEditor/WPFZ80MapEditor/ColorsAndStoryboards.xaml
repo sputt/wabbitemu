@@ -1,5 +1,24 @@
 ﻿<ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	<!-- Resource dictionary entries should be defined here. -->
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:wpfz80MapEditor="clr-namespace:WPFZ80MapEditor"
+	xmlns:system="clr-namespace:System;assembly=mscorlib">
+    <system:Double x:Key="SelectionOpacity">0.6</system:Double>
+    <system:Double x:Key="MouseOverOpacity">0.2</system:Double>
+    <SolidColorBrush x:Key="SelectionBrush" 
+                         Color="{Binding Color, Source={x:Static SystemColors.HighlightBrush}}"/>
+    <SolidColorBrush x:Key="InactiveSelectionBrush"
+                         Color="{Binding Color, Source={x:Static SystemColors.InactiveBorderBrush}}"/>
+
+    <Color x:Key="ObjectColor">#FF4040FF</Color>
+    <Color x:Key="EnemyColor">#FFDF5003</Color>
+    <Color x:Key="AnimColor">#FFFF40FF</Color>
+    <Color x:Key="CollisionColor">#FFA00030</Color>
+    <SolidColorBrush x:Key="CollisionBrush" Color="{StaticResource CollisionColor}"/>
+
+    <wpfz80MapEditor:TintEffect x:Key="AnimTintEffect" Color="{StaticResource  AnimColor}"/>
+    <wpfz80MapEditor:TintEffect x:Key="ObjectTintEffect" Color="{StaticResource  ObjectColor}"/>
+    <wpfz80MapEditor:TintEffect x:Key="EnemyTintEffect" Color="{StaticResource  EnemyColor}"/>
+
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 </ResourceDictionary>

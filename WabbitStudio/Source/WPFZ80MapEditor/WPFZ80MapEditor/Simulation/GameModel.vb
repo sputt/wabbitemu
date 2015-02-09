@@ -183,10 +183,10 @@ Public Class GameModel
         _Calc = New Wabbitemu
         _Asm = New Z80Assembler
 
-        _Asm.CurrentDirectory = MainWindow.ZeldaFolder
+        _Asm.CurrentDirectory = MapEditorControl.ZeldaFolder
 
         _Asm.InputFile = "zelda_all.asm"
-        _Asm.OutputFile = IO.Path.Combine(MainWindow.ZeldaFolder, "zelda.8xk")
+        _Asm.OutputFile = Path.Combine(MapEditorControl.ZeldaFolder, "zelda.8xk")
 
         _Asm.IncludeDirectories.Add("defaults")
         _Asm.IncludeDirectories.Add("images")
@@ -196,7 +196,7 @@ Public Class GameModel
         Dim Output = _Asm.Assemble()
         Debug.Write(_Asm.StdOut.ReadAll())
 
-        _Calc.LoadFile(MainWindow.RomPath)
+        _Calc.LoadFile(MapEditorControl.RomPath)
         _Calc.LoadFile(_Asm.OutputFile)
 
         _Calc.Run()

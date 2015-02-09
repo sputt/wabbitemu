@@ -1,6 +1,4 @@
-﻿Imports System.IO
-Imports System.Globalization
-Imports System.Collections.ObjectModel
+﻿Imports System.Windows.Threading
 
 Public Class TileImageSource
     Public Property Image As ImageSource
@@ -35,7 +33,7 @@ Public Class Tileset
 
         Tiles = New List(Of TileImageSource)()
 
-        MainWindow.Instance.Dispatcher.Invoke(
+        Dispatcher.CurrentDispatcher.Invoke(
             Sub()
                 Dim Image As New BitmapImage(New Uri(FileName, UriKind.Absolute))
                 For i = 0 To (Image.Height / Image.Width) - 1

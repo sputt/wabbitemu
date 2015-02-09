@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPFZ80MapEditor"
-             xmlns:s="clr-namespace:System;assembly=mscorlib"
              xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
              mc:Ignorable="d" 
              d:DesignHeight="256" d:DesignWidth="256"
@@ -14,40 +13,48 @@
                 AllowDrop="{Binding Active, ElementName=MiscLayerControl}" Drop="Misc_Drop"
              >
     <local:MapLayer.Resources>
-        <local:LayerType x:Key="LayerType">MiscLayer</local:LayerType>
-        <ControlTemplate x:Key="NoScroll">
-            <ItemsPresenter></ItemsPresenter>
-        </ControlTemplate>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ColorsAndStoryboards.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            
+            <SolidColorBrush x:Key="SelectionBrush" 
+                         Color="{Binding Color, Source={x:Static SystemColors.HighlightBrush}}"/>
+            <local:LayerType x:Key="LayerType">MiscLayer</local:LayerType>
+            <ControlTemplate x:Key="NoScroll">
+                <ItemsPresenter></ItemsPresenter>
+            </ControlTemplate>
         
-        <localconverters:YConverter x:Key="YConverter"/>
-        <localconverters:XConverter x:Key="XConverter"/>
-        <localconverters:VolumeConverter x:Key="VolumeConverter"/>
+            <localconverters:YConverter x:Key="YConverter"/>
+            <localconverters:XConverter x:Key="XConverter"/>
+            <localconverters:VolumeConverter x:Key="VolumeConverter"/>
 
-        <ControlTemplate x:Key="MoveThumbTemplate" TargetType="{x:Type Thumb}">
-            <Rectangle Fill="Transparent"/>
-        </ControlTemplate>
+            <ControlTemplate x:Key="MoveThumbTemplate" TargetType="{x:Type Thumb}">
+                <Rectangle Fill="Transparent"/>
+            </ControlTemplate>
 
-        <ControlTemplate x:Key="ResizeDecoratorTemplate" TargetType="ListBoxItem">
+            <ControlTemplate x:Key="ResizeDecoratorTemplate" TargetType="ListBoxItem">
 
-        </ControlTemplate>
+            </ControlTemplate>
 
-        <ControlTemplate x:Key="MiscItemTemplate" TargetType="ContentControl">
-            <Grid>
-                <Thumb Template="{StaticResource MoveThumbTemplate}" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" Cursor="SizeAll"/>
-                <ContentPresenter Content="{TemplateBinding ContentControl.Content}"/>
-            </Grid>
-        </ControlTemplate>
+            <ControlTemplate x:Key="MiscItemTemplate" TargetType="ContentControl">
+                <Grid>
+                    <Thumb Template="{StaticResource MoveThumbTemplate}" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" Cursor="SizeAll"/>
+                    <ContentPresenter Content="{TemplateBinding ContentControl.Content}"/>
+                </Grid>
+            </ControlTemplate>
         
-        <DataTemplate DataType="{x:Type local:ZMisc}">
-            <ContentControl Template="{StaticResource MiscItemTemplate}">
-                <Border Width="{Binding W}" Height="{Binding H}" BorderThickness="2" BorderBrush="Green"
-                        MouseLeftButtonDown="Misc_MouseLeftButtonDown" MouseLeftButtonUp="Misc_MouseLeftButtonUp" MouseMove="Misc_MouseMove">
-                    <Border.Background>
-                        <SolidColorBrush Color="#1A10EF10"/>
-                    </Border.Background>
-                </Border>
-            </ContentControl>
-        </DataTemplate>
+            <DataTemplate DataType="{x:Type local:ZMisc}">
+                <ContentControl Template="{StaticResource MiscItemTemplate}">
+                    <Border Width="{Binding W}" Height="{Binding H}" BorderThickness="2" BorderBrush="Green"
+                            MouseLeftButtonDown="Misc_MouseLeftButtonDown" MouseLeftButtonUp="Misc_MouseLeftButtonUp" MouseMove="Misc_MouseMove">
+                        <Border.Background>
+                            <SolidColorBrush Color="#1A10EF10"/>
+                        </Border.Background>
+                    </Border>
+                </ContentControl>
+            </DataTemplate>
+        </ResourceDictionary>
     </local:MapLayer.Resources>
     
     <Grid Width="256" Height="256">

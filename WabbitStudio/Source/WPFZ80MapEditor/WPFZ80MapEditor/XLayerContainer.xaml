@@ -15,7 +15,12 @@
     </ListBox.CommandBindings>
     
     <ListBox.Resources>
-        <local:MapPositionConverter x:Key="MapPositionConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ColorsAndStoryboards.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <local:MapPositionConverter x:Key="MapPositionConverter"/>
+        </ResourceDictionary>
     </ListBox.Resources>
     
     <ListBox.Template>

@@ -106,17 +106,17 @@ Public Class Scenario
         _IsLoading = True
 
         Tilesets = New List(Of Tileset)()
-        Tilesets.Add(New Tileset("dungeon", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\dungeon.bmp")))
-        Tilesets.Add(New Tileset("town", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\town.bmp")))
-        Tilesets.Add(New Tileset("graveyard", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\graveyard.bmp")))
-        Tilesets.Add(New Tileset("cave", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\cave.bmp")))
-        Tilesets.Add(New Tileset("indoors", IO.Path.Combine(MainWindow.ZeldaFolder, "maps\indoors.bmp")))
+        Tilesets.Add(New Tileset("dungeon", IO.Path.Combine(MapEditorControl.ZeldaFolder, "maps\dungeon.bmp")))
+        Tilesets.Add(New Tileset("town", IO.Path.Combine(MapEditorControl.ZeldaFolder, "maps\town.bmp")))
+        Tilesets.Add(New Tileset("graveyard", IO.Path.Combine(MapEditorControl.ZeldaFolder, "maps\graveyard.bmp")))
+        Tilesets.Add(New Tileset("cave", IO.Path.Combine(MapEditorControl.ZeldaFolder, "maps\cave.bmp")))
+        Tilesets.Add(New Tileset("indoors", IO.Path.Combine(MapEditorControl.ZeldaFolder, "maps\indoors.bmp")))
 
         Log("Starting SPASM")
-        SPASMHelper.Initialize(MainWindow.ZeldaFolder)
+        SPASMHelper.Initialize(MapEditorControl.ZeldaFolder)
 
         Log("Loading images")
-        Await LoadImages(MainWindow.ZeldaFolder & "\graphics.asm")
+        Await LoadImages(MapEditorControl.ZeldaFolder & "\graphics.asm")
 
         _FileName = FileName
         SPASMHelper.Defines.Add("INCLUDE_ALL", 1)
@@ -133,7 +133,7 @@ Public Class Scenario
                 New DefParams("enemydef.inc", EnemyDefs, GetType(ZEnemy))}
 
         Parallel.ForEach(DefList, Sub(Item)
-                                      LoadDefs(MainWindow.ZeldaFolder & "\" & Item.FileName, Item.Collection, Item.Type)
+                                      LoadDefs(MapEditorControl.ZeldaFolder & "\" & Item.FileName, Item.Collection, Item.Type)
                                   End Sub)
 
         Dim Reader As New StreamReader(FileName)

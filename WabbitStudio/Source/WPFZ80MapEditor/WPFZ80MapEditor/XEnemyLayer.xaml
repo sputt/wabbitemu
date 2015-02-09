@@ -11,92 +11,98 @@
                   MouseLeftButtonUp="ObjectCanvas_MouseLeftButtonUp" MouseMove="ObjectCanvas_MouseMove"
                   AllowDrop="{Binding Active, ElementName=ObjectLayer}" Drop="Object_Drop" >
     <local:MapLayer.Resources>
-        <converters:XImageConverter x:Key="ImageConverter"/>
-        <converters:YConverter x:Key="YConverter"/>
-        <converters:XConverter x:Key="XConverter"/>
-        <converters:ZConverter x:Key="ZConverter"/>
-        <local:LayerType x:Key="LayerType">ObjectLayer</local:LayerType>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ColorsAndStoryboards.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            
+            <converters:XImageConverter x:Key="ImageConverter"/>
+            <converters:YConverter x:Key="YConverter"/>
+            <converters:XConverter x:Key="XConverter"/>
+            <converters:ZConverter x:Key="ZConverter"/>
+            <local:LayerType x:Key="LayerType">ObjectLayer</local:LayerType>
 
-        <ControlTemplate x:Key="ObjectTemplate"  TargetType="ListBoxItem">
-            <Border x:Name="SelectionBorder" Margin="-2" BorderThickness="2">
-                <Border.BorderBrush>
-                    <SolidColorBrush Color="{Binding Color, Source={StaticResource SelectionBrush}}" Opacity="0"/>
-                </Border.BorderBrush>
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup x:Name="SelectionStates">
-                        <VisualStateGroup.Transitions>
-                            <VisualTransition To="Selected,SelectedUnfocused" GeneratedDuration="0"/>
-                            <VisualTransition From="Selected" To="SelectedUnfocused" GeneratedDuration="0:0:0.125"/>
-                            <VisualTransition To="Unselected" GeneratedDuration="0:0:0.125"/>
-                        </VisualStateGroup.Transitions>
-                        <VisualState x:Name="Unselected"/>
-                        <VisualState x:Name="Selected">
-                            <Storyboard>
-                                <ColorAnimationUsingKeyFrames Storyboard.TargetName="SelectionBorder"
-        							Storyboard.TargetProperty="BorderBrush.Color">
-                                    <ColorAnimationUsingKeyFrames.KeyFrames>
-                                        <ColorKeyFrameCollection>
-                                            <DiscreteColorKeyFrame KeyTime="0" Value="{Binding Color, Source={StaticResource SelectionBrush}}"/>
-                                        </ColorKeyFrameCollection>
-                                    </ColorAnimationUsingKeyFrames.KeyFrames>
-                                </ColorAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionBorder"
-        							Storyboard.TargetProperty="BorderBrush.Opacity">
-                                    <DoubleAnimationUsingKeyFrames.KeyFrames>
-                                        <DoubleKeyFrameCollection>
-                                            <DiscreteDoubleKeyFrame KeyTime="0" Value="{StaticResource SelectionOpacity}"/>
-                                        </DoubleKeyFrameCollection>
-                                    </DoubleAnimationUsingKeyFrames.KeyFrames>
-                                </DoubleAnimationUsingKeyFrames>
-                            </Storyboard>
-                        </VisualState>
-                        <VisualState x:Name="SelectedUnfocused">
-                            <Storyboard>
-                                <ColorAnimationUsingKeyFrames Storyboard.TargetName="SelectionBorder"
-        							Storyboard.TargetProperty="BorderBrush.Color">
-                                    <ColorAnimationUsingKeyFrames.KeyFrames>
-                                        <ColorKeyFrameCollection>
-                                            <DiscreteColorKeyFrame KeyTime="0" Value="{Binding Color, Source={StaticResource InactiveSelectionBrush}}"/>
-                                        </ColorKeyFrameCollection>
-                                    </ColorAnimationUsingKeyFrames.KeyFrames>
-                                </ColorAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionBorder"
-        							Storyboard.TargetProperty="BorderBrush.Opacity">
-                                    <DoubleAnimationUsingKeyFrames.KeyFrames>
-                                        <DoubleKeyFrameCollection>
-                                            <DiscreteDoubleKeyFrame KeyTime="0" Value="{StaticResource SelectionOpacity}"/>
-                                        </DoubleKeyFrameCollection>
-                                    </DoubleAnimationUsingKeyFrames.KeyFrames>
-                                </DoubleAnimationUsingKeyFrames>
-                            </Storyboard>
-                        </VisualState>
-                    </VisualStateGroup>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualState x:Name="Normal" />
-                        <VisualState x:Name="MouseOver">
-                            <Storyboard>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MouseOverBorder"
-        							Storyboard.TargetProperty="BorderBrush.Opacity">
-                                    <DoubleAnimationUsingKeyFrames.KeyFrames>
-                                        <DoubleKeyFrameCollection>
-                                            <DiscreteDoubleKeyFrame KeyTime="0"  Value="{StaticResource MouseOverOpacity}"/>
-                                        </DoubleKeyFrameCollection>
-                                    </DoubleAnimationUsingKeyFrames.KeyFrames>
-                                </DoubleAnimationUsingKeyFrames>
-                            </Storyboard>
-                        </VisualState>
-                        <VisualState x:Name="Disabled"/>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <Border x:Name="MouseOverBorder" Margin="-2" BorderThickness="2">
+            <ControlTemplate x:Key="ObjectTemplate"  TargetType="ListBoxItem">
+                <Border x:Name="SelectionBorder" Margin="-2" BorderThickness="2">
                     <Border.BorderBrush>
                         <SolidColorBrush Color="{Binding Color, Source={StaticResource SelectionBrush}}" Opacity="0"/>
                     </Border.BorderBrush>
-                    <ContentPresenter/>
-                </Border>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup x:Name="SelectionStates">
+                            <VisualStateGroup.Transitions>
+                                <VisualTransition To="Selected,SelectedUnfocused" GeneratedDuration="0"/>
+                                <VisualTransition From="Selected" To="SelectedUnfocused" GeneratedDuration="0:0:0.125"/>
+                                <VisualTransition To="Unselected" GeneratedDuration="0:0:0.125"/>
+                            </VisualStateGroup.Transitions>
+                            <VisualState x:Name="Unselected"/>
+                            <VisualState x:Name="Selected">
+                                <Storyboard>
+                                    <ColorAnimationUsingKeyFrames Storyboard.TargetName="SelectionBorder"
+        							    Storyboard.TargetProperty="BorderBrush.Color">
+                                        <ColorAnimationUsingKeyFrames.KeyFrames>
+                                            <ColorKeyFrameCollection>
+                                                <DiscreteColorKeyFrame KeyTime="0" Value="{Binding Color, Source={StaticResource SelectionBrush}}"/>
+                                            </ColorKeyFrameCollection>
+                                        </ColorAnimationUsingKeyFrames.KeyFrames>
+                                    </ColorAnimationUsingKeyFrames>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionBorder"
+        							    Storyboard.TargetProperty="BorderBrush.Opacity">
+                                        <DoubleAnimationUsingKeyFrames.KeyFrames>
+                                            <DoubleKeyFrameCollection>
+                                                <DiscreteDoubleKeyFrame KeyTime="0" Value="{StaticResource SelectionOpacity}"/>
+                                            </DoubleKeyFrameCollection>
+                                        </DoubleAnimationUsingKeyFrames.KeyFrames>
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </VisualState>
+                            <VisualState x:Name="SelectedUnfocused">
+                                <Storyboard>
+                                    <ColorAnimationUsingKeyFrames Storyboard.TargetName="SelectionBorder"
+        							    Storyboard.TargetProperty="BorderBrush.Color">
+                                        <ColorAnimationUsingKeyFrames.KeyFrames>
+                                            <ColorKeyFrameCollection>
+                                                <DiscreteColorKeyFrame KeyTime="0" Value="{Binding Color, Source={StaticResource InactiveSelectionBrush}}"/>
+                                            </ColorKeyFrameCollection>
+                                        </ColorAnimationUsingKeyFrames.KeyFrames>
+                                    </ColorAnimationUsingKeyFrames>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionBorder"
+        							    Storyboard.TargetProperty="BorderBrush.Opacity">
+                                        <DoubleAnimationUsingKeyFrames.KeyFrames>
+                                            <DoubleKeyFrameCollection>
+                                                <DiscreteDoubleKeyFrame KeyTime="0" Value="{StaticResource SelectionOpacity}"/>
+                                            </DoubleKeyFrameCollection>
+                                        </DoubleAnimationUsingKeyFrames.KeyFrames>
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </VisualState>
+                        </VisualStateGroup>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="MouseOver">
+                                <Storyboard>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="MouseOverBorder"
+        							    Storyboard.TargetProperty="BorderBrush.Opacity">
+                                        <DoubleAnimationUsingKeyFrames.KeyFrames>
+                                            <DoubleKeyFrameCollection>
+                                                <DiscreteDoubleKeyFrame KeyTime="0"  Value="{StaticResource MouseOverOpacity}"/>
+                                            </DoubleKeyFrameCollection>
+                                        </DoubleAnimationUsingKeyFrames.KeyFrames>
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </VisualState>
+                            <VisualState x:Name="Disabled"/>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                    <Border x:Name="MouseOverBorder" Margin="-2" BorderThickness="2">
+                        <Border.BorderBrush>
+                            <SolidColorBrush Color="{Binding Color, Source={StaticResource SelectionBrush}}" Opacity="0"/>
+                        </Border.BorderBrush>
+                        <ContentPresenter/>
+                    </Border>
 
-            </Border>
-        </ControlTemplate>
+                </Border>
+            </ControlTemplate>
+        </ResourceDictionary>
     </local:MapLayer.Resources>
 
     <Canvas Name="ObjectCanvas" Background="Transparent">

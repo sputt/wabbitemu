@@ -5,8 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPFZ80MapEditor"
              xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-             xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              x:Class="XMapView"
              mc:Ignorable="d" 
@@ -16,130 +14,136 @@
     MouseLeave="MapView_MouseLeave"
     Background="Transparent">
     <local:MapLayer.Resources>
-        <converters:TileConverter x:Key="TileConverter"/>
-        <converters:CollisionConverter x:Key="CollisionConverter"/>
-        <local:SegmentConverter x:Key="SegmentConverter"/>
-        <converters:TileIndexConverter x:Key="TileIndexConverter"/>
-        <converters:TileIndexComponentConverter x:Key="TileIndexComponentConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ColorsAndStoryboards.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            
+            <converters:TileConverter x:Key="TileConverter"/>
+            <converters:CollisionConverter x:Key="CollisionConverter"/>
+            <local:SegmentConverter x:Key="SegmentConverter"/>
+            <converters:TileIndexConverter x:Key="TileIndexConverter"/>
+            <converters:TileIndexComponentConverter x:Key="TileIndexComponentConverter"/>
 
-        <!--<local:Tileset Name="DUNGEON" x:Key="TilesetTest">
-            <local:Tileset.Tiles>
-                <local:TilesCollection>
-                    <local:TileImageSource Index="0">
-                        <local:TileImageSource.Image>
-                            <BitmapImage>./TestTile.bmp</BitmapImage>
-                        </local:TileImageSource.Image>
-                    </local:TileImageSource>
-                </local:TilesCollection>
-            </local:Tileset.Tiles>
-        </local:Tileset>
+            <!--<local:Tileset Name="DUNGEON" x:Key="TilesetTest">
+                <local:Tileset.Tiles>
+                    <local:TilesCollection>
+                        <local:TileImageSource Index="0">
+                            <local:TileImageSource.Image>
+                                <BitmapImage>./TestTile.bmp</BitmapImage>
+                            </local:TileImageSource.Image>
+                        </local:TileImageSource>
+                    </local:TilesCollection>
+                </local:Tileset.Tiles>
+            </local:Tileset>
 
-        <local:TilegroupSelection x:Key="TilegroupTest" Tileset="{x:Null}">
-            <local:TilegroupSelection.TilegroupEntries>
-                <local:TilegroupEntryCollection>
-                    <local:TilegroupEntry Index="117">
-                        <local:TilegroupEntry.Tile>
-                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
-                        </local:TilegroupEntry.Tile>
-                    </local:TilegroupEntry>
-                    <local:TilegroupEntry Index="118">
-                        <local:TilegroupEntry.Tile>
-                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
-                        </local:TilegroupEntry.Tile>
-                    </local:TilegroupEntry>
-                    <local:TilegroupEntry Index="134">
-                        <local:TilegroupEntry.Tile>
-                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
-                        </local:TilegroupEntry.Tile>
-                    </local:TilegroupEntry>
-                    <local:TilegroupEntry Index="135">
-                        <local:TilegroupEntry.Tile>
-                            <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
-                        </local:TilegroupEntry.Tile>
-                    </local:TilegroupEntry>
-                </local:TilegroupEntryCollection>
-            </local:TilegroupSelection.TilegroupEntries>
-        </local:TilegroupSelection>
+            <local:TilegroupSelection x:Key="TilegroupTest" Tileset="{x:Null}">
+                <local:TilegroupSelection.TilegroupEntries>
+                    <local:TilegroupEntryCollection>
+                        <local:TilegroupEntry Index="117">
+                            <local:TilegroupEntry.Tile>
+                                <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                            </local:TilegroupEntry.Tile>
+                        </local:TilegroupEntry>
+                        <local:TilegroupEntry Index="118">
+                            <local:TilegroupEntry.Tile>
+                                <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                            </local:TilegroupEntry.Tile>
+                        </local:TilegroupEntry>
+                        <local:TilegroupEntry Index="134">
+                            <local:TilegroupEntry.Tile>
+                                <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                            </local:TilegroupEntry.Tile>
+                        </local:TilegroupEntry>
+                        <local:TilegroupEntry Index="135">
+                            <local:TilegroupEntry.Tile>
+                                <local:TileSelection Type="Tile" Tileset="{x:Null}" TileIndex="7"/>
+                            </local:TilegroupEntry.Tile>
+                        </local:TilegroupEntry>
+                    </local:TilegroupEntryCollection>
+                </local:TilegroupSelection.TilegroupEntries>
+            </local:TilegroupSelection>
 
-        <local:MapData x:Key="MapDataTest" Tileset="{StaticResource TilesetTest}" Exists="True">
-            <local:MapData.Scenario>
-                <local:Scenario>
-                    <local:Scenario.Tilesets>
-                        <local:TilesetList>
-                            <StaticResourceExtension ResourceKey="TilesetTest"/>
-                        </local:TilesetList>
-                    </local:Scenario.Tilesets>
-                </local:Scenario>
-            </local:MapData.Scenario>
-            --><!--<local:MapData.TileData>
-                <x:Array Type="{x:Type sys:Byte}">
-                    <sys:Byte>3</sys:Byte>
-                    <sys:Byte>2</sys:Byte>
-                </x:Array>
-            </local:MapData.TileData>--><!--
-        </local:MapData>-->
-        <Style TargetType="ListBox" x:Key="TileNumberListBoxStyle">
-            <Style.Triggers>
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding Path=Active, RelativeSource={RelativeSource AncestorType=local:XMapView}}" Value="True"/>
-                        <Condition Binding="{Binding Path=Exists}" Value="True"/>
-                        <Condition Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True"/>
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Visibility" Value="Visible"/>
-                </MultiDataTrigger>
-            </Style.Triggers>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <ItemsPresenter Margin="0"></ItemsPresenter>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="ItemContainerStyle">
-                <Setter.Value>
-                    <Style TargetType="{x:Type ListBoxItem}">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListBoxItem">
-                                    <Border Name="ItemBorder" Width="16" Height="16" Background="White" HorizontalAlignment="Center">
-                                        <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,-1,0,0"><ContentPresenter/></TextBlock>
-                                    </Border>
+            <local:MapData x:Key="MapDataTest" Tileset="{StaticResource TilesetTest}" Exists="True">
+                <local:MapData.Scenario>
+                    <local:Scenario>
+                        <local:Scenario.Tilesets>
+                            <local:TilesetList>
+                                <StaticResourceExtension ResourceKey="TilesetTest"/>
+                            </local:TilesetList>
+                        </local:Scenario.Tilesets>
+                    </local:Scenario>
+                </local:MapData.Scenario>
+                --><!--<local:MapData.TileData>
+                    <x:Array Type="{x:Type sys:Byte}">
+                        <sys:Byte>3</sys:Byte>
+                        <sys:Byte>2</sys:Byte>
+                    </x:Array>
+                </local:MapData.TileData>--><!--
+            </local:MapData>-->
+            <Style TargetType="ListBox" x:Key="TileNumberListBoxStyle">
+                <Style.Triggers>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding Path=Active, RelativeSource={RelativeSource AncestorType=local:XMapView}}" Value="True"/>
+                            <Condition Binding="{Binding Path=Exists}" Value="True"/>
+                            <Condition Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True"/>
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible"/>
+                    </MultiDataTrigger>
+                </Style.Triggers>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <ItemsPresenter Margin="0"></ItemsPresenter>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border Name="ItemBorder" Width="16" Height="16" Background="White" HorizontalAlignment="Center">
+                                            <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,-1,0,0"><ContentPresenter/></TextBlock>
+                                        </Border>
                                     
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource SelectionBrush}"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="SelectionMode" Value="Single"/>
-            <Setter Property="Visibility" Value="Hidden"/>
-        </Style>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource SelectionBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="SelectionMode" Value="Single"/>
+                <Setter Property="Visibility" Value="Hidden"/>
+            </Style>
         
-        <Style BasedOn="{StaticResource TileNumberListBoxStyle}" TargetType="ListBox" x:Key="HorizontalTileNumberListBoxStyle">
-            <Setter Property="ItemsPanel">
-                <Setter.Value>
-                    <ItemsPanelTemplate>
-                        <StackPanel Margin="0" Background="Transparent" Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+            <Style BasedOn="{StaticResource TileNumberListBoxStyle}" TargetType="ListBox" x:Key="HorizontalTileNumberListBoxStyle">
+                <Setter Property="ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <StackPanel Margin="0" Background="Transparent" Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         
-        <Style BasedOn="{StaticResource TileNumberListBoxStyle}" TargetType="ListBox" x:Key="VerticalTileNumberListBoxStyle">
-            <Setter Property="ItemsPanel">
-                <Setter.Value>
-                    <ItemsPanelTemplate>
-                        <StackPanel Margin="0" Background="Transparent" Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+            <Style BasedOn="{StaticResource TileNumberListBoxStyle}" TargetType="ListBox" x:Key="VerticalTileNumberListBoxStyle">
+                <Setter Property="ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <StackPanel Margin="0" Background="Transparent" Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
     </local:MapLayer.Resources>
 
     <Canvas>

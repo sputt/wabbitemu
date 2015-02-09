@@ -10,7 +10,7 @@ Partial Public Class Scenario
         Stream.Close()
 
         ' Empty first image
-        Dim Uri As New Uri(Directory.GetCurrentDirectory() & "\Scenario\question.bmp", UriKind.Absolute)
+        Dim Uri As New Uri("pack://application:,,,/WPFZ80MapEditor;component/question.bmp", UriKind.RelativeOrAbsolute)
         Dim QuestionBitmap As New BitmapImage(Uri)
         Images.Add(New ZeldaImage("", BitmapUtils.Mask(QuestionBitmap, Color.FromArgb(255, 168, 230, 29))))
 

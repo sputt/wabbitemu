@@ -47,6 +47,10 @@ Public Class MapView
                            GetType(Boolean), GetType(MapView), _
                            New FrameworkPropertyMetadata(False, FrameworkPropertyMetadataOptions.AffectsRender))
 
+    Public Sub New()
+        Resources.Source = New Uri("/WPFZ80MapEditor;component/ColorsAndStoryboards.xaml", UriKind.RelativeOrAbsolute)
+    End Sub
+
     Protected Overrides Sub OnRender(DrawingContext As System.Windows.Media.DrawingContext)
         If Map Is Nothing OrElse Map.Tileset Is Nothing Then Exit Sub
 
@@ -60,7 +64,7 @@ Public Class MapView
             DrawingContext.PushOpacity(0.25)
             Dim Pen As New Pen
             Pen.Thickness = 0
-            Dim Brush As Brush = Application.Current.Resources("CollisionBrush")
+            Dim Brush As Brush = Resources("CollisionBrush")
 
             For i = 0 To Map.TileData.Count - 1
                 Dim TileIndex = Map.TileData(i) Mod 128

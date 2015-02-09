@@ -1,0 +1,167 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:WPFZ80MapEditor"
+    xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
+    x:Class="MapEditorControl"
+    x:Name="MapEditorControl" Background="White">
+
+    <UserControl.Resources>
+        <localconverters:DoubleToZoomLevelConverter x:Key="convertZoomLevel2"/>
+        <localconverters:GapConverter x:Key="GapConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter1" />
+        <local:LayerHitTestConverter x:Key="LayerHitTestConverter"/>
+        <local:ActiveLayerConverter x:Key="ActiveLayerConverter"/>
+        <local:MapPositionConverter x:Key="MapPositionConverter"/>
+
+        <local:LayerType x:Key="MapsetLayer">MapsetLayer</local:LayerType>
+        <local:LayerType x:Key="MapLayer">MapLayer</local:LayerType>
+        <local:LayerType x:Key="TilegroupLayer">TilegroupLayer</local:LayerType>
+        <local:LayerType x:Key="ObjectLayer">ObjectLayer</local:LayerType>
+        <local:LayerType x:Key="EnemyLayer">EnemyLayer</local:LayerType>
+
+        <TransformGroup x:Key="MapCanvasRenderTransform">
+            <ScaleTransform/>
+            <TranslateTransform X="-60" Y="-180"/>
+        </TransformGroup>
+
+        <Style x:Key="LayerStyle" TargetType="{x:Type local:MapLayer}">
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Style.Triggers>
+                <DataTrigger Value="True">
+                    <DataTrigger.Binding>
+                        <MultiBinding Converter="{StaticResource ActiveLayerConverter}">
+                            <Binding Path="DataContext.CurrentLayer" RelativeSource="{RelativeSource AncestorType={x:Type local:MapEditorControl}}"/>
+                            <Binding Path="LayerType" RelativeSource="{x:Static RelativeSource.Self}"/>
+                        </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="IsHitTestVisible" Value="True"/>
+                    <Setter Property="Active" Value="True"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Canvas x:Name="MapCanvas" Background="Gray" Panel.ZIndex="0" MouseMove="Background_MouseMove" MouseWheel="Background_MouseWheel" PreviewMouseRightButtonDown="Background_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Background_PreviewMouseRightButtonUp">
+            <Canvas x:Name="IntermediateMapCanvas" RenderTransform="{StaticResource MapCanvasRenderTransform}">
+                <local:XLayerContainer 
+                        x:Name="LayerContainer"
+                        Maps="{Binding Maps}" DataContext="{Binding Scenario}" SelectedItem="{Binding DataContext.SelectedMap, ElementName=MapEditorControl, Mode=TwoWay}"
+					    Gap="{Binding IsChecked, Converter={StaticResource GapConverter}, ElementName=PaddingMenuItem}"
+					     MouseDoubleClick="Map_MouseDoubleClick">
+                    <local:XLayerContainer.Style>
+                        <Style TargetType="{x:Type local:XLayerContainer}">
+                            <Setter Property="Selectable" Value="False"/>
+                            <Style.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <MultiBinding Converter="{StaticResource ActiveLayerConverter}">
+                                            <Binding Path="DataContext.CurrentLayer" RelativeSource="{RelativeSource AncestorType={x:Type local:MapEditorControl}}"/>
+                                            <Binding Source="{StaticResource MapsetLayer}"/>
+                                        </MultiBinding>
+                                    </DataTrigger.Binding>
+                                    <Setter Property="Selectable" Value="True"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </local:XLayerContainer.Style>
+                    <local:XLayerContainer.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <local:XMapView Panel.ZIndex="1"
+										    SourceTile="{Binding DataContext.SelectedTile, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type local:MapEditorControl}}}">
+                                    <local:XMapView.Style>
+                                        <Style TargetType="local:XMapView" BasedOn="{StaticResource LayerStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}"
+                                                 Value="{StaticResource MapsetLayer}">
+                                                    <DataTrigger.Setters>
+                                                        <Setter Property="ShowNewMaps" Value="True"/>
+                                                    </DataTrigger.Setters>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}"
+                                                 Value="{StaticResource MapLayer}">
+                                                    <DataTrigger.Setters>
+                                                        <Setter Property="ShowCollisions" Value="True"/>
+                                                    </DataTrigger.Setters>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}"
+                                                 Value="{StaticResource TilegroupLayer}">
+                                                    <DataTrigger.Setters>
+                                                        <Setter Property="ShowCollisions" Value="True"/>
+                                                    </DataTrigger.Setters>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </local:XMapView.Style>
+                                </local:XMapView>
+
+                                <local:TilegroupLayer Panel.ZIndex="2" Style="{StaticResource LayerStyle}"
+                                                          >
+                                    <!-- SourceTile="{Binding DataContext.SelectedTile, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}"-->
+                                </local:TilegroupLayer>
+
+                                <local:MiscLayer Panel.ZIndex="3" Style="{StaticResource LayerStyle}"/>
+                                <local:XObjectLayer CollectionName="ZObjects">
+                                    <local:XObjectLayer.Style>
+                                        <Style TargetType="local:XObjectLayer" BasedOn="{StaticResource LayerStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}" Value="{StaticResource MapLayer}">
+                                                    <DataTrigger.Setters>
+                                                        <Setter Property="Opacity" Value="0.5"/>
+                                                    </DataTrigger.Setters>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}" Value="{StaticResource TilegroupLayer}">
+                                                    <DataTrigger.Setters>
+                                                        <Setter Property="Opacity" Value="0.5"/>
+                                                    </DataTrigger.Setters>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}" Value="{StaticResource ObjectLayer}">
+                                                    <DataTrigger.Setters>
+                                                        <Setter Property="Panel.ZIndex" Value="90"/>
+                                                    </DataTrigger.Setters>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                            <Setter Property="Panel.ZIndex" Value="4"/>
+                                        </Style>
+                                    </local:XObjectLayer.Style>
+                                </local:XObjectLayer>
+                                <local:XEnemyLayer CollectionName="ZEnemies">
+                                    <local:XEnemyLayer.Style>
+                                        <Style TargetType="local:XEnemyLayer" BasedOn="{StaticResource LayerStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}" Value="{StaticResource MapLayer}">
+                                                    <DataTrigger.Setters>
+                                                        <Setter Property="Opacity" Value="0.5"/>
+                                                    </DataTrigger.Setters>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}" Value="{StaticResource TilegroupLayer}">
+                                                    <DataTrigger.Setters>
+                                                        <Setter Property="Opacity" Value="0.5"/>
+                                                    </DataTrigger.Setters>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=DataContext.CurrentLayer, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}" Value="{StaticResource EnemyLayer}">
+                                                    <DataTrigger.Setters>
+                                                        <Setter Property="Panel.ZIndex" Value="90"/>
+                                                    </DataTrigger.Setters>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                            <Setter Property="Panel.ZIndex" Value="5"/>
+                                        </Style>
+                                    </local:XEnemyLayer.Style>
+                                </local:XEnemyLayer>
+
+                                <local:TestLayer Panel.ZIndex="6" Style="{StaticResource LayerStyle}" GameModel="{Binding DataContext.GameModel, RelativeSource={RelativeSource AncestorType=local:MapEditorControl}}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </local:XLayerContainer.ItemTemplate>
+                </local:XLayerContainer>
+
+                <local:GameMapView x:Name="TestView" Panel.ZIndex="1" Width="256" Height="256" DataContext="{Binding GameModel}" Visibility="Hidden"
+                        Canvas.Left="{Binding Path=SourceMap.X, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"
+                        Canvas.Top="{Binding Path=SourceMap.Y, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"/>
+            </Canvas>
+        </Canvas>
+    </Grid>
+</UserControl>

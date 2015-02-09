@@ -11,11 +11,17 @@
              mc:Ignorable="d" 
              d:DesignHeight="429" d:DesignWidth="165" xmlns:my="clr-namespace:WPFZ80MapEditor">
     <UserControl.Resources>
-        <s:Double x:Key="TilesZoomLevel">24.0</s:Double>
-        <Color x:Key="InactiveTilesColor">Transparent</Color>
-        <local:TileSelectionConverter x:Key="TileSelectionConverter"/>
-        <local:AnimatedTileSelectionConverter x:Key="AnimatedTileSelectionConverter"/>
-        <converters:TileConverter x:Key="TileConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../ColorsAndStoryboards.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            
+            <s:Double x:Key="TilesZoomLevel">24.0</s:Double>
+            <Color x:Key="InactiveTilesColor">Transparent</Color>
+            <local:TileSelectionConverter x:Key="TileSelectionConverter"/>
+            <local:AnimatedTileSelectionConverter x:Key="AnimatedTileSelectionConverter"/>
+            <converters:TileConverter x:Key="TileConverter"/>
+        </ResourceDictionary>
     </UserControl.Resources>
     
     <DockPanel>

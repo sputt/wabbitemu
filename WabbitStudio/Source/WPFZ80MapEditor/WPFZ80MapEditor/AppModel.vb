@@ -13,16 +13,12 @@ End Enum
 Public Class AppModel
     Implements INotifyPropertyChanged
 
-    Public Shared Property Instance As AppModel
-
     Public Sub New()
         _CurrentLayer = LayerType.MapsetLayer
         _Scenario = Nothing
         _SelectedMap = Nothing
         _SelectedTile = Nothing
         _SelectedTileset = Nothing
-
-        Instance = Me
     End Sub
 
     Private _CurrentLayer As LayerType

@@ -1,15 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WPFZ80MapEditor", "WPFZ80MapEditor\WPFZ80MapEditor.vbproj", "{3B403A9F-D296-41ED-8863-5F2E223A1E90}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WPFZ80MapEditorTest", "WPFZ80MapEditorTest\WPFZ80MapEditorTest.vbproj", "{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}"
 EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WPFZ80MapEditorExe", "WPFZ80MapEditorExe\WPFZ80MapEditorExe.vbproj", "{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
+		SccNumberOfProjects = 4
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath0 = .
@@ -19,11 +21,17 @@ Global
 		SccProjectUniqueName2 = WPFZ80MapEditorTest\\WPFZ80MapEditorTest.vbproj
 		SccProjectName2 = WPFZ80MapEditorTest
 		SccLocalPath2 = WPFZ80MapEditorTest
+		SccProjectUniqueName3 = WPFZ80MapEditorExe\\WPFZ80MapEditorExe.vbproj
+		SccProjectName3 = WPFZ80MapEditorExe
+		SccLocalPath3 = WPFZ80MapEditorExe
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Library Debug|Any CPU = Library Debug|Any CPU
+		Library Debug|x64 = Library Debug|x64
+		Library Debug|x86 = Library Debug|x86
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
@@ -35,6 +43,12 @@ Global
 		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Debug|x64.Build.0 = Debug|x64
 		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Debug|x86.ActiveCfg = Debug|x64
 		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Debug|x86.Build.0 = Debug|x64
+		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Library Debug|Any CPU.ActiveCfg = WPFZ80MapEditorLib|x86
+		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Library Debug|Any CPU.Build.0 = WPFZ80MapEditorLib|x86
+		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Library Debug|x64.ActiveCfg = WPFZ80MapEditorLib|x64
+		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Library Debug|x64.Build.0 = WPFZ80MapEditorLib|x64
+		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Library Debug|x86.ActiveCfg = WPFZ80MapEditorLib|x86
+		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Library Debug|x86.Build.0 = WPFZ80MapEditorLib|x86
 		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Release|Any CPU.ActiveCfg = Release|x86
 		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Release|Any CPU.Build.0 = Release|x86
 		{3B403A9F-D296-41ED-8863-5F2E223A1E90}.Release|x64.ActiveCfg = Release|x86
@@ -45,10 +59,26 @@ Global
 		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Library Debug|Any CPU.ActiveCfg = WPFZ80MapEditorLib|Any CPU
+		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Library Debug|Any CPU.Build.0 = WPFZ80MapEditorLib|Any CPU
+		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Library Debug|x64.ActiveCfg = WPFZ80MapEditorLib|Any CPU
+		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Library Debug|x86.ActiveCfg = WPFZ80MapEditorLib|Any CPU
 		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Release|x64.ActiveCfg = Release|Any CPU
 		{CC981F3F-D70D-4E44-A2F6-D14D5F9D401D}.Release|x86.ActiveCfg = Release|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Library Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Library Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Library Debug|x64.ActiveCfg = Debug|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Library Debug|x86.ActiveCfg = Debug|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Release|x64.ActiveCfg = Release|Any CPU
+		{F18F723E-B20B-4B2D-8E00-6DC640DB7EE3}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

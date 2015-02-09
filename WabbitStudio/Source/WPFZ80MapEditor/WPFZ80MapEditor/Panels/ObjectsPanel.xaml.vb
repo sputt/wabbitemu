@@ -1,5 +1,7 @@
 ﻿Public Class ObjectsPanel
 
+    Public Shared DragScope As FrameworkElement
+
     Dim _DragStart As Point = New Point(-1, -1)
     Dim DragCount As Integer
 
@@ -33,11 +35,8 @@
     Private _layer As AdornerLayer
     Private IsDragging As Boolean
     Private _dragHasLeftScope As Boolean
-    Private DragScope As FrameworkElement
 
     Private Sub StartDragInProcAdorner(sender As System.Object, e As MouseEventArgs, Def As ZDef)
-        DragScope = Application.Current.MainWindow.Content
-
         Dim previousDrop As Boolean = DragScope.AllowDrop
         DragScope.AllowDrop = True
 
@@ -56,7 +55,7 @@
         Dim image As New Image()
         Dim Src As ImageSource = Me.DataContext.Scenario.Images(Def.DefaultImage).Image
 
-        Dim RenderTransform As TransformGroup = Application.Current.MainWindow.Resources("MapCanvasRenderTransform")
+        Dim RenderTransform As TransformGroup = DragScope.Resources("MapCanvasRenderTransform")
         Dim st As ScaleTransform = RenderTransform.Children.First(Function(t) TypeOf t Is ScaleTransform)
         Dim currentZoom = st.ScaleX
 
