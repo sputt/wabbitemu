@@ -26,7 +26,7 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
 
         protected override string GetPersistString()
         {
-            return GetType().FullName;
+            return GetType().AssemblyQualifiedName;
         }
 
         public virtual void Copy()

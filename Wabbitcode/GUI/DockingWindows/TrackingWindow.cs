@@ -205,7 +205,8 @@ namespace Revsoft.Wabbitcode.GUI.DockingWindows
         private void variablesDataView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             var node = variablesDataView.GetNodeControlInfoAt(e.Location);
-            if (node.Node == null || node.Control.ParentColumn.Index != variableValueCol.Index)
+            if (node.Node == null || node.Control.ParentColumn == null 
+                || node.Control.ParentColumn.Index != variableValueCol.Index)
             {
                 return;
             }

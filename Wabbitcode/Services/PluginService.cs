@@ -29,7 +29,18 @@ namespace Revsoft.Wabbitcode.Services
 
             Type pluginType = typeof(IWabbitcodePlugin);
             ICollection<Type> pluginTypes = assemblies.Where(a => a != null)
-                .Select(assembly => assembly.GetTypes())
+                .Select(assembly =>
+                {
+                    try
+                    {
+                        return assembly.GetTypes();
+                    }
+                    catch (ReflectionTypeLoadException)
+                    {
+                        return null;
+                    }
+                })
+                .Where(t => t != null)
                 .SelectMany(types => types
                     .Where(type => !type.IsInterface && !type.IsAbstract && type.GetInterface(pluginType.FullName) != null))
                 .ToList();

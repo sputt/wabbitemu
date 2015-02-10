@@ -603,7 +603,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             FindAndReplaceForm.Instance.ShowFor(owner, editorBox, mode);
         }
 
-        protected override void OpenFile(FilePath fileName)
+        public override void OpenFile(FilePath fileName)
         {
             base.OpenFile(fileName);
 
@@ -614,9 +614,8 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             UpdateAllBreakpoints();
         }
 
-        public override void SaveFile()
+        protected override void SaveFileInner()
         {
-            _projectService.Project.EnableFileWatcher(false);
             if (string.IsNullOrEmpty(FileName))
             {
                 AbstractUiAction.RunCommand(new SaveAsCommand(this));
@@ -632,8 +631,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             {
                 DockingService.ShowError("Error saving the file", ex);
             }
-
-            _projectService.Project.EnableFileWatcher(true);
 
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
             base.SaveFile();

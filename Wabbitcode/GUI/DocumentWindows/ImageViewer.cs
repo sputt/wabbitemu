@@ -94,7 +94,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         protected override bool DocumentChanged { get; set; }
 
-        protected override void OpenFile(FilePath fileName)
+        public override void OpenFile(FilePath fileName)
         {
             base.OpenFile(fileName);
 
@@ -110,6 +110,11 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
 
             ShowCurrentImage();
+        }
+
+        protected override void SaveFileInner()
+        {
+            // Cannot save currently
         }
 
         public override void Copy()
