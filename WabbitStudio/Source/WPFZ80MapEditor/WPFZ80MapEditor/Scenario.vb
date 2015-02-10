@@ -128,9 +128,9 @@ Public Class Scenario
 
         Dim Test As New DefParams()
         Dim DefList = {New DefParams("animatedef.inc", AnimDefs, GetType(ZAnim)),
-                New DefParams("objectdef.inc", ObjectDefs, GetType(ZObject)),
-                New DefParams("miscdef.inc", MiscDefs, GetType(ZMisc)),
-                New DefParams("enemydef.inc", EnemyDefs, GetType(ZEnemy))}
+        New DefParams("objectdef.inc", ObjectDefs, GetType(ZObject)),
+        New DefParams("miscdef.inc", MiscDefs, GetType(ZMisc)),
+        New DefParams("enemydef.inc", EnemyDefs, GetType(ZEnemy))}
 
         Parallel.ForEach(DefList, Sub(Item)
                                       LoadDefs(MapEditorControl.ZeldaFolder & "\" & Item.FileName, Item.Collection, Item.Type)
@@ -375,7 +375,11 @@ Public Class Scenario
     End Class
 
     Public Sub SaveScenario()
-        Dim Stream = New StreamWriter(_FileName)
+        SaveScenario(_FileName)
+    End Sub
+
+    Public Sub SaveScenario(fileName As String)
+        Dim Stream = New StreamWriter(fileName)
 
         Stream.WriteLine("#ifdef INCLUDE_ALL")
         Stream.WriteLine("#define INCLUDE_MAPS")

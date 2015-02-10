@@ -30,7 +30,11 @@ namespace Revsoft.Wabbitcode.Utils
                 latch.Wait();
             }
 
-            T ret = UnityContainer.Resolve<T>();
+            T ret;
+            lock (UnityContainer)
+            {
+                ret = UnityContainer.Resolve<T>();
+            }
 
             return ret;
         }

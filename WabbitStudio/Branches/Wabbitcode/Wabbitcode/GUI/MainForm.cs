@@ -52,12 +52,25 @@ namespace Revsoft.Wabbitcode.GUI
         {
             _toolStripContainer = toolStripContainer;
             InitializeComponent();
+            LoadPlugins();
             RestoreWindow();
 
-            InitializeUi();
             InitializeEvents();
+            InitializeUi();
 
             HandleArgs(args);
+        }
+
+        private void LoadPlugins()
+        {
+            try
+            {
+                _pluginService.LoadPlugins();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Loading plugin failed", ex);
+            }
         }
 
         private IDockContent GetContentFromPersistString(string persistString)
@@ -78,7 +91,7 @@ namespace Revsoft.Wabbitcode.GUI
                 }
             }
 
-            if (parsedStrings.Length < 3 || !typeof(AbstractFileEditor).IsAssignableFrom(type))
+            if (parsedStrings.Length < 2 || !typeof(AbstractFileEditor).IsAssignableFrom(type))
             {
                 return null;
             }
@@ -143,29 +156,17 @@ namespace Revsoft.Wabbitcode.GUI
 
         private void InitializeEvents()
         {
-            Task.Factory.StartNew(() =>
+            _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
+            _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
+            _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
+            _projectService.ProjectOpened += ProjectService_OnProjectOpened;
+
+            LoadStartupProject();
+
+            if (_projectService.Project == null)
             {
-                _dockingService.ActiveDocumentChanged += DockingServiceActiveDocumentChanged;
-                _debuggerService.OnDebuggingStarted += DebuggerService_OnDebuggingStarted;
-                _debuggerService.OnDebuggingEnded += DebuggerService_OnDebuggingEnded;
-                _projectService.ProjectOpened += ProjectService_OnProjectOpened;
-
-                LoadStartupProject();
-
-                if (_projectService.Project == null)
-                {
-                    _projectService.CreateInternalProject();
-                }
-
-                try
-                {
-                    _pluginService.LoadPlugins();
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log("Loading plugin failed", ex);
-                }
-            });
+                _projectService.CreateInternalProject();
+            }
         }
 
         private void InitializeUi()
@@ -179,9 +180,9 @@ namespace Revsoft.Wabbitcode.GUI
             fileTypeMethodFactory.RegisterDefaultHandler(path => DocumentWindows.TextEditor.OpenDocument(path) != null); 
 
             _dockingService.LoadConfig(GetContentFromPersistString);
-            _menuService.RegisterMenu(MainMenuName, new MainMenuStrip());
             _toolBarService.RegisterToolbar(DebugToolBarName, new DebugToolBar());
             _toolBarService.RegisterToolbar(MainToolBarName, new MainToolBar());
+            _menuService.RegisterMenu(MainMenuName, new MainMenuStrip());
         }
 
         private static void HandleArgs(ICollection<string> args)

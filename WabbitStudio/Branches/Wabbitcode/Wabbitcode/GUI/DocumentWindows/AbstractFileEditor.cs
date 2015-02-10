@@ -87,7 +87,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
         }
 
-        protected virtual void OpenFile(FilePath fileName)
+        public virtual void OpenFile(FilePath fileName)
         {
             FileName = fileName;
             DocumentChanged = false;
@@ -114,11 +114,16 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             SaveFile();
         }
 
-        public virtual void SaveFile()
+        public void SaveFile()
         {
+            _projectService.Project.EnableFileWatcher(false);
             TabText = Path.GetFileName(FileName);
             DocumentChanged = false;
+            SaveFileInner();
+            _projectService.Project.EnableFileWatcher(true);
         }
+
+        protected abstract void SaveFileInner();
 
         protected virtual void CloseFile()
         {
@@ -135,7 +140,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
         {
             // Add extra information into the persist string for this document
             // so that it is available when deserialized.
-            return GetType() + ";" + FileName;
+            return GetType().AssemblyQualifiedName + ";" + FileName;
         }
 
         public abstract void Copy();
@@ -148,18 +153,7 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
 
         public virtual void PersistStringLoad(params string[] values)
         {
-            if (values == null || values.Length < 2)
-            {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(values[1]))
-            {
-                return;
-            }
-
-            string filename = values[1];
-            OpenFile(new FilePath(filename));
+            // Nothing to do by default
         }
 
 

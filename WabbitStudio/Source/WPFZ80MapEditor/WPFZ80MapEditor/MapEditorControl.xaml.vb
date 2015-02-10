@@ -57,6 +57,14 @@ Public Class MapEditorControl
         Model.Scenario = scenario
     End Sub
 
+    Public Sub SaveScenario()
+        Model.Scenario.SaveScenario()
+    End Sub
+
+    Public Sub SaveScenario(fileName As String)
+        Model.Scenario.SaveScenario(fileName)
+    End Sub
+
     Private Sub LayoutChanged(sender As Object, e As Object)
         Debug.Print("Done with layout: " & (Now - DateTime.FromFileTime(StartTime)).TotalMilliseconds & " ms")
         RemoveHandler LayerContainer.LayoutUpdated, AddressOf LayoutChanged

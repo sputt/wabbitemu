@@ -15,6 +15,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         private Wabbitemu _debugger;
         private bool _disposed;
         private readonly IntPtr _scan0 = Marshal.AllocHGlobal(128 * 64);
+        private readonly Color[] _palette = new Color[256];
 
         public WabbitemuDebugger()
         {
@@ -23,6 +24,11 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             if (romFile == null || !File.Exists(romFile))
             {
                 throw new MissingRomException("Could not load Wabbitemu ROM");
+            }
+
+            for (int i = 0; i <= 255; i++)
+            {
+                _palette[i] = Color.FromArgb(0x9e * (256 - i) / 255, (0xAB * (256 - i)) / 255, (0x88 * (256 - i)) / 255);
             }
 
             Debug.WriteLine("Creating wabbitemu");
@@ -246,7 +252,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 var palette = calcBitmap.Palette;
                 for (int i = 0; i <= 255; i++)
                 {
-                    palette.Entries[i] = Color.FromArgb(0x9e * (256 - i) / 255, (0xAB * (256 - i)) / 255, (0x88 * (256 - i)) / 255);
+                    palette.Entries[i] = _palette[i];
                 }
 
                 Rectangle rect = new Rectangle(0, 0, _debugger.LCD.Width, _debugger.LCD.Height);
