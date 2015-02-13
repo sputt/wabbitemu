@@ -633,7 +633,6 @@ namespace Revsoft.Wabbitcode.GUI.DocumentWindows
             }
 
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
-            base.SaveFile();
         }
 
         public override void SaveFile(FilePath filePath)
