@@ -170,7 +170,7 @@ namespace Revsoft.Wabbitcode.Actions
                 RunCommand(new GotoFileAction(_location.FileName));
                 line = _location.LineNumber;
                 editor = _dockingService.Documents.OfType<ITextEditor>()
-                    .Single(d => d.FileName == _location.FileName);
+                    .SingleOrDefault(d => d.FileName == _location.FileName);
             }
 
             if (editor == null || line == -1)
