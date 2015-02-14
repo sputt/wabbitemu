@@ -72,8 +72,9 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            
-            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListBoxItem_MouseDown"/>
+
+            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="PreviewMouseEvent"/>
+            <EventSetter Event="PreviewMouseRightButtonUp" Handler="PreviewMouseEvent"/>
 
             <Setter Property="Canvas.Left" Value="{Binding Path=X, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"/>
             <Setter Property="Canvas.Top" Value="{Binding Path=Y, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"/>

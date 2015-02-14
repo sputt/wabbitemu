@@ -9,7 +9,7 @@
              mc:Ignorable="d" 
                 MouseLeftButtonDown="ObjectCanvas_MouseLeftButtonDown"
                   MouseLeftButtonUp="ObjectCanvas_MouseLeftButtonUp" MouseMove="ObjectCanvas_MouseMove"
-             Width="256" Height="256" Focusable="True" KeyDown="TilegroupLayer_KeyDown_1">
+             Width="256" Height="256" Focusable="True" KeyDown="TilegroupLayer_KeyDown_1" LayerType="TilegroupLayer">
     <local:MapLayer.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -26,7 +26,6 @@
                         CanExecute="Copy_CanExecute"
                         Executed="Copy_Executed"/>
     </UserControl.CommandBindings>
-
     <Canvas x:Name="ObjectCanvas" Width="256" Height="256" Background="Transparent" ClipToBounds="True" >
         <Path x:Name="TilegroupSelectionShape" DataContext="{Binding TilegroupSelection, ElementName=TilegroupLayer}"
                       Canvas.Left="{Binding MapOffset.X}"
@@ -39,6 +38,16 @@
                   MouseLeftButtonUp="TilegroupSelectionShape_MouseLeftButtonUp"
                   MouseMove="TilegroupSelectionShape_MouseMove"
                   >
+            <Path.Style>
+                <Style TargetType="Path">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Active, ElementName=TilegroupLayer}" Value="False">
+                            <Setter Property="Opacity" Value="0"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                    <Setter Property="Opacity" Value="1.0"/>
+                </Style>
+            </Path.Style>
             <Path.Data>
                 <PathGeometry>
                     <PathGeometry.Figures>

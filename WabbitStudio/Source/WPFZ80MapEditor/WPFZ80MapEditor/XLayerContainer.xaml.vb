@@ -3,6 +3,15 @@
 Public Class XLayerContainer
     Inherits ListBox
 
+    Public Sub New()
+        InitializeComponent()
+
+        Me.AddHandler(MapLayer.SelectionChangeRequested,
+                      New RoutedEventHandler(Sub(Ctrl As Object, Args As SelectionChangeRequestedArgs)
+                                                 Me.SelectedItem = Args.Map
+                                             End Sub))
+    End Sub
+
     Public Property Maps As ObservableCollection(Of MapData)
         Get
             Return GetValue(MapsProperty)
@@ -83,12 +92,10 @@ Public Class XLayerContainer
                            GetType(Double), GetType(XLayerContainer), _
                            New FrameworkPropertyMetadata(8.0, FrameworkPropertyMetadataOptions.AffectsMeasure Or FrameworkPropertyMetadataOptions.AffectsArrange))
 
-    Public Sub ListBoxItem_MouseDown(Sender As Object, Args As MouseButtonEventArgs)
-
+    Public Sub PreviewMouseEvent(Sender As Object, Args As RoutedEventArgs)
         If Active Or Sender.DataContext.Exists Then
             LayerContainer.SelectedItem = Sender.DataContext
         End If
-        Args.Handled = False
     End Sub
 
     Private ReadOnly Property Layers As IEnumerable(Of MapLayer)
@@ -105,6 +112,15 @@ Public Class XLayerContainer
 
     Private Sub Paste_Executed(sender As Object, e As ExecutedRoutedEventArgs)
         Layers.ToList().ForEach(Sub(a) a.Paste())
+    End Sub
+
+    Private Sub LayerContainer_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles LayerContainer.SelectionChanged
+        If e.RemovedItems.Count > 0 Then
+            Dim RemovedItem = e.RemovedItems(0)
+            If TypeOf RemovedItem Is MapData Then
+                Utils.FindChildren(Of MapLayer)(ItemContainerGenerator.ContainerFromItem(e.RemovedItems(0))).ToList().ForEach(Sub(a) a.DeselectAll())
+            End If
+        End If
     End Sub
 End Class
 

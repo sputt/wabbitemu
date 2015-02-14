@@ -12,7 +12,7 @@
              d:DesignHeight="256" d:DesignWidth="256" Width="256" Height="256" SnapsToDevicePixels="True" MouseMove="MapView_MouseMove"
     MouseDown="MapView_MouseLeftButtonDown"
     MouseLeave="MapView_MouseLeave"
-    Background="Transparent">
+    Background="Transparent" LayerType="{x:Static local:LayerType.MapLayer}">
     <local:MapLayer.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -326,7 +326,7 @@
                             <Setter Property="Opacity" Value="0"/>
                         </DataTrigger>
                     </Style.Triggers>
-                    <Setter Property="Opacity" Value="{StaticResource MouseOverOpacity}"/>
+                    <Setter Property="Opacity" Value="{StaticResource SelectionOpacity}"/>
                 </Style>
             </Border.Style>
         </Border>

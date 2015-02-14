@@ -323,4 +323,23 @@ Namespace ValueConverters
             End If
         End Function
     End Class
+
+    Public Class ObjectTypeToLayerTypeConverter
+        Inherits OneWayConverter(Of Type, LayerType)
+
+        Public Overrides Function Convert(Value As Type, Parameter As Object) As LayerType
+            Select Case Value
+                Case GetType(ZAnim)
+                    Return LayerType.MapLayer
+                Case GetType(ZObject)
+                    Return LayerType.ObjectLayer
+                Case GetType(ZEnemy)
+                    Return LayerType.EnemyLayer
+                Case GetType(ZMisc)
+                    Return LayerType.MiscLayer
+                Case Else
+                    Return Nothing
+            End Select
+        End Function
+    End Class
 End Namespace

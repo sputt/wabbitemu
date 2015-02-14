@@ -108,10 +108,6 @@
     <Compile Include="My Project\AssemblyInfo.vb">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="My Project\MyExtensions\MyWpfExtension.vb">
-      <VBMyExtensionTemplateID>Microsoft.VisualBasic.WPF.MyExtension</VBMyExtensionTemplateID>
-      <VBMyExtensionTemplateVersion>1.0.0.0</VBMyExtensionTemplateVersion>
-    </Compile>
     <Compile Include="My Project\Resources.Designer.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -135,7 +131,9 @@
     <AppDesigner Include="My Project\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WPFZ80MapEditor\WPFZ80MapEditor.vbproj">

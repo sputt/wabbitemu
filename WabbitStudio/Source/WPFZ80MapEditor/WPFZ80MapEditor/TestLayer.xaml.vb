@@ -16,13 +16,6 @@
                            GetType(GameModel), GetType(TestLayer), _
                            New PropertyMetadata(Nothing))
 
-
-    Public Overrides ReadOnly Property LayerType As LayerType
-        Get
-            Return LayerType.TestingLayer
-        End Get
-    End Property
-
     Private Sub MapLayer_MouseLeftButtonDown(sender As Object, e As MouseButtonEventArgs)
         Debug.WriteLine("CLICKED ON TEST LAYER!")
         If GameModel.IsRetargetModeActive Then

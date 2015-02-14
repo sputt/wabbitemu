@@ -9,9 +9,8 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" 
             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
-        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
-        Title="{Binding Path=Definition.Name}"
-             WindowStyle="ToolWindow" SizeToContent="WidthAndHeight" ResizeMode="NoResize" ShowInTaskbar="False">
+        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" WindowStyle="ToolWindow"
+        Title="{Binding Path=Definition.Name}" SizeToContent="WidthAndHeight" ResizeMode="NoResize" ShowInTaskbar="False">
     <Window.Resources>
         <localconverters:BitValueConverter x:Key="BitConverter"/>
         <local:ArgToColumnConverter x:Key="ArgToColumnConverter"/>
@@ -243,7 +242,7 @@
                         </CollectionViewSource.SortDescriptions>
                     </CollectionViewSource>
                 </Grid.Resources>
-                <ComboBox ItemsSource="{Binding Source={StaticResource cvs}}" Width="160" SelectedValue="{Binding Value}"/>
+                <ComboBox ItemsSource="{Binding Source={StaticResource cvs}}" Width="200" SelectedValue="{Binding Value}"/>
             </Grid>
         </DataTemplate>
         
@@ -306,7 +305,7 @@
             </StackPanel>
         </Border>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Height="23">
-            <Button Content="OK" IsDefault="true" Width="75" Name="OKButton" />
+            <Button Content="OK" IsDefault="true" Width="75" Name="OKButton"/>
             <Button Content="Cancel" IsCancel="True" Width="75" Margin="10,0,0,0" Name="CancelButton" />
         </StackPanel>
     </Grid>

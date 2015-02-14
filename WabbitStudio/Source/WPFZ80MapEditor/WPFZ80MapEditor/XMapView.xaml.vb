@@ -86,12 +86,6 @@
         Selection = Nothing
     End Sub
 
-    Public Overrides ReadOnly Property LayerType As LayerType
-        Get
-            Return WPFZ80MapEditor.LayerType.MapLayer
-        End Get
-    End Property
-
     Private Function GetTileIndex(X As Double, Y As Double) As Integer
         If Y >= 256.0 Or X >= 256.0 Or X < 0 Or Y < 0 Then Return -1
 

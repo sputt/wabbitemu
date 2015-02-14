@@ -432,13 +432,13 @@ Public Class Scenario
             Stream.WriteLine("object_section()")
 
             For i = 0 To MapData.ZObjects.Count - 1
-                MapData.ZObjects(i).Write(Stream, i)
+                MapData.ZObjects.Cast(Of ZObject)()(i).Write(Stream, i)
             Next
 
             Stream.WriteLine("enemy_section()")
 
             For i = 0 To MapData.ZEnemies.Count - 1
-                MapData.ZEnemies(i).Write(Stream, i)
+                MapData.ZEnemies.Cast(Of ZEnemy)()(i).Write(Stream, i)
             Next
 
             Stream.WriteLine("misc_section()")

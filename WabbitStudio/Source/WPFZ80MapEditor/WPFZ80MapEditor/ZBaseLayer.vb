@@ -1,6 +1,10 @@
 ﻿Public Class ZBaseLayer(Of BaseType As {IBaseGeneralObject, ICloneable})
     Inherits MapLayer
 
+    Public Sub New()
+
+    End Sub
+
     Protected Sub Object_Drop(sender As Object, e As DragEventArgs)
         Dim Pos = e.GetPosition(ObjectListBox)
         Dim Def As ZDef = e.Data.GetData(GetType(ZDef))
@@ -39,12 +43,6 @@
                            DependencyProperty.Register("CollectionName", _
                            GetType(String), GetType(ZBaseLayer(Of BaseType)), _
                            New PropertyMetadata(Nothing))
-
-    Protected ReadOnly Property Map As MapData
-        Get
-            Return DirectCast(DataContext, MapData)
-        End Get
-    End Property
 
     Public ReadOnly Property SelectionRect As Border
         Get
@@ -151,7 +149,7 @@
     Private _FirstClick As Boolean = True
     Private _LastItemClicked As IBaseGeneralObject = Nothing
 
-    Private Sub RaiseCoordiantesUpdated()
+    Private Sub RaiseCoordinatesUpdated()
         If ObjectListBox.SelectedItems.Count > 0 Then
 
             Dim Args = New CoordinatesUpdatedArgs(MapLayer.CoordinatesUpdatedEvent, New Point(ObjectListBox.SelectedItems(0).X, ObjectListBox.SelectedItems(0).Y))
@@ -160,7 +158,7 @@
         End If
     End Sub
 
-    Protected Sub ItemContainer_MouseLeftButtonDown(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
+    Public Sub ItemContainer_MouseLeftButtonDown(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
         If _LastItemClicked IsNot sender.DataContext Then
             _FirstClick = True
         End If
@@ -176,42 +174,17 @@
             UndoManager.PushUndoState(Map, UndoManager.TypeFlagFromType(GetType(BaseType)))
 
             e.Handled = True
-            RaiseCoordiantesUpdated()
+            RaiseCoordinatesUpdated()
             ObjectListBox.Focus()
         End If
 
         _LastItemClicked = sender.DataContext
     End Sub
 
-    Protected Sub ItemContainer_MouseDoubleClick(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
-        Dim Frm = New ObjectProperties()
-        Frm.Owner = Window.GetWindow(Me)
-
-        Dim Map As MapData = Me.DataContext
-
-        Dim ObjOld = ObjectListBox.SelectedItem
-        Dim ObjClone As BaseType = ObjOld.Clone
-        Frm.DataContext = ObjClone
-        If Frm.ShowDialog() = True Then
-            'ObjClone.UpdatePosition(ObjClone.Args(0).Value, ObjClone.Args(1).Value)
-            UndoManager.PushUndoState(Map, UndoManager.TypeFlagFromType(GetType(BaseType)))
-
-            ObjectCollection(ObjectListBox.SelectedIndex) = ObjClone
-            ObjectListBox.SelectedItem = ObjClone
-
-            If ObjClone.NamedSlot <> ObjOld.NamedSlot Then
-                If ObjClone.NamedSlot IsNot Nothing AndAlso Not Map.Scenario.NamedSlots.Contains(ObjClone.NamedSlot) Then
-                    Map.Scenario.NamedSlots.Add(ObjClone.NamedSlot)
-                End If
-                If ObjOld.NamedSlot IsNot Nothing Then
-                    Map.Scenario.NamedSlots.Remove(ObjOld.NamedSlot)
-                End If
-            End If
-        End If
-        Mouse.Capture(Nothing)
+    Public Sub ItemContainer_MouseDoubleClick(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
     End Sub
 
-    Protected Sub ItemContainer_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs)
+    Public Sub ItemContainer_MouseMove(sender As System.Object, e As System.Windows.Input.MouseEventArgs)
         Dim Pos = Mouse.GetPosition(ObjectCanvas)
         If Not _IsDraggingObject And e.LeftButton = MouseButtonState.Pressed Then
             If Math.Abs(Pos.X - _StartObjectDrag.X) > SystemParameters.MinimumHorizontalDragDistance OrElse
@@ -240,18 +213,18 @@
                 ZObj.Args(1).Value = CInt(Math.Round(StartY + Diff.Y))
             Next
 
-            RaiseCoordiantesUpdated()
+            RaiseCoordinatesUpdated()
             e.Handled = True
         End If
     End Sub
 
 
-    Protected Sub ItemContainer_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
+    Public Sub ItemContainer_MouseLeftButtonUp(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs)
         If Mouse.Captured Is sender Then
             sender.ReleaseMouseCapture()
             If Not _IsDraggingObject Then
                 ObjectListBox.SelectedItem = sender.Content
-                RaiseCoordiantesUpdated()
+                RaiseCoordinatesUpdated()
             End If
 
 
@@ -272,12 +245,6 @@
     Public Overrides Sub DeselectAll()
 
     End Sub
-
-    Public Overrides ReadOnly Property LayerType As LayerType
-        Get
-            Return LayerType.ObjectLayer
-        End Get
-    End Property
 
     Protected Sub ObjectListBox_KeyDown(sender As Object, e As KeyEventArgs)
         If e.Key = Key.Delete Then

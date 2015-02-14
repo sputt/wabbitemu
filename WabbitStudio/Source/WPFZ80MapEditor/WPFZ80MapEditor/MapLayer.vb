@@ -9,14 +9,25 @@ Public Class MapLayer
     Public Shared ReadOnly LayerChangeRequestedEvent As RoutedEvent =
         EventManager.RegisterRoutedEvent("LayerChangeRequested", RoutingStrategy.Bubble, GetType(RoutedEventHandler), GetType(MapLayer))
 
+    Public Shared ReadOnly SelectionChangeRequested As RoutedEvent =
+        EventManager.RegisterRoutedEvent("SelectionChangeRequested", RoutingStrategy.Bubble, GetType(RoutedEventHandler), GetType(MapLayer))
+
     Public Overridable Sub DeselectAll() Implements IMapLayer.DeselectAll
 
     End Sub
 
-    Public Overridable ReadOnly Property LayerType As LayerType Implements IMapLayer.LayerType
+    Public Shared ReadOnly LayerTypeProperty As DependencyProperty = _
+                           DependencyProperty.Register("LayerType", _
+                           GetType(LayerType), GetType(MapLayer), _
+                           New PropertyMetadata(Nothing))
+
+    Public Overridable Property LayerType As LayerType Implements IMapLayer.LayerType
         Get
-            Return Nothing
+            Return GetValue(LayerTypeProperty)
         End Get
+        Set(value As LayerType)
+            SetValue(LayerTypeProperty, value)
+        End Set
     End Property
 
     Public Property Active As Boolean
@@ -69,7 +80,7 @@ Public Class MapLayer
 End Class
 
 Public Interface IMapLayer
-    ReadOnly Property LayerType As LayerType
+    Property LayerType As LayerType
 
     Sub DeselectAll()
     Function CanPaste() As Boolean
@@ -98,13 +109,13 @@ Public Class LayerChangeRequestedArgs
     End Sub
 End Class
 
-Public Class CanPasteEventArgs
+Public Class SelectionChangeRequestedArgs
     Inherits RoutedEventArgs
 
-    Public Property CanPaste As Boolean
+    Public Property Map As MapData
 
-    Public Sub New(RoutedEvent As RoutedEvent)
+    Public Sub New(RoutedEvent As RoutedEvent, Map As MapData)
         MyBase.New(RoutedEvent)
-        Me.CanPaste = False
+        Me.Map = Map
     End Sub
 End Class

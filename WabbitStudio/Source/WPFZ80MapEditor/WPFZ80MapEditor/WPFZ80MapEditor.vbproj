@@ -187,7 +187,6 @@
       <DependentUpon>MiscLayer.xaml</DependentUpon>
     </Compile>
     <Compile Include="ResizeThumb.vb" />
-    <Compile Include="RoutedInterfaceEvents.vb" />
     <Compile Include="ScenarioDefs.vb" />
     <Compile Include="Simulation\AnimatedTile.xaml.vb">
       <DependentUpon>AnimatedTile.xaml</DependentUpon>
@@ -231,17 +230,14 @@
     <Compile Include="Tileset.vb" />
     <Compile Include="UndoManager.vb" />
     <Compile Include="Utils.vb" />
-    <Compile Include="XEnemyLayer.xaml.vb">
-      <DependentUpon>XEnemyLayer.xaml</DependentUpon>
-    </Compile>
     <Compile Include="XLayerContainer.xaml.vb">
       <DependentUpon>XLayerContainer.xaml</DependentUpon>
     </Compile>
     <Compile Include="XMapView.xaml.vb">
       <DependentUpon>XMapView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="XObjectLayer.xaml.vb">
-      <DependentUpon>XObjectLayer.xaml</DependentUpon>
+    <Compile Include="XXObjectLayer.xaml.vb">
+      <DependentUpon>XXObjectLayer.xaml</DependentUpon>
     </Compile>
     <Compile Include="ZBaseLayer.vb" />
     <Compile Include="ZeldaImage.vb" />
@@ -296,10 +292,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="XEnemyLayer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="XLayerContainer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -308,7 +300,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="XObjectLayer.xaml">
+    <Page Include="XXObjectLayer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -406,7 +398,6 @@
     <Content Include="Effects\Invert.fx" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Fakes\" />
     <Folder Include="Scenario\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

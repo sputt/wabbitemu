@@ -10,7 +10,7 @@
              Background="#01FFFFFF"
              MouseDown="UserControl_MouseDown"
                 x:Name="MiscLayerControl"
-                AllowDrop="{Binding Active, ElementName=MiscLayerControl}" Drop="Misc_Drop"
+                AllowDrop="{Binding Active, ElementName=MiscLayerControl}" Drop="Misc_Drop" LayerType="MiscLayer"
              >
     <local:MapLayer.Resources>
         <ResourceDictionary>

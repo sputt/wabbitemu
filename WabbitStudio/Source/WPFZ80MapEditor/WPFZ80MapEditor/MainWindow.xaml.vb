@@ -25,13 +25,14 @@ Public Class MainWindow
         ObjectsPanel.DragScope = MapControl
 
         If MapEditorControl.ZeldaFolder IsNot Nothing Then
-            Dim fileName = Path.Combine(MapEditorControl.ZeldaFolder, "maps\hill.zmap")
+            Dim fileName = Path.Combine(MapEditorControl.ZeldaFolder, "maps\hill.asm")
             MapControl.OpenScenario(fileName)
         End If
 
         MapControl.LayerContainer.AddHandler(MapLayer.CoordinatesUpdatedEvent, New RoutedEventHandler(Sub(ctrl As Object, args As CoordinatesUpdatedArgs)
                                                                                                           Model.Status = args.Point.X & ", " & args.Point.Y
                                                                                                       End Sub))
+
     End Sub
 
     Private Sub ZoomAnimationEnd(sender As Object, e As EventArgs)

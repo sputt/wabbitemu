@@ -82,12 +82,12 @@ Public Class MapData
 
     Public Property ZAnims As ObservableCollection(Of ZAnim)
 
-    Private _ZObjects As ObservableCollection(Of ZObject)
-    Public Property ZObjects As ObservableCollection(Of ZObject)
+    Private _ZObjects As ObservableCollection(Of IBaseGeneralObject)
+    Public Property ZObjects As ObservableCollection(Of IBaseGeneralObject)
         Get
             Return _ZObjects
         End Get
-        Set(value As ObservableCollection(Of ZObject))
+        Set(value As ObservableCollection(Of IBaseGeneralObject))
             If value IsNot _ZObjects Then
                 _ZObjects = value
                 RaisePropertyChanged("ZObjects")
@@ -95,7 +95,7 @@ Public Class MapData
         End Set
     End Property
 
-    Public Property ZEnemies As ObservableCollection(Of ZEnemy)
+    Public Property ZEnemies As ObservableCollection(Of IBaseGeneralObject)
 
     Public Property ZMisc As ObservableCollection(Of ZMisc)
 
@@ -142,8 +142,8 @@ Public Class MapData
             Tileset = Scenario.Tilesets(NewTileset)
         End If
         ZAnims = New ObservableCollection(Of ZAnim)
-        ZObjects = New ObservableCollection(Of ZObject)
-        ZEnemies = New ObservableCollection(Of ZEnemy)
+        ZObjects = New ObservableCollection(Of IBaseGeneralObject)
+        ZEnemies = New ObservableCollection(Of IBaseGeneralObject)
         ZMisc = New ObservableCollection(Of ZMisc)
 
         _ID = Guid.NewGuid()

@@ -60,6 +60,8 @@ Public Structure AZMisc
 End Structure
 
 Public Interface IBaseGeneralObject
+    Inherits ICloneable
+
     Property PreviousVersion As IBaseGeneralObject
 
     Property Definition As ZDef
@@ -93,7 +95,6 @@ End Interface
 
 Public Class ZBaseObject(Of ZBase As New, Base As {New, IGeneralObject(Of ZBase)})
     Implements IGeneralObject(Of ZBase)
-    Implements ICloneable
     Implements INotifyPropertyChanged
 
     Public Property PreviousVersion As IBaseGeneralObject Implements IGeneralObject(Of ZBase).PreviousVersion

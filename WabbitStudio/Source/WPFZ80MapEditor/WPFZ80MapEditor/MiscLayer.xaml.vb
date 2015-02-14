@@ -126,10 +126,13 @@
         Mouse.Capture(Nothing)
     End Sub
 
-    Public Overrides ReadOnly Property LayerType As LayerType
+    Public Overrides Property LayerType As LayerType
         Get
             Return WPFZ80MapEditor.LayerType.MiscLayer
         End Get
+        Set(value As LayerType)
+
+        End Set
     End Property
 
 End Class

@@ -1,0 +1,224 @@
+﻿<local:MapLayer x:Class="XXObjectLayer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPFZ80MapEditor"
+             xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:il="clr-namespace:Microsoft.Expression.Interactivity.Layout;assembly=Microsoft.Expression.Interactions"
+             xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+             xmlns:int="clr-namespace:System.Windows.Interactivity" 
+             xmlns:si="clr-namespace:StylesInteractivity"
+             x:Name="ObjectLayer"
+             mc:Ignorable="d" Width="256" Height="256">
+    <UserControl.Resources>
+        <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="ColorsAndStoryboards.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+        
+        <converters:ObjectTypeToLayerTypeConverter x:Key="ObjectTypeToLayerConverter"/>
+        <converters:XConverter x:Key="XConverter"/>
+        <converters:YConverter x:Key="YConverter"/>
+        <converters:ZConverter x:Key="ZConverter"/>
+        <converters:XImageConverter x:Key="ImageConverter"/>
+        
+        <ContextMenu x:Key="ObjectContextMenu">
+            <MenuItem Header="Select" ItemsSource="{Binding Path=ObjectsUnderClick, RelativeSource={RelativeSource AncestorType=local:XXObjectLayer}}">
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="MenuItem">
+                        <Setter Property="Header" Value="{Binding Name}"/>
+                    </Style>
+                </MenuItem.ItemContainerStyle>
+            </MenuItem>
+            <MenuItem Header="_Properties" Command="Properties"/>
+            <MenuItem Header="_Delete"/>
+        </ContextMenu>
+
+        <ControlTemplate x:Key="ObjectListBoxItemTemplate"  TargetType="ListBoxItem">
+            <Border x:Name="SelectionBorder" Margin="-2" BorderThickness="2" BorderBrush="Transparent">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="SelectionStates">
+                        <VisualStateGroup.Transitions>
+                            <VisualTransition GeneratedDuration="0:0:0"/>
+                        </VisualStateGroup.Transitions>
+                        <VisualState x:Name="Unselected">
+                        </VisualState>
+                        <VisualState x:Name="Selected">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SelectionBorder" Storyboard.TargetProperty="BorderBrush">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource SelectionBrush}"/>
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                        <VisualState x:Name="SelectedUnfocused">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SelectionBorder" Storyboard.TargetProperty="BorderBrush">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource SelectionBrush}"/>
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                    </VisualStateGroup>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualStateGroup.Transitions>
+                            <VisualTransition GeneratedDuration="0:0:0"/>
+                        </VisualStateGroup.Transitions>
+                        <VisualState x:Name="Normal">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames  Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="BorderBrush">
+                                    <DiscreteObjectKeyFrame KeyTime="0">
+                                        <DiscreteObjectKeyFrame.Value>
+                                            <SolidColorBrush Color="Transparent"/>
+                                        </DiscreteObjectKeyFrame.Value>
+                                    </DiscreteObjectKeyFrame>
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                        <VisualState x:Name="MouseOver">
+                            <Storyboard>
+                                <Storyboard>
+                                    <ObjectAnimationUsingKeyFrames  Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="BorderBrush">
+                                        <DiscreteObjectKeyFrame KeyTime="0">
+                                            <DiscreteObjectKeyFrame.Value>
+                                                <SolidColorBrush Color="{Binding Color, Source={StaticResource SelectionBrush}}" Opacity="{StaticResource MouseOverOpacity}"/>
+                                            </DiscreteObjectKeyFrame.Value>
+                                        </DiscreteObjectKeyFrame>
+                                    </ObjectAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </Storyboard>
+                        </VisualState>
+                        <VisualState x:Name="Disabled"/>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+                <Border x:Name="MouseOverBorder" Margin="-2" BorderThickness="2" BorderBrush="Transparent">
+                    <Grid x:Name="ObjectPanel">
+                        <ContentPresenter/>
+                    </Grid>
+                </Border>
+            </Border>
+            <ControlTemplate.Triggers>
+                <DataTrigger Binding="{Binding Path=Active, RelativeSource={RelativeSource AncestorType=local:XXObjectLayer}}" Value="False">
+                    <Setter TargetName="SelectionBorder" Property="BorderThickness" Value="0"/>
+                    <Setter TargetName="SelectionBorder" Property="Margin" Value="0"/>
+                </DataTrigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        
+        <Style x:Key="ObjectListBoxItemStyle"  TargetType="ListBoxItem">
+            <Setter Property="Canvas.Left">
+                <Setter.Value>
+                    <MultiBinding Converter="{StaticResource XConverter}">
+                        <Binding Path="DataContext" ElementName="ObjectLayer"/>
+                        <Binding Path="Image"/>
+                        <Binding Path="X"/>
+                        <Binding Path="W"/>
+                    </MultiBinding>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Canvas.Top">
+                <Setter.Value>
+                    <MultiBinding Converter="{StaticResource YConverter}">
+                        <Binding Path="DataContext" ElementName="ObjectLayer"/>
+                        <Binding Path="Image"/>
+                        <Binding Path="Y"/>
+                        <Binding Path="H"/>
+                        <Binding Path="Z"/>
+                    </MultiBinding>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Panel.ZIndex">
+                <Setter.Value>
+                    <MultiBinding Converter="{StaticResource ZConverter}">
+                        <Binding Path="Y"/>
+                        <Binding Path="H"/>
+                        <Binding Path="Z"/>
+                        <Binding Path="D"/>
+                    </MultiBinding>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template" Value="{StaticResource ObjectListBoxItemTemplate}"/>
+            
+            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ItemContainer_MouseLeftButtonDown"/>
+            <EventSetter Event="MouseMove" Handler="ItemContainer_MouseMove"/>
+            <EventSetter Event="MouseLeftButtonUp" Handler="ItemContainer_MouseLeftButtonUp"/>
+            
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Panel.ZIndex" Value="256"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ObjectListBoxStyle" TargetType="ListBox">
+            <Setter Property="SelectionMode" Value="Extended"/>
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <Canvas/>
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <ItemsPresenter></ItemsPresenter>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemsControl.ItemContainerStyle" Value="{StaticResource ObjectListBoxItemStyle}"/>
+            <!--<EventSetter Event="KeyDown" Handler="ObjectListBox_KeyDown"/>-->
+        </Style>
+        
+        <DataTemplate x:Key="ObjectTemplate">            
+            <UserControl Tag="{Binding ., ElementName=ObjectLayer}">
+                <UserControl.ContextMenu>
+                    <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                        <MenuItem Header="Select" ItemsSource="{Binding ObjectsUnderClick}">
+                            <MenuItem.ItemContainerStyle>
+                                <Style TargetType="MenuItem">
+                                    <Setter Property="Header" Value="{Binding Path=Definition.Name}"/>
+                                    <Setter Property="Tag" Value="{Binding .}"/>
+                                    <EventSetter Event="Click" Handler="SelectMenuItem_Click"/>
+                                </Style>
+                            </MenuItem.ItemContainerStyle>
+                        </MenuItem>
+                        <MenuItem Command="Properties"/>
+                        <MenuItem Header="Delete"/>
+                    </ContextMenu> 
+                </UserControl.ContextMenu>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseDoubleClick">
+                        <i:InvokeCommandAction Command="Properties"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <Image Effect="{Binding ObjectEffect, ElementName=ObjectLayer}">
+                    <Image.Source>
+                        <MultiBinding Converter="{StaticResource ImageConverter}">
+                            <Binding Path="DataContext.Scenario" ElementName="ObjectLayer"/>
+                            <Binding Path="Image"/>
+                        </MultiBinding>
+                    </Image.Source>
+                </Image>
+            </UserControl>
+        </DataTemplate>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
+    <UserControl.CommandBindings>
+        <CommandBinding Command="Properties" CanExecute="OnCanExecuteProperties" Executed="OnExecuteProperties"/>
+    </UserControl.CommandBindings>
+    
+    <local:MapLayer.LayerType>
+        <Binding Path="ObjectType" RelativeSource="{RelativeSource Self}" Converter="{StaticResource ObjectTypeToLayerConverter}"/>
+    </local:MapLayer.LayerType>
+    
+    <Canvas x:Name="ObjectCanvas" Background="Transparent">
+        <ListBox x:Name="ObjectListBox" ItemsSource="{Binding ObjectCollection, ElementName=ObjectLayer}" Style="{StaticResource ObjectListBoxStyle}" ItemTemplate="{StaticResource ObjectTemplate}"></ListBox>
+        <Border Name="SelectionRect" BorderBrush="{StaticResource SelectionBrush}" BorderThickness="1" Height="150" Width="150" Canvas.Left="10" Canvas.Top="50" Visibility="Hidden">
+            <Border.Background>
+                <SolidColorBrush Color="{Binding Color, Source={StaticResource SelectionBrush}}" Opacity="0.4"/>
+            </Border.Background>
+        </Border>
+    </Canvas>
+</local:MapLayer>
