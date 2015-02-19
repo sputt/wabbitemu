@@ -130,13 +130,13 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 		lcd->shades = LCD_DEFAULT_SHADES;
 	}
 
-	lcd->base.time = tc_elapsed(cpu->timer_c);
-	lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
+	lcd->base.time = cpu->timer_c->elapsed;
+	lcd->base.ufps_last = cpu->timer_c->elapsed;
 	lcd->base.ufps = 0.0f;
-	lcd->base.lastgifframe = tc_elapsed(cpu->timer_c);
-	lcd->base.lastaviframe = tc_elapsed(cpu->timer_c);
+	lcd->base.lastgifframe = cpu->timer_c->elapsed;
+	lcd->base.lastaviframe = cpu->timer_c->elapsed;
 	lcd->base.write_avg = 0.0f;
-	lcd->base.write_last = tc_elapsed(cpu->timer_c);
+	lcd->base.write_last = cpu->timer_c->elapsed;
 	return lcd;
 }
 
@@ -254,12 +254,12 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 
 	if (cpu->output) {
 		// Run some sanity checks on the write vars
-		if (lcd->base.write_last > tc_elapsed(cpu->timer_c))
-			lcd->base.write_last = tc_elapsed(cpu->timer_c);
+		if (lcd->base.write_last > cpu->timer_c->elapsed)
+			lcd->base.write_last = cpu->timer_c->elapsed;
 
-		double write_delay = tc_elapsed(cpu->timer_c) - lcd->base.write_last;
+		double write_delay = cpu->timer_c->elapsed - lcd->base.write_last;
 		if (lcd->base.write_avg == 0.0) lcd->base.write_avg = write_delay;
-		lcd->base.write_last = tc_elapsed(cpu->timer_c);
+		lcd->base.write_last = cpu->timer_c->elapsed;
 		lcd->base.last_tstate = tc_tstates(cpu->timer_c);
 	
 		// If there is a delay that is significantly longer than the
@@ -272,20 +272,20 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 		if (write_delay < lcd->base.write_avg * 100.0) {
 			lcd->base.write_avg = (lcd->base.write_avg * 0.90) + (write_delay * 0.10);
 		} else {
-			double ufps_length = tc_elapsed(cpu->timer_c) - lcd->base.ufps_last;
+			double ufps_length = cpu->timer_c->elapsed - lcd->base.ufps_last;
 			lcd->base.ufps = 1.0 / ufps_length;
-			lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
+			lcd->base.ufps_last = cpu->timer_c->elapsed;
 			
 			if (lcd->mode == MODE_PERFECT_GRAY) {
 				LCD_enqueue(cpu, lcd);
-				lcd->base.time = tc_elapsed(cpu->timer_c);
+				lcd->base.time = cpu->timer_c->elapsed;
 			}
 		}
 		
 		if (lcd->mode == MODE_GAME_GRAY) {
 			if ((lcd->base.x == 0) && (lcd->base.y == 0)) {
 				LCD_enqueue(cpu, lcd);
-				lcd->base.time = tc_elapsed(cpu->timer_c);
+				lcd->base.time = cpu->timer_c->elapsed;
 			}
 		}
 
@@ -318,21 +318,21 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 	}
 	
 	// Make sure timers are valid
-	if (lcd->base.time > tc_elapsed(cpu->timer_c))
-		lcd->base.time = tc_elapsed(cpu->timer_c);
+	if (lcd->base.time > cpu->timer_c->elapsed)
+		lcd->base.time = cpu->timer_c->elapsed;
 	
-	else if (tc_elapsed(cpu->timer_c) - lcd->base.time > (2.0 / STEADY_FREQ_MIN))
-		lcd->base.time = tc_elapsed(cpu->timer_c) - (2.0 / STEADY_FREQ_MIN);
+	else if (cpu->timer_c->elapsed - lcd->base.time > (2.0 / STEADY_FREQ_MIN))
+		lcd->base.time = cpu->timer_c->elapsed - (2.0 / STEADY_FREQ_MIN);
 	
 	// Perfect gray mode should time out too in case the screen update rate is too slow for
 	// proper grayscale (essentially a fallback on steady freq)
 	if (lcd->mode == MODE_PERFECT_GRAY || lcd->mode == MODE_GAME_GRAY) {	
-		if ((tc_elapsed(cpu->timer_c) - lcd->base.time) >= (1.0 / STEADY_FREQ_MIN)) {
+		if ((cpu->timer_c->elapsed - lcd->base.time) >= (1.0 / STEADY_FREQ_MIN)) {
 			LCD_enqueue(cpu, lcd);
 			lcd->base.time += (1.0 / STEADY_FREQ_MIN);
 		}
 	} else if (lcd->mode == MODE_STEADY) {
-		if ((tc_elapsed(cpu->timer_c) - lcd->base.time) >= lcd->steady_frame) {
+		if ((cpu->timer_c->elapsed - lcd->base.time) >= lcd->steady_frame) {
 			LCD_enqueue(cpu, lcd);
 			lcd->base.time += lcd->steady_frame;
 		}

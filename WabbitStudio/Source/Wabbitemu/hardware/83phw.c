@@ -98,10 +98,10 @@ static void port3(CPU_t *cpu, device_t *dev) {
 	when mask timer continues to tick but 
 	does not generate an interrupt. */
 	if (stdint->intactive & 0x02) {
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)
+		if ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1)
 			cpu->interrupt = TRUE;
-	} else if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
-		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)
+	} else if ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1) {
+		while ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1)
 			stdint->lastchk1 += stdint->timermax1;
 	}
 
@@ -111,10 +111,10 @@ static void port3(CPU_t *cpu, device_t *dev) {
 	when mask timer continues to tick but 
 	does not generate an interrupt. */
 	if (stdint->intactive & 0x04) {
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2)
+		if ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2)
 			cpu->interrupt = TRUE;
-	} else if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
-		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2)
+	} else if ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2) {
+		while ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2)
 			stdint->lastchk2 += stdint->timermax2;
 	}
 
@@ -130,8 +130,8 @@ static void port4(CPU_t *cpu, device_t *dev) {
 	STDINT_t * stdint = (STDINT_t *) dev->aux;
 	if (cpu->input) {
 		unsigned char result = 0;
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) result += 2;
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) result += 4;
+		if ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1) result += 2;
+		if ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2) result += 4;
 		
 		if (stdint->on_latch) result += 1;
 		if (!cpu->pio.keypad->on_pressed) result += 8;
@@ -309,9 +309,9 @@ static STDINT_t* INT83P_init(CPU_t* cpu) {
 	
 	stdint->intactive = 0;
 	stdint->timermax1 = stdint->freq[3] ;
-	stdint->lastchk1 = tc_elapsed(cpu->timer_c);
+	stdint->lastchk1 = cpu->timer_c->elapsed;
 	stdint->timermax2 = stdint->freq[3] / 2.0f;
-	stdint->lastchk2 = tc_elapsed(cpu->timer_c) + stdint->freq[3] / 4.0f;
+	stdint->lastchk2 = cpu->timer_c->elapsed + stdint->freq[3] / 4.0f;
 	stdint->on_backup = 0;
 	stdint->on_latch = FALSE;
 	return stdint;

@@ -717,7 +717,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		double ntimer;
 		SetRect(&rc, 0, lpDebugInfo->kRegRow*3, lpDebugInfo->kRegAddr*3, lpDebugInfo->kRegRow*4);
 
-		ntimer = tc_elapsed(&lpCalc->timer_c) - lpCalc->cpu.pio.stdint->lastchk1;
+		ntimer = lpCalc->timer_c.elapsed - lpCalc->cpu.pio.stdint->lastchk1;
 		ntimer *= 1000;
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 		SelectObject(hdc, lpDebugInfo->hfontSegoe);
@@ -744,7 +744,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			OffsetRect(&rc, -lpDebugInfo->kRegAddr*3, lpDebugInfo->kRegRow*3/2);
 			DrawText(hdc, _T("Next Timer2"), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-			ntimer = tc_elapsed(&lpCalc->timer_c) - lpCalc->cpu.pio.stdint->lastchk2;
+			ntimer = lpCalc->timer_c.elapsed - lpCalc->cpu.pio.stdint->lastchk2;
 			ntimer *= 1000;
 			StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 

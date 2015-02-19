@@ -29,10 +29,10 @@ static void CALLBACK FillSoundBuffer(HWAVEOUT,
 				waveOutWrite(audio->hWaveOut, waveheader, sizeof(WAVEHDR));
 			} else audio->endsnd++;
 		} else {
-			if ((audio->PlayTime + (BANK_TIME * 1.5f)) < (tc_elapsed(audio->timer_c))) {
-				if ((audio->PlayTime + (BANK_TIME * ((float)(BUFFER_BANKS * 2)))) < tc_elapsed(audio->timer_c)) {
+			if ((audio->PlayTime + (BANK_TIME * 1.5f)) < (audio->timer_c->elapsed)) {
+				if ((audio->PlayTime + (BANK_TIME * ((float)(BUFFER_BANKS * 2)))) < audio->timer_c->elapsed) {
 
-					audio->PlayTime = tc_elapsed(audio->timer_c) - (BANK_TIME * ((float)BUFFER_BANKS));
+					audio->PlayTime = audio->timer_c->elapsed - (BANK_TIME * ((float)BUFFER_BANKS));
 					audio->PlayPnt = (audio->CurPnt - (PREFERED_SAMPLES * BUFFER_BANKS)) % BUFFER_SMAPLES;
 				}
 
@@ -113,12 +113,12 @@ int soundinit(AUDIO_t *audio) {
 	audio->PlayPnt = 0;
 	audio->CurPnt = BUFFER_BANKS * PREFERED_SAMPLES;
 
-	audio->PlayTime = tc_elapsed(audio->timer_c) - (((float)BUFFER_BANKS) * ((float)PREFERED_SAMPLES)) / ((float)SAMPLE_RATE);
-	audio->LastFlipLeft = tc_elapsed(audio->timer_c);
+	audio->PlayTime = audio->timer_c->elapsed - (((float)BUFFER_BANKS) * ((float)PREFERED_SAMPLES)) / ((float)SAMPLE_RATE);
+	audio->LastFlipLeft = audio->timer_c->elapsed;
 	audio->HighLengLeft = 0;
-	audio->LastFlipRight = tc_elapsed(audio->timer_c);
+	audio->LastFlipRight = audio->timer_c->elapsed;
 	audio->HighLengRight = 0;
-	audio->LastSample = tc_elapsed(audio->timer_c);
+	audio->LastSample = audio->timer_c->elapsed;
 	audio->LeftOn = 0;
 	audio->RightOn = 0;
 
@@ -190,7 +190,7 @@ int playsound(AUDIO_t *audio) {
 		soundinit(audio);
 	} else {
 		int i, b;
-		audio->PlayTime = tc_elapsed(audio->timer_c) - (BANK_TIME * ((float)BUFFER_BANKS));
+		audio->PlayTime = audio->timer_c->elapsed - (BANK_TIME * ((float)BUFFER_BANKS));
 		audio->PlayPnt = (audio->CurPnt - (PREFERED_SAMPLES * BUFFER_BANKS)) % BUFFER_SMAPLES;
 		for (b = 0; b < BUFFER_BANKS; b++) {
 			for (i = 0; i < PREFERED_SAMPLES; i++) {
@@ -221,9 +221,9 @@ int FlippedLeft(CPU_t *cpu, int on) {
 	AUDIO_t *audio = &link->audio;
 	if (!audio->enabled) return 1;
 	if (on == 1) {
-		audio->LastFlipLeft = tc_elapsed(cpu->timer_c);
+		audio->LastFlipLeft = cpu->timer_c->elapsed;
 	} else if (on == 0) {
-		audio->HighLengLeft += (tc_elapsed(cpu->timer_c) - audio->LastFlipLeft);
+		audio->HighLengLeft += (cpu->timer_c->elapsed - audio->LastFlipLeft);
 	}
 	audio->LeftOn = on;
 	return 0;
@@ -234,9 +234,9 @@ int FlippedRight(CPU_t *cpu, int on) {
 	AUDIO_t* audio = &link->audio;
 	if (!audio->enabled) return 1;
 	if (on == 1) {
-		audio->LastFlipRight = tc_elapsed(cpu->timer_c);
+		audio->LastFlipRight = cpu->timer_c->elapsed;
 	} else if (on == 0) {
-		audio->HighLengRight += (tc_elapsed(cpu->timer_c) - audio->LastFlipRight);
+		audio->HighLengRight += (cpu->timer_c->elapsed - audio->LastFlipRight);
 	}
 	audio->RightOn = on;
 	return 0;
@@ -253,7 +253,7 @@ int nextsample(CPU_t *cpu) {
 	unsigned char right;
 	if (!audio->enabled) return 1;
 
-	if (tc_elapsed(cpu->timer_c) < (audio->LastSample + SAMPLE_LENGTH)) return 0;
+	if (cpu->timer_c->elapsed < (audio->LastSample + SAMPLE_LENGTH)) return 0;
 
 	if (audio->RightOn == 1) {
 		if ((audio->LastSample + SAMPLE_LENGTH) > audio->LastFlipRight) {
@@ -318,9 +318,9 @@ int nextsample(CPU_t *cpu) {
 	audio->HighLengLeft = 0;
 	audio->LastSample += SAMPLE_LENGTH;
 
-	if ((audio->LastSample + (SAMPLE_LENGTH*2.0f)) < tc_elapsed(cpu->timer_c)) {
+	if ((audio->LastSample + (SAMPLE_LENGTH*2.0f)) < cpu->timer_c->elapsed) {
 		puts("Last sample out of sync");
-		audio->LastSample = tc_elapsed(cpu->timer_c);
+		audio->LastSample = cpu->timer_c->elapsed;
 	}
 
 	return 0;

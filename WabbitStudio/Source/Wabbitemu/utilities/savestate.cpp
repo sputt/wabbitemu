@@ -589,7 +589,7 @@ void SaveTIMER(SAVESTATE_t *save, timerc *time) {
 	CHUNK_t* chunk = NewChunk(save,TIMER_tag);
 	WriteLong(chunk, time->tstates);
 	WriteLong(chunk, time->freq);
-	WriteDouble(chunk, tc_elapsed(time));
+	WriteDouble(chunk, time->elapsed);
 	WriteDouble(chunk, time->lasttime);
 }
 

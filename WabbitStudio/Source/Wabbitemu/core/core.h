@@ -401,9 +401,6 @@ void displayreg(CPU_t *);
 		timer_z->elapsed -= ((double)(num))/((double)(timer_z)->freq);\
 	}
 
-
-#define tc_elapsed( timer_z ) \
-	((timer_z)->elapsed)
 #endif
 
 #define tc_tstates( timer_z ) \

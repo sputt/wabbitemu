@@ -478,15 +478,15 @@ static void calc_debug_callback(LPCALC lpCalc)
 }
 
 int calc_run_frame(LPCALC lpCalc) {
-	double cpu_sync = tc_elapsed((&lpCalc->timer_c));
+	double cpu_sync = lpCalc->timer_c.elapsed;
 
 	while(lpCalc->running) {
 		CPU_step(&lpCalc->cpu);
 
 		/* sync CPU */
-		if (tc_elapsed((&lpCalc->timer_c)) - cpu_sync > (1.0f / FPS)) {
+		if (lpCalc->timer_c.elapsed - cpu_sync > (1.0f / FPS)) {
 			if (lpCalc->speed == MAX_SPEED) return 0;
-			if (tc_elapsed((&lpCalc->timer_c)) - cpu_sync > (lpCalc->speed / FPS)) return 0;
+			if (lpCalc->timer_c.elapsed - cpu_sync > (lpCalc->speed / FPS)) return 0;
 		}
 	}
 
@@ -506,7 +506,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 		CPU_step(&lpCalc->cpu);
 
 		if (lpCalc->cpu.pio.lcd != NULL && 
-			(tc_elapsed(&lpCalc->timer_c) - lpCalc->cpu.pio.lcd->lastaviframe) >= (1.0 / AVI_FPS))
+			(lpCalc->timer_c.elapsed - lpCalc->cpu.pio.lcd->lastaviframe) >= (1.0 / AVI_FPS))
 		{
 			notify_event(lpCalc, AVI_VIDEO_FRAME_EVENT);
 			lpCalc->cpu.pio.lcd->lastaviframe += 1.0 / AVI_FPS;
@@ -661,7 +661,7 @@ int calc_run_all(void) {
 
 		//this code handles screenshotting if were actually taking screenshots right now
 		if (active_calc >= 0 && !calc_waiting_link && calcs[active_calc].cpu.timer_c != NULL && calcs[active_calc].cpu.pio.lcd != NULL) {
-			if ((tc_elapsed(calcs[active_calc].cpu.timer_c) - calcs[active_calc].cpu.pio.lcd->lastgifframe) >= 0.01) {
+			if ((calcs[active_calc].cpu.timer_c->elapsed - calcs[active_calc].cpu.pio.lcd->lastgifframe) >= 0.01) {
 				notify_event(&calcs[active_calc], GIF_FRAME_EVENT);
 				calcs[active_calc].cpu.pio.lcd->lastgifframe += 0.01;
 			}
