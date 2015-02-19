@@ -6,7 +6,7 @@
 
 int device_output(CPU_t *, unsigned char);
 int device_input(CPU_t *, unsigned char);
-int device_control(CPU_t *cpu, unsigned char dev);
+void handle_pio(CPU_t *cpu);
 void Append_interrupt_device(CPU_t *, unsigned char, unsigned char);
 void Modify_interrupt_device(CPU_t *, unsigned char, unsigned char);
 void ClearDevices(CPU_t*);
