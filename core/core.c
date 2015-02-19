@@ -284,17 +284,6 @@ int CPU_reset(CPU_t *cpu) {
 	return 0;
 }
 
-static void handle_pio(CPU_t *cpu) {
-	for (int i = cpu->pio.num_interrupt; i >= 0; i--) {
-		interrupt_t *intVal = &cpu->pio.interrupt[i];
-		intVal->skip_count--;
-		if (!intVal->skip_count) {
-			device_control(cpu, intVal->interrupt_val);
-			intVal->skip_count = intVal->skip_factor;
-		}
-	}
-}
-
 BOOL is_priveleged_page(CPU_t *cpu) {
 	//privileged pages are as follows
 	// TI 83+		= 1C, 1D, 1F

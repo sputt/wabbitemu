@@ -558,9 +558,6 @@ TIFILE_t* ImportVarFile(FILE *infile, TIFILE_t *tifile, int varNumber) {
 		//skip name length
 		tmpread(infile);
 		name_length = (char)tmp;
-		if (tifile->model == TI_86) {
-			name_length = 8;
-		}
 	}
 
 	tifile->var->name_length = name_length;
@@ -568,6 +565,11 @@ TIFILE_t* ImportVarFile(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	tifile->var->length = length;
 	tifile->var->vartype = vartype;
 	ptr = tifile->var->name;
+
+	if (tifile->model == TI_86) {
+		name_length = 8;
+	}
+
 	for (i = 0; i < name_length && !feof(infile); i++) {
 		tmpread(infile);
 		ptr[i] = (unsigned char)tmp;

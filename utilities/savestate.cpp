@@ -501,7 +501,7 @@ void SaveCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	/* pio */
 	for(i = 0; i < 256; i++) {
 		interrupt_t *val = &cpu->pio.interrupt[i];
-		WriteInt(chunk, val->interrupt_val);
+		WriteInt(chunk, (val->device - cpu->pio.devices) / sizeof(device_t));
 		WriteInt(chunk, val->skip_factor);
 		WriteInt(chunk, val->skip_count);
 	}
@@ -834,7 +834,7 @@ BOOL LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	int i;
 	for(i = 0; i < 256; i++) {
 		interrupt_t *val = &cpu->pio.interrupt[i];
-		val->interrupt_val = (unsigned char)ReadInt(chunk);
+		val->device = &cpu->pio.devices[ReadInt(chunk)];
 		val->skip_factor = (unsigned char)ReadInt(chunk);
 		val->skip_count = (unsigned char)ReadInt(chunk);
 	}
