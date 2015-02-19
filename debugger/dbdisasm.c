@@ -231,7 +231,7 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 									DA_BLI, DA_CALL_X, DA_CALL_CC_X, DA_HALT, DA_RST_X};
 	int i;
 	CPU_t *cpu = &lpCalc->cpu;
-	double time = tc_elapsed(cpu->timer_c);
+	double time = cpu->timer_c->elapsed;
 	Z80_info_t zinfarray[4];
 	Z80_info_t *zinflocal = zinfarray;
 
@@ -243,10 +243,10 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 
 	disassemble(lpCalc, REGULAR, addr16_to_waddr(cpu->mem_c, cpu->pc), 1, bTIOSDebug, zinflocal);
 
-	const double five_seconds = 5.0;
+	const double FIVE_SECONDS = 5.0;
 	if (cpu->halt) {
 		if (cpu->iff1) {
-			while ((tc_elapsed(cpu->timer_c) - time) < five_seconds &&
+			while ((cpu->timer_c->elapsed - time) < FIVE_SECONDS &&
 				cpu->halt == TRUE)
 			{
 				CPU_step(cpu);
@@ -259,9 +259,9 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 		uint16_t return_pc = cpu->pc + 3;
 		CPU_step(cpu);
 		if (cpu->sp != old_stack) {
-			double time = tc_elapsed(cpu->timer_c);
+			double time = cpu->timer_c->elapsed;
 			uint16_t old_sp = cpu->sp;
-			while ((tc_elapsed(cpu->timer_c) - time) < five_seconds &&
+			while ((cpu->timer_c->elapsed - time) < FIVE_SECONDS &&
 				!had_exe_violation)
 			{
 				uint16_t old_pc = cpu->pc;
@@ -284,7 +284,7 @@ void CPU_stepover(LPCALC lpCalc, BOOL bTIOSDebug) {
 	} else {
 		for (i = 0; i < ARRAYSIZE(usable_commands); i++) {
 			if (zinflocal->index == usable_commands[i]) {
-				while ((tc_elapsed(cpu->timer_c) - time) < five_seconds &&
+				while ((cpu->timer_c->elapsed - time) < FIVE_SECONDS &&
 					cpu->pc != (zinflocal->waddr.addr + zinflocal->size))
 				{
 					CPU_step(cpu);

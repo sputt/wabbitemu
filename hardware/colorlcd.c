@@ -436,7 +436,7 @@ static void ColorLCD_enqueue(CPU_t *cpu, ColorLCD_t *lcd) {
 		}
 	}
 
-	lcd->last_draw = tc_elapsed(cpu->timer_c);
+	lcd->last_draw = cpu->timer_c->elapsed;
 	lcd->draw_gate++;
 	if (lcd->draw_gate == COLOR_LCD_WIDTH + lcd->front_porch + lcd->back_porch) {
 		lcd->draw_gate = 0;
@@ -482,12 +482,12 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 	uint16_t reg_index = lcd->current_register & 0xFF;
 	if (cpu->output) {
 		// Run some sanity checks on the write vars
-		if (lcd->base.write_last > tc_elapsed(cpu->timer_c))
-			lcd->base.write_last = tc_elapsed(cpu->timer_c);
+		if (lcd->base.write_last > cpu->timer_c->elapsed)
+			lcd->base.write_last = cpu->timer_c->elapsed;
 
-		double write_delay = tc_elapsed(cpu->timer_c) - lcd->base.write_last;
+		double write_delay = cpu->timer_c->elapsed - lcd->base.write_last;
 		if (lcd->base.write_avg == 0.0) lcd->base.write_avg = write_delay;
-		lcd->base.write_last = tc_elapsed(cpu->timer_c);
+		lcd->base.write_last = cpu->timer_c->elapsed;
 		lcd->base.last_tstate = tc_tstates(cpu->timer_c);
 
 		// If there is a delay that is significantly longer than the
@@ -500,9 +500,9 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 		if (write_delay < lcd->base.write_avg * 100.0) {
 			lcd->base.write_avg = (lcd->base.write_avg * 0.90) + (write_delay * 0.10);
 		} else {
-			double ufps_length = tc_elapsed(cpu->timer_c) - lcd->base.ufps_last;
+			double ufps_length = cpu->timer_c->elapsed - lcd->base.ufps_last;
 			lcd->base.ufps = 1.0 / ufps_length;
-			lcd->base.ufps_last = tc_elapsed(cpu->timer_c);
+			lcd->base.ufps_last = cpu->timer_c->elapsed;
 		}
 
 		lcd->write_buffer = lcd->write_buffer << 8 | cpu->bus;
@@ -563,22 +563,22 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 	}
 
 	// Make sure timers are valid
-	if (lcd->base.time > tc_elapsed(cpu->timer_c))
-		lcd->base.time = tc_elapsed(cpu->timer_c);
-	//else if (tc_elapsed(cpu->timer_c) - lcd->base.time > (2.0 / STEADY_FREQ_MIN))
-	//	lcd->base.time = tc_elapsed(cpu->timer_c) - (2.0 / STEADY_FREQ_MIN);
+	if (lcd->base.time > cpu->timer_c->elapsed)
+		lcd->base.time = cpu->timer_c->elapsed;
+	//else if (cpu->timer_c->elapsed - lcd->base.time > (2.0 / STEADY_FREQ_MIN))
+	//	lcd->base.time = cpu->timer_c->elapsed - (2.0 / STEADY_FREQ_MIN);
 
 #ifdef REAL_LCD
-	if (((tc_elapsed(cpu->timer_c) - lcd->base.time) >= (1.0 / lcd->frame_rate)) && !lcd->is_drawing) {
+	if (((cpu->timer_c->elapsed - lcd->base.time) >= (1.0 / lcd->frame_rate)) && !lcd->is_drawing) {
 		ColorLCD_enqueue(cpu, lcd);
 		lcd->base.time += (1.0 / lcd->frame_rate);
 	}
 
-	while (tc_elapsed(cpu->timer_c) - lcd->last_draw >= lcd->line_time) {
+	while (cpu->timer_c->elapsed - lcd->last_draw >= lcd->line_time) {
 		ColorLCD_enqueue(cpu, lcd);
 	}
 #else
-	if (((tc_elapsed(cpu->timer_c) - lcd->base.time) >= (1.0 / lcd->frame_rate)) && !lcd->is_drawing) {
+	if (((cpu->timer_c->elapsed - lcd->base.time) >= (1.0 / lcd->frame_rate)) && !lcd->is_drawing) {
 		ColorLCD_enqueue(cpu, lcd);
 		lcd->base.time += (1.0 / lcd->frame_rate);
 	}

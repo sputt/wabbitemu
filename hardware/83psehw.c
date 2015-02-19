@@ -97,13 +97,13 @@ void port2_83pse(CPU_t *cpu, device_t *dev) {
 		}
 
 		if (!(cpu->bus & BIT(1))) {
-			while ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
+			while ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1) {
 				stdint->lastchk1 += stdint->timermax1;
 			}
 		}
 
 		if (!(cpu->bus & BIT(2))) {
-			while ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
+			while ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2) {
 				stdint->lastchk2 += stdint->timermax2;
 			}
 		}
@@ -147,12 +147,12 @@ void port3_83pse(CPU_t *cpu, device_t *dev) {
 	when mask timer continues to tick but 
 	does not generate an interrupt. */
 	if (stdint->intactive & BIT(1)) {
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
+		if ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1) {
 			cpu->interrupt = TRUE;
 		}
 	}
-	else if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
-		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
+	else if ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1) {
+		while ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1) {
 			stdint->lastchk1 += stdint->timermax1;
 		}
 	}
@@ -163,11 +163,11 @@ void port3_83pse(CPU_t *cpu, device_t *dev) {
 	when mask timer continues to tick but 
 	does not generate an interrupt. */
 	if (stdint->intactive & BIT(2)) {
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
+		if ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2) {
 			cpu->interrupt = TRUE;
 		}
-	} else if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
-		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
+	} else if ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2) {
+		while ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2) {
 			stdint->lastchk2 += stdint->timermax2;
 		}
 	}
@@ -192,11 +192,11 @@ void port4_83pse(CPU_t *cpu, device_t *dev) {
 			result += BIT(0);
 		}
 
-		if ((stdint->intactive & BIT(1)) && ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)) {
+		if ((stdint->intactive & BIT(1)) && ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1)) {
 			result += BIT(1);
 		}
 
-		if ((stdint->intactive & BIT(2)) && ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2)) {
+		if ((stdint->intactive & BIT(2)) && ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2)) {
 			result += BIT(2);
 		}
 
@@ -893,8 +893,8 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 	TIMER_t* timer = &xtal->timers[0];
 	
 	// overall xtal timer ticking
-	xtal->ticks = (unsigned long long)(tc_elapsed(cpu->timer_c) * 32768.0);
-	xtal->lastTime = tc_elapsed(cpu->timer_c);
+	xtal->ticks = (unsigned long long)(cpu->timer_c->elapsed * 32768.0);
+	xtal->lastTime = cpu->timer_c->elapsed;
 	
 	for (int i = 0; i < NumElm(xtal->timers); i++)
 	{
@@ -986,10 +986,10 @@ void clock_enable(CPU_t *cpu, device_t *dev) {
 			clock->base = clock->set;
 		}
 		if ( (clock->enable&0x01)==0 && (cpu->bus&0x01)==1) {
-			clock->lasttime = tc_elapsed(cpu->timer_c);
+			clock->lasttime = cpu->timer_c->elapsed;
 		}
 		if ( (clock->enable&0x01)==1 && (cpu->bus&0x01)==0) {
-			clock->base = clock->base+((unsigned long) (tc_elapsed(cpu->timer_c)-clock->lasttime));
+			clock->base = clock->base+((unsigned long) (cpu->timer_c->elapsed-clock->lasttime));
 		}
 		clock->enable= cpu->bus&0x03;
 
@@ -1006,7 +1006,7 @@ void clock_set(CPU_t *cpu, device_t *dev) {
 		clock->set = 
 			( clock->set & ~(0xFF<<((DEV_INDEX(dev)-0x41)*8)) ) | 
 			( cpu->bus<<((DEV_INDEX(dev)-0x41)*8) );
-		clock->lasttime = tc_elapsed(cpu->timer_c);
+		clock->lasttime = cpu->timer_c->elapsed;
 		cpu->output = FALSE;
 	}
 }	
@@ -1016,7 +1016,7 @@ void clock_read(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		unsigned long time;
 		if (clock->enable & 0x01) {
-			time = clock->base + ((unsigned long)(tc_elapsed(cpu->timer_c) - clock->lasttime));
+			time = clock->base + ((unsigned long)(cpu->timer_c->elapsed - clock->lasttime));
 		} else {
 			time = clock->base;
 		}
@@ -1288,9 +1288,9 @@ STDINT_t* INT83PSE_init(CPU_t* cpu, int model) {
 	
 	stdint->intactive = 0;
 	stdint->timermax1 = stdint->freq[3];
-	stdint->lastchk1 = tc_elapsed(cpu->timer_c);
+	stdint->lastchk1 = cpu->timer_c->elapsed;
 	stdint->timermax2 = stdint->freq[3] / 2.0f;
-	stdint->lastchk2 = tc_elapsed(cpu->timer_c) + stdint->freq[3] / 4.0f;
+	stdint->lastchk2 = cpu->timer_c->elapsed + stdint->freq[3] / 4.0f;
 	
 	stdint->on_backup = 0;
 	stdint->on_latch = FALSE;

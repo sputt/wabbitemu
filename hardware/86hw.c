@@ -52,7 +52,7 @@ static void port3(CPU_t *cpu, device_t *dev) {
 	
 	if (cpu->input) {
 		unsigned char result = 0;
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) result += 4;
+		if ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1) result += 4;
 		if (cpu->pio.lcd->active) result += 2;
 		if (stdint->on_latch) result += 1;
 		else result += 8;
@@ -74,9 +74,9 @@ static void port3(CPU_t *cpu, device_t *dev) {
 	}
 	
 	if (!(stdint->intactive & 0x04) && cpu->pio.lcd->active == TRUE) {
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
+		if ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1) {
 			cpu->interrupt = TRUE;
-			while ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)
+			while ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1)
 				stdint->lastchk1 += stdint->timermax1;
 		}
 	}
@@ -100,7 +100,7 @@ static void port4(CPU_t *cpu, device_t *dev) {
 		dev->aux = (void *) (size_t) cpu->bus;
 		int freq = (cpu->bus >> 1) & 0x3;
 		cpu->pio.stdint->timermax1 = cpu->pio.stdint->freq[freq];
-		cpu->pio.stdint->lastchk1 = tc_elapsed(cpu->timer_c);
+		cpu->pio.stdint->lastchk1 = cpu->timer_c->elapsed;
 		int lcd_mode = (cpu->bus >> 3) & 0x3;
 		if (lcd_mode == 0) {
 			cpu->pio.lcd->width = 80;
@@ -199,7 +199,7 @@ static STDINT_t* INT86_init(CPU_t* cpu) {
 	memcpy(stdint->freq, timer_freq, sizeof(timer_freq));
 	stdint->intactive = 0;
 	stdint->timermax1 = stdint->freq[3];
-	stdint->lastchk1 = tc_elapsed(cpu->timer_c);
+	stdint->lastchk1 = cpu->timer_c->elapsed;
 	stdint->on_backup = 0;
 	stdint->on_latch = FALSE;
 	return stdint;

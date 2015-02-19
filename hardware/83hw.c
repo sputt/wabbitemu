@@ -214,10 +214,10 @@ void port03_83(CPU_t *cpu, device_t *dev) {
 	
 	if (cpu->input) {
 		unsigned char result = 0;
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
+		if ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1) {
 			result += 2;
 		}
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
+		if ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2) {
 			result += 4;
 		}
 		if (cpu->pio.keypad->on_pressed) {
@@ -257,10 +257,10 @@ void port03_83(CPU_t *cpu, device_t *dev) {
 	when mask timer continues to tick but 
 	does not generate an interrupt. */
 	if (stdint->intactive & 0x02) {
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)
+		if ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1)
 			cpu->interrupt = TRUE;
 	} else {
-		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)
+		while ((cpu->timer_c->elapsed - stdint->lastchk1) > stdint->timermax1)
 			stdint->lastchk1 += stdint->timermax1;
 	}
 
@@ -270,10 +270,10 @@ void port03_83(CPU_t *cpu, device_t *dev) {
 	when mask timer continues to tick but 
 	does not generate an interrupt. */
 	if (stdint->intactive & 0x04) {
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2)
+		if ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2)
 			cpu->interrupt = TRUE;
 	} else {
-		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2)
+		while ((cpu->timer_c->elapsed - stdint->lastchk2) > stdint->timermax2)
 			stdint->lastchk2 += stdint->timermax2;
 	}
 	
@@ -343,9 +343,9 @@ STDINT_t* INT83_init(timer_context_t *timer_c) {
 	
 	stdint->intactive = 0;
 	stdint->timermax1 = stdint->freq[3];
-	stdint->lastchk1 = tc_elapsed(timer_c);
+	stdint->lastchk1 = timer_c->elapsed;
 	stdint->timermax2 = stdint->freq[3]/2.0f;
-	stdint->lastchk2 = tc_elapsed(timer_c)+stdint->freq[3]/4.0f;
+	stdint->lastchk2 = timer_c->elapsed + stdint->freq[3] / 4.0f;
 	
 	
 	stdint->mem	=0;
