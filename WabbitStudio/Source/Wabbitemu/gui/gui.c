@@ -1346,7 +1346,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		if (lpMainWindow->bSkinEnabled) {
 			if (lpMainWindow->bCutout) {
 				// still pretty resource intensive
-				UpdateWabbitemuLayeredWindow(lpMainWindow);
+				// UpdateWabbitemuLayeredWindow(lpMainWindow);
 			} else {
 				LONG updateWidth = ps.rcPaint.right - ps.rcPaint.left;
 				LONG updateHeight = ps.rcPaint.bottom - ps.rcPaint.top;
