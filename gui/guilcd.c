@@ -430,7 +430,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_CONTEXTMENU: {
-			HMENU hmenuMain = GetMenu(lpMainWindow->hwndFrame);
+			HMENU hmenuMain = lpMainWindow->hMenu;
 			if (hmenuMain == NULL) {
 				return 0;
 			}

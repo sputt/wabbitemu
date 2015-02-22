@@ -1192,7 +1192,7 @@ void AssignAccel(HWND hwnd) {
 			nAccelUsed++;
 		}
 
-		HMENU hMenu = GetMenu(lpMainWindow->hwndFrame);
+		HMENU hMenu = lpMainWindow->hMenu;
 		int menuItem = ComboBox_GetCurSel(hComboBox);
 		HMENU hSubMenu = GetSubMenu(hMenu, menuItem);
 		TCHAR text[256];
@@ -1234,7 +1234,7 @@ void RemoveAccel() {
 		}
 	}
 
-	HMENU hMenu = GetMenu(lpMainWindow->hwndFrame);
+	HMENU hMenu = lpMainWindow->hMenu;
 	int menuItem = ComboBox_GetCurSel(hComboBox);
 	HMENU hSubMenu = GetSubMenu(hMenu, menuItem);
 	TCHAR text[256];

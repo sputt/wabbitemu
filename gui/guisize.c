@@ -7,12 +7,12 @@
 
 #define SKIN_SCALE_SNAP .025
 
-unsigned int GetDefaultKeymapScale(int model) {
+unsigned int GetDefaultKeymapScreenScale(int model) {
 	switch (model) {
 	case TI_84PCSE:
-		return DEFAULT_84PCSE_KEYMAP_SCALE;
+		return DEFAULT_84PCSE_KEYMAP_SCREEN_SCALE;
 	default:
-		return DEFAULT_KEYMAP_SCALE;
+		return DEFAULT_KEYMAP_SCREEN_SCALE;
 	}
 }
 
@@ -43,7 +43,7 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPMAINWINDOW lpMainWindow, LP
 	u_int width;
 	RECT clientRect;
 
-	UINT default_scale = GetDefaultKeymapScale(lpCalc->model);
+	UINT default_scale = GetDefaultKeymapScreenScale(lpCalc->model);
 	UINT scale = isSkinEnabled ? default_scale : max(lpMainWindow->scale, default_scale);
 	LONG lcdWidth, lcdHeight;
 	if (isSkinEnabled) {
@@ -75,17 +75,15 @@ LRESULT HandleSizeMessage(HWND hwnd, HWND hwndLcd, LPMAINWINDOW lpMainWindow, LP
 			// if the lcd is less than client, center the lcd
 			lcdPoint.x += (width - lcdWidth) / 2;
 		}
-	} else if (isCutout) {
-		UINT left = (LONG)(lpMainWindow->m_RectLCD.GetLeft() * lpMainWindow->skin_scale);
-		UINT top = (LONG)(lpMainWindow->m_RectLCD.GetTop() * lpMainWindow->skin_scale);
-
-		RECT rc;
-		GetWindowRect(hwnd, &rc);
-		lcdPoint.x = left + rc.left;
-		lcdPoint.y = top + rc.top;
 	} else {
 		lcdPoint.x = (LONG)(lpMainWindow->m_RectLCD.GetLeft() * lpMainWindow->skin_scale);
 		lcdPoint.y = (LONG)(lpMainWindow->m_RectLCD.GetTop() * lpMainWindow->skin_scale);
+		if (isCutout) {
+			RECT rc;
+			GetWindowRect(hwnd, &rc);
+			lcdPoint.x += rc.left;
+			lcdPoint.y += rc.top;
+		}
 	}
 
 	MoveWindow(hwndLcd, lcdPoint.x, lcdPoint.y, lcdWidth, lcdHeight, TRUE);
@@ -168,7 +166,7 @@ LRESULT HandleLCDSizingMessage(HWND hwnd, HWND hwndStatusBar, LPMAINWINDOW lpMai
 	int cx_mult = (prc->right - prc->left - ClientAdjustWidth) / lcdWidth;
 	int cy_mult = (prc->bottom - prc->top - ClientAdjustHeight) / lcd->height;
 
-	int min_scale = GetDefaultKeymapScale(lpCalc->model);
+	int min_scale = GetDefaultKeymapScreenScale(lpCalc->model);
 	while (cx_mult < min_scale || cy_mult < min_scale) {
 		if (cx_mult < min_scale) { cx_mult++; AdjustWidth -= lcdWidth; }
 		if (cy_mult < min_scale) { cy_mult++; AdjustHeight -= lcd->height; }

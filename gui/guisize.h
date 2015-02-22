@@ -4,7 +4,7 @@
 #include "gui.h"
 #include "calc.h"
 
-unsigned int GetDefaultKeymapScale(int model);
+unsigned int GetDefaultKeymapScreenScale(int model);
 double GetSkinScale(LONG ClientNewWidth, LONG ClientNewHeight,
 	LONG *DiffWidth, LONG *DiffHeight, double default_skin_scale);
 LRESULT HandleMoveMessage(HWND hwnd, LPMAINWINDOW lpMainWindow);
