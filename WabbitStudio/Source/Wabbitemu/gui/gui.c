@@ -463,7 +463,7 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 		lpMainWindow->scale = 2;
 	}
 
-	if (lpMainWindow->skin_scale == 0.0) {
+	if (lpMainWindow->skin_scale < DBL_EPSILON) {
 		lpMainWindow->skin_scale = 1.0;
 	}
 
@@ -491,8 +491,8 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 	}
 
 	lpCalc->speed = 100;
-	HMENU hmenu = GetMenu(lpMainWindow->hwndFrame);
-	CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
+	lpMainWindow->hMenu = GetMenu(lpMainWindow->hwndFrame);
+	CheckMenuRadioItem(GetSubMenu(lpMainWindow->hMenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
 	return lpMainWindow;
 }
 
@@ -657,7 +657,7 @@ void update_calc_running(LPCALC lpCalc, LPVOID lParam) {
 		return;
 	}
 
-	HMENU hMenu = GetMenu(lpMainWindow->hwndFrame);
+	HMENU hMenu = lpMainWindow->hMenu;
 	if (!hMenu) {
 		return;
 	}
@@ -1346,7 +1346,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		if (lpMainWindow->bSkinEnabled) {
 			if (lpMainWindow->bCutout) {
 				// still pretty resource intensive
-				//UpdateWabbitemuLayeredWindow(lpMainWindow);
+				UpdateWabbitemuLayeredWindow(lpMainWindow);
 			} else {
 				LONG updateWidth = ps.rcPaint.right - ps.rcPaint.left;
 				LONG updateHeight = ps.rcPaint.bottom - ps.rcPaint.top;
@@ -1457,7 +1457,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 							}
 		case IDM_FILE_GIF: {
-			HMENU hmenu = GetMenu(hwnd);
+			HMENU hmenu = lpMainWindow->hMenu;
 			static BOOL calcBackupRunning[MAX_CALCS];
 			if (gif_write_state == GIF_IDLE) {
 				int i;
@@ -1508,7 +1508,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 		}
 		case IDM_FILE_AVI: {
-			HMENU hmenu = GetMenu(hwnd);
+			HMENU hmenu = lpMainWindow->hMenu;
 			if (lpMainWindow->m_IsRecording) {
 				lpMainWindow->m_IsRecording = FALSE;
 				delete lpMainWindow->m_CurrentAvi;
@@ -1897,44 +1897,44 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 								}
 		case IDM_SPEED_QUARTER: {
 			lpCalc->speed = 25;
-			HMENU hmenu = GetMenu(hwnd);
+			HMENU hmenu = lpMainWindow->hMenu;
 			CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUARTER, MF_BYCOMMAND | MF_CHECKED);
 			break;
 								}
 		case IDM_SPEED_HALF: {
 			lpCalc->speed = 50;
-			HMENU hmenu = GetMenu(hwnd);
+			HMENU hmenu = lpMainWindow->hMenu;
 			CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_HALF, MF_BYCOMMAND | MF_CHECKED);
 			break;
 							 }
 		case IDM_SPEED_NORMAL: {
 			lpCalc->speed = 100;
-			HMENU hmenu = GetMenu(hwnd);
+			HMENU hmenu = lpMainWindow->hMenu;
 			CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_NORMAL, MF_BYCOMMAND | MF_CHECKED);
 			break;
 							   }
 		case IDM_SPEED_DOUBLE: {
 			lpCalc->speed = 200;
-			HMENU hmenu = GetMenu(hwnd);
+			HMENU hmenu = lpMainWindow->hMenu;
 			CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_DOUBLE, MF_BYCOMMAND | MF_CHECKED);
 			break;
 							   }
 		case IDM_SPEED_QUADRUPLE: {
 			lpCalc->speed = 400;
-			HMENU hmenu = GetMenu(hwnd);
+			HMENU hmenu = lpMainWindow->hMenu;
 			CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUADRUPLE, MF_BYCOMMAND | MF_CHECKED);
 			break;
 								  }
 		case IDM_SPEED_MAX: {
 			lpCalc->speed = MAX_SPEED;
-			HMENU hmenu = GetMenu(hwnd);
+			HMENU hmenu = lpMainWindow->hMenu;
 			CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_MAX, MF_BYCOMMAND | MF_CHECKED);
 			break;
 							}
 		case IDM_SPEED_SET: {
 			int dialog = DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC) SetSpeedProc, (LPARAM) lpCalc);
 			if (dialog == IDOK) {
-				HMENU hMenu = GetMenu(hwnd);
+				HMENU hMenu = lpMainWindow->hMenu;
 				switch(lpCalc->speed)
 				{
 				case 25:
@@ -2026,10 +2026,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		SetCapture(hwnd);
 		pt.x	= GET_X_LPARAM(lParam);
 		pt.y	= GET_Y_LPARAM(lParam);
-		if (lpMainWindow->bCutout) {
-			pt.y += GetSystemMetrics(SM_CYCAPTION);	
-			pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
-		}
 
 		for (group = 0; group < 7; group++) {
 			for (bit = 0; bit < 8; bit++) {
@@ -2082,10 +2078,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		pt.x	= GET_X_LPARAM(lParam);
 		pt.y	= GET_Y_LPARAM(lParam);
-		if (lpMainWindow->bCutout) {
-			pt.y += GetSystemMetrics(SM_CYCAPTION);	
-			pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
-		}
 
 		// convert to the scale it is displayed at
 		LONG x = (LONG)(pt.x / lpMainWindow->skin_scale);
@@ -2138,9 +2130,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				WMSZ_BOTTOMRIGHT, &rc, lpCalc->cpu.pio.lcd->width);
 		}
 
-		LONG newWidth = rc.right - rc.left;
-		LONG newHeight = rc.bottom - rc.top;
-		SetWindowPos(hwnd, NULL, 0, 0, newWidth, newHeight, SWP_NOMOVE | SWP_NOZORDER);
+		if (!lpMainWindow->bCutout || !lpMainWindow->bSkinEnabled) {
+			LONG newWidth = rc.right - rc.left;
+			LONG newHeight = rc.bottom - rc.top;
+			SetWindowPos(hwnd, NULL, 0, 0, newWidth, newHeight, SWP_NOMOVE | SWP_NOZORDER);
+		}
 
 		return HandleSizeMessage(hwnd, lpMainWindow->hwndLCD, lpMainWindow, lpCalc,
 			lpMainWindow->bSkinEnabled, lpMainWindow->bCutout);
@@ -2292,10 +2286,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			POINT pt;
 			pt.x = GET_X_LPARAM(lParam);
 			pt.y = GET_Y_LPARAM(lParam);
-			if (lpMainWindow->bCutout && lpMainWindow->bSkinEnabled) {
-				pt.y += GetSystemMetrics(SM_CYCAPTION);
-				pt.x += GetSystemMetrics(SM_CXFIXEDFRAME);
-			}
 
 			ScreenToClient(hwnd, &pt);
 			LONG x = (LONG)(pt.x / lpMainWindow->skin_scale);

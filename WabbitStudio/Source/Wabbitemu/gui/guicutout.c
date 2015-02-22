@@ -349,7 +349,6 @@ int DisableCutout(LPMAINWINDOW lpMainWindow) {
 
 
 	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_EXSTYLE, 0);
-	SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, (WS_TILEDWINDOW | WS_CLIPCHILDREN));
 
 	if (lpMainWindow->hwndSmallClose != NULL) {
 		DestroyWindow(lpMainWindow->hwndSmallClose);

@@ -92,6 +92,7 @@ typedef struct MainWindow {
 	HWND hwndSmallMinimize;
 	HWND hwndKeyListDialog;
 	HWND hwndDebug;
+	HMENU hMenu;
 
 	Bitmap *m_lpBitmapRenderedSkin;
 	Bitmap *m_lpBitmapSkin;

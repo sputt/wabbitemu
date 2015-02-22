@@ -48,7 +48,7 @@ BOOL FindLCDRect(BitmapData *bitmapData, Rect *rectLCD) {
 
 void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 	RECT rc;
-	HMENU hMenu = GetMenu(lpMainWindow->hwndFrame);
+	HMENU hMenu = lpMainWindow->bSkinEnabled && lpMainWindow->bCutout ? NULL : lpMainWindow->hMenu;
 	BOOL bChecked;
 	if (lpMainWindow->hwndStatusBar != NULL) {
 		DestroyWindow(lpMainWindow->hwndStatusBar);
@@ -86,7 +86,7 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 		bChecked = MF_UNCHECKED;
 		// Create status bar
 		// fix scale so that it is valid for this calc
-		lpMainWindow->scale = max(GetDefaultKeymapScale(lpCalc->model), lpMainWindow->scale);
+		lpMainWindow->scale = max(GetDefaultKeymapScreenScale(lpCalc->model), lpMainWindow->scale);
 		SetRect(&rc, 0, 0, lpCalc->cpu.pio.lcd->width * lpMainWindow->scale, lpCalc->cpu.pio.lcd->height * lpMainWindow->scale);
 		int iStatusWidths[] = { 100, -1 };
 		lpMainWindow->hwndStatusBar = CreateWindow(STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE,
@@ -122,6 +122,17 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 	LONG windowWidth = rc.right - rc.left;
 	LONG windowHeight = rc.bottom - rc.top;
 
+	// Hide the menu in cutout mode
+	SetMenu(lpMainWindow->hwndFrame, hMenu);
+	if (!lpMainWindow->silent_mode) {
+		// Reset the correct window style
+		DWORD style = WS_VISIBLE;
+		if (!lpMainWindow->bCutout || !lpMainWindow->bSkinEnabled) {
+			style |= WS_TILEDWINDOW | WS_CLIPCHILDREN;
+		}
+
+		SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, style);
+	}
 	SetWindowPos(lpMainWindow->hwndFrame, HWND_TOPMOST, 0, 0, windowWidth, windowHeight, flags);
 	SendMessage(lpMainWindow->hwndFrame, WM_SIZE, SIZE_RESTORED, MAKELPARAM(clientWidth, clientHeight));
 }
@@ -262,9 +273,9 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 		MessageBox(lpMainWindow->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"), MB_OK | MB_ICONERROR);
 		return 0;
 	} else {
-		if (lpMainWindow->skin_scale < DBL_MIN) {
+		if (lpMainWindow->skin_scale < DBL_EPSILON) {
 			lpMainWindow->skin_scale = 1.0;
-		} else if (lpMainWindow->default_skin_scale > DBL_MIN) {
+		} else if (lpMainWindow->default_skin_scale > DBL_EPSILON) {
 			lpMainWindow->skin_scale = lpMainWindow->skin_scale / lpMainWindow->default_skin_scale;
 		}
 
