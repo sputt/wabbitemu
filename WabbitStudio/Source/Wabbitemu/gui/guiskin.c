@@ -101,8 +101,8 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 		rc.bottom += src.bottom - src.top;
 	}
 
-	if (hMenu) {
-		CheckMenuItem(hMenu, IDM_VIEW_SKIN, MF_BYCOMMAND | bChecked);
+	if (lpMainWindow->hMenu) {
+		CheckMenuItem(lpMainWindow->hMenu, IDM_VIEW_SKIN, MF_BYCOMMAND | bChecked);
 	}
 
 	UINT flags = SWP_NOMOVE;

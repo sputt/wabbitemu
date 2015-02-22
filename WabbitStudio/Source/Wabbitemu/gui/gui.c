@@ -86,7 +86,6 @@ BOOL gif_anim_advance;
 BOOL silent_mode = FALSE;
 BOOL is_exiting = FALSE;
 HWND hwndCurrentDlg = NULL;
-BOOL frame_skip = FALSE;
 
 extern keyprog_t keygrps[256];
 extern keyprog_t keysti83[256];
@@ -122,16 +121,10 @@ void gui_draw(LPCALC, LPVOID lParam) {
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
 	if (lpMainWindow->hwndLCD != NULL) {
 		InvalidateRect(lpMainWindow->hwndLCD, NULL, FALSE);
-		if (frame_skip == FALSE) {
-			UpdateWindow(lpMainWindow->hwndLCD);
-		}
 	}
 
 	if (lpMainWindow->hwndDetachedLCD != NULL) {
 		InvalidateRect(lpMainWindow->hwndDetachedLCD, NULL, FALSE);
-		if (frame_skip == FALSE) {
-			UpdateWindow(lpMainWindow->hwndDetachedLCD);
-		}
 	}
 
 	if (lpMainWindow->gif_disp_state != GDS_IDLE) {
@@ -343,13 +336,10 @@ VOID CALLBACK TimerProc(HWND, UINT, UINT_PTR, DWORD dwTimer) {
 	// a frame skip?
 	if (difference > -TPF) {
 		calc_run_all();
-		frame_skip = TRUE;
 		while (difference >= TPF) {
 			calc_run_all();
 			difference -= TPF;
 		}
-
-		frame_skip = FALSE;
 	} else {
 		// Frame skip if we're too far ahead.
 		difference += TPF;
