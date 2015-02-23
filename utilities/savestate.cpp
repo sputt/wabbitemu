@@ -501,7 +501,7 @@ void SaveCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	/* pio */
 	for(i = 0; i < 256; i++) {
 		interrupt_t *val = &cpu->pio.interrupt[i];
-		WriteInt(chunk, (val->device - cpu->pio.devices) / sizeof(device_t));
+		WriteInt(chunk, val->device - cpu->pio.devices);
 		WriteInt(chunk, val->skip_factor);
 		WriteInt(chunk, val->skip_count);
 	}
