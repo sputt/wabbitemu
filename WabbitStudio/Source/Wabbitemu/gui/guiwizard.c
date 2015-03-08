@@ -20,6 +20,7 @@
 INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version);
+static void finalize_calc(HWND hwnd, LPCALC lpCalc, TCHAR *buffer);
 
 extern HINSTANCE g_hInst;
 static HWND hwndWiz = NULL;
@@ -619,21 +620,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						}
 					}
 
-					calc_erase_certificate(lpCalc->mem_c.flash,lpCalc->mem_c.flash_size);
-					calc_reset(lpCalc);
-					if (auto_turn_on) {
-						calc_turn_on(lpCalc);
-					}
-
-					gui_frame_update(lpMainWindow);
-					// write the output from file
-					Static_SetText(hOSStaticProgress, _T("Saving File"));
-					MFILE *romfile = ExportRom(buffer, lpCalc);
-					if (romfile != NULL) {
-						mclose(romfile);
-					} else if (*buffer != '\0') {
-						MessageBox(hwnd, _T("Error saving ROM"), _T("Error"), MB_OK);
-					}
+					finalize_calc(hwnd, lpCalc, buffer);
 
 					Static_SetText(hOSStaticProgress, _T("Done"));
 					break;
@@ -884,6 +871,10 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 	return FALSE;
 }
 
+static BOOL is_second_bootpage(TIFILE_t *boot_var) {
+	return boot_var->var->name[6] == '2';
+}
+
 DWORD write_boot_page(LPCALC lpCalc, TCHAR *file_path, int boot_page, int boot_page2) {
 	BYTE(*flash)[PAGE_SIZE] = (BYTE(*)[PAGE_SIZE]) lpCalc->mem_c.flash;
 
@@ -893,19 +884,19 @@ DWORD write_boot_page(LPCALC lpCalc, TCHAR *file_path, int boot_page, int boot_p
 		return 1;
 	}
 
-	if (boot_var->var->length != 0x4002) {
+	// app var will be 0x4002, with the first two bytes being the size
+	if (boot_var->var->length != PAGE_SIZE + sizeof(uint16_t)) {
 		return 2;
 	}
 
 	int current_page;
-	if (boot_var->var->name[6] == '2') {
+	if (is_second_bootpage(boot_var)) {
 		current_page = boot_page2;
 	} else {
 		current_page = boot_page;
 	}
 
 	for (int i = 0; i < PAGE_SIZE; i++) {
-		// app var will be 0x4002, with the first two bytes being the size
 		flash[current_page][i] = boot_var->var->data[i + 2];
 	}
 
@@ -1116,20 +1107,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						}
 					}
 
-					calc_erase_certificate(lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
-					calc_reset(lpCalc);
-					if (auto_turn_on) {
-						calc_turn_on(lpCalc);
-					}
-
-					gui_frame_update(lpMainWindow);
-					// write the output from file
-					MFILE *romfile = ExportRom(buffer, lpCalc);
-					if (romfile != NULL) {
-						mclose(romfile);
-					} else if (*buffer != '\0') {
-						MessageBox(hwnd, _T("Error saving ROM"), _T("Error"), MB_OK);
-					}
+					finalize_calc(hwnd, lpCalc, buffer);
 					break;
 				}
 				case PSN_QUERYCANCEL:
@@ -1175,6 +1153,25 @@ INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 			break;
 	}
 	return DefWindowProc(hwnd, Message, wParam, lParam);
+}
+
+static void finalize_calc(HWND hwnd, LPCALC lpCalc, TCHAR *buffer) {
+	calc_erase_certificate(lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
+	calc_reset(lpCalc);
+	if (auto_turn_on) {
+		calc_turn_on(lpCalc);
+	}
+	calc_set_running(lpCalc, TRUE);
+
+	gui_frame_update(lpMainWindow);
+	// write the output from file
+	Static_SetText(hOSStaticProgress, _T("Saving File"));
+	MFILE *romfile = ExportRom(buffer, lpCalc);
+	if (romfile != NULL) {
+		mclose(romfile);
+	} else if (*buffer != '\0') {
+		MessageBox(hwnd, _T("Error saving ROM"), _T("Error"), MB_OK);
+	}
 }
 
 void ExtractDumperProg() {
