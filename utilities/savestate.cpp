@@ -7,8 +7,11 @@
 #include "utilities\fileutilities.h"
 #include "utilities\savestate.h"
 
-extern int def(FILE *, FILE *, int);
-extern int inf(FILE *, FILE *);
+extern int def(FILE *source, FILE *dest, int level);
+extern int inf(FILE *source, FILE *dest);
+#ifdef _ANDROID
+extern char cache_dir[MAX_PATH];
+#endif
 
 LPCALC DuplicateCalc(LPCALC lpCalc) {
 	BOOL running_backup = lpCalc->running;
@@ -29,7 +32,7 @@ LPCALC DuplicateCalc(LPCALC lpCalc) {
 	return duplicate_calc;
 }
 
-BOOL cmpTags(char *str1, char *str2) {
+BOOL cmpTags(const char *str1, const char *str2) {
 	int i;
 	for(i = 0; i < 4; i++) {
 		if (str1[i] != str2[i]) return FALSE;
@@ -116,7 +119,7 @@ void FreeSave(SAVESTATE_t* save) {
 	free(save);
 }
 
-CHUNK_t* FindChunk(SAVESTATE_t* save, char* tag) {
+CHUNK_t* FindChunk(SAVESTATE_t* save, const char* tag) {
 	int i;
 	for(i = 0; i < save->chunk_count; i++) {
 		if (cmpTags(save->chunks[i]->tag, tag) == TRUE) {
@@ -127,7 +130,7 @@ CHUNK_t* FindChunk(SAVESTATE_t* save, char* tag) {
 	return NULL;
 }
 
-CHUNK_t* NewChunk(SAVESTATE_t* save, char* tag) {
+CHUNK_t* NewChunk(SAVESTATE_t* save, const char* tag) {
 	int chunk = save->chunk_count;
 
 	if (FindChunk(save, tag) != NULL) {
@@ -501,7 +504,7 @@ void SaveCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	/* pio */
 	for(i = 0; i < 256; i++) {
 		interrupt_t *val = &cpu->pio.interrupt[i];
-		WriteInt(chunk, val->device - cpu->pio.devices);
+		WriteInt(chunk, (uint32_t) (val->device - cpu->pio.devices));
 		WriteInt(chunk, val->skip_factor);
 		WriteInt(chunk, val->skip_count);
 	}
@@ -1279,7 +1282,7 @@ BOOL LoadSlot(SAVESTATE_t *save, LPCALC lpCalc) {
 		return LoadSlot_Unsafe(save, lpCalc);
 	}
 	catch (std::exception& e) {
-		_tprintf(_T("Exception loading save state: %s", e.what()));
+		_tprintf(_T("Exception loading save state: %s"), e.what());
 		return FALSE;
 	}
 }

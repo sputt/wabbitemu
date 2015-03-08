@@ -1,3 +1,9 @@
+1.9.2.21
+Fixed bugs with skin scaling
+Performance improvements
+Fixed issues with 86
+Fixed issues loading group files
+
 1.8.2.26:
 Added support for TI-84PCSE
 Support for exporting PNG files

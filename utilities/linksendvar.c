@@ -457,6 +457,7 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	case TI_84PSE:
 		start_page = 0x60;
 		break;
+	case TI_73:
 	case TI_83P:
 	case TI_84PCSE:
 		start_page = 0x00;

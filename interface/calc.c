@@ -313,7 +313,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	if (tifile->type == SAV_TYPE) {
 		lpCalc->active 	= TRUE;
 		char VerString[64] = { 0 };
-		if (tifile->model == TI_82 || tifile->model == TI_83) {
+		if (tifile->model == TI_81 || tifile->model == TI_82 || tifile->model == TI_83) {
 			int size;
 			char *rom = GetRomOnly(tifile->save, &size);
 			FindRomVersion(VerString, (unsigned char *)rom, size);
