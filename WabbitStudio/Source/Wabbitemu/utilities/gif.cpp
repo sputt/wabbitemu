@@ -328,10 +328,6 @@ int gif_add_extra_color(int rgb)
 	} else {
 		index = last_index;
 		last_index++;
-		// FIXME: 0x0F is always black
-		if (last_index == 0x0F) {
-			last_index++;
-		}
 	}
 
 	palette[rgb] = index;
@@ -359,7 +355,7 @@ int gif_convert_color_to_index(int r, int g, int b)
 void gif_writer(int shades) {
 	static FILE *fp;
 	// flags = 1 111 0 010
-	BYTE gif_header[13 + 3*256] = {'G', 'I', 'F', '8', '9', 'a', 96, 0, 64, 0, 0xf2, 0x0f, 0};
+	BYTE gif_header[13 + 3 * 256] = { 'G', 'I', 'F', '8', '9', 'a', 96, 0, 64, 0, 0x72, 0x00, 0 };
 	static BYTE gif_info[31] = {
 		0x21, 0xff, 0x0b, 'N', 'E', 'T', 'S', 'C', 'A', 'P', 'E', '2', '.', '0', 3, 1, 0, 0, 0,
 		0x21, 0xfe, 8, 'W', 'a', 'b', 'b', 'i', 't', 0, 0, 0

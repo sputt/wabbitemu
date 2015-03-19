@@ -135,6 +135,8 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 	}
 	SetWindowPos(lpMainWindow->hwndFrame, HWND_TOPMOST, 0, 0, windowWidth, windowHeight, flags);
 	SendMessage(lpMainWindow->hwndFrame, WM_SIZE, SIZE_RESTORED, MAKELPARAM(clientWidth, clientHeight));
+	// Added because starting in window mode doesn't refresh the model string
+	InvalidateRect(lpMainWindow->hwndStatusBar, NULL, FALSE);
 }
 
 Bitmap *DrawSkin(Bitmap *pBitmapSkin, Bitmap *pBitmapKeymap, Color faceplateColor,

@@ -9,14 +9,14 @@
 
 class CWabbitemu;
 
+#define SKIN_WIDTH	350
+#define SKIN_HEIGHT	725
+
 #define MIN_SKIN_WIDTH	290
 #define MIN_SKIN_HEIGHT	600
 
-#define MAX_SKIN_WIDTH	520
-#define MAX_SKIN_HEIGHT	1077
-
-#define SKIN_WIDTH	350
-#define SKIN_HEIGHT	725
+#define MAX_SKIN_WIDTH	SKIN_WIDTH*2
+#define MAX_SKIN_HEIGHT	SKIN_HEIGHT*2
 
 #define WABBITVER		_T("1.8")
 
