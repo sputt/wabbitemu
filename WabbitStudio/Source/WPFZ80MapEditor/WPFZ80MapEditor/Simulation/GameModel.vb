@@ -13,6 +13,8 @@ Public Class GameModel
 
     Private _Calc As Wabbitemu
     Private _Asm As IZ80Assembler
+    Private _IsInitialized As Boolean = False
+    Private _IsLoading As Boolean = False
 
     Private _RunningLock As New Object
     Private _Running As Boolean = True
@@ -25,6 +27,20 @@ Public Class GameModel
     Public Shared ReadOnly ScreenYProperty As DependencyProperty =
         DependencyProperty.Register("ScreenY", GetType(Byte), GetType(GameModel))
 
+    Public Shared ReadOnly SimulationCursorProperty As DependencyProperty =
+        DependencyProperty.Register("SimulationCursor", GetType(Cursor), GetType(GameModel))
+
+    Public ReadOnly Property IsInitialized As Boolean
+        Get
+            Return _IsInitialized
+        End Get
+    End Property
+
+    Public ReadOnly Property IsLoading As Boolean
+        Get
+            Return _IsLoading
+        End Get
+    End Property
 
 
     Public Property EnemyScreen As Collection(Of Rect)
@@ -179,9 +195,12 @@ Public Class GameModel
         Return CalcAddr
     End Function
 
-    Public Sub New(scenario As Scenario)
-        _Calc = New Wabbitemu
-        _Asm = New Z80Assembler
+    Public Sub Initialize(MapIndex As Byte, StartX As Byte, StartY As Byte)
+        If _IsLoading Then Exit Sub
+
+        _IsLoading = True
+        RaisePropertyChanged("IsLoading")
+        Mouse.OverrideCursor = Cursors.Wait
 
         _Asm.CurrentDirectory = MapEditorControl.ZeldaFolder
 
@@ -192,6 +211,14 @@ Public Class GameModel
         _Asm.IncludeDirectories.Add("images")
         _Asm.IncludeDirectories.Add("maps")
         _Asm.IncludeDirectories.Add("scripts")
+
+        _Asm.Defines.Add("_MAPEDITOR_TEST", 1)
+        '_MAPEDITOR_SCENARIONAME, _MAPEDITOR_MAPINDEX, _MAPEDITOR_STARTX, _MAPEDITOR_STARTY)
+        _Asm.Defines.Add("_MAPEDITOR_SCENARIONAME", Scenario.ScenarioName)
+        _Asm.Defines.Add("_MAPEDITOR_MAPINDEX", MapIndex)
+
+        _Asm.Defines.Add("_MAPEDITOR_STARTX", StartX)
+        _Asm.Defines.Add("_MAPEDITOR_STARTY", StartY)
 
         Dim Output = _Asm.Assemble()
         Debug.Write(_Asm.StdOut.ReadAll())
@@ -220,7 +247,7 @@ Public Class GameModel
         ResetGameAddr = _Asm.Labels("RESET_GAME")
         GameLoopAddr = _Asm.Labels("GAME_LOOP")
 
-        Me.Scenario = scenario
+        Me.Scenario = Scenario
 
         For Each Define As String In SPASMHelper.Defines
             Dim DefineKey As String = Define.ToUpper()
@@ -264,7 +291,7 @@ Public Class GameModel
         AddBreakpoint("GAME_LOOP")
         AddBreakpoint("MAP_EDITOR_CODE_DONE")
 
-        scenario.CacheMapHierarchy()
+        Scenario.CacheMapHierarchy()
 
         AddHandler _Calc.Breakpoint, AddressOf Calc_Breakpoint
 
@@ -272,10 +299,18 @@ Public Class GameModel
         _Calc.Run()
         _Calc.Visible = True
 
-        Map = New MapData(scenario, 0)
+        Map = New MapData(Scenario, 0)
 
         DrawEntries = New ObservableCollection(Of ZDrawEntry)
         FrameProcessThread.Start()
+    End Sub
+
+    Public Sub New(Scenario As Scenario)
+        _Calc = New Wabbitemu
+        _Asm = New Z80Assembler
+
+        Me.Scenario = Scenario
+        Mouse.OverrideCursor = Cursors.Cross
     End Sub
 
     Private Function MapKey(Key As Key) As CalcKey?
@@ -381,60 +416,60 @@ Public Class GameModel
     Public Sub EnableRetargetMode(Enable As Boolean)
         _IsRetargetMode = Enable
         RaisePropertyChanged("IsRetargetModeActive")
-        RaisePropertyChanged("SimulationCursor")
+
+        If Enable Then
+            Mouse.OverrideCursor = Cursors.Cross
+        Else
+            Mouse.OverrideCursor = Cursors.Arrow
+        End If
     End Sub
 
-    Public ReadOnly Property IsRetargetModeActive As Boolean
+    Public Property IsRetargetModeActive As Boolean
         Get
             Return _IsRetargetMode
         End Get
-    End Property
-
-    Public ReadOnly Property SimulationCursor As Cursor
-        Get
-            If _IsRetargeting Then
-                Return Cursors.Cross
-            End If
-            Return Cursors.Arrow
-        End Get
+        Set(value As Boolean)
+            EnableRetargetMode(value)
+        End Set
     End Property
 
     Private Sub Calc_Breakpoint(Calc As IWabbitemu, Breakpoint As IBreakpoint)
         SyncLock _RunningLock
             If _Running Then
-                Dim Addr As Integer = CInt(Breakpoint.Address.Address) + ((ZeldaAppPage - Breakpoint.Address.Page.Index) << 16)
-                Select Case _BreakpointMap(Addr)
-                    Case "GAME_LOOP"
-                        If _IsRetargeting Then
-                            Calc.CPU.L = _NewX
-                            Calc.CPU.H = _NewY
+                Try
+                    Dim Addr As Integer = CInt(Breakpoint.Address.Address) + ((ZeldaAppPage - Breakpoint.Address.Page.Index) << 16)
+                    Select Case _BreakpointMap(Addr)
+                        Case "GAME_LOOP"
+                            If _IsRetargeting Then
+                                Calc.CPU.L = _NewX
+                                Calc.CPU.H = _NewY
 
-                            Calc.CPU.D = _NewMapIndex
-                            Calc.CPU.E = 8
+                                Calc.CPU.D = _NewMapIndex
+                                Calc.CPU.E = 8
 
-                            Dim Code() As Byte = {&HCD, (ResetGameAddr And &HFF), ((ResetGameAddr >> 8) And &HFF)}
-                            Calc.Memory.Write(GameLoopAddr, Code)
-                        End If
-                    Case "MAP_EDITOR_CODE_DONE"
-                        If _IsRetargeting Then
-                            Dim Code() As Byte = {0, 0, 0}
-                            Calc.Memory.Write(GameLoopAddr, Code)
-                            _IsRetargeting = False
-                        End If
-                    Case "PREPARE_CHANGE"
-                    Case "SET_ANIMATE_ATTR8"
-                        Dim Index = Calc.Memory.ReadByte(Calc.CPU.HLP)
-                        If Index = 15 Then
-                            LastIndex = Calc.Memory.ReadByte(LastIndexAddr)
-                        Else
-                            LastIndex = Index
-                        End If
-                    Case "DO_ATTR_DONE"
-                        If LastIndex <> -1 Then
-                            Dim Index = LastIndex
-                            Dim AnimateData = Calc.Memory.Read(AnimateArrayAddr + Index * 10, 10)
-                            Me.Dispatcher.InvokeAsync(
-                                Sub()
+                                Dim Code() As Byte = {&HCD, (ResetGameAddr And &HFF), ((ResetGameAddr >> 8) And &HFF)}
+                                Calc.Memory.Write(GameLoopAddr, Code)
+                            End If
+                        Case "MAP_EDITOR_CODE_DONE"
+                            If _IsRetargeting Then
+                                Dim Code() As Byte = {0, 0, 0}
+                                Calc.Memory.Write(GameLoopAddr, Code)
+                                _IsRetargeting = False
+                            End If
+                        Case "PREPARE_CHANGE"
+                        Case "SET_ANIMATE_ATTR8"
+                            Dim Index = Calc.Memory.ReadByte(Calc.CPU.HLP)
+                            If Index = 15 Then
+                                LastIndex = Calc.Memory.ReadByte(LastIndexAddr)
+                            Else
+                                LastIndex = Index
+                            End If
+                        Case "DO_ATTR_DONE"
+                            If LastIndex <> -1 Then
+                                Dim Index = LastIndex
+                                Dim AnimateData = Calc.Memory.Read(AnimateArrayAddr + Index * 10, 10)
+                                Me.Dispatcher.InvokeAsync(
+                                    Sub()
                                     If AnimateData(0) = 0 Then
                                         AnimatedTiles(Index) = Nothing
                                     Else
@@ -442,13 +477,13 @@ Public Class GameModel
                                         AnimatedTiles(Index) = Anim
                                     End If
                                 End Sub)
-                            LastIndex = -1
-                        End If
-                    Case "CLONE_ANIM_DONE", "CREATE_ANIM_DONE"
-                        Dim LastIndex = Calc.Memory.ReadByte(LastIndexAddr)
-                        Dim AnimateData = Calc.Memory.Read(AnimateArrayAddr + LastIndex * 10, 10)
-                        Me.Dispatcher.InvokeAsync(
-                            Sub()
+                                LastIndex = -1
+                            End If
+                        Case "CLONE_ANIM_DONE", "CREATE_ANIM_DONE"
+                            Dim LastIndex = Calc.Memory.ReadByte(LastIndexAddr)
+                            Dim AnimateData = Calc.Memory.Read(AnimateArrayAddr + LastIndex * 10, 10)
+                            Me.Dispatcher.InvokeAsync(
+                                Sub()
                                 Dim Anim = CreateAnimFromBytes(AnimateData)
                                 Dim Added = False
                                 For i = 0 To AnimatedTiles.Count - 1
@@ -462,11 +497,11 @@ Public Class GameModel
                                     AnimatedTiles.Add(Anim)
                                 End If
                             End Sub)
-                    Case "LOAD_MAP_COMPLETE"
-                        Dim AnimateArray As Byte()
-                        AnimateArray = Calc.Memory.Read(AnimateArrayAddr, 10 * AnimateAmount)
-                        Me.Dispatcher.InvokeAsync(
-                            Sub()
+                        Case "LOAD_MAP_COMPLETE"
+                            Dim AnimateArray As Byte()
+                            AnimateArray = Calc.Memory.Read(AnimateArrayAddr, 10 * AnimateAmount)
+                            Me.Dispatcher.InvokeAsync(
+                                Sub()
                                 Dim AnimatedTilesCollection As New ObservableCollection(Of ZAnim)
                                 While AnimateArray.Length > 0
                                     If AnimateArray(0) > 0 Then
@@ -487,16 +522,18 @@ Public Class GameModel
                                 End While
                                 AnimatedTiles = AnimatedTilesCollection
                             End Sub)
-                    Case "CHANGE_DRAW_DONE"
-                        Debug.Print("Changing draw")
-                        UpdateModel(Calc.Memory)
-                        Debug.Print("X " & _EnemyScreen(0) & ", Y" & _EnemyScreen(2) & ", W " & _EnemyScreen(1) & ", H " & _EnemyScreen(3))
-                    Case Else
-                        UpdateModel(Calc.Memory)
-                End Select
-
-                Calc.Step()
-                Calc.Run()
+                        Case "CHANGE_DRAW_DONE"
+                            Debug.Print("Changing draw")
+                            UpdateModel(Calc.Memory)
+                            Debug.Print("X " & _EnemyScreen(0) & ", Y" & _EnemyScreen(2) & ", W " & _EnemyScreen(1) & ", H " & _EnemyScreen(3))
+                        Case Else
+                            UpdateModel(Calc.Memory)
+                    End Select
+                Catch e As COMException
+                Finally
+                    Calc.Step()
+                    Calc.Run()
+                End Try
             End If
         End SyncLock
     End Sub
@@ -507,6 +544,12 @@ Public Class GameModel
         While ProcessEvent.WaitOne() AndAlso _Running
             Me.Dispatcher.InvokeAsync(
                 Sub()
+                    If Not _IsInitialized Then
+                        _IsInitialized = True
+                        RaisePropertyChanged("IsInitialized")
+
+                        Mouse.OverrideCursor = Cursors.Arrow
+                    End If
                     For Each Anim In AnimatedTiles
                         'If Anim.Bounds.IntersectsWith(ScreenBounds) Then
                         If Anim IsNot Nothing Then
@@ -686,4 +729,5 @@ Public Class GameModel
     Private Sub RaisePropertyChanged(PropName As String)
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropName))
     End Sub
+
 End Class

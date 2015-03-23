@@ -25,7 +25,7 @@ Public Class MainWindow
         ObjectsPanel.DragScope = MapControl
 
         If MapEditorControl.ZeldaFolder IsNot Nothing Then
-            Dim fileName = Path.Combine(MapEditorControl.ZeldaFolder, "maps\hill.asm")
+            Dim fileName = Path.Combine(MapEditorControl.ZeldaFolder, "maps\hill.zmap")
             MapControl.OpenScenario(fileName)
         End If
 
@@ -159,13 +159,10 @@ Public Class MainWindow
     Public Sub StartTesting()
         Model.Scenario.SaveScenario()
 
+        Model.GameModel = New GameModel(Model.Scenario)
+
         _OldLayer = Model.CurrentLayer
         Model.CurrentLayer = LayerType.TestingLayer
-
-        Model.GameModel = New GameModel(Model.Scenario)
-        Model.GameModel.Start()
-
-        MapControl.TestView.Focus()
     End Sub
 
     Public Sub StopTesting()

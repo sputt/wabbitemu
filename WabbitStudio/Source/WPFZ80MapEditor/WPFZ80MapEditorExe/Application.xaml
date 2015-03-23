@@ -4,6 +4,5 @@
     Startup="Application_Startup"
     StartupUri="pack://application:,,,/WPFZ80MapEditor;component/MainWindow.xaml">
     <Application.Resources>
-        
     </Application.Resources>
 </Application>

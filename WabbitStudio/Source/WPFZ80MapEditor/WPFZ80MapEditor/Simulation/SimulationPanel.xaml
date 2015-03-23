@@ -8,7 +8,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="160">
     <Grid>
-        <ToggleButton x:Name="RetargetButton" Content="Retarget simulation" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="140" IsChecked="{Binding GameModel.IsRetargetModeActive, Mode=OneWay}"/>
+        <ToggleButton x:Name="RetargetButton" Content="Retarget simulation" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="140"
+                      IsChecked="{Binding GameModel.IsRetargetModeActive, Mode=TwoWay}"/>
         <ListBox HorizontalAlignment="Left" Height="291" Margin="10,72,0,0" VerticalAlignment="Top" Width="140"/>
         <Label Content="Draw entries:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="140"/>
 

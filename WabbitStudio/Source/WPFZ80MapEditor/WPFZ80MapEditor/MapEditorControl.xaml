@@ -105,7 +105,7 @@
                     </local:XLayerContainer.ItemTemplate>
                 </local:XLayerContainer>
 
-                <local:GameMapView x:Name="TestView" Panel.ZIndex="1" Width="256" Height="256" DataContext="{Binding GameModel}" Visibility="Hidden"
+                <local:GameMapView x:Name="TestView" Panel.ZIndex="1" Width="256" Height="256" DataContext="{Binding GameModel}" Visibility="{Binding IsInitialized, Converter={StaticResource BooleanToVisibilityConverter1}, FallbackValue=Hidden}"
                         Canvas.Left="{Binding Path=SourceMap.X, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"
                         Canvas.Top="{Binding Path=SourceMap.Y, Converter={StaticResource MapPositionConverter}, ConverterParameter=8}"/>
             </Canvas>

@@ -2,16 +2,19 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:WPFZ80MapEditor"
+    xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions" x:Class="MainWindow"
     x:Name="MainWindow"
-    Title="Z80 Scenario Editor" Width="1280" Height="720" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" Background="White">
+    Width="1280" Height="720" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200" Background="White">
     
     <Window.Resources>
+        
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ColorsAndStoryboards.xaml" />
             </ResourceDictionary.MergedDictionaries>
-        
+            <converters:MainWindowTitleConverter x:Key="MainWindowTitleConverter"/>
+
         <Style x:Key="RadioButtonListItem" TargetType="{x:Type ListBoxItem}" >
         	<Setter Property="Template">
         		<Setter.Value>
@@ -72,6 +75,14 @@
         </ResourceDictionary>
     </Window.Resources>
 
+    <Window.Title>
+        <Binding Path="DataContext.Scenario" ElementName="MainWindow">
+            <Binding.Converter>
+                <StaticResource ResourceKey="MainWindowTitleConverter" />
+            </Binding.Converter>
+        </Binding>
+    </Window.Title>
+
     <Window.CommandBindings>
         <CommandBinding Command="Undo"
                         CanExecute="UndoCanExecute"
@@ -126,12 +137,10 @@
                 <i:EventTrigger EventName="Click" SourceName="TestButton">
                     <ei:GoToStateAction StateName="Testing"/>
                     <ei:CallMethodAction MethodName="StartTesting" TargetObject="{Binding ., ElementName=MainWindow}"/>
-                    <ei:CallMethodAction MethodName="StartTesting" TargetObject="{Binding ., ElementName=MapControl}"/>
                 </i:EventTrigger>
                 <i:EventTrigger EventName="Click" SourceName="StopButton">
                 	<ei:GoToStateAction StateName="Editing"/>
                     <ei:CallMethodAction MethodName="StopTesting" TargetObject="{Binding ., ElementName=MainWindow}"/>
-                    <ei:CallMethodAction MethodName="StopTesting" TargetObject="{Binding ., ElementName=MapControl}"/>
                 </i:EventTrigger>
                 <i:EventTrigger>
                 	<ei:GoToStateAction StateName="Editing"/>

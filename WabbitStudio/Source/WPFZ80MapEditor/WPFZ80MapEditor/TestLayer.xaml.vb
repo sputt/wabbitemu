@@ -18,8 +18,15 @@
 
     Private Sub MapLayer_MouseLeftButtonDown(sender As Object, e As MouseButtonEventArgs)
         Debug.WriteLine("CLICKED ON TEST LAYER!")
-        If GameModel.IsRetargetModeActive Then
-            GameModel.SetLocation(CByte(e.GetPosition(sender).X), CByte(e.GetPosition(sender).Y), Map.Index)
+        Dim X = CByte(e.GetPosition(sender).X)
+        Dim Y = CByte(e.GetPosition(sender).Y)
+        If Not GameModel.IsInitialized Then
+            GameModel.Initialize(Map.Index, X, Y)
+            GameModel.Start()
+            e.Handled = True
+        ElseIf GameModel.IsRetargetModeActive Then
+            GameModel.SetLocation(X, Y, Map.Index)
+            GameModel.EnableRetargetMode(False)
             e.Handled = True
         End If
     End Sub

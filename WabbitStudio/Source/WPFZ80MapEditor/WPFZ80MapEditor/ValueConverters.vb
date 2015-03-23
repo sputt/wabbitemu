@@ -342,4 +342,16 @@ Namespace ValueConverters
             End Select
         End Function
     End Class
+
+    Public Class MainWindowTitleConverter
+        Inherits OneWayConverter(Of Scenario, String)
+
+        Public Overrides Function Convert(Scenario As Scenario, Parameter As Object) As String
+            If Scenario Is Nothing Then
+                Return My.Resources.ApplicationName
+            Else
+                Return Scenario.ScenarioName & " - " & My.Resources.ApplicationName
+            End If
+        End Function
+    End Class
 End Namespace

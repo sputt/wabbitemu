@@ -74,3 +74,17 @@ Public MustInherit Class OneWayMultiValueConverter
         Return Nothing
     End Function
 End Class
+
+Public MustInherit Class OneWayTwoValueConverter(Of InputType1, InputType2, TargetType)
+    Implements IMultiValueConverter
+
+    Public MustOverride Function Convert(Value1 As InputType1, Value2 As InputType2, Parameter As Object) As TargetType
+
+    Public Function Convert1(values() As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
+        Return Convert(values(0), values(1), parameter)
+    End Function
+
+    Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As Globalization.CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+        Return Nothing
+    End Function
+End Class

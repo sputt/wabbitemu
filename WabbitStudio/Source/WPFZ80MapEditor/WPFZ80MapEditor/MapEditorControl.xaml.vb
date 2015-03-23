@@ -176,13 +176,4 @@ Public Class MapEditorControl
         MapsetNew_Click(sender, e)
     End Sub
 
-    Public Sub StartTesting()
-        TestView.Visibility = Visibility.Visible
-        LayerContainer.Focusable = False
-    End Sub
-
-    Public Sub StopTesting()
-        TestView.Visibility = Visibility.Hidden
-    End Sub
-
 End Class

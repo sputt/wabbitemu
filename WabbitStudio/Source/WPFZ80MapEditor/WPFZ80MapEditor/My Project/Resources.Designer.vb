@@ -59,5 +59,14 @@ Namespace My.Resources
                 resourceCulture = value
             End Set
         End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Z80 Scenario Editor.
+        '''</summary>
+        Friend ReadOnly Property ApplicationName() As String
+            Get
+                Return ResourceManager.GetString("ApplicationName", resourceCulture)
+            End Get
+        End Property
     End Module
 End Namespace
