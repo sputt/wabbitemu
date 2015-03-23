@@ -2,17 +2,17 @@
 #include "alu.h"
 #include "control.h"
 
-void bit_ind(CPU_t*, char);
-void res_ind(CPU_t*, char);
-void set_ind(CPU_t*, char);
+int bit_ind(CPU_t*, char);
+int res_ind(CPU_t*, char);
+int set_ind(CPU_t*, char);
 
-void rr_ind(CPU_t*, char);
-void rrc_ind(CPU_t*, char);
-void rl_ind(CPU_t*, char);
-void rlc_ind(CPU_t*, char);
+int rr_ind(CPU_t*, char);
+int rrc_ind(CPU_t*, char);
+int rl_ind(CPU_t*, char);
+int rlc_ind(CPU_t*, char);
 
-void srl_ind(CPU_t*, char);
-void sll_ind(CPU_t*, char);
+int srl_ind(CPU_t*, char);
+int sll_ind(CPU_t*, char);
 
-void sra_ind(CPU_t*, char);
-void sla_ind(CPU_t*, char);
+int sra_ind(CPU_t*, char);
+int sla_ind(CPU_t*, char);

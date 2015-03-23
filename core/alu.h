@@ -47,65 +47,65 @@
 //add sub
 #define carrychk16(tval)		(((tval) & 0x10000) >> 16)
 
-void add_a_num8(CPU_t*);
-void adc_a_num8(CPU_t*);
-void sub_a_num8(CPU_t*);
-void sbc_a_num8(CPU_t*);
-void adc_a_reg8(CPU_t *);
-void add_a_reg8(CPU_t *);
-void sbc_a_reg8(CPU_t *);
-void sub_a_reg8(CPU_t *);
-void dec_reg8(CPU_t *);
-void inc_reg8(CPU_t *);
+int add_a_num8(CPU_t*);
+int adc_a_num8(CPU_t*);
+int sub_a_num8(CPU_t*);
+int sbc_a_num8(CPU_t*);
+int adc_a_reg8(CPU_t *);
+int add_a_reg8(CPU_t *);
+int sbc_a_reg8(CPU_t *);
+int sub_a_reg8(CPU_t *);
+int dec_reg8(CPU_t *);
+int inc_reg8(CPU_t *);
 
 
-void dec_reg16(CPU_t *);
-void inc_reg16(CPU_t *);
-void add_hl_reg16(CPU_t *);
-void adc_hl_reg16(CPU_t *);
-void sbc_hl_reg16(CPU_t *);
+int dec_reg16(CPU_t *);
+int inc_reg16(CPU_t *);
+int add_hl_reg16(CPU_t *);
+int adc_hl_reg16(CPU_t *);
+int sbc_hl_reg16(CPU_t *);
 
-void and_reg8(CPU_t *);
-void and_num8(CPU_t *);
+int and_reg8(CPU_t *);
+int and_num8(CPU_t *);
 
-void cp_reg8(CPU_t *);
-void cp_num8(CPU_t *);
-void cpd(CPU_t *);
-void cpdr(CPU_t *);
-void cpi(CPU_t *);
-void cpir(CPU_t *);
-
-
-void cpl(CPU_t *);
-void daa(CPU_t *);
+int cp_reg8(CPU_t *);
+int cp_num8(CPU_t *);
+int cpd(CPU_t *);
+int cpdr(CPU_t *);
+int cpi(CPU_t *);
+int cpir(CPU_t *);
 
 
-void or_reg8(CPU_t *);
-void or_num8(CPU_t *);
+int cpl(CPU_t *);
+int daa(CPU_t *);
 
-void xor_num8(CPU_t *);
-void xor_reg8(CPU_t *);
 
-void rlca(CPU_t *);
-void rla(CPU_t *);
-void rrca(CPU_t *);
-void rra(CPU_t *);
+int or_reg8(CPU_t *);
+int or_num8(CPU_t *);
 
-void rld(CPU_t *);
-void rrd(CPU_t *);
+int xor_num8(CPU_t *);
+int xor_reg8(CPU_t *);
+
+int rlca(CPU_t *);
+int rla(CPU_t *);
+int rrca(CPU_t *);
+int rra(CPU_t *);
+
+int rld(CPU_t *);
+int rrd(CPU_t *);
 
 //CB opcodes
 
-void bit(CPU_t *);
-void res(CPU_t *);
-void set(CPU_t *);
-void rl_reg(CPU_t *);
-void rlc_reg(CPU_t *);
-void rr_reg(CPU_t *);
-void rrc_reg(CPU_t *);
+int bit(CPU_t *);
+int res(CPU_t *);
+int set(CPU_t *);
+int rl_reg(CPU_t *);
+int rlc_reg(CPU_t *);
+int rr_reg(CPU_t *);
+int rrc_reg(CPU_t *);
 
-void srl_reg(CPU_t *);
-void sra_reg(CPU_t *);
-void sla_reg(CPU_t *);
-void sll_reg(CPU_t *);
+int srl_reg(CPU_t *);
+int sra_reg(CPU_t *);
+int sla_reg(CPU_t *);
+int sll_reg(CPU_t *);
 #endif

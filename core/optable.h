@@ -1,8 +1,9 @@
 #ifndef OPTABLE_H
 #define OPTABLE_H
 
-static void CPU_CB_opcode_run(CPU_t*);
-static void CPU_ED_opcode_run(CPU_t*);
+static int CPU_CB_opcode_run(CPU_t*);
+static int CPU_ED_opcode_run(CPU_t*);
+static int CPU_IXY_opcode_run(CPU_t*);
 
 /* This will all compress quite well, through UPX */
 
@@ -256,7 +257,7 @@ static opcodep opcode[256] = {
 	&jp_condition,
 	&in,
 	&call_condition,
-	&ednop,				//DD prefix
+	&CPU_IXY_opcode_run,
 	&sbc_a_num8,
 	&rst,
 	
@@ -292,7 +293,7 @@ static opcodep opcode[256] = {
 	&jp_condition,
 	&ei,
 	&call_condition,
-	&ednop,				//FD prefix
+	&CPU_IXY_opcode_run,
 	&cp_num8,
 	&rst
 };

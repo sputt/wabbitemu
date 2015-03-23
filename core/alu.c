@@ -12,20 +12,21 @@
 //---------------------------------------------
 // ED OPCODES
 
-void neg(CPU_t *cpu) {
-	tc_add(cpu->timer_c, 8);
+int neg(CPU_t *cpu) {
 	int result = -cpu->a;
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + hcsubchk(0,cpu->a,0) + 
 		 x3chk(result)+ vchksub(0,cpu->a,result) + 
 		 SUB_INSTR +  carrychk(result);
 	cpu->a = result;
+
+	return 8;
 }
 
-void adc_hl_reg16(CPU_t *cpu) {
+int adc_hl_reg16(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c, 15);
+
 	switch (((cpu->bus)>>4)&0x03) {
 		case 0x00:
 			reg = cpu->bc;
@@ -46,12 +47,14 @@ void adc_hl_reg16(CPU_t *cpu) {
 		 x3chk16(result)+ vchkadd16(cpu->hl,reg,result) + 
 		 ADD_INSTR +  carrychk16(result);
 	cpu->hl = result;
+
+	return 15;
 }
 
-void sbc_hl_reg16(CPU_t *cpu) {
+int sbc_hl_reg16(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c, 15);
+
 	switch (((cpu->bus)>>4)&0x03) {
 		case 0x00:
 			reg = cpu->bc;
@@ -73,14 +76,16 @@ void sbc_hl_reg16(CPU_t *cpu) {
 		 x3chk16(result)+ vchksub16(cpu->hl, reg, result) +                //DOUBLE CHECK!!!!
 		 SUB_INSTR +  carrychk16(result);
 	cpu->hl = result;
+
+	return 15;
 }
 
 
 
-void cpd(CPU_t *cpu) {
+int cpd(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c, 16);
+
 	reg = CPU_mem_read(cpu,cpu->hl);
 	result = cpu->a - reg;
 	cpu->bc--;
@@ -89,12 +94,14 @@ void cpd(CPU_t *cpu) {
 		 x5chk(reg-((cpu->f&HC_MASK)>>4)) + hcsubchk(cpu->a,reg,0) + 
 		 x3chk(reg-((cpu->f&HC_MASK)>>4))+ doparity(cpu->bc!=0) + 
 		 SUB_INSTR +  unaffect(CARRY_MASK);
+
+	return 16;
 }
 
-void cpdr(CPU_t *cpu) {
+int cpdr(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c, 16);
+
 	reg = CPU_mem_read(cpu,cpu->hl);
 	result = cpu->a - reg;
 	cpu->bc--;
@@ -105,15 +112,15 @@ void cpdr(CPU_t *cpu) {
 		 SUB_INSTR +  unaffect(CARRY_MASK);
 	if ((cpu->f&PV_MASK)!=0 && (cpu->f&ZERO_MASK)==0 ) {
 		cpu->pc-=2;
-		tc_add(cpu->timer_c, 21-16);
+		return 21;
 	}
-		
+	
+	return 16;
 }
 
-void cpi(CPU_t *cpu) {
+int cpi(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c, 16);
 	reg = CPU_mem_read(cpu,cpu->hl);
 	result = cpu->a - reg;
 	cpu->bc--;
@@ -122,13 +129,12 @@ void cpi(CPU_t *cpu) {
 		 x5chk(reg-((cpu->f&HC_MASK)>>4)) + hcsubchk(cpu->a,reg,0) + 
 		 x3chk(reg-((cpu->f&HC_MASK)>>4))+ doparity(cpu->bc!=0) + 
 		 SUB_INSTR +  unaffect(CARRY_MASK);
+	return 16;
 }
 
-void cpir(CPU_t *cpu) {
+int cpir(CPU_t *cpu) {
 	int result;
-	int reg;
-	tc_add(cpu->timer_c, 16);
-	reg = CPU_mem_read(cpu,cpu->hl);
+	int reg = CPU_mem_read(cpu,cpu->hl);
 	result = cpu->a - reg;
 	cpu->bc--;
 	cpu->hl++;
@@ -138,27 +144,25 @@ void cpir(CPU_t *cpu) {
 		 SUB_INSTR +  unaffect(CARRY_MASK);
 	if ((cpu->f&PV_MASK)!=0 && (cpu->f&ZERO_MASK)==0 ) {
 		cpu->pc-=2;
-		tc_add(cpu->timer_c, 21-16);
+		return 21;
 	}
-		
+
+	return 16;
 }
 
 
-void rld(CPU_t *cpu) {
-	int result;
-
-	tc_add(cpu->timer_c,18);
-
-	result = (CPU_mem_read(cpu,cpu->hl)<<4)+(cpu->a&0x0f);
+int rld(CPU_t *cpu) {
+	int result = (CPU_mem_read(cpu,cpu->hl)<<4)+(cpu->a&0x0f);
 	CPU_mem_write(cpu,cpu->hl,result&0xff);
 	cpu->a = (cpu->a&0xF0)+((result>>8)&0x0F);
 	cpu->f = signchk(cpu->a) + zerochk(cpu->a) +
 		 x5chk(cpu->a) + x3chk(cpu->a)+ 
 		 parity(cpu->a) + unaffect(CARRY_MASK);
+
+	return 18;
 }
-void rrd(CPU_t *cpu) {
+int rrd(CPU_t *cpu) {
 	int result,tmp;
-	tc_add(cpu->timer_c,18);
 
 	result = (CPU_mem_read(cpu,cpu->hl)>>4)+((cpu->a&0x0f)<<4);
 	tmp = cpu->bus;
@@ -167,6 +171,8 @@ void rrd(CPU_t *cpu) {
 	cpu->f = signchk(cpu->a) + zerochk(cpu->a) +
 		 x5chk(cpu->a) + x3chk(cpu->a)+ 
 		 parity(cpu->a) + unaffect(CARRY_MASK);
+
+	return 18;
 }
 
 
@@ -176,11 +182,12 @@ void rrd(CPU_t *cpu) {
 
 //------------------
 // Bit num,reg
-void bit(CPU_t *cpu) {
+int bit(CPU_t *cpu) {
 	int result;
 	int reg;
 	int dbus = cpu->bus;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
+
 	switch ((cpu->bus)&0x07) {
 		case 0x00:
 			reg = cpu->b;
@@ -202,7 +209,7 @@ void bit(CPU_t *cpu) {
 			break;
 		case 0x06:
 			reg = CPU_mem_read(cpu,cpu->hl);
-			tc_add(cpu->timer_c,4);
+			time += 4;
 			break;
 		case 0x07:
 			reg = cpu->a;
@@ -216,13 +223,15 @@ void bit(CPU_t *cpu) {
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(xchk) + HC_MASK + 
 		 x3chk(xchk)+ parity(result) + unaffect(CARRY_MASK);
+
+	return time;
 }
 //------------------
 // RES num,reg
-void res(CPU_t *cpu) {
+int res(CPU_t *cpu) {
 	int reg;
 	int bit =	(~(1<<((cpu->bus>>3)&0x07)))&0xFF;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
 	switch ((cpu->bus)&0x07) {
 		case 0x00:
 			cpu->b &= bit;
@@ -244,7 +253,7 @@ void res(CPU_t *cpu) {
 			break;
 		case 0x06:
 			reg = CPU_mem_read(cpu,cpu->hl);
-			tc_add(cpu->timer_c,7);
+			time += 7;
 			CPU_mem_write(cpu,cpu->hl,reg&bit);
 			break;
 		case 0x07:
@@ -252,13 +261,15 @@ void res(CPU_t *cpu) {
 			break;
 	}
 
+	return time;
 }
 //------------------
 // SET num,reg
-void set(CPU_t *cpu) {
+int set(CPU_t *cpu) {
 	int reg;
 	int bit = (1<<((cpu->bus>>3)&0x7))&0xFF;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
+
 	switch ((cpu->bus)&0x07) {
 		case 0x00:
 			cpu->b |= bit;
@@ -280,7 +291,7 @@ void set(CPU_t *cpu) {
 			break;
 		case 0x06:
 			reg = CPU_mem_read(cpu,cpu->hl);
-			tc_add(cpu->timer_c,7);
+			time += 7;
 			CPU_mem_write(cpu,cpu->hl,reg|bit);
 			break;
 		case 0x07:
@@ -288,13 +299,14 @@ void set(CPU_t *cpu) {
 			break;
 	}
 
+	return time;
 }
 
 
-void rl_reg(CPU_t *cpu) {
+int rl_reg(CPU_t *cpu) {
 	int result;
 	int carry;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
 	switch ((cpu->bus)&0x07) {
 		case 0x00:
 			carry = (cpu->b>>7)&0x01;
@@ -324,7 +336,7 @@ void rl_reg(CPU_t *cpu) {
 			result = CPU_mem_read(cpu,cpu->hl);
 			carry = (result>>7)&0x01;
 			result = ((result<<1)+(cpu->f&0x01))&0xFF;
-			tc_add(cpu->timer_c,7);
+			time += 7;
 			CPU_mem_write(cpu,cpu->hl,result);
 			break;
 		case 0x07:
@@ -335,12 +347,14 @@ void rl_reg(CPU_t *cpu) {
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + x3chk(result)+ 
 		 parity(result) + carry;
+
+	return time;
 }
 
-void rlc_reg(CPU_t *cpu) {
+int rlc_reg(CPU_t *cpu) {
 	int result;
 	int carry;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
 	switch ((cpu->bus)&0x07) {
 		case 0x00:
 			carry = (cpu->b>>7)&1;
@@ -370,7 +384,7 @@ void rlc_reg(CPU_t *cpu) {
 			result = CPU_mem_read(cpu,cpu->hl);
 			carry = (result>>7)&1;
 			result = ((result<<1)+carry)&0xFF;
-			tc_add(cpu->timer_c,7);
+			time += 7;
 			CPU_mem_write(cpu,cpu->hl,result);
 			break;
 		case 0x07:
@@ -381,12 +395,13 @@ void rlc_reg(CPU_t *cpu) {
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + x3chk(result)+ 
 		 parity(result) + carry;
+	return time;
 }
 
-void rr_reg(CPU_t *cpu) {
+int rr_reg(CPU_t *cpu) {
 	int result;
 	int carry;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			carry = cpu->b&1;
@@ -416,7 +431,7 @@ void rr_reg(CPU_t *cpu) {
 			result = CPU_mem_read(cpu,cpu->hl);
 			carry = result&1;
 			result = ((result>>1)+((cpu->f&1)<<7))&0xFF;
-			tc_add(cpu->timer_c,7);
+			time += 7;
 			CPU_mem_write(cpu,cpu->hl,result);
 			break;
 		case 0x07:
@@ -427,11 +442,12 @@ void rr_reg(CPU_t *cpu) {
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + x3chk(result)+ 
 		 parity(result) + carry;
+	return time;
 }
-void rrc_reg(CPU_t *cpu) {
+int rrc_reg(CPU_t *cpu) {
 	int result;
 	int carry;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			carry = cpu->b&1;
@@ -461,7 +477,7 @@ void rrc_reg(CPU_t *cpu) {
 			result = CPU_mem_read(cpu,cpu->hl);
 			carry = result&1;
 			result = ((result>>1)+(carry<<7))&0xFF;
-			tc_add(cpu->timer_c,7);
+			time += 7;
 			CPU_mem_write(cpu,cpu->hl,result);
 			break;
 		case 0x07:
@@ -472,12 +488,13 @@ void rrc_reg(CPU_t *cpu) {
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + x3chk(result)+ 
 		 parity(result) + carry;
+	return time;
 }
 
-void sll_reg(CPU_t *cpu) {
+int sll_reg(CPU_t *cpu) {
 	int result;
 	int carry;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			carry = (cpu->b>>7)&1;
@@ -507,7 +524,7 @@ void sll_reg(CPU_t *cpu) {
 			result = CPU_mem_read(cpu,cpu->hl);
 			carry = (result>>7)&1;
 			result = ((result<<1)+1)&0xFF;
-			tc_add(cpu->timer_c,7);
+			time += 7;
 			CPU_mem_write(cpu,cpu->hl,result);
 			break;
 		case 0x07:
@@ -518,11 +535,12 @@ void sll_reg(CPU_t *cpu) {
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + x3chk(result)+ 
 		 parity(result) + carry;
+	return time;
 }
-void sla_reg(CPU_t *cpu) {
+int sla_reg(CPU_t *cpu) {
 	int result;
 	int carry;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			carry = (cpu->b>>7)&1;
@@ -552,7 +570,7 @@ void sla_reg(CPU_t *cpu) {
 			result = CPU_mem_read(cpu,cpu->hl);
 			carry = (result>>7)&1;
 			result = ((result<<1))&0xFF;
-			tc_add(cpu->timer_c,7);
+			time += 7;
 			CPU_mem_write(cpu,cpu->hl,result);
 			break;
 		case 0x07:
@@ -563,12 +581,14 @@ void sla_reg(CPU_t *cpu) {
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + x3chk(result)+ 
 		 parity(result) + carry;
+
+	return time;
 }
 
-void sra_reg(CPU_t *cpu) {
+int sra_reg(CPU_t *cpu) {
 	int result;
 	int carry;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			carry = cpu->b&1;
@@ -598,7 +618,7 @@ void sra_reg(CPU_t *cpu) {
 			result = CPU_mem_read(cpu,cpu->hl);
 			carry = (result)&1;
 			result = ((result>>1)+(result&128))&0xFF;
-			tc_add(cpu->timer_c,7);
+			time += 7;
 			CPU_mem_write(cpu,cpu->hl,result);
 			break;
 		case 0x07:
@@ -609,11 +629,13 @@ void sra_reg(CPU_t *cpu) {
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + x3chk(result)+ 
 		 parity(result) + carry;
+
+	return time;
 }
-void srl_reg(CPU_t *cpu) {
+int srl_reg(CPU_t *cpu) {
 	int result;
 	int carry;
-	tc_add(cpu->timer_c,8);
+	int time = 8;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			carry = cpu->b&1;
@@ -643,7 +665,7 @@ void srl_reg(CPU_t *cpu) {
 			result = CPU_mem_read(cpu,cpu->hl);
 			carry = (result)&1;
 			result = ((result>>1))&0xFF;
-			tc_add(cpu->timer_c,7);
+			time += 7;
 			CPU_mem_write(cpu,cpu->hl,result);
 			break;
 		case 0x07:
@@ -654,6 +676,7 @@ void srl_reg(CPU_t *cpu) {
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + x3chk(result)+ 
 		 parity(result) + carry;
+	return time;
 }
 // END CB OPCODES
 //---------------------------------------
@@ -661,11 +684,11 @@ void srl_reg(CPU_t *cpu) {
 
 //-----------------
 // and reg8
-void and_reg8(CPU_t *cpu) {
+int and_reg8(CPU_t *cpu) {
 	int result;
 	int reg;
 
-	tc_add(cpu->timer_c,4);
+	int time = 4;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			reg = cpu->b;
@@ -682,21 +705,21 @@ void and_reg8(CPU_t *cpu) {
 		case 0x04:
 			index_ext (
 				reg = cpu->h;,
-				reg = cpu->ixh; tc_add(cpu->timer_c,4);,
-				reg = cpu->iyh; tc_add(cpu->timer_c,4);
+				reg = cpu->ixh; time += 4;,
+				reg = cpu->iyh; time += 4;
 			)
 			break;
 		case 0x05:
 			index_ext (
 				reg = cpu->l;,
-				reg = cpu->ixl; tc_add(cpu->timer_c, 4);,
-				reg = cpu->iyl; tc_add(cpu->timer_c, 4);
+				reg = cpu->ixl; time += 4;,
+				reg = cpu->iyl; time += 4;
 			)
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
 				reg = CPU_mem_read(cpu,cpu->hl);
-				tc_add(cpu->timer_c,3);
+				time += 3;
 			} else {
 				char offset = CPU_mem_read(cpu, cpu->pc++);
 				if (cpu->prefix == 0xDD) {
@@ -704,7 +727,8 @@ void and_reg8(CPU_t *cpu) {
 				} else {
 					reg = CPU_mem_read(cpu, cpu->iy + offset);
 				}
-				tc_add(cpu->timer_c, 15);
+				
+				time += 15;
 			}
 			break;
 		case 0x07:
@@ -716,32 +740,34 @@ void and_reg8(CPU_t *cpu) {
 		 x5chk(result) + HC_MASK + 
 		 x3chk(result)+ parity(result);
 	cpu->a = result;
+	return time;
 }
 
 
 
 //-----------------
 // and num8
-void and_num8(CPU_t *cpu) {
+int and_num8(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c,7);
+	
 	reg = CPU_mem_read(cpu,cpu->pc++);
 	result = cpu->a&reg;
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + HC_MASK + 
 		 x3chk(result)+ parity(result);
 	cpu->a = result;
+	return 7;
 }
 
 
 
 //-----------------
 // or reg8
-void or_reg8(CPU_t *cpu) {
+int or_reg8(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c,4);
+	int time = 4;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			reg = cpu->b;
@@ -758,21 +784,21 @@ void or_reg8(CPU_t *cpu) {
 		case 0x04:
 			index_ext (
 				reg = cpu->h;,
-				reg = cpu->ixh; tc_add(cpu->timer_c,4);,
-				reg = cpu->iyh; tc_add(cpu->timer_c,4);
+				reg = cpu->ixh; time += 4;,
+				reg = cpu->iyh; time += 4;
 			)
 			break;
 		case 0x05:
 			index_ext (
 				reg = cpu->l;,
-				reg = cpu->ixl; tc_add(cpu->timer_c, 4);,
-				reg = cpu->iyl; tc_add(cpu->timer_c, 4);
+				reg = cpu->ixl; time += 4;,
+				reg = cpu->iyl; time += 4;
 			)
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
 				reg = CPU_mem_read(cpu,cpu->hl);
-				tc_add(cpu->timer_c,3);
+				time += 3;
 			} else {
 				char offset = CPU_mem_read(cpu, cpu->pc++);
 				if (cpu->prefix == 0xDD) {
@@ -780,7 +806,7 @@ void or_reg8(CPU_t *cpu) {
 				} else {
 					reg = CPU_mem_read(cpu, cpu->iy + offset);
 				}
-				tc_add(cpu->timer_c, 15);
+				time += 15;
 			}
 			break;
 		case 0x07:
@@ -792,28 +818,31 @@ void or_reg8(CPU_t *cpu) {
 		 x5chk(result) + 
 		 x3chk(result)+ parity(result);
 	cpu->a = result;
+	return time;
 }
 
 //-----------------
 // or num8
-void or_num8(CPU_t *cpu) {
+int or_num8(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c,7);
+	
 	reg = CPU_mem_read(cpu,cpu->pc++);
 	result = cpu->a|reg;
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + 
 		 x3chk(result)+ parity(result);
 	cpu->a = result;
+
+	return 7;
 }
 
 //-----------------
 // xor reg8
-void xor_reg8(CPU_t *cpu) {
+int xor_reg8(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c,4);
+	int time = 4;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			reg = cpu->b;
@@ -830,21 +859,21 @@ void xor_reg8(CPU_t *cpu) {
 		case 0x04:
 			index_ext (
 				reg = cpu->h;,
-				reg = cpu->ixh; tc_add(cpu->timer_c,4);,
-				reg = cpu->iyh; tc_add(cpu->timer_c,4);
+				reg = cpu->ixh; time += 4;,
+				reg = cpu->iyh; time += 4;
 			)
 			break;
 		case 0x05:
 			index_ext (
 				reg = cpu->l;,
-				reg = cpu->ixl; tc_add(cpu->timer_c, 4);,
-				reg = cpu->iyl; tc_add(cpu->timer_c, 4);
+				reg = cpu->ixl; time += 4;,
+				reg = cpu->iyl; time += 4;
 			)
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
 				reg = CPU_mem_read(cpu,cpu->hl);
-				tc_add(cpu->timer_c,3);
+				time += 3;
 			} else {
 				char offset = CPU_mem_read(cpu, cpu->pc++);
 				if (cpu->prefix == 0xDD) {
@@ -852,7 +881,7 @@ void xor_reg8(CPU_t *cpu) {
 				} else {
 					reg = CPU_mem_read(cpu, cpu->iy + offset);
 				}
-				tc_add(cpu->timer_c, 15);
+				time += 15;
 			}
 			break;
 		case 0x07:
@@ -864,27 +893,29 @@ void xor_reg8(CPU_t *cpu) {
 		 x5chk(result) + 
 		 x3chk(result)+ parity(result);
 	cpu->a = result;
+	return time;
 }
 
 
 //-----------------
 // xor num8
-void xor_num8(CPU_t *cpu) {
+int xor_num8(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c,7);
+
 	reg = CPU_mem_read(cpu,cpu->pc++);
 	result = cpu->a^reg;
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + 
 		 x3chk(result)+ parity(result);
 	cpu->a = result;
+	return 7;
 }
 
-void cp_reg8(CPU_t *cpu) {
+int cp_reg8(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c, 4);
+	int time = 4;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			reg = cpu->b;
@@ -901,21 +932,21 @@ void cp_reg8(CPU_t *cpu) {
 		case 0x04:
 			index_ext (
 				reg = cpu->h;,
-				reg = cpu->ixh; tc_add(cpu->timer_c,4);,
-				reg = cpu->iyh; tc_add(cpu->timer_c,4);
+				reg = cpu->ixh; time += 4;,
+				reg = cpu->iyh; time += 4;
 			)
 			break;
 		case 0x05:
 			index_ext (
 				reg = cpu->l;,
-				reg = cpu->ixl; tc_add(cpu->timer_c, 4);,
-				reg = cpu->iyl; tc_add(cpu->timer_c, 4);
+				reg = cpu->ixl; time += 4;,
+				reg = cpu->iyl; time += 4;
 			)
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
 				reg = CPU_mem_read(cpu,cpu->hl);
-				tc_add(cpu->timer_c,3);
+				time += 3;
 			} else {
 				char offset = CPU_mem_read(cpu, cpu->pc++);
 				if (cpu->prefix == 0xDD) {
@@ -923,7 +954,7 @@ void cp_reg8(CPU_t *cpu) {
 				} else {
 					reg = CPU_mem_read(cpu, cpu->iy + offset);
 				}
-				tc_add(cpu->timer_c, 15);
+				time += 15;
 			}
 			break;
 		case 0x07:
@@ -935,32 +966,35 @@ void cp_reg8(CPU_t *cpu) {
 		 x5chk(reg) + hcsubchk(cpu->a,reg,0) + 
 		 x3chk(reg)+ vchksub(cpu->a,reg,result) + 
 		 SUB_INSTR +  carrychk(result);
+	return time;
 }
 
-void cp_num8(CPU_t *cpu) {
+int cp_num8(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c, 7);
+
 	reg = CPU_mem_read(cpu,cpu->pc++);
 	result = cpu->a - reg;
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(reg) + hcsubchk(cpu->a,reg,0) + 
 		 x3chk(reg)+ vchksub(cpu->a,reg,result) + 
 		 SUB_INSTR +  carrychk(result);
+
+	return 7;
 }
 
-void cpl(CPU_t *cpu) {
-	int result;
-	tc_add(cpu->timer_c, 4);
-	result = (~cpu->a)&255;
+int cpl(CPU_t *cpu) {
+	int result = (~cpu->a)&255;
 	cpu->f =unaffect( SIGN_MASK+ZERO_MASK+PV_MASK+CARRY_MASK) +
 		 x5chk(result) + HC_MASK + x3chk(result)+ N_MASK;
 	cpu->a = result;
+
+	return 4;
 }
 
-void daa(CPU_t *cpu) {
+int daa(CPU_t *cpu) {
 	int result = cpu->a;
-	tc_add(cpu->timer_c, 4);
+	
 	if ( (cpu->f&N_MASK)!=0 ) {
 		if ( (cpu->f&HC_MASK)!=0 || (cpu->a&0x0f)>9 ) result -= 0x06;
 		if ( (cpu->f&CARRY_MASK)!=0 || (cpu->a > 0x99) ) result -= 0x60;
@@ -973,15 +1007,16 @@ void daa(CPU_t *cpu) {
 		 x3chk(result)+ parity(result) + 
 		 unaffect( N_MASK ) + ((cpu->f & CARRY_MASK) | ((cpu->a>0x99)?CARRY_MASK:0));
 	cpu->a = result;
+	return 4;
 }
 
 
 
 
-void dec_reg8(CPU_t *cpu) {
+int dec_reg8(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c, 4);
+	int time = 4;
 	switch ((cpu->bus>>3)&7) {
 		case 0x00:
 			reg = cpu->b;
@@ -1012,12 +1047,12 @@ void dec_reg8(CPU_t *cpu) {
 				reg = cpu->ixh;
 				cpu->ixh--;
 				result = cpu->ixh;
-				tc_add(cpu->timer_c,4);
+				time += 4;
 			} else {
 				reg = cpu->iyh;
 				cpu->iyh--;
 				result = cpu->iyh;
-				tc_add(cpu->timer_c,4);
+				time += 4;
 			}
 			break;
 		case 0x05:
@@ -1029,12 +1064,12 @@ void dec_reg8(CPU_t *cpu) {
 				reg = cpu->ixl;
 				cpu->ixl--;
 				result = cpu->ixl;
-				tc_add(cpu->timer_c,4);
+				time += 4;
 			} else {
 				reg = cpu->iyl;
 				cpu->iyl--;
 				result = cpu->iyl;
-				tc_add(cpu->timer_c,4);
+				time += 4;
 			}
 			break;
 		case 0x06:
@@ -1043,7 +1078,7 @@ void dec_reg8(CPU_t *cpu) {
 				result = reg;
 				result--;
 				CPU_mem_write(cpu,cpu->hl,result);
-				tc_add(cpu->timer_c,7);
+				time += 7;
 			} else {
 				char offset = CPU_mem_read(cpu, cpu->pc++);
 				if (cpu->prefix == 0xDD) {
@@ -1051,13 +1086,13 @@ void dec_reg8(CPU_t *cpu) {
 					result = reg;
 					result--;
 					CPU_mem_write(cpu,cpu->ix+offset,result);
-					tc_add(cpu->timer_c,19-4);
+					time += 19 - 4;
 				} else {
 					reg = CPU_mem_read(cpu,cpu->iy+offset);
 					result = reg;
 					result--;
 					CPU_mem_write(cpu,cpu->iy+offset,result);
-					tc_add(cpu->timer_c,19-4);
+					time += 19 - 4;
 				}
 			}
 			break;
@@ -1071,13 +1106,15 @@ void dec_reg8(CPU_t *cpu) {
 		 x5chk(result) + hcsubchk(reg,1,0) + 
 		 x3chk(result)+ vchksub(reg,1,result) + 
 		 SUB_INSTR +  unaffect(CARRY_MASK);
+
+	return time;
 }
 
 
-void inc_reg8(CPU_t *cpu) {
+int inc_reg8(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c, 4);
+	int time = 4;
 	switch ((cpu->bus>>3)&7) {
 		case 0x00:
 			reg = cpu->b;
@@ -1108,12 +1145,12 @@ void inc_reg8(CPU_t *cpu) {
 				reg = cpu->ixh;
 				cpu->ixh++;
 				result = cpu->ixh;
-				tc_add(cpu->timer_c,4);
+				time += 4;
 			} else {
 				reg = cpu->iyh;
 				cpu->iyh++;
 				result = cpu->iyh;
-				tc_add(cpu->timer_c,4);
+				time += 4;
 			}
 			break;
 		case 0x05:
@@ -1125,12 +1162,12 @@ void inc_reg8(CPU_t *cpu) {
 				reg = cpu->ixl;
 				cpu->ixl++;
 				result = cpu->ixl;
-				tc_add(cpu->timer_c,4);
+				time += 4;
 			} else {
 				reg = cpu->iyl;
 				cpu->iyl++;
 				result = cpu->iyl;
-				tc_add(cpu->timer_c,4);
+				time += 4;
 			}
 			break;
 		case 0x06:
@@ -1139,7 +1176,7 @@ void inc_reg8(CPU_t *cpu) {
 				result = reg;
 				result++;
 				CPU_mem_write(cpu,cpu->hl,result);
-				tc_add(cpu->timer_c,7);
+				time += 7;
 			} else {
 				char offset = CPU_mem_read(cpu, cpu->pc++);
 				if (cpu->prefix == 0xDD) {
@@ -1147,13 +1184,13 @@ void inc_reg8(CPU_t *cpu) {
 					result = reg;
 					result++;
 					CPU_mem_write(cpu,cpu->ix+offset,result);
-					tc_add(cpu->timer_c,19-4);
+					time += 19 - 4;
 				} else {
 					reg = CPU_mem_read(cpu,cpu->iy+offset);
 					result = reg;
 					result++;
 					CPU_mem_write(cpu,cpu->iy+offset,result);
-					tc_add(cpu->timer_c,19-4);
+					time += 19 - 4;
 				}
 			}
 			break;
@@ -1167,16 +1204,17 @@ void inc_reg8(CPU_t *cpu) {
 		 x5chk(result) + hcaddchk(reg,1,0) + 
 		 x3chk(result)+vchkadd(reg,1,result) + 
 		 ADD_INSTR +  unaffect(CARRY_MASK);
+	return time;
 }
 //-----------------
 // add a,reg8
 // add a,(hl)
 // adc a,reg8
 // adc a,(hl)
-void add_a_reg(CPU_t *cpu, int carry) {
+int add_a_reg(CPU_t *cpu, int carry) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c,4);
+	int time = 4;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			reg = cpu->b;
@@ -1193,21 +1231,21 @@ void add_a_reg(CPU_t *cpu, int carry) {
 		case 0x04:
 			index_ext (
 				reg = cpu->h;,
-				reg = cpu->ixh; tc_add(cpu->timer_c,4);,
-				reg = cpu->iyh; tc_add(cpu->timer_c,4);
+				reg = cpu->ixh; time += 4;,
+				reg = cpu->iyh; time += 4;
 			)
 			break;
 		case 0x05:
 			index_ext (
 				reg = cpu->l;,
-				reg = cpu->ixl; tc_add(cpu->timer_c, 4);,
-				reg = cpu->iyl; tc_add(cpu->timer_c, 4);
+				reg = cpu->ixl; time += 4;,
+				reg = cpu->iyl; time += 4;
 			)
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
 				reg = CPU_mem_read(cpu,cpu->hl);
-				tc_add(cpu->timer_c,3);
+				time += 3;
 			} else {
 				char offset = CPU_mem_read(cpu, cpu->pc++);
 				if (cpu->prefix == 0xDD) {
@@ -1215,7 +1253,7 @@ void add_a_reg(CPU_t *cpu, int carry) {
 				} else {
 					reg = CPU_mem_read(cpu, cpu->iy + offset);
 				}
-				tc_add(cpu->timer_c, 15);
+				time += 15;
 			}
 			break;
 		case 0x07:
@@ -1228,22 +1266,22 @@ void add_a_reg(CPU_t *cpu, int carry) {
 		 x3chk(result)+ vchkadd(cpu->a,reg,result) + 
 		 ADD_INSTR +  carrychk(result);
 	cpu->a = result;
+	return time;
 }
-void adc_a_reg8(CPU_t *cpu) {
-	add_a_reg(cpu, cpu->f & 1);
+int adc_a_reg8(CPU_t *cpu) {
+	return add_a_reg(cpu, cpu->f & 1);
 }
-void add_a_reg8(CPU_t *cpu) {
-	add_a_reg(cpu, 0);
+int add_a_reg8(CPU_t *cpu) {
+	return add_a_reg(cpu, 0);
 }
 
 
 //-----------------
 // add a,num8
 // adc a,num8
-void add_a_num(CPU_t *cpu, int carry) {
+int add_a_num(CPU_t *cpu, int carry) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c,7);
 	reg = CPU_mem_read(cpu,cpu->pc++);	//THIS IS NOT AN OPCODE READ
 	result = cpu->a + reg + carry;
 	cpu->f = signchk(result) + zerochk(result) +
@@ -1251,12 +1289,13 @@ void add_a_num(CPU_t *cpu, int carry) {
 		 x3chk(result)+ vchkadd(cpu->a,reg,result) + 
 		 ADD_INSTR +  carrychk(result);
 	cpu->a = result;
+	return 7;
 }
-void adc_a_num8(CPU_t *cpu) {
-	add_a_num(cpu, cpu->f & 1);
+int adc_a_num8(CPU_t *cpu) {
+	return add_a_num(cpu, cpu->f & 1);
 }
-void add_a_num8(CPU_t *cpu) {
-	add_a_num(cpu,0);
+int add_a_num8(CPU_t *cpu) {
+	return add_a_num(cpu,0);
 }
 
 
@@ -1265,10 +1304,10 @@ void add_a_num8(CPU_t *cpu) {
 // sub (hl)
 // sbc a,reg8
 // sbc a,(hl)
-void sub_a_reg(CPU_t *cpu, int carry) {
+int sub_a_reg(CPU_t *cpu, int carry) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c, 4);
+	int time = 4;
 	switch ((cpu->bus)&7) {
 		case 0x00:
 			reg = cpu->b;
@@ -1285,21 +1324,21 @@ void sub_a_reg(CPU_t *cpu, int carry) {
 		case 0x04:
 			index_ext (
 				reg = cpu->h;,
-				reg = cpu->ixh; tc_add(cpu->timer_c,4);,
-				reg = cpu->iyh; tc_add(cpu->timer_c,4);
+				reg = cpu->ixh; time += 4;,
+				reg = cpu->iyh; time += 4;
 			)
 			break;
 		case 0x05:
 			index_ext (
 				reg = cpu->l;,
-				reg = cpu->ixl; tc_add(cpu->timer_c, 4);,
-				reg = cpu->iyl; tc_add(cpu->timer_c, 4);
+				reg = cpu->ixl; time += 4;,
+				reg = cpu->iyl; time += 4;
 			)
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
 				reg = CPU_mem_read(cpu,cpu->hl);
-				tc_add(cpu->timer_c,3);
+				time += 3;
 			} else {
 				char offset = CPU_mem_read(cpu, cpu->pc++);
 				if (cpu->prefix == 0xDD) {
@@ -1307,7 +1346,7 @@ void sub_a_reg(CPU_t *cpu, int carry) {
 				} else {
 					reg = CPU_mem_read(cpu, cpu->iy + offset);
 				}
-				tc_add(cpu->timer_c, 15);
+				time += 19 - 4;
 			}
 			break;
 		case 0x07:
@@ -1321,21 +1360,22 @@ void sub_a_reg(CPU_t *cpu, int carry) {
 		 x3chk(result)+ vchksub(cpu->a,reg,result) + 
 		 SUB_INSTR +  carrychk(result);
 	cpu->a = result;
+	return time;
 }
-void sbc_a_reg8(CPU_t *cpu) {
-	sub_a_reg(cpu,(cpu->f)&1);
+int sbc_a_reg8(CPU_t *cpu) {
+	return sub_a_reg(cpu,(cpu->f)&1);
 }
-void sub_a_reg8(CPU_t *cpu) {
-	sub_a_reg(cpu,0);
+int sub_a_reg8(CPU_t *cpu) {
+	return sub_a_reg(cpu,0);
 }
 
 //-----------------
 // sub num8
 // sbc a,num8
-void sub_a_num(CPU_t *cpu,int carry) {
+int sub_a_num(CPU_t *cpu,int carry) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c,7);
+	
 	reg = CPU_mem_read(cpu,cpu->pc++);
 	result = cpu->a - reg - carry;
 	cpu->f = signchk(result) + zerochk(result) +
@@ -1343,17 +1383,18 @@ void sub_a_num(CPU_t *cpu,int carry) {
 		 x3chk(result)+ vchksub(cpu->a,reg,result) + 
 		 SUB_INSTR +  carrychk(result);
 	cpu->a = result;
+
+	return 7;
 }
-void sbc_a_num8(CPU_t *cpu) {
-	sub_a_num(cpu, cpu->f & 1);
+int sbc_a_num8(CPU_t *cpu) {
+	return sub_a_num(cpu, cpu->f & 1);
 }
-void sub_a_num8(CPU_t *cpu) {
-	sub_a_num(cpu, 0);
+int sub_a_num8(CPU_t *cpu) {
+	return sub_a_num(cpu, 0);
 }
 
 
-void dec_reg16(CPU_t *cpu) {
-	
+int dec_reg16(CPU_t *cpu) {
 	int time = 6;
 	switch (((cpu->bus)>>4)&3) {
 		case 0x00:
@@ -1373,11 +1414,10 @@ void dec_reg16(CPU_t *cpu) {
 			cpu->sp--;
 			break;
 	}
-	tc_add(cpu->timer_c, time);
+	return time;
 }
 
-void inc_reg16(CPU_t *cpu) {
-	
+int inc_reg16(CPU_t *cpu) {
 	int time = 6;
 	switch (((cpu->bus)>>4)&3) {
 		case 0x00:
@@ -1397,10 +1437,11 @@ void inc_reg16(CPU_t *cpu) {
 			cpu->sp++;
 			break;
 	}
-	tc_add(cpu->timer_c, time);
+	
+	return time;
 }
 
-void add_hl_reg16(CPU_t *cpu) {
+int add_hl_reg16(CPU_t *cpu) {
 	int result;
 	int base, reg;
 
@@ -1443,40 +1484,43 @@ void add_hl_reg16(CPU_t *cpu) {
 		 x5chk16(result) + hcaddchk16(base, reg, 0) + 
 		 x3chk16(result)+ 
 		 ADD_INSTR +  carrychk16( base + reg);
-	tc_add(cpu->timer_c, time);
+	return time;
 }
 
 
-void rla(CPU_t *cpu) {
+int rla(CPU_t *cpu) {
 	int result = ((cpu->a<<1)+(cpu->f&1))&255;
-	tc_add(cpu->timer_c,4);
 	cpu->f = unaffect(SIGN_MASK +ZERO_MASK+PV_MASK) + 
 		 x5chk(result) + x3chk(result)+ (((cpu->a)>>7)&1);
 	cpu->a =result;
+
+	return 4;
 	
 }
-void rlca(CPU_t *cpu) {
+int rlca(CPU_t *cpu) {
 	int result = ((cpu->a<<1)+(((cpu->a)>>7)&1))&255;
-	tc_add(cpu->timer_c,4);
 	cpu->f = unaffect(SIGN_MASK +ZERO_MASK+PV_MASK) + 
 		 x5chk(result) + x3chk(result)+ (((cpu->a)>>7)&1);
 	cpu->a =result;
+
+	return 4;
 }
-void rra(CPU_t *cpu) {
+int rra(CPU_t *cpu) {
 	int result = ((cpu->a>>1)+((cpu->f&1)<<7))&255;
-	tc_add(cpu->timer_c,4);
 	cpu->f = unaffect(SIGN_MASK +ZERO_MASK+PV_MASK) + 
 		 x5chk(result) + x3chk(result)+ ((cpu->a)&1);
 	cpu->a =result;
+
+	return 4;
 	
 }
-void rrca(CPU_t *cpu) {
+int rrca(CPU_t *cpu) {
 	int result = ((cpu->a>>1)+(((cpu->a)<<7)&128))&255;
-	tc_add(cpu->timer_c,4);
 	cpu->f = unaffect(SIGN_MASK +ZERO_MASK+PV_MASK) + 
 		 x5chk(result) + x3chk(result)+ ((cpu->a)&1);
 	cpu->a =result;
-	
+
+	return 4;
 }
 
 #pragma warning(pop)

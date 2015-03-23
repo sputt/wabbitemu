@@ -179,7 +179,6 @@ int tc_init(timerc *tc, int timer_freq) {
 
 int CPU_init(CPU_t *cpu, memc *mem_c, timerc *timer_c) {
 	memset(cpu, 0, sizeof(CPU_t));
-	cpu->sp = 0xF000;
 	cpu->mem_c = mem_c;
 	cpu->timer_c = timer_c;
 	mem_c->port27_remap_count = 0;
@@ -823,25 +822,39 @@ static void CPU_opcode_run(CPU_t *cpu) {
 		opcode_reverse_info[cpu->bus](cpu);
 	}
 #endif
-	opcode[cpu->bus](cpu);
+	const int time = opcode[cpu->bus](cpu);
+	if (time != 0) {
+		tc_add(cpu->timer_c, time);
+	}
+	TCHAR buffer[200];
+	sprintf(buffer, "Time %d %d\n", cpu->timer_c->tstates, time);
+	//OutputDebugString(buffer);
 }
 
-static void CPU_CB_opcode_run(CPU_t *cpu) {
+static int CPU_CB_opcode_run(CPU_t *cpu) {
 	if (cpu->prefix) {
 		CPU_mem_read(cpu, cpu->pc++);				//read the offset, NOT INST
 		char offset = cpu->bus;
 		CPU_opcode_fetch(cpu);						//CB opcode, this is an INST
 		cpu->r = ((cpu->r - 1) & 0x7f) + (cpu->r & 0x80);
-		ICB_opcode[cpu->bus](cpu, offset);
+		return ICB_opcode[cpu->bus](cpu, offset);
 	} else {
 		CPU_opcode_fetch(cpu);
-		CBtab[cpu->bus](cpu);
+		return CBtab[cpu->bus](cpu);
 	}
 }
 
-static void CPU_ED_opcode_run(CPU_t *cpu) {
+static int CPU_ED_opcode_run(CPU_t *cpu) {
 	CPU_opcode_fetch(cpu);
-	EDtab[cpu->bus](cpu);
+	return EDtab[cpu->bus](cpu);
+}
+
+static int CPU_IXY_opcode_run(CPU_t * cpu) {
+	cpu->prefix = cpu->bus;
+	CPU_opcode_fetch(cpu);
+	CPU_opcode_run(cpu);
+	cpu->prefix = 0;
+	return 0;
 }
 
 static void handle_interrupt(CPU_t *cpu) {
@@ -896,17 +909,10 @@ int CPU_connected_step(CPU_t *cpu) {
 			return 2;
 		}
 		CPU_opcode_fetch(cpu);
-		if (cpu->bus == 0xDD || cpu->bus == 0xFD) {
-			cpu->prefix = cpu->bus;
-			CPU_opcode_fetch(cpu);
-			CPU_opcode_run(cpu);
-			cpu->prefix = 0;
-		} else {
 #ifdef WITH_REVERSE
-			CPU_add_prev_instr(cpu);
+		CPU_add_prev_instr(cpu);
 #endif
-			CPU_opcode_run(cpu);
-		}
+		CPU_opcode_run(cpu);
 	} else {
 		/* If the CPU is in halt */
 		tc_add(cpu->timer_c, 4 * HALT_SCALE);
@@ -950,14 +956,7 @@ int CPU_step(CPU_t* cpu) {
 #endif
 	if (cpu->halt == FALSE) {
 		CPU_opcode_fetch(cpu);
-		if (cpu->bus == 0xDD || cpu->bus == 0xFD) {
-			cpu->prefix = cpu->bus;
-			CPU_opcode_fetch(cpu);
-			CPU_opcode_run(cpu);
-			cpu->prefix = 0;
-		} else {
-			CPU_opcode_run(cpu);
-		}
+		CPU_opcode_run(cpu);
 	} else {
 		/* If the CPU is in halt */
 		tc_add(cpu->timer_c, 4 * HALT_SCALE);

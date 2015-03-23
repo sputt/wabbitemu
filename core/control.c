@@ -14,14 +14,14 @@
 //-----------------------------
 // ED OPCODES
 
-void ednop(CPU_t *cpu) {
-	tc_add(cpu->timer_c, 8);
+int ednop(CPU_t *cpu) {
+	return 8;
 }
 
-void ldd(CPU_t *cpu) {
+int ldd(CPU_t *cpu) {
 	int tmp;
 	int reg;
-	tc_add(cpu->timer_c, 16);
+	
 	reg = CPU_mem_read(cpu,cpu->hl);
 	CPU_mem_write(cpu,cpu->de,reg);
 	tmp = cpu->a + reg;
@@ -31,12 +31,14 @@ void ldd(CPU_t *cpu) {
 	cpu->f = dox5((tmp&2)!=0) + dox3((tmp&8)!=0) + 
 		 doparity(cpu->bc!=0) + 
 		 unaffect(SIGN_MASK + ZERO_MASK + CARRY_MASK);
+
+	return 16;
 }
 
-void lddr(CPU_t *cpu) {
+int lddr(CPU_t *cpu) {
 	int tmp;
 	int reg;
-	tc_add(cpu->timer_c, 16);
+	
 	reg = CPU_mem_read(cpu,cpu->hl);
 	CPU_mem_write(cpu,cpu->de,reg);
 	tmp = cpu->a + reg;
@@ -48,13 +50,15 @@ void lddr(CPU_t *cpu) {
 		 unaffect(SIGN_MASK + ZERO_MASK + CARRY_MASK);
 	if (cpu->bc!=0) {
 		cpu->pc -=2;
-		tc_add(cpu->timer_c, 21-16);
+		return 21;
 	}
+
+	return 16;
 }
-void ldi(CPU_t *cpu) {
+int ldi(CPU_t *cpu) {
 	int tmp;
 	int reg;
-	tc_add(cpu->timer_c, 16);
+	
 	reg = CPU_mem_read(cpu,cpu->hl);
 	CPU_mem_write(cpu,cpu->de,reg);
 	tmp = cpu->a + reg;
@@ -64,12 +68,13 @@ void ldi(CPU_t *cpu) {
 	cpu->f = dox5((tmp&2)!=0) + dox3((tmp&8)!=0) + 
 		 doparity(cpu->bc!=0) + 
 		 unaffect(SIGN_MASK + ZERO_MASK + CARRY_MASK);
+	return 16;
 }
 
-void ldir(CPU_t *cpu) {
+int ldir(CPU_t *cpu) {
 	int tmp;
 	int reg;
-	tc_add(cpu->timer_c, 16);
+	
 	reg = CPU_mem_read(cpu,cpu->hl);
 	CPU_mem_write(cpu,cpu->de,reg);
 	tmp = cpu->a + reg;
@@ -81,11 +86,13 @@ void ldir(CPU_t *cpu) {
 		 unaffect(SIGN_MASK + ZERO_MASK + CARRY_MASK);
 	if (cpu->bc!=0) {
 		cpu->pc -=2;
-		tc_add(cpu->timer_c, 21-16);
+		return 21;
 	}
+
+	return 16;
 }
 
-void ld_mem16_reg16(CPU_t *cpu) {
+int ld_mem16_reg16(CPU_t *cpu) {
 	int result;
 	int test = (cpu->bus >> 4) & 3;
 	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
@@ -107,10 +114,10 @@ void ld_mem16_reg16(CPU_t *cpu) {
 	}
 	CPU_mem_write(cpu, address++, result & 0xFF);
 	CPU_mem_write(cpu, address, result >> 8);
-	tc_add(cpu->timer_c, 20);
+	return 20;
 }
 
-void ld_reg16_mem16(CPU_t *cpu) {
+int ld_reg16_mem16(CPU_t *cpu) {
 	int test = (cpu->bus >> 4) & 3;
 	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
 	address |= CPU_mem_read(cpu, cpu->pc++) << 8;
@@ -132,24 +139,23 @@ void ld_reg16_mem16(CPU_t *cpu) {
 			cpu->sp = result;
 			break;
 	}
-	tc_add(cpu->timer_c, 20);
+	return 20;
 }
 
-void IM0(CPU_t *cpu) {
-	tc_add(cpu->timer_c,8);
+int IM0(CPU_t *cpu) {
 	cpu->imode = 0;
+	return 8;
 }
-void IM1(CPU_t *cpu) {
-	tc_add(cpu->timer_c,8);
+int IM1(CPU_t *cpu) {
 	cpu->imode = 1;
+	return 8;
 }
-void IM2(CPU_t *cpu) {
-	tc_add(cpu->timer_c,8);
+int IM2(CPU_t *cpu) {
 	cpu->imode = 2;
+	return 8;
 }
 
-void in_reg_c(CPU_t *cpu) {
-	tc_add(cpu->timer_c,12);
+int in_reg_c(CPU_t *cpu) {
 	int test = (cpu->bus>>3)&7;
 	device_input(cpu, cpu->c);
 	switch(test) {
@@ -180,12 +186,12 @@ void in_reg_c(CPU_t *cpu) {
 	cpu->f = signchk(cpu->bus) + zerochk(cpu->bus) +
 		 x5chk(cpu->bus) + x3chk(cpu->bus) + 
 		 parity(cpu->bus) + unaffect(CARRY_MASK);
+	return 12;
 }
 
 
-void ind(CPU_t *cpu) {
+int ind(CPU_t *cpu) {
 	int result,tmp;
-	tc_add(cpu->timer_c,16);
 	device_input(cpu, cpu->c);
 	result = cpu->bus;
 	CPU_mem_write(cpu,cpu->hl,cpu->bus);
@@ -197,11 +203,11 @@ void ind(CPU_t *cpu) {
 		 x3chk(cpu->b) +  parity((tmp&7)^cpu->b) + 
 		 (((result&128)!=0)? N_MASK:0) +
 		 carry( tmp>255 ); 
+	return 16;
 }
 
-void indr(CPU_t *cpu) {
+int indr(CPU_t *cpu) {
 	int result,tmp;
-	tc_add(cpu->timer_c,16);
 	device_input(cpu, cpu->c);
 	result = cpu->bus;
 	CPU_mem_write(cpu,cpu->hl,cpu->bus);
@@ -215,12 +221,14 @@ void indr(CPU_t *cpu) {
 		 carry( tmp>255 );
 	if (cpu->b!=0) {
 		cpu->pc -=2;
-		tc_add(cpu->timer_c, 21-16);
+		return 21;
 	}
+
+	return 16;
 }
-void ini(CPU_t *cpu) {
+int ini(CPU_t *cpu) {
 	int result,tmp;
-	tc_add(cpu->timer_c,16);
+	
 	device_input(cpu, cpu->c);
 	result = cpu->bus;
 	CPU_mem_write(cpu,cpu->hl,cpu->bus);
@@ -232,11 +240,12 @@ void ini(CPU_t *cpu) {
 		 x3chk(cpu->b) +  parity((tmp&7)^cpu->b) + 
 		 (((result&128)!=0)? N_MASK:0) +
 		 carry( tmp>255 ); 
+	return 16;
 }
 
-void inir(CPU_t *cpu) {
+int inir(CPU_t *cpu) {
 	int result,tmp;
-	tc_add(cpu->timer_c,16);
+	
 	device_input(cpu, cpu->c);
 	result = cpu->bus;
 	CPU_mem_write(cpu,cpu->hl,cpu->bus);
@@ -250,37 +259,38 @@ void inir(CPU_t *cpu) {
 		 carry( tmp>255 );
 	if (cpu->b!=0) {
 		cpu->pc -=2;
-		tc_add(cpu->timer_c, 21-16);
+		return 21;
 	}
+
+	return 16;
 }
 
-void ld_i_a(CPU_t *cpu) {
-	tc_add(cpu->timer_c, 9);
+int ld_i_a(CPU_t *cpu) {
 	cpu->i = cpu->a;
+	return 9;
 }
-void ld_r_a(CPU_t *cpu) {
-	tc_add(cpu->timer_c, 9);
+int ld_r_a(CPU_t *cpu) {
 	cpu->r = cpu->a;
+	return 9;
 }
-void ld_a_i(CPU_t *cpu) {
-	tc_add(cpu->timer_c, 9);
+int ld_a_i(CPU_t *cpu) {
 	cpu->a = cpu->i;
 	cpu->f = signchk(cpu->a) + zerochk(cpu->a) +
 		 x5chk(cpu->a) + x3chk(cpu->a) + 
 		 doparity(cpu->iff2!=0) + unaffect(CARRY_MASK);
+	return 9;
 }
-void ld_a_r(CPU_t *cpu) {
-	tc_add(cpu->timer_c, 9);
+int ld_a_r(CPU_t *cpu) {
 	cpu->a = cpu->r;
 	cpu->f = signchk(cpu->a) + zerochk(cpu->a) +
 		 x5chk(cpu->a) + x3chk(cpu->a) + 
 		 doparity(cpu->iff2!=0) + unaffect(CARRY_MASK);
+	return 9;
 }
 
 
-void out_reg(CPU_t *cpu) { 
+int out_reg(CPU_t *cpu) { 
 	 int test = (cpu->bus>>3)&7; 
-	 tc_add(cpu->timer_c,12); 
 	 switch(test) { 
 		  case 0x00: 
 			   cpu->bus=cpu->b; 
@@ -308,13 +318,14 @@ void out_reg(CPU_t *cpu) {
 			   break; 
 	 } 
 	 device_output(cpu, cpu->c); 
+	 return 12;
 }
 
 
 
-void outd(CPU_t *cpu) {
+int outd(CPU_t *cpu) {
 	int result,tmp;
-	tc_add(cpu->timer_c,16);
+
 	result=CPU_mem_read(cpu,cpu->hl);
 	device_output(cpu, cpu->c);
 	cpu->b--;
@@ -325,11 +336,12 @@ void outd(CPU_t *cpu) {
 		 x3chk(cpu->b) +  parity((tmp&0x07)^cpu->b) + 
 		 (((result&0x80)!=0)? N_MASK:0) +
 		 carry( tmp>255 ); 
+	return 16;
 }
 
-void otdr(CPU_t *cpu) {
+int otdr(CPU_t *cpu) {
 	int result,tmp;
-	tc_add(cpu->timer_c,16);
+	
 	result=CPU_mem_read(cpu,cpu->hl);
 	device_output(cpu, cpu->c);
 	cpu->b--;
@@ -342,12 +354,14 @@ void otdr(CPU_t *cpu) {
 		 carry( tmp>255 ); 
 	if (cpu->b!=0) {
 		cpu->pc -=2;
-		tc_add(cpu->timer_c, 21-16);
+		return 21;
 	}
+
+	return 16;
 }
-void outi(CPU_t *cpu) {
+int outi(CPU_t *cpu) {
 	int result,tmp;
-	tc_add(cpu->timer_c,16);
+	
 	result=CPU_mem_read(cpu,cpu->hl);
 	device_output(cpu, cpu->c);
 	cpu->b--;
@@ -358,11 +372,12 @@ void outi(CPU_t *cpu) {
 		 x3chk(cpu->b) +  parity((tmp&0x07)^cpu->b) + 
 		 (((result&0x80)!=0)? N_MASK:0) +
 		 carry( tmp>255 ); 
+	return 16;
 }
 
-void otir(CPU_t *cpu) {
+int otir(CPU_t *cpu) {
 	int result,tmp;
-	tc_add(cpu->timer_c,16);
+	
 	result=CPU_mem_read(cpu,cpu->hl);
 	device_output(cpu, cpu->c);
 	cpu->b--;
@@ -375,21 +390,23 @@ void otir(CPU_t *cpu) {
 		 carry( tmp>255 ); 
 	if (cpu->b!=0) {
 		cpu->pc -=2;
-		tc_add(cpu->timer_c, 21-16);
+		return 21;
 	}
+
+	return 16;
 }
 
-void reti(CPU_t *cpu) {
-	tc_add(cpu->timer_c,14);
+int reti(CPU_t *cpu) {
 	cpu->pc = CPU_mem_read(cpu, cpu->sp++);
 	cpu->pc |= CPU_mem_read(cpu, cpu->sp++) << 8;
 	cpu->iff1 = cpu->iff2;
+	return 14;
 }
-void retn(CPU_t *cpu) {
-	tc_add(cpu->timer_c,14);
+int retn(CPU_t *cpu) {
 	cpu->pc = CPU_mem_read(cpu, cpu->sp++);
 	cpu->pc |= CPU_mem_read(cpu, cpu->sp++) << 8;
 	cpu->iff1 = cpu->iff2;
+	return 14;
 }
 
 //
@@ -398,48 +415,47 @@ void retn(CPU_t *cpu) {
 
 //-----------------
 // SCF
-void scf(CPU_t *cpu) {
-	tc_add(cpu->timer_c,4);
+int scf(CPU_t *cpu) {
 	cpu->f = unaffect( SIGN_MASK+ZERO_MASK+PV_MASK) +
 		 x5chk(cpu->a) + x3chk(cpu->a) + CARRY_MASK;
+	return 4;
 }
 //-----------------
 // CCF
-void ccf(CPU_t *cpu) {
-	tc_add(cpu->timer_c,4);
+int ccf(CPU_t *cpu) {
 	cpu->f = unaffect( SIGN_MASK+ZERO_MASK+PV_MASK) +
 		 x5chk(cpu->a|cpu->f) + dohc( (cpu->f&CARRY_MASK)!=0 ) + 
 		 x3chk(cpu->a|cpu->f) + ((cpu->f&CARRY_MASK)^CARRY_MASK);
+	return 4;
 }
-void rst(CPU_t *cpu) {
+int rst(CPU_t *cpu) {
 	int reg = (cpu->bus&0x38);
-	tc_add(cpu->timer_c,11);
 	CPU_mem_write(cpu,--cpu->sp,(cpu->pc>>8)&0xFF);
 	CPU_mem_write(cpu,--cpu->sp,cpu->pc&0xFF);
 	cpu->pc = reg;
+	return 11;
 }
 
-void out(CPU_t *cpu) {
+int out(CPU_t *cpu) {
 	int port = CPU_mem_read(cpu, cpu->pc++);
-	tc_add(cpu->timer_c,11);
 	cpu->bus = cpu->a;
 	device_output(cpu, port);
+	return 11;
 }
-void in(CPU_t *cpu) {
+int in(CPU_t *cpu) {
 	int port = CPU_mem_read(cpu, cpu->pc++);
-	tc_add(cpu->timer_c,11);
 	device_input(cpu, port);
 	cpu->a = cpu->bus;
+	return 11;
 }
 
-void ret(CPU_t *cpu) {
-	tc_add(cpu->timer_c,10);
+int ret(CPU_t *cpu) {
 	cpu->pc = CPU_mem_read(cpu, cpu->sp++);
 	cpu->pc |= CPU_mem_read(cpu, cpu->sp++) << 8;
+	return 10;
 }
-void ret_condition(CPU_t *cpu) {
+int ret_condition(CPU_t *cpu) {
 	int succeed = FALSE;
-	tc_add(cpu->timer_c,5);
 	switch ((cpu->bus >> 3) & 0x07) {
 		case 0:	if (!(cpu->f & ZERO_MASK)) succeed = TRUE;
 				break;
@@ -461,20 +477,22 @@ void ret_condition(CPU_t *cpu) {
 	if (succeed == TRUE) {
 		cpu->pc = CPU_mem_read(cpu,cpu->sp++);
 		cpu->pc |= CPU_mem_read(cpu, cpu->sp++) << 8;
-		tc_add(cpu->timer_c, 6);
+		return 11;
 	}
+
+	return 5;
 }
-void call(CPU_t *cpu) {
+int call(CPU_t *cpu) {
 	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
 	address |= CPU_mem_read(cpu, cpu->pc++) << 8;
 	
 	CPU_mem_write(cpu, --cpu->sp, cpu->pc >> 8);
 	CPU_mem_write(cpu, --cpu->sp, cpu->pc & 0xFF);
 	cpu->pc = address;
-	tc_add(cpu->timer_c,17);
+	return 17;
 }
 
-void call_condition(CPU_t *cpu) {
+int call_condition(CPU_t *cpu) {
 	int succeed = FALSE;
 	int condition = (cpu->bus >> 3) & 0x07;
 	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
@@ -498,16 +516,18 @@ void call_condition(CPU_t *cpu) {
 		case 7:	if ((cpu->f & SIGN_MASK)) succeed = TRUE;
 				break;
 	}
-	tc_add(cpu->timer_c,10);
+
 	if (succeed) {
 		CPU_mem_write(cpu, --cpu->sp, cpu->pc >> 8);
 		CPU_mem_write(cpu, --cpu->sp, cpu->pc & 0xFF);
 		cpu->pc = address;
-		tc_add(cpu->timer_c, 7);
+		return 17;
 	}
+
+	return 10;
 }
 
-void push_reg16(CPU_t *cpu) {
+int push_reg16(CPU_t *cpu) {
 	unsigned short reg;
 	int time = 11;
 	
@@ -535,10 +555,10 @@ void push_reg16(CPU_t *cpu) {
 	}
 	CPU_mem_write(cpu, --cpu->sp, reg >> 8);
 	CPU_mem_write(cpu, --cpu->sp, reg & 0xFF);
-	tc_add(cpu->timer_c, time);
+	return time;
 }
 
-void pop_reg16(CPU_t *cpu) {
+int pop_reg16(CPU_t *cpu) {
 	int old_bus = cpu->bus;
 	/* Back up the bus, since memory reads will write to it as well */
 	unsigned short reg = CPU_mem_read(cpu, cpu->sp++);
@@ -568,122 +588,121 @@ void pop_reg16(CPU_t *cpu) {
 			cpu->af = reg;
 			break;
 	}
-	tc_add(cpu->timer_c, time);
+	return time;
 }
 
-void ld_sp_hl(CPU_t *cpu) {
+int ld_sp_hl(CPU_t *cpu) {
 	if (!cpu->prefix) {
 		cpu->sp = cpu->hl;
-		tc_add(cpu->timer_c,6);
+		return 6;
 	} else if (cpu->prefix == 0xDD) {
 		cpu->sp = cpu->ix;
-		tc_add(cpu->timer_c,10);
+		return 10;
 	} else {
 		cpu->sp = cpu->iy;
-		tc_add(cpu->timer_c,10);
+		return 10;
 	}
 }
-void ld_mem16_hlf(CPU_t *cpu) {
+int ld_mem16_hlf(CPU_t *cpu) {
 	unsigned short reg = CPU_mem_read(cpu, cpu->pc++);
 	reg |= CPU_mem_read(cpu, cpu->pc++) << 8;
 
 	if (!cpu->prefix) {
 		CPU_mem_write(cpu, reg++, cpu->l);
 		CPU_mem_write(cpu, reg, cpu->h);
-		tc_add(cpu->timer_c, 16);
+		return 16;
 	} else if (cpu->prefix == 0xDD) {
 		CPU_mem_write(cpu, reg++, cpu->ixl);
 		CPU_mem_write(cpu, reg, cpu->ixh);
-		tc_add(cpu->timer_c,20);
+		return 20;
 	} else {
 		CPU_mem_write(cpu, reg++, cpu->iyl);
 		CPU_mem_write(cpu, reg, cpu->iyh);
-		tc_add(cpu->timer_c,20);
+		return 20;
 	}		
 }
 
-void ld_hlf_mem16(CPU_t *cpu) {
+int ld_hlf_mem16(CPU_t *cpu) {
 	unsigned short mem = CPU_mem_read(cpu, cpu->pc++);
 	mem |= CPU_mem_read(cpu, cpu->pc++) << 8;
 	unsigned short reg = CPU_mem_read(cpu, mem);
 	reg |= CPU_mem_read(cpu, mem + 1) << 8;
 	if (!cpu->prefix) {
 		cpu->hl = reg;
-		tc_add(cpu->timer_c,16);
+		return 16;
 	} else if (cpu->prefix == 0xDD) {
 		cpu->ix = reg;
-		tc_add(cpu->timer_c,20);
+		return 20;
 	} else {
 		cpu->iy = reg;
-		tc_add(cpu->timer_c,20);
+		return 20;
 	}		
 }
 
-void ld_hl_num16(CPU_t *cpu) {
+int ld_hl_num16(CPU_t *cpu) {
 	unsigned short reg = CPU_mem_read(cpu, cpu->pc++);
 	reg |= CPU_mem_read(cpu, cpu->pc++) << 8;
 
 	if (!cpu->prefix) {
 		cpu->hl = reg;
-		tc_add(cpu->timer_c,10);
+		return 10;
 	} else if (cpu->prefix == 0xDD) {
 		cpu->ix = reg;
-		tc_add(cpu->timer_c,14);
+		return 14;
 	} else {
 		cpu->iy = reg;
-		tc_add(cpu->timer_c,14);
+		return 14;
 	}	
 }
-void ld_de_num16(CPU_t *cpu) {
+int ld_de_num16(CPU_t *cpu) {
 	cpu->de = CPU_mem_read(cpu, cpu->pc++);
 	cpu->de |= CPU_mem_read(cpu, cpu->pc++) << 8;
-
-	tc_add(cpu->timer_c, 10);
+	return 10;
 }
-void ld_bc_num16(CPU_t *cpu) {
+int ld_bc_num16(CPU_t *cpu) {
 	cpu->bc = CPU_mem_read(cpu, cpu->pc++);
 	cpu->bc |= CPU_mem_read(cpu, cpu->pc++) << 8;
-	tc_add(cpu->timer_c,10);
+	return 10;
 }
-void ld_sp_num16(CPU_t *cpu) {
+int ld_sp_num16(CPU_t *cpu) {
 	cpu->sp = CPU_mem_read(cpu, cpu->pc++);
 	cpu->sp |= CPU_mem_read(cpu, cpu->pc++) << 8;
-	tc_add(cpu->timer_c,10);
+	return 10;
 }
-void ld_a_mem16(CPU_t *cpu) {
+int ld_a_mem16(CPU_t *cpu) {
 	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
 	address |= CPU_mem_read(cpu, cpu->pc++) << 8;
 	cpu->a = CPU_mem_read(cpu, address);
-	tc_add(cpu->timer_c, 13);
+	return 13;
 }
-void ld_a_bc(CPU_t *cpu) {
-	tc_add(cpu->timer_c,7);
+int ld_a_bc(CPU_t *cpu) {
 	cpu->a = CPU_mem_read(cpu, cpu->bc);
+	return 7;
 }
-void ld_a_de(CPU_t *cpu) {
-	tc_add(cpu->timer_c,7);
+int ld_a_de(CPU_t *cpu) {
 	cpu->a = CPU_mem_read(cpu,cpu->de);
+	return 7;
 }
-void ld_mem16_a(CPU_t *cpu) {
+int ld_mem16_a(CPU_t *cpu) {
 	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
 	address |= CPU_mem_read(cpu, cpu->pc++) << 8;
 	CPU_mem_write(cpu, address, cpu->a);
-	tc_add(cpu->timer_c, 13);
+	return 13;
 }
-void ld_bc_a(CPU_t *cpu) {
+int ld_bc_a(CPU_t *cpu) {
 	CPU_mem_write(cpu, cpu->bc, cpu->a);
-	tc_add(cpu->timer_c, 7);
+	return 7;
 }
-void ld_de_a(CPU_t *cpu) {
+int ld_de_a(CPU_t *cpu) {
 	CPU_mem_write(cpu, cpu->de, cpu->a);
-	tc_add(cpu->timer_c, 7);
+	return 7;
 }
 
-void ld_r_num8(CPU_t *cpu) {
+int ld_r_num8(CPU_t *cpu) {
 	int reg;
 	int test = (cpu->bus>>3)&7;
-//	printf("running ld r num8\n");
-	tc_add(cpu->timer_c,7);
+	int time = 7;
+
 	reg = CPU_mem_read(cpu, cpu->pc++);
 	switch(test) {
 		case 0x00:
@@ -701,21 +720,21 @@ void ld_r_num8(CPU_t *cpu) {
 		case 0x04:
 			index_ext (
 				cpu->h = reg;,
-				cpu->ixh = reg; tc_add(cpu->timer_c, 4);,
-				cpu->iyh = reg; tc_add(cpu->timer_c, 4);
+				cpu->ixh = reg; time += 4;,
+				cpu->iyh = reg; time += 4;
 			)
 			break;
 		case 0x05:
 			index_ext (
 				cpu->l = reg;,
-				cpu->ixl = reg; tc_add(cpu->timer_c, 4);,
-				cpu->iyl = reg; tc_add(cpu->timer_c, 4);
+				cpu->ixl = reg; time += 4;,
+				cpu->iyl = reg; time += 4;
 			)
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
 				CPU_mem_write(cpu,cpu->hl,reg);
-				tc_add(cpu->timer_c,3);
+				time += 3;
 			} else {
 				char offset = reg;
 				reg = CPU_mem_read(cpu, cpu->pc++);
@@ -724,20 +743,24 @@ void ld_r_num8(CPU_t *cpu) {
 				} else {
 					CPU_mem_write(cpu, cpu->iy + offset, reg);
 				}
-				tc_add(cpu->timer_c, 12);
+
+				time += 12;
 			}
 			break;
 		case 0x07:
 			cpu->a=reg;
 			break;
 	}
+
+	return time;
 }
 
-void ld_r_r(CPU_t *cpu) {
+int ld_r_r(CPU_t *cpu) {
 	int reg;
 	int test = (cpu->bus>>3)&7;
 	int test2 = cpu->bus&7;
-	tc_add(cpu->timer_c,4);
+	int time = 4;
+
 	switch(test2) {
 		case 0x00:
 			reg=cpu->b;
@@ -757,8 +780,8 @@ void ld_r_r(CPU_t *cpu) {
 			} else {
 				index_ext (
 					reg = cpu->h;,
-					reg = cpu->ixh; tc_add(cpu->timer_c, 4);,
-					reg = cpu->iyh; tc_add(cpu->timer_c, 4);
+					reg = cpu->ixh; time += 4; ,
+					reg = cpu->iyh; time += 4;
 				)
 			}
 			break;
@@ -769,14 +792,14 @@ void ld_r_r(CPU_t *cpu) {
 			}
 			index_ext (
 				reg = cpu->l;,
-				reg = cpu->ixl; tc_add(cpu->timer_c, 4);,
-				reg = cpu->iyl; tc_add(cpu->timer_c, 4);
+				reg = cpu->ixl; time += 4;,
+				reg = cpu->iyl; time += 4;
 			)
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
 				reg = CPU_mem_read(cpu,cpu->hl);
-				tc_add(cpu->timer_c,3);
+				time += 3;
 			} else {
 				char offset = CPU_mem_read(cpu, cpu->pc++);
 				if (cpu->prefix == 0xDD) {
@@ -784,7 +807,8 @@ void ld_r_r(CPU_t *cpu) {
 				} else {
 					reg = CPU_mem_read(cpu, cpu->iy + offset);
 				}
-				tc_add(cpu->timer_c, 15);
+
+				time += 15;
 			}
 			break;
 		case 0x07:
@@ -812,8 +836,8 @@ void ld_r_r(CPU_t *cpu) {
 			}
 			index_ext (
 				cpu->h = reg;,
-				cpu->ixh = reg; tc_add(cpu->timer_c, 4);,
-				cpu->iyh = reg; tc_add(cpu->timer_c, 4);
+				cpu->ixh = reg; time += 4;,
+				cpu->iyh = reg; time += 4;
 			)
 			break;
 		case 0x05:
@@ -823,14 +847,14 @@ void ld_r_r(CPU_t *cpu) {
 			}
 			index_ext (
 				cpu->l = reg;,
-				cpu->ixl = reg; tc_add(cpu->timer_c, 4);,
-				cpu->iyl = reg; tc_add(cpu->timer_c, 4);
+				cpu->ixl = reg; time += 4;,
+				cpu->iyl = reg; time += 4;
 			)
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
 				CPU_mem_write(cpu,cpu->hl,reg);
-				tc_add(cpu->timer_c,3);
+				time += 3;
 			} else {
 				char offset = CPU_mem_read(cpu, cpu->pc++);
 				if (cpu->prefix == 0xDD) {
@@ -838,36 +862,38 @@ void ld_r_r(CPU_t *cpu) {
 				} else {
 					CPU_mem_write(cpu, cpu->iy + offset, reg);
 				}
-				tc_add(cpu->timer_c, 15);
+				
+				time += 15;
 			}
 			break;
 		case 0x07:
 			cpu->a=reg;
 			break;
 	}
+
+	return time;
 }
 
-void halt(CPU_t *cpu) {
-	tc_add(cpu->timer_c, 4);
+int halt(CPU_t *cpu) {
 	cpu->halt = TRUE;
 //	cpu->pc--;			//I'll tell you later...just to sync up.
+	return 4;
 }
 
-void nop(CPU_t *cpu) {
-	tc_add(cpu->timer_c, 4);
+int nop(CPU_t *cpu) {
+	return 4;
 }
 
-void ex_sp_hl(CPU_t *cpu) {
+int ex_sp_hl(CPU_t *cpu) {
 	unsigned short reg = CPU_mem_read(cpu, cpu->sp);
 	reg |= CPU_mem_read(cpu, cpu->sp + 1) << 8;
 	
 	if (!cpu->prefix) {
-		tc_add(cpu->timer_c,19);
 		CPU_mem_write(cpu,cpu->sp + 1, cpu->h);
 		CPU_mem_write(cpu,cpu->sp, cpu->l);
 		cpu->hl = reg;
+		return 19;
 	} else {
-		tc_add(cpu->timer_c, 23);
 		if (cpu->prefix == 0xDD) {
 			CPU_mem_write(cpu,cpu->sp + 1, cpu->ixh);
 			CPU_mem_write(cpu,cpu->sp, cpu->ixl);
@@ -877,6 +903,8 @@ void ex_sp_hl(CPU_t *cpu) {
 			CPU_mem_write(cpu,cpu->sp, cpu->iyl);
 			cpu->iy = reg;
 		}
+
+		return 23;
 	}
 }
 
@@ -891,56 +919,56 @@ reg = regpair1; \
 regpair1 = regpair2; \
 regpair2 = reg;
 
-void ex_de_hl(CPU_t *cpu) {
+int ex_de_hl(CPU_t *cpu) {
 	unsigned short reg;
 	swappair(cpu->hl,cpu->de);
-	tc_add(cpu->timer_c,4);
+	return 4;
 }
 
-void exx(CPU_t *cpu) {
+int exx(CPU_t *cpu) {
 	unsigned short reg;
 	swappair(cpu->hl,cpu->hlp);
 	swappair(cpu->bc,cpu->bcp);
 	swappair(cpu->de,cpu->dep);
-	tc_add(cpu->timer_c,4);
+	return 4;
 }
 
-void ex_af_afp(CPU_t *cpu) {
+int ex_af_afp(CPU_t *cpu) {
 	unsigned short reg;
 	swappair(cpu->af,cpu->afp);
-	tc_add(cpu->timer_c,4);
+	return 4;
 }	
 
-void jp_hl(CPU_t *cpu) {
+int jp_hl(CPU_t *cpu) {
 	index_ext (
 		cpu->pc = cpu->hl;
-		tc_add(cpu->timer_c,4);,
+		return 4;,
 		
 		cpu->pc = cpu->ix;
-		tc_add(cpu->timer_c,8);,
+		return 8;,
 
 		cpu->pc = cpu->iy;
-		tc_add(cpu->timer_c,8);
+		return 8;
 	)	
 }
-void jp(CPU_t *cpu) {
+int jp(CPU_t *cpu) {
 	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
 	address |= CPU_mem_read(cpu, cpu->pc) << 8;
 
 	cpu->pc = address;
-	tc_add(cpu->timer_c,10);
+	return 10;
 }
 
-void jr(CPU_t *cpu) {
+int jr(CPU_t *cpu) {
 	char reg = (char) CPU_mem_read(cpu, cpu->pc++);
 	cpu->pc = addschar(cpu->pc, reg);
-	tc_add(cpu->timer_c, 12);
+	return 12;
 }
 
 
 
 
-void jp_condition(CPU_t *cpu) {
+int jp_condition(CPU_t *cpu) {
 	int condition = (cpu->bus>>3)&7;
 	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
 	address |= CPU_mem_read(cpu, cpu->pc++) << 8;
@@ -971,59 +999,63 @@ void jp_condition(CPU_t *cpu) {
 			if ((SIGN_MASK&cpu->f)!=0) cpu->pc = address;
 			break;
 	}
-	tc_add(cpu->timer_c,10);
+
+	return 10;
 }
 
-void jr_condition(CPU_t *cpu) {
+int jr_condition(CPU_t *cpu) {
 	int condition = (cpu->bus >> 3) & 3;
 	char reg = (char) CPU_mem_read(cpu, cpu->pc++);
-	tc_add(cpu->timer_c,7);
+	int time = 7;
 	switch (condition) {
 		case 0:
 			if ((ZERO_MASK&cpu->f)==0) {
 				cpu->pc = addschar(cpu->pc,reg);
-				tc_add(cpu->timer_c,5);
+				time += 5;
 			}
 			break;
 		case 1:
 			if ((ZERO_MASK&cpu->f)!=0) {
 				cpu->pc = addschar(cpu->pc,reg);
-				tc_add(cpu->timer_c,5);
+				time += 5;
 			}
 			break;
 		case 2:
 			if ((CARRY_MASK&cpu->f)==0) {
 				cpu->pc = addschar(cpu->pc,reg);
-				tc_add(cpu->timer_c,5);
+				time += 5;
 			}
 			break;
 		case 3:
 			if ((CARRY_MASK&cpu->f)!=0) {
 				cpu->pc = addschar(cpu->pc,reg);
-				tc_add(cpu->timer_c,5);
+				time += 5;
 			}
 			break;
 	}
+
+	return time;
 }
 
-void djnz(CPU_t *cpu) {
+int djnz(CPU_t *cpu) {
 	char reg = (char) CPU_mem_read(cpu, cpu->pc++);
-	tc_add(cpu->timer_c, 8);
 	if (--cpu->b != 0) {
 		cpu->pc = addschar(cpu->pc, reg);
-		tc_add(cpu->timer_c, 5);
+		return 13;
 	}
+
+	return 8;
 }
 
-void ei(CPU_t *cpu) {
-	tc_add(cpu->timer_c,4);
+int ei(CPU_t *cpu) {
 	cpu->iff1 = cpu->iff2 = TRUE;
 	cpu->ei_block = TRUE;
+	return 4;
 }
 
-void di(CPU_t *cpu) {
-	tc_add(cpu->timer_c,4);
+int di(CPU_t *cpu) {
 	cpu->iff1 = cpu->iff2 = FALSE;
+	return 4;
 }
 
 #pragma warning(pop)

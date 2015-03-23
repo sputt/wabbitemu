@@ -314,8 +314,8 @@ typedef struct CPU {
 	void(*lcd_enqueue_callback)(struct CPU *);
 } CPU_t;
 
-typedef void (*opcodep)(CPU_t*);
-typedef void (*index_opcodep)(CPU_t*, char);
+typedef int (*opcodep)(CPU_t*);
+typedef int (*index_opcodep)(CPU_t*, char);
 
 unsigned char mem_read(memc*, unsigned short);
 uint8_t wmem_read(memc*, waddr_t);
