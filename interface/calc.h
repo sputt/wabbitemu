@@ -82,7 +82,6 @@ typedef struct tagCALC {
 
 	BOOL max_speed;
 	int speed;
-	BYTE breakpoints[0x10000];
 	label_struct labels[10000];
 
 	apphdr_t last_transferred_app;

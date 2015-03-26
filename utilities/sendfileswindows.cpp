@@ -189,7 +189,8 @@ BOOL SendFileToCalc(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, 
 		}
 
 		LPSENDINFO lpsi;
-		if (g_SendInfo.find(lpCalc) == g_SendInfo.end() || g_SendInfo[lpCalc] == NULL)
+		const std::map<LPCALC, LPSENDINFO>::iterator iterator = g_SendInfo.find(lpCalc);
+		if (iterator == g_SendInfo.end() || g_SendInfo[lpCalc] == NULL)
 		{
 			lpsi = new SENDINFO;
 			ZeroMemory(lpsi, sizeof(SENDINFO));
@@ -203,7 +204,7 @@ BOOL SendFileToCalc(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, 
 		}
 		else
 		{
-			lpsi = g_SendInfo[lpCalc];
+			lpsi = iterator->second;
 		}
 
 		if (lpsi->hwndDlg == NULL) {

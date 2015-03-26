@@ -18,7 +18,7 @@ class CWabbitemu;
 #define MAX_SKIN_WIDTH	SKIN_WIDTH*2
 #define MAX_SKIN_HEIGHT	SKIN_HEIGHT*2
 
-#define WABBITVER		_T("1.8")
+#define WABBITVER		_T("1.9")
 
 #define g_szWebPage		_T("http://wabbit.codeplex.com")
 #ifdef _WIN64

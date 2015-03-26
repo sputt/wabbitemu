@@ -401,6 +401,8 @@ BOOL check_flashpage_empty(u_char(*dest)[PAGE_SIZE], u_int page, u_int num_pages
 #define TI_83P_APP_BITMAP_VALID_OFFSET 0x1FE0
 #define TI_84PCSE_APP_BITMAP_VALID_OFFSET 0x1FC8
 #define CERT_PAGE cpu->mem_c->flash_pages - 2
+#define LAST_OS_PAGE_83P 0x1D
+#define LAST_OS_PAGE_84PCSE 0xFC
 
 /* Fixes the certificate page so that the app is no longer marked as a trial
 * cpu: cpu for the core the application is on
@@ -446,6 +448,19 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 
 	if (tifile->flash == NULL) {
 		return LERR_FILE;
+	}
+
+	int lastPage = 0xFF;
+	while (tifile->flash->data[lastPage] == NULL) {
+		lastPage--;
+	}
+
+	// This is hacky. Takes advantage of the fact that CSE stores the real number of the page, where 84PSE and below store page & 0x1F
+	// TODO: find the OS validation header
+	if (lastPage == LAST_OS_PAGE_83P && cpu->pio.model > TI_84PSE) {
+		return LERR_MODEL;
+	} else if (lastPage == LAST_OS_PAGE_84PCSE && cpu->pio.model < TI_84PCSE) {
+		return LERR_MODEL;
 	}
 
 	int start_page;

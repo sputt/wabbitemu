@@ -201,19 +201,31 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 						break;
 					}
 
+					memc *memc = lpCalc->cpu.mem_c;
 					if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_NORMAL))) {
-						set_break(lpCalc->cpu.mem_c, waddr);
+						if (check_break(memc, waddr)) {
+							break;
+						}
+
+						set_break(memc, waddr);
 					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_WRITE))) {
+						if (check_mem_write_break(memc, waddr)) {
+							break;
+						}
+
 						set_mem_write_break(lpCalc->cpu.mem_c, waddr);
 					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_READ))) {
+						if (check_mem_read_break(memc, waddr)) {
+							break;
+						}
+
 						set_mem_read_break(lpCalc->cpu.mem_c, waddr);
+					} else {
+						break;
 					}
 
 					LPBREAKPOINT lpBreak = lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)];
-					int index = ListView_GetItemCount(hwndListView) - 1;
-					if (index == -1) {
-						index = 0;
-					}
+					int index = ListView_GetItemCount(hwndListView);
 
 					LVITEM item;
 					item.mask = LVIF_PARAM;
