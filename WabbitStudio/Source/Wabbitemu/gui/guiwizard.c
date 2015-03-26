@@ -410,23 +410,26 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							switch(model) {
 								case TI_73:
 									ComboBox_AddString(hComboOS, _T("OS 1.91"));
+									ComboBox_SetCurSel(hComboOS, 0);
 									break;
 								case TI_83P:
 								case TI_83PSE:
 									ComboBox_AddString(hComboOS, _T("OS 1.19"));
+									ComboBox_SetCurSel(hComboOS, 0);
 									break;
 								case TI_84P:
 								case TI_84PSE: {
 									ComboBox_AddString(hComboOS, _T("OS 2.43"));
 									ComboBox_AddString(hComboOS, _T("OS 2.55 MP"));
+									ComboBox_SetCurSel(hComboOS, 1);
 									break;
 								case TI_84PCSE:
 									ComboBox_AddString(hComboOS, _T("OS 4.0"));
 									ComboBox_AddString(hComboOS, _T("OS 4.2"));
+									ComboBox_SetCurSel(hComboOS, 1);
 									break;
 								}
 							}
-							ComboBox_SetCurSel(hComboOS, 0);
 							break;
 						}
 						case IDC_BROWSE_OS: {
