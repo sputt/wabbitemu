@@ -408,7 +408,10 @@ TIFILE_t* ImportBackup(FILE *infile, TIFILE_t *tifile) {
 		tifile->backup->data3[i] = (unsigned char)tmp;
 	}
 
-	tifile->chksum = (fgetc(infile) & 0xFF) + ((fgetc(infile) & 0xFF) << 8);
+	tmpread(infile);
+	tifile->chksum = tmp & 0xFF;
+	tmpread(infile);
+	tifile->chksum += (tmp & 0xFF) << 8;
 
 	tifile->type	= BACKUP_TYPE;
 	return tifile;
@@ -619,7 +622,11 @@ TIFILE_t* ImportVarFile(FILE *infile, TIFILE_t *tifile, int varNumber) {
 		}
 	}
 
-	tifile->chksum = (fgetc(infile) & 0xFF) + ((fgetc(infile) & 0xFF) << 8);
+	tmpread(infile);
+	tifile->chksum = tmp & 0xFF;
+	tmpread(infile);
+	tifile->chksum += (tmp & 0xFF) << 8;
+
 	return tifile;
 }
 

@@ -209,9 +209,10 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 #endif
 	}
 
+	BOOL failedToLoad = FALSE;
 	if (!pBitmapSkin || pBitmapSkin->GetWidth() == 0 || pBitmapKeymap->GetWidth() == 0) {
 		if (lpMainWindow->bCustomSkin) {
-			MessageBox(lpMainWindow->hwndFrame, _T("Custom skin failed to load."), _T("Error"), MB_OK);
+			failedToLoad = TRUE;
 			delete pBitmapKeymap;
 			delete pBitmapSkin;
 			pBitmapKeymap = NULL;
@@ -332,6 +333,12 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 	}
 
 	UpdateWabbitemuMainWindow(lpMainWindow);
+
+	if (failedToLoad) {
+		// We do this at the end, because calling MessageBox will hand control of painting back to windows. This way we ensure we have loaded a valid skin if possible
+		MessageBox(lpMainWindow->hwndFrame, _T("Custom skin failed to load."), _T("Error"), MB_OK);
+		return FALSE;
+	}
 
 	return TRUE;
 }
