@@ -826,9 +826,6 @@ static void CPU_opcode_run(CPU_t *cpu) {
 	if (time != 0) {
 		tc_add(cpu->timer_c, time);
 	}
-	TCHAR buffer[200];
-	sprintf(buffer, "Time %d %d\n", cpu->timer_c->tstates, time);
-	//OutputDebugString(buffer);
 }
 
 static int CPU_CB_opcode_run(CPU_t *cpu) {

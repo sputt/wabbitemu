@@ -520,7 +520,9 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 					StringCbCopy(lpMainWindow->skin_path, sizeof(lpMainWindow->skin_path), lpStrFile);
 					Edit_GetText(hKeyText, lpStrFile, sizeof(lpStrFile));
 					StringCbCopy(lpMainWindow->keymap_path, sizeof(lpMainWindow->skin_path), lpStrFile);
-					gui_frame_update(lpMainWindow);
+					if (gui_frame_update(lpMainWindow) == FALSE) {
+						Button_SetCheck(chkCustom, lpMainWindow->bCustomSkin);
+					}
 					return TRUE;
 				}
 				case PSN_KILLACTIVE:
@@ -599,7 +601,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					lpMainWindow->bAlwaysOnTop = Button_GetCheck(alwaysTop_check);
 					lpMainWindow->bTIOSDebug = !Button_GetCheck(tiosDebug_check);
 					check_updates = Button_GetCheck(checkUpdates_check);
-					gui_frame_update(lpMainWindow);
+					SendMessage(hwnd, WM_USER, 0, 0);
 
 					//we need to persist this immediately
 					if (portable_mode) {
