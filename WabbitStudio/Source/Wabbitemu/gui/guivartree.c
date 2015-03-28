@@ -64,6 +64,8 @@ apphdr_t *GetAppVariable(HTREEITEM hTreeItem, int *slot = NULL) {
 			return it->second;
 		}
 	}
+
+	*slot = -1;
 	return NULL;
 }
 
@@ -91,6 +93,8 @@ symbol83P_t *GetSymbolVariable(HTREEITEM hTreeItem, int *slot = NULL) {
 			return it->second;
 		}
 	}
+
+	*slot = -1;
 	return NULL;
 }
 
@@ -681,16 +685,18 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 		}
 	} else {
 		symbol83P_t *symbol = GetSymbolVariable(hSelect, &slot);
-		if (Symbol_Name_to_String(Tree[slot].model, symbol, string)) {
-			StringCbCat(string, sizeof(string), _T("."));
-			StringCbCat(string, sizeof(string), (const TCHAR *)type_ext[symbol->type_ID]);
-			MFILE *outfile = ExportVar(&calcs[slot], NULL, symbol);
-			fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
-			fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-			fd->nFileSizeLow = msize(outfile);
-			StringCbCopy(fd->cFileName, sizeof(fd->cFileName), string);
-			mclose(outfile);
-			return fd;
+		if (symbol != NULL) {
+			if (Symbol_Name_to_String(Tree[slot].model, symbol, string)) {
+				StringCbCat(string, sizeof(string), _T("."));
+				StringCbCat(string, sizeof(string), (const TCHAR *)type_ext[symbol->type_ID]);
+				MFILE *outfile = ExportVar(&calcs[slot], NULL, symbol);
+				fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
+				fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+				fd->nFileSizeLow = msize(outfile);
+				StringCbCopy(fd->cFileName, sizeof(fd->cFileName), string);
+				mclose(outfile);
+				return fd;
+			}
 		}
 	}
 
