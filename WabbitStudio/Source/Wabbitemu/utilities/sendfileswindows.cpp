@@ -62,7 +62,6 @@ static LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG De
 
 static HANDLE hSendInfoMutex = NULL;
 static std::map<LPCALC, LPSENDINFO> g_SendInfo;
-static const TCHAR *current_file_sending;
 
 static HWND CreateSendFileProgress(HWND hwndParent, const LPCALC lpCalc)
 {
@@ -144,7 +143,6 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 		playsound(lpCalc->audio);
 	}
 
-	current_file_sending = NULL;
 	lpsi->DestinationList->clear();
 	lpsi->iCurrentFile = 0;
 	return 0;
