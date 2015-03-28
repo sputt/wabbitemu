@@ -351,10 +351,11 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					i++, OffsetRect(&r, 0, mps->cyRow)) {
 				TCHAR szVal[32];
 				if (mps->type == REGULAR) {
-					if (addr < 0)
+					if (addr < 0) {
 						StringCbCopy(szVal, sizeof(szVal), _T("0000"));
-					else
+					} else {
 						StringCbPrintf(szVal, sizeof(szVal), _T("%04X"), addr);
+					}
 				} else {
 					if (addr < 0) {
 						StringCbPrintf(szVal, sizeof(szVal), _T("%02X 0000"), addr / PAGE_SIZE);

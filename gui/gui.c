@@ -2167,10 +2167,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		
 		for (int group = 0; group < 8; group++) {
 			for (int bit = 0; bit < 8; bit++) {
-				if (keypad->keys[group][bit]) {
-					keyprog_t *key = keypad_keyprog_from_groupbit(&lpCalc->cpu, group, bit);
-					HandleKeyUp(lpMainWindow, key->vk);
+				if (keypad->keys[group][bit] == '\0') {
+					continue;
 				}
+
+				keyprog_t *key = keypad_keyprog_from_groupbit(&lpCalc->cpu, group, bit);
+				if (key == NULL) {
+					continue;
+				}
+
+				HandleKeyUp(lpMainWindow, key->vk);
 			}
 		}
 		return 0;
