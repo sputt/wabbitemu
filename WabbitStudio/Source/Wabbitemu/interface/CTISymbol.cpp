@@ -36,7 +36,7 @@ STDMETHODIMP CTISymbol::get_Address(WORD *lpAddr) {
 
 STDMETHODIMP CTISymbol::get_Name(BSTR *lpName) {
 	TCHAR real_name[256] = { 0 };
-	Symbol_Name_to_String(m_lpCalc->model , &m_Symbol, real_name);
+	Symbol_Name_to_String(m_lpCalc->model , &m_Symbol, real_name, sizeof(real_name));
 #ifdef _UNICODE
 	*lpName = SysAllocString((OLECHAR *)real_name);
 #else

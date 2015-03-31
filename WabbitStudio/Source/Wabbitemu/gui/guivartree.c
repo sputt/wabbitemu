@@ -193,6 +193,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					}
 
 					if (!FillDesc(item, fd)) {
+						MessageBox(NULL, _T("Unable to export variable"), _T("Error"), MB_OK | MB_ICONERROR);
 						free (fd);
 						break;
 					}
@@ -223,6 +224,13 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case TVN_SELCHANGED: {
 					int slot;
 					TCHAR string[MAX_PATH] = { 0 };
+
+					// Clear any existing text
+					SetDlgItemText(hwnd, IDC_VAR_NAME, string);
+					SetDlgItemText(hwnd, IDC_VAR_ADDRESS, string);
+					SetDlgItemText(hwnd, IDC_VAR_PAGE, string);
+					SetDlgItemText(hwnd, IDC_VAR_RAM, string);
+
 					apphdr_t *app = GetAppVariable(nmtv->itemNew.hItem, &slot);
 					if (app != NULL) {
 						if (App_Name_to_String(app, string)) {
@@ -233,7 +241,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					} else {
 						symbol83P_t *symbol = GetSymbolVariable(nmtv->itemNew.hItem, &slot);
 						if (symbol != NULL) {
-							if (Symbol_Name_to_String(Tree[slot].model, symbol, string)) {
+							if (Symbol_Name_to_String(Tree[slot].model, symbol, string, sizeof(string))) {
 								SetDlgItemText(hwnd, IDC_VAR_NAME, string);
 								StringCbPrintf(string, sizeof(string), _T("%04X"), symbol->address);
 								SetDlgItemText(hwnd, IDC_VAR_ADDRESS, string);
@@ -567,7 +575,7 @@ void RefreshTreeView(BOOL New) {
 						icon = TI_ICON_FILE_RAM;  // green
 					}
 
-					if (Symbol_Name_to_String(tree->model, &sym->symbols[i], tmpstring) == NULL) {
+					if (Symbol_Name_to_String(tree->model, &sym->symbols[i], tmpstring, sizeof(tmpstring)) == NULL) {
 						continue;
 					}
 					
@@ -686,7 +694,7 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 	} else {
 		symbol83P_t *symbol = GetSymbolVariable(hSelect, &slot);
 		if (symbol != NULL) {
-			if (Symbol_Name_to_String(Tree[slot].model, symbol, string)) {
+			if (Symbol_Name_to_String(Tree[slot].model, symbol, string, sizeof(string))) {
 				StringCbCat(string, sizeof(string), _T("."));
 				StringCbCat(string, sizeof(string), (const TCHAR *)type_ext[symbol->type_ID]);
 				MFILE *outfile = ExportVar(&calcs[slot], NULL, symbol);
@@ -700,7 +708,6 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 		}
 	}
 
-	MessageBox(NULL, _T("Unable to export variable"), _T("Error"), MB_OK | MB_ICONERROR);
 	return NULL;
 }
 	
@@ -717,7 +724,7 @@ void *FillFileBuffer(HTREEITEM hSelect, char *buf) {
 		}
 	} else {
 		symbol83P_t *symbol = GetSymbolVariable(hSelect, &slot);
-		if (Symbol_Name_to_String(Tree[slot].model, symbol, string)) {
+		if (Symbol_Name_to_String(Tree[slot].model, symbol, string, sizeof(string))) {
 			outfile = ExportVar(&calcs[slot], NULL, symbol);
 			if (outfile == NULL) {
 				return NULL;

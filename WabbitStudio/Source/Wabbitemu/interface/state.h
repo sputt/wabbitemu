@@ -54,7 +54,7 @@ void state_userpages(CPU_t *, upages_t *);
 symlist_t *state_build_symlist_86(CPU_t *, symlist_t *);
 symlist_t *state_build_symlist_83P(CPU_t *, symlist_t *);
 TCHAR *GetRealAns(CPU_t *, TCHAR *);
-TCHAR *Symbol_Name_to_String(int model, symbol83P_t *, TCHAR *);
+TCHAR *Symbol_Name_to_String(int model, symbol83P_t *symbol, TCHAR * buffer, int bufferSize);
 TCHAR *App_Name_to_String(apphdr_t *, TCHAR *);
 u_char find_field(u_char *dest, u_char id1, u_char id2, u_char **output);
 u_int get_page_size(u_char *dest);
