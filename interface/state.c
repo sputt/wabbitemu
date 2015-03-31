@@ -186,7 +186,7 @@ symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 
 		TCHAR buffer[255];
 		// check if the symbol is valid
-		if (Symbol_Name_to_String(cpu->pio.model, sym, buffer) == NULL) {
+		if (Symbol_Name_to_String(cpu->pio.model, sym, buffer, sizeof(buffer)) == NULL) {
 			sym--;
 			continue;
 		}
@@ -209,24 +209,24 @@ symbol83P_t *search_symlist(symlist_t *symlist, const TCHAR *name, size_t name_l
 }
 
 TCHAR *App_Name_to_String(apphdr_t *app, TCHAR *buffer) {
-	StringCbCopy(buffer, _tcslen(app->name) + 1, app->name);
+	StringCbCopy(buffer, MAX_PATH, app->name);
 	return buffer;
 }
 
 
-TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
+TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer, int bufferSize) {
 	const TCHAR ans_name[] = {tAns, 0x00, 0x00};
 	if (memcmp(sym->name, ans_name, 3) == 0) {
-		StringCbCopy(buffer, 10, _T("Ans"));
+		StringCbCopy(buffer, bufferSize, _T("Ans"));
 		return buffer;
 	}
 	
 	if (model == TI_86) {
 #ifdef UNICODE
 		size_t size;
-		mbstowcs_s(&size, buffer, 10, sym->name, sizeof(buffer));
+		mbstowcs_s(&size, buffer, bufferSize, sym->name, sizeof(buffer));
 #else
-		StringCbCopy(buffer, 10, sym->name);
+		StringCbCopy(buffer, bufferSize, sym->name);
 #endif
 		return buffer;
 	} else {
@@ -235,33 +235,33 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 			case ProtProgObj:
 			case AppVarObj:
 			case GroupObj: {
-				StringCbCopy(buffer, 10, (TCHAR *) sym->name);
+				StringCbCopy(buffer, bufferSize, (TCHAR *)sym->name);
 				return buffer;
 			}
 			case PictObj:
-				StringCbPrintf(buffer, 10, _T("Pic%d"), circ10(sym->name[1]));
+				StringCbPrintf(buffer, bufferSize, _T("Pic%d"), circ10(sym->name[1]));
 				return buffer;
 			case GDBObj:
-				StringCbPrintf(buffer, 10, _T("GDB%d"), circ10(sym->name[1]));
+				StringCbPrintf(buffer, bufferSize, _T("GDB%d"), circ10(sym->name[1]));
 				return buffer;
 			case StrngObj:
-				StringCbPrintf(buffer, 10, _T("Str%d"), circ10(sym->name[1]));
+				StringCbPrintf(buffer, bufferSize, _T("Str%d"), circ10(sym->name[1]));
 				return buffer;		
 			case RealObj:
 			case CplxObj:
-				StringCbPrintf(buffer, 10, _T("%c"), sym->name[0]);
+				StringCbPrintf(buffer, bufferSize, _T("%c"), sym->name[0]);
 				return buffer;
 			case ListObj:
 			case CListObj:
 				if ((u_char) sym->name[1] < 6) {
-					StringCbPrintf(buffer, 10, _T("L%d"), sym->name[1] + 1); //L1...L6
+					StringCbPrintf(buffer, bufferSize, _T("L%d"), sym->name[1] + 1); //L1...L6
 				} else {
-					StringCbPrintf(buffer, 10, _T("%s"), sym->name + 1); // No Little L
+					StringCbPrintf(buffer, bufferSize, _T("%s"), sym->name + 1); // No Little L
 				}
 				return buffer;
 			case MatObj:
 				if (sym->name[0] == 0x5C) {
-					StringCbPrintf(buffer, 10, _T("[%c]"), 'A' + sym->name[1]);
+					StringCbPrintf(buffer, bufferSize, _T("[%c]"), 'A' + sym->name[1]);
 					return buffer;
 				}
 				return NULL;
@@ -277,27 +277,27 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 					u_char b = sym->name[1] & 0x0F;
 					switch(sym->name[1] & 0xF0) {
 						case 0x10: //Y1
-							StringCbPrintf(buffer, 10, _T("Y%d"),circ10(b));
+							StringCbPrintf(buffer, bufferSize, _T("Y%d"), circ10(b));
 							return buffer;
 						case 0x20: //X1t Y1t
-							StringCbPrintf(buffer, 10, _T("X%dT"), ((b/2)+1)%6);
+							StringCbPrintf(buffer, bufferSize, _T("X%dT"), ((b / 2) + 1) % 6);
 							if (b % 2) {
 								buffer[0] = 'Y';
 							}
 							return buffer;
 						case 0x40: //r1
-							StringCbPrintf(buffer, 10, _T("R%d"),(b+1)%6);
+							StringCbPrintf(buffer, bufferSize, _T("R%d"), (b + 1) % 6);
 							return buffer;
 						case 0x80: //Y1
 							switch (b) {
 								case 0: 
-									StringCbCopy(buffer, 10, _T("Un"));
+									StringCbCopy(buffer, bufferSize, _T("Un"));
 									return buffer;
 								case 1: 
-									StringCbCopy(buffer, 10, _T("Vn"));
+									StringCbCopy(buffer, bufferSize, _T("Vn"));
 									return buffer;
 								case 2: 
-									StringCbCopy(buffer, 10, _T("Wn"));
+									StringCbCopy(buffer, bufferSize, _T("Wn"));
 									return buffer;
 							}
 						default: 
