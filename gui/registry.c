@@ -25,7 +25,7 @@ typedef struct {
 
 reg_default_t regDefaults[] = {
 	{_T("cutout"), 					REG_DWORD, 	FALSE},
-	{_T("skin"),					REG_DWORD,	FALSE},
+	{_T("skin"),					REG_DWORD,	TRUE},
 	{_T("alphablend_lcd"),			REG_DWORD,	TRUE},
 	{_T("version"), 				REG_SZ, 	(LONG_PTR) verString},
 	{_T("rom_path"), 				REG_SZ, 	(LONG_PTR) _T("z.rom")},

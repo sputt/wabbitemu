@@ -403,9 +403,6 @@ void displayreg(CPU_t *);
 
 #endif
 
-#define tc_tstates( timer_z ) \
-	((timer_z)->tstates)
-
 #define addschar(address_m, offset_m) ( ( (unsigned short) address_m ) + ( (char) offset_m ) )
 
 

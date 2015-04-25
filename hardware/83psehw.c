@@ -69,7 +69,7 @@ static BOOL IsLCDBusy(CPU_t *cpu) {
 	}
 
 	lcd_wait_tstates = lcd_wait_tstates * 64 + 48;
-	return !((tc_tstates(cpu->timer_c) - cpu->pio.lcd->last_tstate) > lcd_wait_tstates);
+	return !((cpu->timer_c->tstates - cpu->pio.lcd->last_tstate) > lcd_wait_tstates);
 }
 
 //------------------------
@@ -922,7 +922,7 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 					break;
 				case 2:
 				case 3:
-					while(timer->lastTstates + ((unsigned long long) timer->divsor) < (unsigned long long) tc_tstates(cpu->timer_c) ) {
+					while (timer->lastTstates + ((unsigned long long) timer->divsor) < (unsigned long long) cpu->timer_c->tstates) {
 						
 						timer->lastTstates += (unsigned long long) timer->divsor;
 						timer->count--;
@@ -959,7 +959,7 @@ void port32_83pse(CPU_t *cpu, device_t *dev) {
 		timer->count = cpu->bus;
 		timer->max = cpu->bus;
 		if (timer->clock & 0xC0) timer->active = TRUE;
-		timer->lastTstates = tc_tstates(cpu->timer_c);
+		timer->lastTstates = cpu->timer_c->tstates;
 		timer->lastTicks = (double) xtal->ticks;
 		mod_timer(cpu, xtal);
 		cpu->output = FALSE;

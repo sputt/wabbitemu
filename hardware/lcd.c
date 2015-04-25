@@ -173,7 +173,7 @@ static void LCD_free(CPU_t *cpu) {
 static void LCD_command(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
 
-	if (cpu->pio.model >= TI_83P && lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->base.last_tstate)) {
+	if (cpu->pio.model >= TI_83P && lcd->lcd_delay > (cpu->timer_c->tstates - lcd->base.last_tstate)) {
 		cpu->output = FALSE;
 		if (cpu->input) {
 			cpu->input = FALSE;
@@ -184,7 +184,7 @@ static void LCD_command(CPU_t *cpu, device_t *dev) {
 	}
 
 	if (cpu->output) {
-		lcd->base.last_tstate = tc_tstates(cpu->timer_c);
+		lcd->base.last_tstate = cpu->timer_c->tstates;
 		// Test the bus to determine which command to run
 		CRD_SWITCH(cpu->bus) {
 			CRD_CASE(DPE):
@@ -231,7 +231,7 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 
 	//int min_wait = MICROSECONDS(lcd->lcd_delay);
 	if (cpu->pio.model >= TI_83P && 
-		lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->base.last_tstate) &&
+		lcd->lcd_delay > (cpu->timer_c->tstates - lcd->base.last_tstate) &&
 		(cpu->input || cpu->output))
 	{
 		cpu->output = FALSE;
@@ -260,7 +260,7 @@ static void LCD_data(CPU_t *cpu, device_t *dev) {
 		double write_delay = cpu->timer_c->elapsed - lcd->base.write_last;
 		if (lcd->base.write_avg == 0.0) lcd->base.write_avg = write_delay;
 		lcd->base.write_last = cpu->timer_c->elapsed;
-		lcd->base.last_tstate = tc_tstates(cpu->timer_c);
+		lcd->base.last_tstate = cpu->timer_c->tstates;
 	
 		// If there is a delay that is significantly longer than the
 		// average write delay, we can assume a frame has just terminated
