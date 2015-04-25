@@ -56,9 +56,9 @@ int link_disconnect(CPU_t *cpu) {
 
 /* Run a number of tstates */
 void link_wait(CPU_t *cpu, time_t tstates) {
-	uint64_t time_end = tc_tstates(cpu->timer_c) + tstates;
+	uint64_t time_end = cpu->timer_c->tstates + tstates;
 
-	while (tc_tstates(cpu->timer_c) < time_end) {
+	while (cpu->timer_c->tstates < time_end) {
 		CPU_step(cpu);
 	}
 }

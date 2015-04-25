@@ -488,7 +488,7 @@ void ColorLCD_data(CPU_t *cpu, device_t *device) {
 		double write_delay = cpu->timer_c->elapsed - lcd->base.write_last;
 		if (lcd->base.write_avg == 0.0) lcd->base.write_avg = write_delay;
 		lcd->base.write_last = cpu->timer_c->elapsed;
-		lcd->base.last_tstate = tc_tstates(cpu->timer_c);
+		lcd->base.last_tstate = cpu->timer_c->tstates;
 
 		// If there is a delay that is significantly longer than the
 		// average write delay, we can assume a frame has just terminated

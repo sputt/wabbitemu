@@ -494,7 +494,7 @@ int calc_run_frame(LPCALC lpCalc) {
 }
 
 int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
-	uint64_t time_end = tc_tstates(&lpCalc->timer_c) + tstates - lpCalc->time_error;
+	uint64_t time_end = lpCalc->timer_c.tstates + tstates - lpCalc->time_error;
 
 	while (lpCalc->running) {
 		if (check_break(&lpCalc->mem_c, addr16_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc))) {
@@ -512,8 +512,8 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 			lpCalc->cpu.pio.lcd->lastaviframe += 1.0 / AVI_FPS;
 		}
 
-		if (tc_tstates((&lpCalc->timer_c)) >= time_end) {
-			lpCalc->time_error = (time_t)(tc_tstates((&lpCalc->timer_c)) - time_end);
+		if (lpCalc->timer_c.tstates >= time_end) {
+			lpCalc->time_error = (time_t)(lpCalc->timer_c.tstates - time_end);
 			break;
 		}
 	}

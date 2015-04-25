@@ -191,7 +191,7 @@ void stepoverout_exe_callback(CPU_t *) {
 
 void CPU_stepout(LPCALC lpCalc, BOOL bTIOSDebug) {
 	CPU_t *cpu = &lpCalc->cpu;
-	uint64_t time = tc_tstates(cpu->timer_c);
+	uint64_t time = cpu->timer_c->tstates;
 	uint16_t old_sp = cpu->sp;
 
 	had_exe_violation = FALSE;
@@ -201,7 +201,7 @@ void CPU_stepout(LPCALC lpCalc, BOOL bTIOSDebug) {
 	cpu->exe_violation_callback = stepoverout_exe_callback;
 
 	uint64_t tstates5seconds = 5 * cpu->timer_c->freq;
-	while ((tc_tstates(cpu->timer_c) - time) < tstates5seconds && !had_exe_violation) {
+	while ((cpu->timer_c->tstates - time) < tstates5seconds && !had_exe_violation) {
 		waddr_t old_pc = addr16_to_waddr(cpu->mem_c, cpu->pc);
 		CPU_step(cpu);
 
