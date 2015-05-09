@@ -157,6 +157,7 @@ Public Class GameModel
     Private LastIndexAddr As UShort
     Private GameLoopAddr As UShort
     Private ResetGameAddr As UShort
+    Private SetAllCoordsAddr As UShort
     Private Memory As IMemoryContext
 
     Private AnimateArrayAddr As UShort
@@ -256,6 +257,7 @@ Public Class GameModel
         LastIndexAddr = _Asm.Labels("LAST_INDEX")
         ResetGameAddr = _Asm.Labels("RESET_GAME")
         GameLoopAddr = _Asm.Labels("GAME_LOOP")
+        SetAllCoordsAddr = _Asm.Labels("SET_ALL_COORDS")
 
         Me.Scenario = Scenario
 
@@ -415,8 +417,8 @@ Public Class GameModel
 
     Public Sub SetLocation(X As Byte, Y As Byte, MapIndex As Integer)
         _IsRetargeting = True
-        _NewX = X
-        _NewY = Y
+        _NewX = Math.Max(0, X - 5)
+        _NewY = Math.Max(0, Y - 4)
         _NewMapIndex = MapIndex
     End Sub
 
@@ -452,90 +454,99 @@ Public Class GameModel
                                 Calc.CPU.L = _NewX
                                 Calc.CPU.H = _NewY
 
-                                Calc.CPU.D = _NewMapIndex
-                                Calc.CPU.E = 8
 
-                                Dim Code() As Byte = {&HCD, (ResetGameAddr And &HFF), ((ResetGameAddr >> 8) And &HFF)}
+
+                                Dim Code() As Byte
+                                If _NewMapIndex <> -1 Then
+                                    Calc.CPU.D = _NewMapIndex
+                                    Calc.CPU.E = 8
+                                    Code = {&HCD, (ResetGameAddr And &HFF), ((ResetGameAddr >> 8) And &HFF)}
+                                Else
+                                    Code = {&HCD, (SetAllCoordsAddr And &HFF), ((SetAllCoordsAddr >> 8) And &HFF)}
+                                End If
                                 Calc.Memory.Write(GameLoopAddr, Code)
                             End If
                         Case "MAP_EDITOR_CODE_DONE"
-                            If _IsRetargeting Then
-                                Dim Code() As Byte = {0, 0, 0}
-                                Calc.Memory.Write(GameLoopAddr, Code)
-                                _IsRetargeting = False
-                            End If
+                                If _IsRetargeting Then
+                                    Dim Code() As Byte = {0, 0, 0}
+                                    Calc.Memory.Write(GameLoopAddr, Code)
+                                    _IsRetargeting = False
+                                    Me.Dispatcher.InvokeAsync(Sub()
+                                                                  RaiseEvent Started()
+                                                              End Sub)
+                                End If
                         Case "PREPARE_CHANGE"
                         Case "SET_ANIMATE_ATTR8"
-                            Dim Index = Calc.Memory.ReadByte(Calc.CPU.HLP)
-                            If Index = 15 Then
-                                LastIndex = Calc.Memory.ReadByte(LastIndexAddr)
-                            Else
-                                LastIndex = Index
-                            End If
+                                Dim Index = Calc.Memory.ReadByte(Calc.CPU.HLP)
+                                If Index = 15 Then
+                                    LastIndex = Calc.Memory.ReadByte(LastIndexAddr)
+                                Else
+                                    LastIndex = Index
+                                End If
                         Case "DO_ATTR_DONE"
-                            If LastIndex <> -1 Then
-                                Dim Index = LastIndex
-                                Dim AnimateData = Calc.Memory.Read(AnimateArrayAddr + Index * 10, 10)
+                                If LastIndex <> -1 Then
+                                    Dim Index = LastIndex
+                                    Dim AnimateData = Calc.Memory.Read(AnimateArrayAddr + Index * 10, 10)
+                                    Me.Dispatcher.InvokeAsync(
+                                        Sub()
+                                        If AnimateData(0) = 0 Then
+                                            AnimatedTiles(Index) = Nothing
+                                        Else
+                                            Dim Anim = CreateAnimFromBytes(AnimateData)
+                                            AnimatedTiles(Index) = Anim
+                                        End If
+                                    End Sub)
+                                    LastIndex = -1
+                                End If
+                        Case "CLONE_ANIM_DONE", "CREATE_ANIM_DONE"
+                                Dim LastIndex = Calc.Memory.ReadByte(LastIndexAddr)
+                                Dim AnimateData = Calc.Memory.Read(AnimateArrayAddr + LastIndex * 10, 10)
                                 Me.Dispatcher.InvokeAsync(
                                     Sub()
-                                    If AnimateData(0) = 0 Then
-                                        AnimatedTiles(Index) = Nothing
-                                    Else
-                                        Dim Anim = CreateAnimFromBytes(AnimateData)
-                                        AnimatedTiles(Index) = Anim
+                                    Dim Anim = CreateAnimFromBytes(AnimateData)
+                                    Dim Added = False
+                                    For i = 0 To AnimatedTiles.Count - 1
+                                        If AnimatedTiles(i) Is Nothing Then
+                                            AnimatedTiles(i) = Anim
+                                            Added = True
+                                            Exit For
+                                        End If
+                                    Next
+                                    If Not Added Then
+                                        AnimatedTiles.Add(Anim)
                                     End If
                                 End Sub)
-                                LastIndex = -1
-                            End If
-                        Case "CLONE_ANIM_DONE", "CREATE_ANIM_DONE"
-                            Dim LastIndex = Calc.Memory.ReadByte(LastIndexAddr)
-                            Dim AnimateData = Calc.Memory.Read(AnimateArrayAddr + LastIndex * 10, 10)
-                            Me.Dispatcher.InvokeAsync(
-                                Sub()
-                                Dim Anim = CreateAnimFromBytes(AnimateData)
-                                Dim Added = False
-                                For i = 0 To AnimatedTiles.Count - 1
-                                    If AnimatedTiles(i) Is Nothing Then
-                                        AnimatedTiles(i) = Anim
-                                        Added = True
-                                        Exit For
-                                    End If
-                                Next
-                                If Not Added Then
-                                    AnimatedTiles.Add(Anim)
-                                End If
-                            End Sub)
                         Case "LOAD_MAP_COMPLETE"
-                            Dim AnimateArray As Byte()
-                            AnimateArray = Calc.Memory.Read(AnimateArrayAddr, 10 * AnimateAmount)
-                            Me.Dispatcher.InvokeAsync(
-                                Sub()
-                                Dim AnimatedTilesCollection As New ObservableCollection(Of ZAnim)
-                                While AnimateArray.Length > 0
-                                    If AnimateArray(0) > 0 Then
-                                        Dim Anim = CreateAnimFromBytes(AnimateArray.Take(10).ToArray())
-                                        Dim Added = False
-                                        For i = 0 To AnimatedTilesCollection.Count - 1
-                                            If AnimatedTilesCollection(i) Is Nothing Then
-                                                AnimatedTilesCollection(i) = Anim
-                                                Added = True
-                                                Exit For
+                                Dim AnimateArray As Byte()
+                                AnimateArray = Calc.Memory.Read(AnimateArrayAddr, 10 * AnimateAmount)
+                                Me.Dispatcher.InvokeAsync(
+                                    Sub()
+                                    Dim AnimatedTilesCollection As New ObservableCollection(Of ZAnim)
+                                    While AnimateArray.Length > 0
+                                        If AnimateArray(0) > 0 Then
+                                            Dim Anim = CreateAnimFromBytes(AnimateArray.Take(10).ToArray())
+                                            Dim Added = False
+                                            For i = 0 To AnimatedTilesCollection.Count - 1
+                                                If AnimatedTilesCollection(i) Is Nothing Then
+                                                    AnimatedTilesCollection(i) = Anim
+                                                    Added = True
+                                                    Exit For
+                                                End If
+                                            Next
+                                            If Not Added Then
+                                                AnimatedTilesCollection.Add(Anim)
                                             End If
-                                        Next
-                                        If Not Added Then
-                                            AnimatedTilesCollection.Add(Anim)
                                         End If
-                                    End If
-                                    AnimateArray = AnimateArray.Skip(10).ToArray()
-                                End While
-                                AnimatedTiles = AnimatedTilesCollection
-                            End Sub)
+                                        AnimateArray = AnimateArray.Skip(10).ToArray()
+                                    End While
+                                    AnimatedTiles = AnimatedTilesCollection
+                                End Sub)
                         Case "CHANGE_DRAW_DONE"
-                            Debug.Print("Changing draw")
-                            UpdateModel(Calc.Memory)
-                            Debug.Print("X " & _EnemyScreen(0) & ", Y" & _EnemyScreen(2) & ", W " & _EnemyScreen(1) & ", H " & _EnemyScreen(3))
+                                Debug.Print("Changing draw")
+                                UpdateModel(Calc.Memory)
+                                Debug.Print("X " & _EnemyScreen(0) & ", Y" & _EnemyScreen(2) & ", W " & _EnemyScreen(1) & ", H " & _EnemyScreen(3))
                         Case Else
-                            UpdateModel(Calc.Memory)
+                                UpdateModel(Calc.Memory)
                     End Select
                 Catch e As COMException
                 Finally

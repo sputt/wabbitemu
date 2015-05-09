@@ -27,5 +27,15 @@
 
     Private Sub GameWindow_MouseLeftButtonDown(sender As Object, e As MouseButtonEventArgs)
         Me.Focus()
+
+        Dim X = CByte(e.GetPosition(sender).X)
+        Dim Y = CByte(e.GetPosition(sender).Y)
+        Dim GameModel As GameModel = DataContext
+
+        If GameModel.IsRetargetModeActive Then
+            GameModel.SetLocation(X, Y, -1)
+            GameModel.EnableRetargetMode(False)
+            e.Handled = True
+        End If
     End Sub
 End Class

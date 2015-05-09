@@ -37,7 +37,7 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Canvas x:Name="CurrentMap"  Background="Transparent">
+    <Canvas x:Name="CurrentMap"  Background="Transparent" IsHitTestVisible="False">
         <local:XMapView Panel.ZIndex="0" DataContext="{Binding Map}" Canvas.Left="0" Canvas.Top="0" ShowNewMaps="False" IsHitTestVisible="False"/>
         <ItemsControl Panel.ZIndex="2" ItemsSource="{Binding Path=DrawEntries}">
             <ItemsControl.ItemsPanel>
