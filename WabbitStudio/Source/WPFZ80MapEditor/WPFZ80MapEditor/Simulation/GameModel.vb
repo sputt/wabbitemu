@@ -22,6 +22,8 @@ Public Class GameModel
     Public Const P_PUSHING As Byte = 1 << 2
     Public Const P_SHIELD As Byte = 1 << 4
 
+    Public Event Started()
+
     Public Shared ReadOnly ScreenXProperty As DependencyProperty =
         DependencyProperty.Register("ScreenX", GetType(Byte), GetType(GameModel))
     Public Shared ReadOnly ScreenYProperty As DependencyProperty =
@@ -29,6 +31,14 @@ Public Class GameModel
 
     Public Shared ReadOnly SimulationCursorProperty As DependencyProperty =
         DependencyProperty.Register("SimulationCursor", GetType(Cursor), GetType(GameModel))
+
+    Public Sub New(Scenario As Scenario)
+        _Calc = New Wabbitemu
+        _Asm = New Z80Assembler
+
+        Me.Scenario = Scenario
+        Mouse.OverrideCursor = Cursors.Cross
+    End Sub
 
     Public ReadOnly Property IsInitialized As Boolean
         Get
@@ -297,20 +307,14 @@ Public Class GameModel
 
         LaunchApp("Zelda   ")
         _Calc.Run()
-        _Calc.Visible = True
+        '_Calc.Visible = True
 
         Map = New MapData(Scenario, 0)
 
         DrawEntries = New ObservableCollection(Of ZDrawEntry)
         FrameProcessThread.Start()
-    End Sub
 
-    Public Sub New(Scenario As Scenario)
-        _Calc = New Wabbitemu
-        _Asm = New Z80Assembler
-
-        Me.Scenario = Scenario
-        Mouse.OverrideCursor = Cursors.Cross
+        RaiseEvent Started()
     End Sub
 
     Private Function MapKey(Key As Key) As CalcKey?
@@ -337,10 +341,14 @@ Public Class GameModel
     Public Function PressKey(Key As Key) As Boolean
         Dim CalcKey As CalcKey? = MapKey(Key)
         If CalcKey IsNot Nothing Then
-            Try
-                _Calc.Keypad.PressKey(CalcKey)
-            Catch e As COMException
-            End Try
+            Dim Success = False
+            Do Until Success
+                Try
+                    _Calc.Keypad.PressKey(CalcKey)
+                    Success = True
+                Catch e As COMException
+                End Try
+            Loop
             Return True
         Else
             Return False

@@ -285,7 +285,7 @@ Public Class TilegroupLayer
     End Sub
 
     Private Sub Copy_Executed(sender As Object, e As ExecutedRoutedEventArgs)
-        If Active And IsSelected Then
+        If Active Then
             Dim ClipboardTilegroup = New TilegroupSelection()
             ClipboardTilegroup.TilegroupEntries = New TilegroupEntryCollection()
             For Each Entry In TilegroupSelection.TilegroupEntries

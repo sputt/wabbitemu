@@ -12,6 +12,8 @@
     End Function
 
     Public Shared Iterator Function GetChildObjects(Parent As DependencyObject) As IEnumerable(Of DependencyObject)
+        If Parent Is Nothing Then Exit Function
+
         Dim HasValue As Boolean = False
         If TypeOf Parent Is ContentElement Or TypeOf Parent Is FrameworkElement Then
             For Each Obj In LogicalTreeHelper.GetChildren(Parent)

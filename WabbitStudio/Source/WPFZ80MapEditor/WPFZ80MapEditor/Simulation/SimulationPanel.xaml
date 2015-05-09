@@ -10,8 +10,8 @@
     <Grid>
         <ToggleButton x:Name="RetargetButton" Content="Retarget simulation" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="140"
                       IsChecked="{Binding GameModel.IsRetargetModeActive, Mode=TwoWay}"/>
-        <ListBox HorizontalAlignment="Left" Height="291" Margin="10,72,0,0" VerticalAlignment="Top" Width="140"/>
-        <Label Content="Draw entries:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="140"/>
+        <ListBox x:Name="InventoryListBox" HorizontalAlignment="Left" Height="82" Margin="10,67,0,0" VerticalAlignment="Top" Width="140"/>
+        <Label Content="Inventory:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="140"/>
 
     </Grid>
 </UserControl>

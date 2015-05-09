@@ -1,4 +1,17 @@
 ﻿Public Class GameMapView
+    Public Sub New()
+        InitializeComponent()
+
+        AddHandler DataContextChanged,
+            Sub()
+                If DataContext IsNot Nothing Then
+                    AddHandler CType(DataContext, GameModel).Started,
+                        Sub()
+                            Me.Focus()
+                        End Sub
+                End If
+            End Sub
+    End Sub
 
     Private Sub GameWindow_KeyDown(sender As Object, e As KeyEventArgs)
         If Not e.IsRepeat Then
