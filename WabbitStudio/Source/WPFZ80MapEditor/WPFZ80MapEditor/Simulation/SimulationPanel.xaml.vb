@@ -13,4 +13,12 @@
     Private Sub RetargetButton_Unchecked(sender As Object, e As RoutedEventArgs) Handles RetargetButton.Unchecked
         'GameModel.EnableRetargetMode(False)
     End Sub
+
+    Private Sub InventoryListBox_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
+        If e.AddedItems.Count > 0 Then
+            GameModel.SelectItem(e.AddedItems(0))
+            GameMapView.Instance.Focus()
+        End If
+    End Sub
+
 End Class

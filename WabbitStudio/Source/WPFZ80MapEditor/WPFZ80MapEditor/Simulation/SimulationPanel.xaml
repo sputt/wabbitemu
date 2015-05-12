@@ -7,11 +7,77 @@
              xmlns:converters="clr-namespace:WPFZ80MapEditor.ValueConverters"
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="160">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../ColorsAndStoryboards.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <Grid>
         <ToggleButton x:Name="RetargetButton" Content="Retarget simulation" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="140"
                       IsChecked="{Binding GameModel.IsRetargetModeActive, Mode=TwoWay}"/>
-        <ListBox x:Name="InventoryListBox" HorizontalAlignment="Left" Height="82" Margin="10,67,0,0" VerticalAlignment="Top" Width="140"/>
+        <ListBox x:Name="InventoryListBox" ItemsSource="{Binding GameModel.Items}" Focusable="False"
+                 HorizontalAlignment="Left" Height="84" Margin="10,67,0,0" VerticalAlignment="Top" Width="100" SelectedValue="{Binding GameModel.SelectedItem}" SelectionChanged="InventoryListBox_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type local:ZeldaItem}">
+                    <Image Source="{Binding Image}" Width="32" Height="24" ToolTip="{Binding Name}" Stretch="Fill" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" Width="96"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Focusable, ElementName=LayerContainer}" Value="False">
+                            <Setter Property="Focusable" Value="False"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                <Border x:Name="Bd" BorderThickness="4" Padding="{TemplateBinding Padding}" Background="Transparent" SnapsToDevicePixels="True"  BorderBrush="{TemplateBinding BorderBrush}">
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsSelected" Value="True"/>
+                                            <Condition Property="Focusable" Value="True"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter Property="BorderBrush" TargetName="Bd" Value="DarkGray"/>
+                                        <Setter Property="Panel.ZIndex" Value="9999"/>
+                                    </MultiTrigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsSelected" Value="True"/>
+                                            <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                                            <Condition Property="Focusable" Value="True"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter Property="BorderBrush" TargetName="Bd" Value="DarkGray"/>
+                                        <Setter Property="Panel.ZIndex" Value="9999"/>
+                                    </MultiTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Padding" Value="4"/>
+                </Style>
+            </ListBox.ItemContainerStyle>
+        </ListBox>
         <Label Content="Inventory:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="140"/>
+        <Label Content="Mod entries:" HorizontalAlignment="Left" Margin="10,152,0,0" VerticalAlignment="Top"/>
+        <WrapPanel HorizontalAlignment="Left" Height="25" Margin="96,152,0,0" VerticalAlignment="Top" Width="64">
+            <Label Content="{Binding GameModel.ModCount}"/>
+            <Label Content="/"/>
+            <Label Content="35"/>
+        </WrapPanel>
 
     </Grid>
 </UserControl>

@@ -2,6 +2,8 @@
     Public Sub New()
         InitializeComponent()
 
+        Instance = Me
+
         AddHandler DataContextChanged,
             Sub()
                 If DataContext IsNot Nothing Then
@@ -13,8 +15,10 @@
             End Sub
     End Sub
 
+    Public Shared Property Instance As GameMapView
+
     Private Sub GameWindow_KeyDown(sender As Object, e As KeyEventArgs)
-        If Not e.IsRepeat Then
+        If Not e.IsRepeat AndAlso DataContext IsNot Nothing Then
             DataContext.PressKey(e.Key)
         End If
         e.Handled = True

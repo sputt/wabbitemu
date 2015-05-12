@@ -200,7 +200,6 @@
     <Compile Include="MapContainer.vb" />
     <Compile Include="MapData.vb" />
     <Compile Include="MapLayer.vb" />
-    <Compile Include="LayerContainer.vb" />
     <Compile Include="BitmapUtils.vb" />
     <Compile Include="ObservableDictionary.vb" />
     <Compile Include="ScenarioImages.vb" />

@@ -19,8 +19,21 @@ Public Class GameModel
     Private _RunningLock As New Object
     Private _Running As Boolean = True
 
+    Private _SelectedItem As ZeldaItem = Nothing
+    Private _CurrentItem As Byte = 0
+    Private _ForceCurrentItem As Byte? = Nothing
+    Private _Items As New ObservableCollection(Of ZeldaItem)
+
+    Private _ModCount As Byte
+
     Public Const P_PUSHING As Byte = 1 << 2
     Public Const P_SHIELD As Byte = 1 << 4
+
+    Public Const P_HAVE_SWORD As Byte = 1
+    Public Const P_HAVE_SHIELD As Byte = 1 << 1
+    Public Const P_HAVE_BOW As Byte = 1 << 2
+    Public Const P_HAVE_BOMBS As Byte = 1 << 3
+    Public Const P_HAVE_KEY As Byte = 1 << 4
 
     Public Event Started()
 
@@ -63,6 +76,8 @@ Public Class GameModel
         End Set
     End Property
 
+
+
     Public Property Screen As Collection(Of Rect)
         Get
             Return GetValue(ScreenProperty)
@@ -71,6 +86,28 @@ Public Class GameModel
         Set(ByVal value As Collection(Of Rect))
             SetValue(ScreenProperty, value)
         End Set
+    End Property
+
+    Public ReadOnly Property Items As ObservableCollection(Of ZeldaItem)
+        Get
+            Return _Items
+        End Get
+    End Property
+
+    Public Property SelectedItem As ZeldaItem
+        Get
+            Return _SelectedItem
+        End Get
+        Set(value As ZeldaItem)
+            _SelectedItem = value
+            RaisePropertyChanged("SelectedItem")
+        End Set
+    End Property
+
+    Public ReadOnly Property ModCount As Byte
+        Get
+            Return _ModCount
+        End Get
     End Property
 
     Public ReadOnly Property ScreenBounds As Rect
@@ -118,7 +155,7 @@ Public Class GameModel
 
     Private _EnemyScreen As Byte()
 
-    Public GameFlags As Byte
+    Public GameFlags As UShort
 
     ' Public PlayerX As Byte
     'Public PlayerY As Byte
@@ -158,6 +195,9 @@ Public Class GameModel
     Private GameLoopAddr As UShort
     Private ResetGameAddr As UShort
     Private SetAllCoordsAddr As UShort
+    Private CurrentItemAddr As UShort
+    Private ModCountAddr As UShort
+
     Private Memory As IMemoryContext
 
     Private AnimateArrayAddr As UShort
@@ -258,6 +298,8 @@ Public Class GameModel
         ResetGameAddr = _Asm.Labels("RESET_GAME")
         GameLoopAddr = _Asm.Labels("GAME_LOOP")
         SetAllCoordsAddr = _Asm.Labels("SET_ALL_COORDS")
+        CurrentItemAddr = _Asm.Labels("CURRENT_ITEM")
+        ModCountAddr = _Asm.Labels("MOD_COUNT")
 
         Me.Scenario = Scenario
 
@@ -315,6 +357,9 @@ Public Class GameModel
 
         DrawEntries = New ObservableCollection(Of ZDrawEntry)
         FrameProcessThread.Start()
+
+        ' Add the default items to the list
+        ZeldaItem.GetDefaultZeldaItems(Scenario).ForEach(Sub(i) Items.Add(i))
 
         RaiseEvent Started()
     End Sub
@@ -557,7 +602,7 @@ Public Class GameModel
         End SyncLock
     End Sub
 
-
+    Private _OldModCount As Byte = 0
 
     Private Sub FrameProcess()
         While ProcessEvent.WaitOne() AndAlso _Running
@@ -610,6 +655,26 @@ Public Class GameModel
                             Map.TileData(i) = MapRawData(i)
                         End If
                     Next
+
+                    ' Check the items
+                    For Each Item In Items
+                        If GameFlags And (Item.Flag << 8) Then
+                            Item.HasItem = True
+                        Else
+                            Item.HasItem = False
+                        End If
+                    Next
+
+                    If _ForceCurrentItem IsNot Nothing Then
+                        _CurrentItem = _ForceCurrentItem.Value
+                        _ForceCurrentItem = Nothing
+                    End If
+                    SelectedItem = Items(_CurrentItem / 6)
+
+                    If _ModCount <> _OldModCount Then
+                        RaisePropertyChanged("ModCount")
+                        _OldModCount = _ModCount
+                    End If
                 End Sub)
         End While
     End Sub
@@ -630,8 +695,11 @@ Public Class GameModel
 
         _EnemyScreen = Memory.Read(ScreenPosEAddr, 4)
 
-        GameFlags = Memory.ReadByte(FlagsAddr)
+        GameFlags = Memory.ReadWord(FlagsAddr)
         _NewMap = Memory.ReadByte(CurrentMapAddr)
+
+        _CurrentItem = Memory.ReadByte(CurrentItemAddr)
+        _ModCount = Memory.ReadByte(ModCountAddr)
 
         ProcessEvent.Set()
     End Sub
@@ -749,4 +817,43 @@ Public Class GameModel
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropName))
     End Sub
 
+    Sub SelectItem(NewItemSelection As ZeldaItem)
+        Memory.WriteByte(CurrentItemAddr, Items.IndexOf(NewItemSelection) * 6)
+        _ForceCurrentItem = Items.IndexOf(NewItemSelection) * 6
+    End Sub
+
 End Class
+
+Public Class ZeldaItem
+    Implements INotifyPropertyChanged
+
+    Public Property Name As String
+    Public Property Flag As Byte
+    Public Property Image As ImageSource
+
+
+    Private _HasItem As Boolean = False
+    Public Property HasItem As Boolean
+        Get
+            Return _HasItem
+        End Get
+        Set(value As Boolean)
+            If _HasItem <> value Then
+                _HasItem = value
+                RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs("HasItem"))
+            End If
+        End Set
+    End Property
+
+    Public Shared Function GetDefaultZeldaItems(Scenario As Scenario) As List(Of ZeldaItem)
+        Return {
+            New ZeldaItem With {.Name = "Shield", .Flag = GameModel.P_HAVE_SHIELD, .Image = Scenario.Images(CInt(SPASMHelper.Defines("menu_items_gfx1"))).Image},
+            New ZeldaItem With {.Name = "Bow", .Flag = GameModel.P_HAVE_BOW, .Image = Scenario.Images(CInt(SPASMHelper.Defines("menu_items_gfx3"))).Image},
+            New ZeldaItem With {.Name = "Bombs", .Flag = GameModel.P_HAVE_BOMBS, .Image = Scenario.Images(CInt(SPASMHelper.Defines("menu_items_gfx6"))).Image},
+            New ZeldaItem With {.Name = "Boss key", .Flag = GameModel.P_HAVE_KEY, .Image = Scenario.Images(CInt(SPASMHelper.Defines("menu_items_gfx8"))).Image}
+        }.ToList()
+    End Function
+
+    Public Event PropertyChanged(sender As Object, e As PropertyChangedEventArgs) Implements INotifyPropertyChanged.PropertyChanged
+End Class
+
