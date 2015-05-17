@@ -419,20 +419,23 @@ void SkinOptionsToggleCustomSkin(HWND hwndDlg, BOOL bEnable){
 	HWND hBrowseSkin = GetDlgItem(hwndDlg, IDC_BROWSESKIN),
 		hBrowseKey = GetDlgItem(hwndDlg, IDC_BROWSEKEY),
 		hSkinText = GetDlgItem(hwndDlg, IDC_SKNFILE),
-		hKeyText = GetDlgItem(hwndDlg, IDC_KEYFILE);
+		hKeyText = GetDlgItem(hwndDlg, IDC_KEYFILE),
+		hFaceColor = GetDlgItem(hwndDlg, IDC_CHKFACECOLOR);
 	EnableWindow(hBrowseKey, bEnable);
 	EnableWindow(hBrowseSkin, bEnable);
 	EnableWindow(hSkinText, bEnable);
 	EnableWindow(hKeyText, bEnable);
+	EnableWindow(hFaceColor, bEnable);
 }
 
 INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND chkCutout, chkCustom, hColorSelect, hBrowseSkin, hBrowseKey, hSkinText, hKeyText, chkAlphaBlend;
+	static HWND chkCutout, chkCustom, chkFaceColor, hColorSelect, hBrowseSkin, hBrowseKey, hSkinText, hKeyText, chkAlphaBlend;
 	static COLORREF backupFaceplate;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			chkCutout = GetDlgItem(hwndDlg, IDC_CHKCUTOUT);
 			chkCustom = GetDlgItem(hwndDlg, IDC_CHKCSTMSKIN);
+			chkFaceColor = GetDlgItem(hwndDlg, IDC_CHKFACECOLOR);
 			chkAlphaBlend = GetDlgItem(hwndDlg, IDC_CHKALPHABLEND);
 			hColorSelect = GetDlgItem(hwndDlg, IDC_COLORPICK);
 			hBrowseSkin = GetDlgItem(hwndDlg, IDC_BROWSESKIN);
@@ -444,6 +447,8 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(chkCutout, lpMainWindow->bCutout);
 			Button_SetCheck(chkAlphaBlend, lpMainWindow->bAlphaBlendLCD);
 			Button_SetCheck(chkCustom, lpMainWindow->bCustomSkin);
+			Button_SetCheck(chkFaceColor, lpMainWindow->bUseCustomFaceplateColor);
+			EnableWindow(chkFaceColor, lpMainWindow->bCustomSkin);
 			SendMessage(hColorSelect, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) LoadBitmap(g_hInst, _T("SkinPicker")));
 			backupFaceplate = lpMainWindow->m_FaceplateColor;
 			Edit_SetText(hSkinText, lpMainWindow->skin_path);
@@ -475,6 +480,9 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 						}
 						case IDC_CHKALPHABLEND:
 						case IDC_CHKCUTOUT:
+							break;
+						case IDC_CHKFACECOLOR:
+							lpMainWindow->bUseCustomFaceplateColor = Button_GetCheck(chkFaceColor);
 							break;
 						case IDC_CHKCSTMSKIN: {
 							BOOL customSkinSetting = Button_GetCheck(chkCustom);

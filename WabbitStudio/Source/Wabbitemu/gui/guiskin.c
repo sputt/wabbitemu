@@ -311,9 +311,8 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 
 	lpMainWindow->m_lpBitmapKeymap = pBitmapKeymap;
 	
-	Color faceplateColor = model == TI_84PSE || model == TI_84PCSE && !lpMainWindow->bCustomSkin ? 
-		Color(0xFF, GetRValue(lpMainWindow->m_FaceplateColor), GetGValue(lpMainWindow->m_FaceplateColor),
-		GetBValue(lpMainWindow->m_FaceplateColor)) : 0;
+	Color faceplateColor = (model == TI_84PSE || model == TI_84PCSE) && (!lpMainWindow->bCustomSkin || lpMainWindow->bUseCustomFaceplateColor) ?
+		Color(0xFF, GetRValue(lpMainWindow->m_FaceplateColor), GetGValue(lpMainWindow->m_FaceplateColor), GetBValue(lpMainWindow->m_FaceplateColor)) : 0;
 	Bitmap *renderedSkin = DrawSkin(pBitmapSkin, pBitmapKeymap, faceplateColor,
 		lpMainWindow->bCutout, lpMainWindow->default_skin_scale);
 	if (renderedSkin == NULL) {
