@@ -17,6 +17,9 @@ LPCALC DuplicateCalc(LPCALC lpCalc) {
 	BOOL running_backup = lpCalc->running;
 	lpCalc->running = FALSE;
 	SAVESTATE_t *save = SaveSlot(lpCalc, _T(""), _T(""));
+	if (save == NULL) {
+		return NULL;
+	}
 
 	LPCALC duplicate_calc = (LPCALC)malloc(sizeof(calc_t));
 	ZeroMemory(duplicate_calc, sizeof(calc_t));

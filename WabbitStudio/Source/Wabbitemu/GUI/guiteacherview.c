@@ -196,6 +196,10 @@ LRESULT CALLBACK TeacherViewProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 		lpMainWindow->lpTeacherViewCalc = DuplicateCalc(lpMainWindow->lpCalc);
 		LPCALC lpNewCalc = lpMainWindow->lpTeacherViewCalc;
+		if (lpNewCalc == NULL) {
+			goto paintFail;
+		}
+
 		lpNewCalc->running = TRUE;
 		lpNewCalc->speed = 400;
 		int scale = lpNewCalc->model < TI_84PCSE ? TEACHER_VIEW_SCALE : 1;
@@ -239,6 +243,7 @@ LRESULT CALLBACK TeacherViewProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 			}
 		}
 
+paintFail:
 		EndPaint(hwnd, &ps);
 		return FALSE;
 	}

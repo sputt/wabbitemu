@@ -11,7 +11,7 @@ extern HINSTANCE g_hInst;
 
 INT_PTR CALLBACK ConditionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
-int GetWaddrData(HWND hwnd, waddr_t *waddr) {
+int GetWaddrData(HWND hwnd, waddr_t *waddr, memc *mem) {
 	waddr->is_ram = Button_GetCheck(GetDlgItem(hwnd, IDC_CHK_RAM));
 	TCHAR buf[32];
 	Edit_GetText(GetDlgItem(hwnd, IDC_EDT_ADDR), buf, ARRAYSIZE(buf));
@@ -27,7 +27,8 @@ int GetWaddrData(HWND hwnd, waddr_t *waddr) {
 		return -1;
 	}
 
-	waddr->page = (uint8_t) val;
+	int max_pages = waddr->is_ram ? mem->ram_pages : mem->flash_pages;
+	waddr->page = (uint8_t) val % max_pages;
 	return 0;
 }
 
@@ -197,11 +198,11 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				}
 				case IDC_ADD_BREAK: {
 					waddr_t waddr;
-					if (GetWaddrData(hwnd, &waddr) == -1) {
+					memc *memc = lpCalc->cpu.mem_c;
+					if (GetWaddrData(hwnd, &waddr, memc) == -1) {
 						break;
 					}
 
-					memc *memc = lpCalc->cpu.mem_c;
 					if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_NORMAL))) {
 						if (check_break(memc, waddr)) {
 							break;
@@ -242,7 +243,8 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				}
 				case IDC_UPDATE_BREAK: {
 					waddr_t waddr;
-					if (GetWaddrData(hwnd, &waddr) == -1) {
+					memc *memc = lpCalc->cpu.mem_c;
+					if (GetWaddrData(hwnd, &waddr, memc) == -1) {
 						break;
 					}
 
