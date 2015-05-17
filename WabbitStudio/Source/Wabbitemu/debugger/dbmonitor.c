@@ -75,34 +75,48 @@ static BOOL InsertListViewItems(HWND hWndListView, int cItems)
 	return TRUE;
 }
 
+static void free_duplicate_calc_if_necessary(LPDEBUGWINDOWINFO lpDebugInfo) {
+	if (lpDebugInfo->duplicate_calc == NULL) {
+		return;
+	}
+
+	calc_slot_free(lpDebugInfo->duplicate_calc);
+	free(lpDebugInfo->duplicate_calc);
+	lpDebugInfo->duplicate_calc = NULL;
+}
+
 static void CloseSaveEdit(LPDEBUGWINDOWINFO lpDebugInfo) {
 	LPCALC lpCalc = lpDebugInfo->lpCalc;
-	if (lpDebugInfo->hwndEditControl != NULL) {
-		TCHAR buf[10];
-		Edit_GetText(lpDebugInfo->hwndEditControl, buf, ARRAYSIZE(buf));
-		int value = GetWindowLongPtr(lpDebugInfo->hwndEditControl, GWLP_USERDATA);
-		int row_num = LOWORD(value);
-		//handles getting the user input and converting it to an int
-		//can convert bin, hex, and dec
-		value = StringToValue(buf);
-		if (value == INT_MAX) {
-			value = 0;
-		}
-		uint8_t byte_value = value & 0xFF;
-		int port_num = lpDebugInfo->port_map[row_num];
-		BOOL output_backup = lpCalc->cpu.output;
-		unsigned char bus_backup = lpCalc->cpu.bus;
-		lpCalc->cpu.bus = byte_value;
-		lpCalc->cpu.output = TRUE;
-		lpCalc->cpu.pio.devices[port_num].code(&lpCalc->cpu, &(lpCalc->cpu.pio.devices[port_num]));
-		lpCalc->cpu.output = output_backup;
-		lpCalc->cpu.bus = bus_backup;
-
-		lpDebugInfo->duplicate_calc = DuplicateCalc(lpCalc);
-
-		DestroyWindow(lpDebugInfo->hwndEditControl);
-		lpDebugInfo->hwndEditControl = NULL;
+	if (lpDebugInfo->hwndEditControl == NULL) {
+		return;
 	}
+
+	TCHAR buf[10];
+	Edit_GetText(lpDebugInfo->hwndEditControl, buf, ARRAYSIZE(buf));
+	int value = GetWindowLongPtr(lpDebugInfo->hwndEditControl, GWLP_USERDATA);
+	int row_num = LOWORD(value);
+	//handles getting the user input and converting it to an int
+	//can convert bin, hex, and dec
+	value = StringToValue(buf);
+	if (value == INT_MAX) {
+		value = 0;
+	}
+
+	uint8_t byte_value = value & 0xFF;
+	int port_num = lpDebugInfo->port_map[row_num];
+	BOOL output_backup = lpCalc->cpu.output;
+	unsigned char bus_backup = lpCalc->cpu.bus;
+	lpCalc->cpu.bus = byte_value;
+	lpCalc->cpu.output = TRUE;
+	lpCalc->cpu.pio.devices[port_num].code(&lpCalc->cpu, &(lpCalc->cpu.pio.devices[port_num]));
+	lpCalc->cpu.output = output_backup;
+	lpCalc->cpu.bus = bus_backup;
+
+	free_duplicate_calc_if_necessary(lpDebugInfo);
+	lpDebugInfo->duplicate_calc = DuplicateCalc(lpCalc);
+
+	DestroyWindow(lpDebugInfo->hwndEditControl);
+	lpDebugInfo->hwndEditControl = NULL;
 }
 
 static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { 
@@ -258,7 +272,7 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
 					int port_num = lpDebugInfo->port_map[plvdi->item.iItem];
 					LPCALC lpDuplicateCalc = lpDebugInfo->duplicate_calc;
-					if (lpDuplicateCalc == NULL) {
+					if (lpDuplicateCalc == NULL && plvdi->item.iSubItem != 0) {
 						StringCchPrintf(plvdi->item.pszText, 10, _T("Error"));
 						break;
 					}
@@ -331,11 +345,7 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 				calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &on_running_changed, hwndListView);
 			}
 
-			if (lpDebugInfo->duplicate_calc != NULL) {
-				calc_slot_free(lpDebugInfo->duplicate_calc);
-				free(lpDebugInfo->duplicate_calc);
-				lpDebugInfo->duplicate_calc = NULL;
-			}
+			free_duplicate_calc_if_necessary(lpDebugInfo);
 			return FALSE;
 		}
 		default:

@@ -423,47 +423,46 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 }
 
 void calc_slot_free(LPCALC lpCalc) {
-	if (lpCalc == NULL)
+	if (lpCalc == NULL || !lpCalc->active) {
 		return;
-
-	if (lpCalc->active) {
-		lpCalc->active = FALSE;
-
-		KillSound(lpCalc->audio);
-		lpCalc->audio = NULL;
-
-		free(lpCalc->flash_cond_break);
-		lpCalc->flash_cond_break = NULL;
-		free(lpCalc->ram_cond_break);
-		lpCalc->ram_cond_break = NULL;
-
-		free(lpCalc->mem_c.flash);
-		lpCalc->mem_c.flash = NULL;
-		free(lpCalc->mem_c.ram);
-		lpCalc->mem_c.ram = NULL;
-		free(lpCalc->mem_c.flash_break);
-		lpCalc->mem_c.flash_break = NULL;
-		free(lpCalc->mem_c.ram_break);
-		lpCalc->mem_c.ram_break = NULL;
-
-		if (link_connected_hub(lpCalc->slot)) {
-			link_hub_list[lpCalc->slot] = NULL;
-		}
-		free(lpCalc->cpu.pio.link);
-		lpCalc->cpu.pio.link = NULL;
-
-		free(lpCalc->cpu.pio.keypad);
-		lpCalc->cpu.pio.keypad = NULL;
-
-		free(lpCalc->cpu.pio.stdint);
-		lpCalc->cpu.pio.stdint = NULL;
-
-		free(lpCalc->cpu.pio.se_aux);
-		lpCalc->cpu.pio.se_aux = NULL;
-
-		free(lpCalc->cpu.pio.lcd);
-		lpCalc->cpu.pio.lcd = NULL;
 	}
+
+	lpCalc->active = FALSE;
+
+	KillSound(lpCalc->audio);
+	lpCalc->audio = NULL;
+
+	free(lpCalc->flash_cond_break);
+	lpCalc->flash_cond_break = NULL;
+	free(lpCalc->ram_cond_break);
+	lpCalc->ram_cond_break = NULL;
+
+	free(lpCalc->mem_c.flash);
+	lpCalc->mem_c.flash = NULL;
+	free(lpCalc->mem_c.ram);
+	lpCalc->mem_c.ram = NULL;
+	free(lpCalc->mem_c.flash_break);
+	lpCalc->mem_c.flash_break = NULL;
+	free(lpCalc->mem_c.ram_break);
+	lpCalc->mem_c.ram_break = NULL;
+
+	if (link_connected_hub(lpCalc->slot)) {
+		link_hub_list[lpCalc->slot] = NULL;
+	}
+	free(lpCalc->cpu.pio.link);
+	lpCalc->cpu.pio.link = NULL;
+
+	free(lpCalc->cpu.pio.keypad);
+	lpCalc->cpu.pio.keypad = NULL;
+
+	free(lpCalc->cpu.pio.stdint);
+	lpCalc->cpu.pio.stdint = NULL;
+
+	free(lpCalc->cpu.pio.se_aux);
+	lpCalc->cpu.pio.se_aux = NULL;
+
+	free(lpCalc->cpu.pio.lcd);
+	lpCalc->cpu.pio.lcd = NULL;
 }
 
 int calc_reset(LPCALC lpCalc) {

@@ -191,6 +191,7 @@ LRESULT CALLBACK TeacherViewProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 		if (lpMainWindow->lpTeacherViewCalc != NULL) {
 			calc_slot_free(lpMainWindow->lpTeacherViewCalc);
+			free(lpMainWindow->lpTeacherViewCalc);
 			lpMainWindow->lpTeacherViewCalc = NULL;
 		}
 
