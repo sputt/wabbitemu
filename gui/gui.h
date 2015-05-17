@@ -122,6 +122,7 @@ typedef struct MainWindow {
 	BOOL running;
 	BOOL bDoDrag;
 	BOOL bCustomSkin;
+	BOOL bUseCustomFaceplateColor;
 	BOOL bAlwaysOnTop;
 	BOOL bAlphaBlendLCD;
 

@@ -49,6 +49,7 @@ reg_default_t regDefaults[] = {
 	{_T("always_on_top"),			REG_DWORD,  FALSE},
 	{_T("tios_debug"),				REG_DWORD,  TRUE},
 	{_T("custom_skin"),				REG_DWORD,  FALSE},
+	{ _T("use_faceplate_color_custom_skin"), REG_DWORD, FALSE },
 	{_T("skin_path"), 				REG_SZ, 	(LONG_PTR) _T("TI-83P.png")},
 	{_T("keymap_path"), 			REG_SZ, 	(LONG_PTR) _T("TI-83PKeymap.png")},
 	{_T("startX"),					REG_DWORD,  CW_USEDEFAULT},
@@ -316,6 +317,7 @@ HRESULT LoadRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCal
 	sync_cores = (BOOL) QueryWabbitKey(_T("sync_cores"));
 	lpMainWindow->bAlwaysOnTop = (BOOL)QueryWabbitKey(_T("always_on_top"));
 	lpMainWindow->bCustomSkin = (BOOL)QueryWabbitKey(_T("custom_skin"));
+	lpMainWindow->bUseCustomFaceplateColor = (BOOL)QueryWabbitKey(_T("use_faceplate_color_custom_skin"));
 	lpCalc->mem_c.ram_version = (int) QueryWabbitKey(_T("ram_version"));
 	lpMainWindow->bTIOSDebug = (BOOL) QueryWabbitKey(_T("tios_debug"));
 	QueryKeyMappings();
@@ -424,6 +426,7 @@ HRESULT SaveRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCal
 
 		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpMainWindow->m_FaceplateColor);
 		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpMainWindow->bCustomSkin);
+		SaveWabbitKey(_T("use_faceplate_color_custom_skin"), REG_DWORD, &lpMainWindow->bUseCustomFaceplateColor);
 		SaveWabbitKey(_T("skin_path"), REG_SZ, &lpMainWindow->skin_path);
 		SaveWabbitKey(_T("keymap_path"), REG_SZ, &lpMainWindow->keymap_path);
 		WINDOWPLACEMENT wp;
