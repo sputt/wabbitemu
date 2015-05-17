@@ -550,28 +550,22 @@ void calc_turn_on(LPCALC lpCalc) {
 }
 
 void calc_register_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback, LPVOID lParam) {
-	int i;
-	for (i = 0; i < MAX_REGISTERED_EVENTS; i++) {
+	for (int i = 0; i < MAX_REGISTERED_EVENTS; i++) {
 		if (lpCalc->registered_events[i].type == NO_EVENT) {
+			lpCalc->registered_events[i].type = event_type;
+			lpCalc->registered_events[i].callback = callback;
+			lpCalc->registered_events[i].lParam = lParam;
 			break;
 		}
 	}
-
-	if (i == MAX_REGISTERED_EVENTS) {
-		return;
-	}
-
-	lpCalc->registered_events[i].type = event_type;
-	lpCalc->registered_events[i].callback = callback;
-	lpCalc->registered_events[i].lParam = lParam;
 }
 
 void calc_unregister_event(LPCALC lpCalc, EVENT_TYPE event_type, event_callback callback, LPVOID lParam) {
-	int i;
-	for (i = 0; i < MAX_REGISTERED_EVENTS; i++) {
+	for (int i = 0; i < MAX_REGISTERED_EVENTS; i++) {
 		if (lpCalc->registered_events[i].type == event_type && 
 			lpCalc->registered_events[i].callback == callback &&
-			lpCalc->registered_events[i].lParam == lParam) {
+			lpCalc->registered_events[i].lParam == lParam) 
+		{
 			lpCalc->registered_events[i].type = NO_EVENT;
 			lpCalc->registered_events[i].callback = NULL;
 			lpCalc->registered_events[i].lParam = NULL;

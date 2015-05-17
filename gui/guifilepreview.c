@@ -126,11 +126,21 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			ColorLCD_t *colorlcd;
 			if (save->model >= TI_84PCSE) {
 				colorlcd = ColorLCD_init(&cpu, save->model);
-				LoadColorLCD(save, colorlcd);
+				try {
+					LoadColorLCD(save, colorlcd);
+				}
+				catch (exception& e) {
+					goto NoFilePreviewNotSave;
+				}
 				lcdBase = (LCDBase_t *)colorlcd;
 			} else {
 				lcd = LCD_init(&cpu, save->model);
-				LoadLCD(save, lcd);
+				try {
+					LoadLCD(save, lcd);
+				}
+				catch (exception& e) {
+					goto NoFilePreviewNotSave;
+				}
 				lcdBase = (LCDBase_t *)lcd;
 			}
 			

@@ -258,6 +258,11 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
 					int port_num = lpDebugInfo->port_map[plvdi->item.iItem];
 					LPCALC lpDuplicateCalc = lpDebugInfo->duplicate_calc;
+					if (lpDuplicateCalc == NULL) {
+						StringCchPrintf(plvdi->item.pszText, 10, _T("Error"));
+						break;
+					}
+
 					lpDuplicateCalc->cpu.input = TRUE;
 					lpDuplicateCalc->cpu.pio.devices[port_num].code(
 						&lpDuplicateCalc->cpu, &(lpDuplicateCalc->cpu.pio.devices[port_num]));
@@ -313,10 +318,8 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		case WM_USER: {
 			switch (wParam) {
 				case DB_CREATE:
-					DuplicateCalc(lpCalc);
 					break;
 				case DB_UPDATE: {
-					DuplicateCalc(lpCalc);
 					InvalidateRect(hwnd, NULL, FALSE);
 					break;
 				}
