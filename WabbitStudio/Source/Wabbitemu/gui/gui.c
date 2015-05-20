@@ -2112,6 +2112,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		RECT rc = { 0 };
 		rc.bottom = HIWORD(lParam);
 		rc.right = LOWORD(lParam);
+
+		// HACK: For minimize bug
+		// If you minimize the cutout window the screen in cutout mode, when you restore
+		// it you receive the already adjusted window rect, so when you adjust it again
+		// the screen size is larger than it should be.
+		if (rc.bottom == 0 && rc.right == 0) {
+			lpMainWindow->bIsMinimized = true;
+			return 0;
+		}
+
+		if (lpMainWindow->bIsMinimized) {
+			lpMainWindow->bIsMinimized = false;
+			return 0;
+		}
+
 		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW, TRUE);
 		if (lpMainWindow->bSkinEnabled) {
 			HandleSkinSizingMessage(hwnd, lpMainWindow, WMSZ_BOTTOMRIGHT, &rc);

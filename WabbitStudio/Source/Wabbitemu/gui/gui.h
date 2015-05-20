@@ -125,6 +125,7 @@ typedef struct MainWindow {
 	BOOL bUseCustomFaceplateColor;
 	BOOL bAlwaysOnTop;
 	BOOL bAlphaBlendLCD;
+	BOOL bIsMinimized;
 
 	DWORD dwDragCountdown;
 	gif_disp_state gif_disp_state;
