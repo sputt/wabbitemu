@@ -13,7 +13,7 @@ extern keyprog_t defaultkeysti86[256];
 extern keyprog_t defaultkeysti83[256];
 const TCHAR *appName = _T("Wabbitemu");
 const TCHAR *debugName = _T("Debug");
-const TCHAR *verString = _T("1.9.3.25");
+const TCHAR *verString = _T("1.9.5.20");
 
 static HKEY hkeyTarget = NULL;
 
