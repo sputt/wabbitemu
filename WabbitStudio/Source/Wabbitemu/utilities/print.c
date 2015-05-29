@@ -159,20 +159,20 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, ViewType typ
 							// assumption here is that page 0 will always be in bank 0
 							// unless we haven't changed it out
 							if (val < 0x4000) {
-								waddr.page = lpCalc->mem_c.banks[0].page;
+								waddr.page = (uint8_t) lpCalc->mem_c.banks[0].page;
 								waddr.is_ram = FALSE;
 							} else if (val > 0x4000 && val < 0x8000) {
 								waddr.page = zinf->waddr.page;
 								waddr.is_ram = FALSE;
 							}
 
-							waddr.addr = mc_base(val);
+							waddr.addr = (uint16_t) mc_base(val);
 							break;
 						}
 						case RAM: {
 							bank_state_t *bank = &lpCalc->mem_c.banks[val > 0xC000 ? 3 : 2];
-							waddr.page = bank->page;
-							waddr.addr = mc_base(val);							
+							waddr.page = (uint8_t) bank->page;
+							waddr.addr = (uint16_t)mc_base(val);
 							waddr.is_ram = TRUE;
 							break;
 						}

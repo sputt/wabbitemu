@@ -43,7 +43,12 @@ typedef enum _CRD_COMMAND {
 #define TOKCAT(x,y) x##y
 #define TOKCAT2(x,y) TOKCAT(x,y)
 #define LINECAT(x) TOKCAT2(x, __LINE__ )	
-#define CRD_SWITCH(zz) int CRD_TEST = (zz); if (0)
+#define CRD_SWITCH(zz)\
+	__pragma(warning(push))\
+	__pragma(warning(disable : 4127))\
+	int CRD_TEST = (zz); if (0)\
+	__pragma(warning(pop))
+
 #define CRD_DATA(zz) (CRD_TEST & CRD_##zz##_DATA)
 #define CRD_CASE(zz) goto LINECAT(A);}\
 while ((CRD_TEST & (CRD_##zz##_MASK))==CRD_##zz) {LINECAT(A)

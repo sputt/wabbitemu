@@ -98,7 +98,7 @@ typedef struct timer_context {
 /* Bank unit for a partition */
 typedef struct bank_state {
 	unsigned char *addr;		//Pointer to offset of memory.(already paged)
-	int page;					//Current 16kb page
+	unsigned int page;			//Current 16kb page
 	BOOL read_only;				//You can not write to this page(not even if the flash is unlocked)
 	BOOL ram;					//This is on the ram chip(also effect write method for flash)
 	BOOL no_exec;				//You can not execute on this page

@@ -20,7 +20,7 @@ void add_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 	}
 }
 
-void rem_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
+void rem_breakpoint(memc *mem, BREAK_TYPE, waddr_t waddr)
 {
 	LPCALC lpCalc = calc_from_memc(mem);
 	if (lpCalc == NULL) {
@@ -37,7 +37,7 @@ void rem_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 }
 
 // returns true if it should break, false otherwise
-BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
+BOOL check_break_callback(memc *mem, BREAK_TYPE, waddr_t waddr) {
 	LPCALC lpCalc = calc_from_memc(mem);
 	if (lpCalc == NULL) {
 		return FALSE;

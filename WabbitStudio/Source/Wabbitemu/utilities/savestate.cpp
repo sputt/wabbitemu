@@ -609,6 +609,11 @@ void SaveLINK(SAVESTATE_t* save, link_t* link) {
 	WriteChar(chunk, link->host);
 }
 
+void SaveKeypad(SAVESTATE_t *save, keypad_t *keypad) {
+	CHUNK_t *chunk = NewChunk(save, KEYPAD_tag);
+	WriteChar(chunk, keypad->group);
+}
+
 void SaveSTDINT(SAVESTATE_t* save, STDINT_t *stdint) {
 	int i;
 	if (!stdint) return;
@@ -778,6 +783,7 @@ SAVESTATE_t* SaveSlot(LPCALC lpCalc, TCHAR *author, TCHAR *comment) {
 		SaveLCD(save, (LCD_t *) lpCalc->cpu.pio.lcd);
 	}
 	SaveLINK(save, lpCalc->cpu.pio.link);
+	SaveKeypad(save, lpCalc->cpu.pio.keypad);
 	SaveSTDINT(save, lpCalc->cpu.pio.stdint);
 	SaveSE_AUX(save, lpCalc->cpu.pio.se_aux);
 
@@ -1102,7 +1108,21 @@ BOOL LoadLINK(SAVESTATE_t* save, link_t* link) {
 
 	chunk->pnt = 0;
 
-	link->host		= ReadChar(chunk);
+	link->host = ReadChar(chunk);
+
+	return TRUE;
+}
+
+BOOL LoadKeypad(SAVESTATE_t *save, keypad_t *keypad) {
+	CHUNK_t* chunk = FindChunk(save, KEYPAD_tag);
+	if (chunk == NULL) {
+		// Optional until recently, so we can get by without it
+		return TRUE;
+	}
+
+	chunk->pnt = 0;
+
+	keypad->group = ReadChar(chunk);
 
 	return TRUE;
 }
@@ -1266,6 +1286,11 @@ BOOL LoadSlot_Unsafe(SAVESTATE_t *save, LPCALC lpCalc) {
 
 	success = LoadLINK(save, lpCalc->cpu.pio.link);
 	if (success == FALSE) {
+		return FALSE;
+	}
+
+	success = LoadKeypad(save, lpCalc->cpu.pio.keypad);
+	if (!success) {
 		return FALSE;
 	}
 

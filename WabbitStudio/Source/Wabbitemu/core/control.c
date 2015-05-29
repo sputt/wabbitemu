@@ -14,7 +14,7 @@
 //-----------------------------
 // ED OPCODES
 
-int ednop(CPU_t *cpu) {
+int ednop(CPU_t *) {
 	return 8;
 }
 
@@ -880,7 +880,7 @@ int halt(CPU_t *cpu) {
 	return 4;
 }
 
-int nop(CPU_t *cpu) {
+int nop(CPU_t *) {
 	return 4;
 }
 

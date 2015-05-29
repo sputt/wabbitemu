@@ -55,36 +55,6 @@ static int GetMaxAddr(mempane_settings *mps) {
 	return NULL;
 }
 
-
-static void ScrollUp(HWND hwnd) {
-	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
-
-	if (mps->addr > 0) {
-		int temp = mps->addr - mps->nCols * mps->mode;
-		if (temp > 0) {
-			mps->addr = temp;
-		} else {
-			mps->addr = 0;
-		}
-	}
-
-	InvalidateRect(hwnd, NULL, FALSE);
-	UpdateWindow(hwnd);
-}
-
-static void ScrollDown(HWND hwnd) {
-	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
-
-	int data_length = mps->cyRow * mps->nRows * mps->mode;
-	if (mps->addr + data_length - mps->cyRow * mps->mode <= GetMaxAddr(mps))
-		mps->addr += mps->nCols * mps->mode;
-
-	InvalidateRect(hwnd, NULL, FALSE);
-	UpdateWindow(hwnd);
-}
-
 static VALUE_FORMAT GetValueFormat(mp_settings *mps) {
 	VALUE_FORMAT format = CHAR1;
 	if (mps->bText)

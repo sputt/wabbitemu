@@ -109,7 +109,7 @@ uint8_t* generate_gif_image(LCDBase_t *lcd, int gif_size) {
 	return (uint8_t*) gif;
 }
 
-void handle_screenshot(LPCALC lpCalc, LPVOID lParam) {
+void handle_screenshot(LPCALC, LPVOID) {
 	LCDBase_t* lcd;
 	int i, j;
 	u_int shades = 0;
