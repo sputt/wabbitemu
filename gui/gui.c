@@ -2036,7 +2036,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		group = c.GetGreen() >> 4;
 		bit	= c.GetBlue() >> 4;
-		HandleTeacherViewKey(lpMainWindow->hwndTeacherView, lpCalc, group, bit);
+		HandleTeacherViewKey(lpMainWindow->hwndTeacherView, lpCalc);
 		LogKeypress(lpMainWindow, lpCalc->model, group, bit);
 		if (group == KEYGROUP_ON && bit == KEYBIT_ON){
 			kp->on_pressed |= KEY_MOUSEPRESS;

@@ -2,7 +2,8 @@
 
 #if defined(_WINDOWS)
 
-
+// Unnamed struct/union
+#pragma warning( disable : 4201)
 #define _WIN32_LEAN_AND_MEAN
 
 #ifndef STRICT
@@ -12,13 +13,13 @@
 #define _ATL_NO_AUTOMATIC_NAMESPACE
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 
-#include <winsock2.h>
+#pragma warning( push, 0 )
+
 #include <Windows.h>
 #include <WindowsX.h>
 #include <tchar.h>
 #include <CommCtrl.h>
 #include <shlobj.h>
-#include <math.h>
 #include <Uxtheme.h>
 #include <dwmapi.h>
 #include <Ole2.h>
@@ -77,6 +78,7 @@ typedef std::string tstring;
 #endif
 }
 #endif
+#pragma warning( pop ) 
 
 #elif defined(_LINUX) || defined(_ANDROID)
 #include <float.h>

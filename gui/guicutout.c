@@ -151,18 +151,6 @@ void PositionLittleButtons(HWND hwnd, LPMAINWINDOW lpMainWindow)
 typedef HRESULT (WINAPI *SetThemeFunc)(HWND, LPCWSTR, LPCWSTR);
 typedef HRESULT (WINAPI *DwmSetAttrib)(HWND, DWORD, LPCVOID, DWORD);
 
-static LRESULT CALLBACK TestButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	switch(uMsg) {
-		case WM_CREATE:
-
-			return FALSE;
-		case WM_PAINT:
-
-			return FALSE;
-	}
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-
 void UpdateWabbitemuLayeredWindow(LPMAINWINDOW lpMainWindow) {
 	BLENDFUNCTION bf;
 	bf.BlendOp = AC_SRC_OVER;

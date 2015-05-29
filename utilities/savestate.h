@@ -55,6 +55,7 @@ typedef struct {
 #define TIMER_tag				"TIME"
 #define LCD_tag					"LCD "
 #define LINK_tag				"LINK"
+#define KEYPAD_tag				"KEYS"
 #define STDINT_tag				"STDI"
 #define SE_AUX_tag				"SEAX"
 #define USB_tag					"USB "

@@ -5,7 +5,7 @@
 #include "keys.h"
 
 LRESULT CALLBACK TeacherViewProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-void HandleTeacherViewKey(HWND hwndTeacherView, LPCALC lpCalc, int group, int bit);
+void HandleTeacherViewKey(HWND hwndTeacherView, LPCALC lpCalc);
 
 #define TEACHER_VIEW_SCALE 4
 #define TEACHER_VIEW_CAPTION_SIZE 40

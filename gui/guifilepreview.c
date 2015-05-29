@@ -129,7 +129,7 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 				try {
 					LoadColorLCD(save, colorlcd);
 				}
-				catch (exception& e) {
+				catch (exception&) {
 					goto NoFilePreviewNotSave;
 				}
 				lcdBase = (LCDBase_t *)colorlcd;
@@ -138,7 +138,7 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 				try {
 					LoadLCD(save, lcd);
 				}
-				catch (exception& e) {
+				catch (exception&) {
 					goto NoFilePreviewNotSave;
 				}
 				lcdBase = (LCDBase_t *)lcd;

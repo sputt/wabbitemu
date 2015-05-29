@@ -213,7 +213,7 @@ void HandleKeyDown(LPMAINWINDOW lpMainWindow, WPARAM key) {
 		return;
 	}
 
-	HandleTeacherViewKey(lpMainWindow->hwndTeacherView, lpCalc, kp->group, kp->bit);
+	HandleTeacherViewKey(lpMainWindow->hwndTeacherView, lpCalc);
 	LogKeypress(lpMainWindow, lpCalc->model, kp->group, kp->bit);
 	if (changed) {
 		FinalizeButtons(lpMainWindow);

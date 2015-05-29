@@ -133,7 +133,7 @@ static void ColorLCD_command(CPU_t *, device_t *);
 static void ColorLCD_data(CPU_t *, device_t *);
 uint8_t *ColorLCD_Image(LCDBase_t *);
 
-ColorLCD_t *ColorLCD_init(CPU_t *cpu, int model) {
+ColorLCD_t *ColorLCD_init(CPU_t *, int) {
 	ColorLCD_t* lcd = (ColorLCD_t *)malloc(sizeof(ColorLCD_t));
 	if (lcd == NULL) {
 		printf("Couldn't allocate memory for LCD\n");

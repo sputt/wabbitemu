@@ -18,7 +18,7 @@
 
 extern HINSTANCE g_hInst;
 
-void HandleTeacherViewKey(HWND hwndTeacherView, LPCALC lpCalc, int group, int bit) {
+void HandleTeacherViewKey(HWND hwndTeacherView, LPCALC lpCalc) {
 	uint8_t graph_flag = mem_read(&lpCalc->mem_c, (uint16_t)GRAPH_FLAG);
 
 	// this flag indicates we need to redraw the graph

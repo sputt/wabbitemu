@@ -334,6 +334,8 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 				case DB_CREATE:
 					break;
 				case DB_UPDATE: {
+					free_duplicate_calc_if_necessary(lpDebugInfo);
+					lpDebugInfo->duplicate_calc = DuplicateCalc(lpCalc);
 					InvalidateRect(hwnd, NULL, FALSE);
 					break;
 				}

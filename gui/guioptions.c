@@ -1430,7 +1430,7 @@ TCHAR* GetFriendlyMenuText(HMENU hMenu, int nItem, UINT uFlag) {
 	TCHAR *str = menu_text_buf;
 	TCHAR *start = str;
 	int i = 0;
-	while (1) {
+	for (;;) {
 		TCHAR ch = buf[i++];
 		if (ch == '&') {
 			continue;
