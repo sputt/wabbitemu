@@ -124,7 +124,12 @@ static void show_gram(HWND hwnd, LPDEBUGWINDOWINFO lpDebugInfo) {
 		return;
 	}
 	// GRAM, show a copy of it in the sprite viewer
-	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO)malloc(sizeof(TABWINDOWINFO));
+	const LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO)malloc(sizeof(TABWINDOWINFO));
+	if (lpTabInfo == NULL) {
+		MessageBox(hwnd, _T("Failed to create window"), _T("Error"), MB_OK);
+		return;
+	}
+
 	lpTabInfo->lpDebugInfo = lpDebugInfo;
 	lpTabInfo->tabInfo = NULL;
 	hwndSprite = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SPRITEVIEWER), hwnd, SpriteViewerDialogProc, (LPARAM)lpTabInfo);
@@ -228,7 +233,7 @@ LRESULT CALLBACK ColorLCDMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPA
 						break;
 					}
 
-					TCHAR buf[32];
+					TCHAR buf[32] = { 0 };
 					ListView_GetItemText(hwndListView, row_num, col_num, buf, ARRAYSIZE(buf));
 					RECT rc;
 					LVITEMINDEX lvii;

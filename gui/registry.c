@@ -359,7 +359,11 @@ void SaveWabbitKey(TCHAR *name, int type, void *value) {
 			len = sizeof(DWORD);
 		} else if (type == REG_SZ) {
 			StringCbLength((TCHAR *)value, MAX_PATH, &len);
+		} else {
+			assert(false);
+			return;
 		}
+
 		RegSetValueEx(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
 	}
 }

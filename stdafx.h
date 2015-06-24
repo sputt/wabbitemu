@@ -17,6 +17,7 @@
 
 #include <Windows.h>
 #include <WindowsX.h>
+#include <VersionHelpers.h>
 #include <tchar.h>
 #include <CommCtrl.h>
 #include <shlobj.h>

@@ -72,8 +72,8 @@ typedef struct {
 LPCALC DuplicateCalc(LPCALC lpCalc);
 void WriteSave(const TCHAR *, SAVESTATE_t *, int);
 BOOL LoadSlot(SAVESTATE_t* , LPCALC);
-SAVESTATE_t* SaveSlot(LPCALC, TCHAR *author, TCHAR *comment);
-SAVESTATE_t* CreateSave(TCHAR *, TCHAR *, int);
+SAVESTATE_t* SaveSlot(LPCALC, const TCHAR *author, const TCHAR *comment);
+SAVESTATE_t* CreateSave(const TCHAR *author, const TCHAR *comment, const CalcModel model);
 SAVESTATE_t* ReadSave(FILE *ifile);
 void FreeSave(SAVESTATE_t *);
 char* GetRomOnly(SAVESTATE_t *save, int *);

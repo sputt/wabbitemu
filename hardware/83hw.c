@@ -329,7 +329,7 @@ void port14_83(CPU_t *cpu, device_t *dev) {
 /*----------------------------------------------*/
 
 
-STDINT_t* INT83_init(timer_context_t *timer_c) {
+STDINT_t* INT83_init(_In_ timer_context_t *timer_c) {
 	STDINT_t * stdint = (STDINT_t *) malloc(sizeof(STDINT_t));
 	if (!stdint) {
 		printf("Couldn't allocate memory for standard interrupt\n");
@@ -369,7 +369,7 @@ link_t* link83_init() {
 }
 
 
-int device_init_83(CPU_t *cpu, BOOL bad82) {
+int device_init_83(_In_ CPU_t *cpu, BOOL bad82) {
 	ClearDevices(cpu);
 
 	link_t * link = link83_init();
@@ -426,7 +426,7 @@ int device_init_83(CPU_t *cpu, BOOL bad82) {
 }
 
 
-int memory_init_83(memc *mc) {
+int memory_init_83(_In_ memc *mc) {
 	memset(mc, 0, sizeof(memc));
 	
 	/* Set Number of Pages here */

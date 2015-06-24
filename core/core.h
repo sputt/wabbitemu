@@ -119,6 +119,8 @@ typedef struct waddr {
 	uint16_t addr;
 } waddr_t;
 
+#define MAKE_WADDR(addr, page, is_ram) { is_ram, page, addr }
+
 typedef enum {
 	MODE0 = 0,			//Execution is allowed on pages 81h, 83h, 85h, 87h, 89h, 8Bh, 8Dh, and 8Fh. 
 	MODE1 = 1,			//Execution is allowed on pages 81h, 85h, 89h, and 8Dh. 
@@ -231,6 +233,7 @@ typedef struct interrupt {
 	device_t *device;
 } interrupt_t;
 
+#define MAX_DEVICES 256
 typedef struct pio_context {
 	int model;
 	struct LCDBase *lcd;
@@ -240,8 +243,8 @@ typedef struct pio_context {
 	struct SE_AUX *se_aux;
 	/* list other cross model devices here */
 
-	device_t devices[256];
-	interrupt_t interrupt[256];
+	device_t devices[MAX_DEVICES];
+	interrupt_t interrupt[MAX_DEVICES];
 	int num_interrupt;
 	devp breakpoint_callback;
 } pio_context_t, pioc;

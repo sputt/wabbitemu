@@ -161,7 +161,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			hdi.mask = HDI_TEXT | HDI_FORMAT | HDI_WIDTH;
 			TCHAR pszText[32];
-			GetWindowText(hwnd, pszText, sizeof(pszText));
+			GetWindowText(hwnd, pszText, ARRAYSIZE(pszText));
 			hdi.pszText = pszText;
 			hdi.cxy = 1;
 			hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]);

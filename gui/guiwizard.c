@@ -87,11 +87,7 @@ LPMAINWINDOW DoWizardSheet(HWND hwndOwner) {
 
 	DWORD flags;
 	// TODO: check common controls version not the OS
-	OSVERSIONINFO osvi;
-	ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&osvi);
-	if (osvi.dwMajorVersion >= 6) {
+	if (IsWindowsVistaOrGreater()) {
 		// MSDN says we should also set PSH_WIZARD. this however causes pszCaption
 		// to require a wide string. I think it's safer to leave the flag off, than
 		// to use a wide string and cast it
@@ -649,29 +645,33 @@ static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version)
 	TCHAR *url;
 	switch (model) {
 		case TI_73:
-			url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/73/TI73_OS.73u");
+			url = _T("https://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/73/TI73_OS.73u");
 			break;
 		case TI_83P:
 		case TI_83PSE:
-			url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI83Plus_OS.8Xu");
+			url = _T("https://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI83Plus_OS.8Xu");
 			break;
 		case TI_84P:
 		case TI_84PSE:
 			if (version) {
-				url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS243.8Xu");
+				url = _T("https://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS243.8Xu");
 			} else {
-				url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS.8Xu");
+				url = _T("https://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS.8Xu");
 			}
 			break;
 		case TI_84PCSE:
 			if (version) {
-				url = _T("http://education.ti.com/download/en/ASIA/5F0CBAC101194542B16B80BCE6CB3602/4D5547F48BBA4384BB85A645D7772A1A/TI84PlusC_OS.8Cu");
+				url = _T("https://education.ti.com/download/en/ASIA/5F0CBAC101194542B16B80BCE6CB3602/4D5547F48BBA4384BB85A645D7772A1A/TI84PlusC_OS.8Cu");
 			} else {
-				url = _T("http://education.ti.com/download/en/ASIA/5F0CBAC101194542B16B80BCE6CB3602/0BB0CC9043204D52BF22BC717A917A9A/TI84PlusC_OS-4.20.8Cu");
+				url = _T("https://education.ti.com/download/en/ASIA/5F0CBAC101194542B16B80BCE6CB3602/0BB0CC9043204D52BF22BC717A917A9A/TI84PlusC_OS-4.20.8Cu");
 			}
 			break;
+		default:
+			assert(false);
+			return FALSE;
 	}
-	HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, callback);
+
+	const HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, callback);
 	return SUCCEEDED(hr);
 }
 
