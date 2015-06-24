@@ -171,6 +171,9 @@ int ValueSubmit(HWND hwndDlg, void *loc, int size, int max_value) {
 				*((u_char *) value) = (u_char)max_value;
 			}
 			break;
+		default:
+			assert(false);
+			return 0;
 		}
 	} else {
 		*((int *)value) = 0;

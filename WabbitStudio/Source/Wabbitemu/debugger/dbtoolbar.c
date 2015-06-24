@@ -103,11 +103,9 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 	HDC hdcRight = CreateCompatibleDC(hdcBuf);
 	HBITMAP hbmRight;
 
-	DWORD dwVersion = GetVersion();
-	DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
-	BOOL fIsWindows7 = (dwMajorVersion >= 0x06) ? TRUE : FALSE;
 	if (IsAppThemed()) {
-		if (fIsWindows7 == TRUE)
+		const BOOL isWindows7OrGreater = IsWindows7OrGreater();
+		if (isWindows7OrGreater)
 		{
 			hbmRight = LoadBitmap(g_hInst, _T("TBRIGHT7"));
 		}
@@ -145,7 +143,7 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 		int width = bi->biWidth;
 		int height = bi->biHeight;
 
-		if (fIsWindows7 == FALSE)
+		if (!isWindows7OrGreater)
 		{
 			HDC hdcGrad = CreateCompatibleDC(hdc);
 			// Create a solid brush of the gradient color
@@ -480,10 +478,6 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			// Fill the background
 			PaintToolbarBackground(GetParent(hwnd), hdcBuf, &scr);
 
-			DWORD dwVersion = GetVersion();
-			DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
-			BOOL fIsWindows7 = (dwMajorVersion >= 0x06) ? TRUE : FALSE;
-
 			if (tbb->MouseState == MOUSE_DOWN) {
 				HDC hdcFrame = CreateCompatibleDC(hdc);
 				HBITMAP hbmFrame = LoadBitmap(g_hInst, _T("TBFrameRight"));
@@ -669,11 +663,12 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			if (tbb->MouseState == MOUSE_DOWN || tbb->MouseState == MOUSE_DOWN_SPLIT)
 				ox = oy = 1;
 
+			const BOOL isWindows7OrGreater = IsWindows7OrGreater();
 			if (tbb->bSplitButton)
 			{
 				HDC hdcDownBtn = CreateCompatibleDC(hdc);
 				HBITMAP hbmDownArrow;
-				if (fIsWindows7 == TRUE) {
+				if (isWindows7OrGreater) {
 					hbmDownArrow = LoadBitmap(g_hInst, _T("TBDownArrow7"));
 				} else {
 					hbmDownArrow = LoadBitmap(g_hInst, _T("TBDownArrow"));
@@ -703,13 +698,15 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			GetWindowText(hwnd, szTitle, 32);
 
 			RECT r = {16 + 9 + ox, 2 + oy, 400 + ox, 24 + oy};
-			if (fIsWindows7 == TRUE)
+			if (!isWindows7OrGreater) {
 				SetTextColor(hdcBuf, RGB(30, 57, 91));
-			else
+			} else {
 				SetTextColor(hdcBuf, RGB(0, 0, 0));
+			}
+
 			DrawText(hdcBuf, szTitle, -1, &r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 
-			if (fIsWindows7 == FALSE) {
+			if (!isWindows7OrGreater) {
 				OffsetRect(&r, -1, -1);
 				SetTextColor(hdcBuf, RGB(255, 255, 255));
 				DrawText(hdcBuf, szTitle, -1, &r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
@@ -949,13 +946,12 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				GOTO_ID);
 
 			TCHAR *szChevronBMP;
-			DWORD dwVersion = GetVersion();
-			DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
-			if (dwMajorVersion < 0x06) {
-				szChevronBMP = _T("CHEVRON");
-			} else {
+			if (IsWindows7OrGreater()) {
 				szChevronBMP = _T("CHEVRON7");
+			} else {
+				szChevronBMP = _T("CHEVRON");
 			}
+
 			next = CreateToolbarButton(hwnd,
 				lpDebugInfo,
 				_T(""),
@@ -1125,9 +1121,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 
-			DWORD dwVersion = GetVersion();
-			DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
-			BOOL fIsWindows7 = (dwMajorVersion >= 0x06) ? TRUE : FALSE;
+			const BOOL isWindows7OrGreater = IsWindows7OrGreater();
 
 			HDC hdc;
 			PAINTSTRUCT ps;
@@ -1140,7 +1134,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 			if (IsAppThemed()) {
 				HDC hdcRight = CreateCompatibleDC(hdcBuf);
-				HBITMAP hbmRight = LoadBitmap(g_hInst, fIsWindows7 == TRUE ? _T("TBRIGHT7") : _T("TBRIGHT"));
+				HBITMAP hbmRight = LoadBitmap(g_hInst, isWindows7OrGreater ? _T("TBRIGHT7") : _T("TBRIGHT"));
 				SelectObject(hdcRight, hbmRight);
 
 				if (rc.right > 3 + 120) {
@@ -1153,7 +1147,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				DeleteDC(hdcRight);
 
 				HDC hdcLeft = CreateCompatibleDC(hdcBuf);
-				HBITMAP hbmLeft = LoadBitmap(g_hInst, fIsWindows7 == TRUE ? _T("TBLEFT7") : _T("TBLEFT"));
+				HBITMAP hbmLeft = LoadBitmap(g_hInst, isWindows7OrGreater ? _T("TBLEFT7") : _T("TBLEFT"));
 				SelectObject(hdcLeft, hbmLeft);
 
 				BitBlt(hdcBuf, 0, 0, 3, 32, hdcLeft, 0, 0, SRCCOPY);
@@ -1186,7 +1180,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			int width = bi->biWidth;
 			int height = bi->biHeight;
 
-			if (fIsWindows7 == FALSE)
+			if (!isWindows7OrGreater)
 			{
 				HDC hdcGrad = CreateCompatibleDC(hdc);
 				// Create a solid brush of the gradient color

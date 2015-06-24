@@ -64,9 +64,11 @@ int fgeti(FILE* stream) {
 	return r;
 }
 
-SAVESTATE_t* CreateSave(TCHAR *author, TCHAR *comment , CalcModel model) {
+SAVESTATE_t* CreateSave(const TCHAR *author, const TCHAR *comment , const CalcModel model) {
 	SAVESTATE_t* save = (SAVESTATE_t*) malloc(sizeof(SAVESTATE_t));
-	if (!save) return NULL;
+	if (!save) {
+		return NULL;
+	}
 
 	save->version_major = CUR_MAJOR;
 	save->version_minor = CUR_MINOR;
@@ -91,8 +93,7 @@ SAVESTATE_t* CreateSave(TCHAR *author, TCHAR *comment , CalcModel model) {
 	save->model = model;
 	save->chunk_count = 0;
 	
-	u_int i;
-	for(i = 0; i < NumElm(save->chunks); i++) {
+	for(unsigned int i = 0; i < ARRAYSIZE(save->chunks); i++) {
 		save->chunks[i] = NULL;
 	}
 	return save;
@@ -762,7 +763,7 @@ void SaveColorLCD(SAVESTATE_t *save, ColorLCD_t *lcd) {
 	WriteInt(chunk, lcd->front);
 }
 
-SAVESTATE_t* SaveSlot(LPCALC lpCalc, TCHAR *author, TCHAR *comment) {
+SAVESTATE_t* SaveSlot(LPCALC lpCalc, const TCHAR *author, const TCHAR *comment) {
 	SAVESTATE_t* save;
 	BOOL runsave;
 	if (lpCalc == NULL || lpCalc->active == FALSE) {
@@ -946,17 +947,14 @@ BOOL LoadMEM(SAVESTATE_t* save, memc* mem) {
 
 	chunk = FindChunk(save, NUM_FLASH_BREAKS_tag);
 	if (chunk) {
-		int num_flash_breaks = ReadInt(chunk);
+		const int num_flash_breaks = ReadInt(chunk);
 		chunk = FindChunk(save, FLASH_BREAKS_tag);
 		if (chunk) {
 			for (int i = 0; i < num_flash_breaks; i++)
 			{
-				int addr = ReadInt(chunk);
-				waddr_t waddr;
-				waddr.addr = (uint16_t) (addr % PAGE_SIZE);
-				waddr.page = (uint8_t) (addr / PAGE_SIZE);
-				waddr.is_ram = FALSE;
-				BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
+				const int addr = ReadInt(chunk);
+				const waddr_t waddr = MAKE_WADDR((uint16_t)(addr % PAGE_SIZE), (uint8_t)(addr / PAGE_SIZE), FALSE);
+				const BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
 				switch (type) {
 				case MEM_READ_BREAK:
 					set_mem_read_break(mem, waddr);
@@ -974,17 +972,14 @@ BOOL LoadMEM(SAVESTATE_t* save, memc* mem) {
 
 	chunk = FindChunk(save, NUM_RAM_BREAKS_tag);
 	if (chunk) {
-		int num_ram_breaks = ReadInt(chunk);
-		chunk = FindChunk(save, FLASH_BREAKS_tag);
+		const int num_ram_breaks = ReadInt(chunk);
+		chunk = FindChunk(save, RAM_BREAKS_tag);
 		if (chunk) {
 			for (int i = 0; i < num_ram_breaks; i++)
 			{
-				int addr = ReadInt(chunk);
-				waddr_t waddr;
-				waddr.addr = (uint16_t)(addr % PAGE_SIZE);
-				waddr.page = (uint8_t)(addr / PAGE_SIZE);
-				waddr.is_ram = TRUE;
-				BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
+				const int addr = ReadInt(chunk);
+				const waddr_t waddr = MAKE_WADDR((uint16_t)(addr % PAGE_SIZE), (uint8_t)(addr / PAGE_SIZE), TRUE);
+				const BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
 				switch (type) {
 				case MEM_READ_BREAK:
 					set_mem_read_break(mem, waddr);
@@ -1305,7 +1300,7 @@ BOOL LoadSlot_Unsafe(SAVESTATE_t *save, LPCALC lpCalc) {
 	return TRUE;
 }
 
-BOOL LoadSlot(SAVESTATE_t *save, LPCALC lpCalc) {
+BOOL LoadSlot(SAVESTATE_t *save, const LPCALC lpCalc) {
 	try {
 		return LoadSlot_Unsafe(save, lpCalc);
 	}

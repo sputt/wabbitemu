@@ -446,11 +446,12 @@ void ReadTiFileHeader(FILE *infile, TIFILE_t *tifile) {
 	if (!_strnicmp(headerString, FLASH_HEADER, 8)) {
 		tifile->type = FLASH_TYPE;
 		tifile->flash = (TIFLASH_t*) malloc(sizeof(TIFLASH_t));
-		ZeroMemory(tifile->flash, sizeof(TIFLASH_t));
 		if (tifile->flash == NULL) {
 			FreeTiFile(tifile);
 			return;
 		}
+
+		ZeroMemory(tifile->flash, sizeof(TIFLASH_t));
 
 		unsigned char *ptr = (unsigned char *) tifile->flash;
 		for(i = 0; i < TI_FLASH_HEADER_SIZE && !feof(infile); i++) {

@@ -23,14 +23,14 @@ extern HINSTANCE g_hInst;
 // HINST hInst: The global handle to the application instance.
 // HWND  hWndParent: The handle to the control's parent window. 
 //
-static HWND CreateListView (HWND hwndParent) 
+static HWND CreateListView (const HWND hwndParent) 
 {
 	RECT rcClient;                       // The parent window's client area.
 
 	GetClientRect (hwndParent, &rcClient); 
 
 	// Create the list-view window in report view with label editing enabled.
-	HWND hWndListView = CreateWindow(WC_LISTVIEW, 
+	const HWND hWndListView = CreateWindow(WC_LISTVIEW, 
 									 _T(""),
 									 WS_CHILD | LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | WS_VISIBLE,
 									 0, 0,
@@ -51,7 +51,7 @@ static HWND CreateListView (HWND hwndParent)
 // hWndListView:        Handle to the list-view control.
 // cItems:              Number of items to insert.
 // Returns TRUE if successful, and FALSE otherwise.
-static BOOL InsertListViewItems(HWND hWndListView, int cItems)
+static BOOL InsertListViewItems(const HWND hWndListView, const int cItems)
 {
 	LVITEM lvI;
 
@@ -68,14 +68,15 @@ static BOOL InsertListViewItems(HWND hWndListView, int cItems)
 		lvI.iItem = index;
 	
 		// Insert items into the list.
-		if (ListView_InsertItem(hWndListView, &lvI) == -1)
+		if (ListView_InsertItem(hWndListView, &lvI) == -1) {
 			return FALSE;
+		}
 	}
 
 	return TRUE;
 }
 
-static void free_duplicate_calc_if_necessary(LPDEBUGWINDOWINFO lpDebugInfo) {
+static void free_duplicate_calc_if_necessary(LPDEBUGWINDOWINFO const lpDebugInfo) {
 	if (lpDebugInfo->duplicate_calc == NULL) {
 		return;
 	}
@@ -85,8 +86,8 @@ static void free_duplicate_calc_if_necessary(LPDEBUGWINDOWINFO lpDebugInfo) {
 	lpDebugInfo->duplicate_calc = NULL;
 }
 
-static void CloseSaveEdit(LPDEBUGWINDOWINFO lpDebugInfo) {
-	LPCALC lpCalc = lpDebugInfo->lpCalc;
+static void CloseSaveEdit(LPDEBUGWINDOWINFO const lpDebugInfo) {
+	LPCALC const lpCalc = lpDebugInfo->lpCalc;
 	if (lpDebugInfo->hwndEditControl == NULL) {
 		return;
 	}
@@ -94,7 +95,7 @@ static void CloseSaveEdit(LPDEBUGWINDOWINFO lpDebugInfo) {
 	TCHAR buf[10];
 	Edit_GetText(lpDebugInfo->hwndEditControl, buf, ARRAYSIZE(buf));
 	int value = GetWindowLongPtr(lpDebugInfo->hwndEditControl, GWLP_USERDATA);
-	int row_num = LOWORD(value);
+	const unsigned char row_num = (unsigned char)LOWORD(value);
 	//handles getting the user input and converting it to an int
 	//can convert bin, hex, and dec
 	value = StringToValue(buf);
@@ -102,10 +103,10 @@ static void CloseSaveEdit(LPDEBUGWINDOWINFO lpDebugInfo) {
 		value = 0;
 	}
 
-	uint8_t byte_value = value & 0xFF;
-	int port_num = lpDebugInfo->port_map[row_num];
-	BOOL output_backup = lpCalc->cpu.output;
-	unsigned char bus_backup = lpCalc->cpu.bus;
+	const uint8_t byte_value = value & 0xFF;
+	const int port_num = lpDebugInfo->port_map[row_num];
+	const BOOL output_backup = lpCalc->cpu.output;
+	const unsigned char bus_backup = lpCalc->cpu.bus;
 	lpCalc->cpu.bus = byte_value;
 	lpCalc->cpu.output = TRUE;
 	lpCalc->cpu.pio.devices[port_num].code(&lpCalc->cpu, &(lpCalc->cpu.pio.devices[port_num]));
@@ -120,7 +121,7 @@ static void CloseSaveEdit(LPDEBUGWINDOWINFO lpDebugInfo) {
 }
 
 static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { 
-	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(GetParent(GetParent(hwnd)), GWLP_USERDATA);
+	LPDEBUGWINDOWINFO const lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(GetParent(GetParent(hwnd)), GWLP_USERDATA);
 	switch (uMsg) {
 	case WM_KEYDOWN: {
 		if (wParam == VK_RETURN) {
@@ -139,7 +140,7 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 } 
 
 static void on_running_changed(LPCALC lpCalc, LPVOID lParam) {
-	HWND hListView = (HWND)lParam;
+	const HWND hListView = (HWND)lParam;
 	EnableWindow(hListView, !lpCalc->running);
 	UpdateWindow(hListView);
 }
@@ -269,9 +270,9 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 				}
 				case LVN_GETDISPINFO: 
 				{
-					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
-					int port_num = lpDebugInfo->port_map[plvdi->item.iItem];
-					LPCALC lpDuplicateCalc = lpDebugInfo->duplicate_calc;
+					const NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
+					const int port_num = lpDebugInfo->port_map[plvdi->item.iItem];
+					const LPCALC lpDuplicateCalc = lpDebugInfo->duplicate_calc;
 					if (lpDuplicateCalc == NULL && plvdi->item.iSubItem != 0) {
 						StringCchPrintf(plvdi->item.pszText, 10, _T("Error"));
 						break;
@@ -300,23 +301,26 @@ LRESULT CALLBACK PortMonitorProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 				}
 				case NM_CUSTOMDRAW:
 				{
-					int iRow;
-					LPNMLVCUSTOMDRAW pListDraw = (LPNMLVCUSTOMDRAW)lParam; 
+					const LPNMLVCUSTOMDRAW pListDraw = (LPNMLVCUSTOMDRAW)lParam; 
 					switch(pListDraw->nmcd.dwDrawStage) 
 					{ 
-					case CDDS_PREPAINT: 
+					case CDDS_PREPAINT: {
 						return CDRF_NOTIFYITEMDRAW;
+					}
 					case CDDS_ITEMPREPAINT: 
-					case CDDS_ITEMPREPAINT | CDDS_SUBITEM: 
-						iRow = (int)pListDraw->nmcd.dwItemSpec; 
-						if (lpCalc->cpu.pio.devices[lpDebugInfo->port_map[iRow]].breakpoint) { 
+					case CDDS_ITEMPREPAINT | CDDS_SUBITEM: {
+						const int iRow = (int)pListDraw->nmcd.dwItemSpec;
+						if (lpCalc->cpu.pio.devices[lpDebugInfo->port_map[iRow]].breakpoint) {
 							// pListDraw->clrText   = RGB(252, 177, 0); 
-							pListDraw->clrTextBk = COLOR_BREAKPOINT; 
+							pListDraw->clrTextBk = COLOR_BREAKPOINT;
 							return CDRF_NEWFONT;
 						}
+
 						return CDRF_DODEFAULT;
-					default: 
+					}
+					default: {
 						return CDRF_DODEFAULT;
+					}
 					}
 				}
 			}
