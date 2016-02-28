@@ -87,14 +87,10 @@ LPMAINWINDOW DoWizardSheet(HWND hwndOwner) {
 
 	DWORD flags;
 	// TODO: check common controls version not the OS
-	if (IsWindowsVistaOrGreater()) {
-		// MSDN says we should also set PSH_WIZARD. this however causes pszCaption
-		// to require a wide string. I think it's safer to leave the flag off, than
-		// to use a wide string and cast it
-		flags = PSH_AEROWIZARD;
-	} else {
-		flags = PSH_WIZARD97;
-	}
+	// MSDN says we should also set PSH_WIZARD. this however causes pszCaption
+	// to require a wide string. I think it's safer to leave the flag off, than
+	// to use a wide string and cast it
+	flags = PSH_AEROWIZARD;
 
 	psh.dwSize = sizeof(PROPSHEETHEADER);
 	psh.hInstance = g_hInst;
@@ -362,6 +358,15 @@ HRESULT OSDownloadCallback::OnProgress(ULONG ulProgress, ULONG ulProgressMax, UL
 		UpdateWindow(GetParent(hOSProgressBar));
 	}
 	return S_OK;
+}
+
+static void progress_callback(ULONG ulProgress, ULONG ulProgressMax) {
+	if (ulProgressMax != 0) {
+		SendMessage(hOSProgressBar, PBM_SETRANGE32, 0, ulProgressMax);
+		SendMessage(hOSProgressBar, PBM_SETPOS, ulProgress, 0);
+		//InvalidateRect(GetParent(hOSProgressBar), NULL, FALSE);
+		//UpdateWindow(GetParent(hOSProgressBar));
+	}
 }
 
 INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -644,35 +649,64 @@ static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version)
 	StringCbCopy(osPath, sizeof(osPath), downloaded_file);
 	TCHAR *url;
 	switch (model) {
-		case TI_73:
-			url = _T("https://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/73/TI73_OS.73u");
-			break;
-		case TI_83P:
-		case TI_83PSE:
-			url = _T("https://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI83Plus_OS.8Xu");
-			break;
-		case TI_84P:
-		case TI_84PSE:
-			if (version) {
-				url = _T("https://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS243.8Xu");
-			} else {
-				url = _T("https://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS.8Xu");
-			}
-			break;
-		case TI_84PCSE:
-			if (version) {
-				url = _T("https://education.ti.com/download/en/ASIA/5F0CBAC101194542B16B80BCE6CB3602/4D5547F48BBA4384BB85A645D7772A1A/TI84PlusC_OS.8Cu");
-			} else {
-				url = _T("https://education.ti.com/download/en/ASIA/5F0CBAC101194542B16B80BCE6CB3602/0BB0CC9043204D52BF22BC717A917A9A/TI84PlusC_OS-4.20.8Cu");
-			}
-			break;
-		default:
-			assert(false);
-			return FALSE;
+	case TI_73:
+		url = _T("https://education.ti.com/~/media/32E99F6FAEB2424D8313B0DEE7B70791");
+		break;
+	case TI_83P:
+	case TI_83PSE:
+		url = _T("https://education.ti.com/~/media/EEB252CDF6A748309894C1790408D0E7");
+		break;
+	case TI_84P:
+	case TI_84PSE:
+		if (version) {
+			url = _T("https://education.ti.com/~/media/A943680938CC460E8CB04554E99D665B");
+		}
+		else {
+			url = _T("https://education.ti.com/~/media/DA0795A5F0FA45D2A9AC03BB11B8245F");
+		}
+		break;
+	case TI_84PCSE:
+		url = _T("https://education.ti.com/~/media/4D5547F48BBA4384BB85A645D7772A1A");
+		break;
+	default:
+		assert(false);
+		return FALSE;
 	}
 
-	const HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, callback);
-	return SUCCEEDED(hr);
+	HINTERNET hInternet = InternetOpen(_T("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36"),
+		0, NULL, NULL, 0);
+
+	HINTERNET hFile = InternetOpenUrl(hInternet, url, NULL, 0, 0, NULL);
+	if (hFile != NULL) {
+		DWORD dwHeader = 0;
+		DWORD dwFileLength;
+		DWORD dwParamLength = sizeof(dwFileLength);
+		BOOL fQueryResult = HttpQueryInfo(hFile, HTTP_QUERY_CONTENT_LENGTH, &dwFileLength, &dwParamLength, &dwHeader);
+
+		BYTE Buffer[1024];
+		DWORD dwBytesRead = -1;
+
+		BOOL fRead = TRUE;
+		HANDLE hOut = CreateFile(downloaded_file, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+		DWORD dwTotalRead = 0;
+		while (fRead == TRUE && dwBytesRead != 0) {
+			fRead = InternetReadFile(hFile, Buffer, sizeof(Buffer), &dwBytesRead);
+			if (fRead) {
+				dwTotalRead += dwBytesRead;
+				DWORD dwWritten = 0;
+				WriteFile(hOut, Buffer, dwBytesRead, &dwWritten, NULL);
+				progress_callback(dwTotalRead, dwFileLength);
+			}
+		}
+		CloseHandle(hOut);
+		InternetCloseHandle(hFile);
+
+		InternetCloseHandle(hInternet);
+		return TRUE;
+	}
+	
+	return FALSE;
 }
 
 DWORD WINAPI StartTIConnect(LPVOID lpParam) {

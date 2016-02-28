@@ -92,6 +92,10 @@ BOOL HasAlpha(ARGB *pargb, SIZE sizImage, int cxRow)
 	return FALSE;
 }
 
+static BOOL IsWindows7OrGreater() {
+	return TRUE;
+}
+
 void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 	RECT rc;
 	GetClientRect(hwndToolbar, &rc);
