@@ -1,4 +1,4 @@
-![wabbitemu logo](sputt.github.com/wabbitemu/repository/logo.jpg)
+![wabbitemu logo](logo.png)
 ### For Windows, Mac OS X, and Android
 
 
