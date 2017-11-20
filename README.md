@@ -15,4 +15,4 @@ An accurate emulator/debugger for the TI-73, TI-81, TI-82, TI-83, TI-83+(SE), TI
 **Wabbitemu** is now available on Android phones and tablets.  Take your favorite TI calculator emulator on the go.
 
 
-[Google Play Store Page](https://play.google.com/store/apps/details?id=com.Revsoft.Wabbitemu)
+* [Google Play Store Page](https://play.google.com/store/apps/details?id=com.Revsoft.Wabbitemu)
