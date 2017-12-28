@@ -1,0 +1,36 @@
+body {
+    font-family: sans-serif;
+    width: 980px;
+    margin: auto;
+    margin-top: 20px;
+}
+
+.title {
+    font-size: 60px;
+    margin-bottom: 45px;
+}
+
+.sidebar {
+    margin-top: 80px;
+    float: right;
+    width: 350px;
+    color: #6a6a6a;
+}
+
+.sidebar li {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+#logo {
+
+}
+
+.content {
+    width: 600px;
+    margin-right: 30px;
+}
+
+#ad {
+    margin-left: 40px;
+}
