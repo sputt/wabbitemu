@@ -180,14 +180,17 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 
 	if (lpMainWindow->m_lpBitmapSkin) {
 		delete lpMainWindow->m_lpBitmapSkin;
+		lpMainWindow->m_lpBitmapSkin = NULL;
 	}
 
 	if (lpMainWindow->m_lpBitmapKeymap) {
 		delete lpMainWindow->m_lpBitmapKeymap;
+		lpMainWindow->m_lpBitmapKeymap = NULL;
 	}
 
 	if (lpMainWindow->m_lpBitmapRenderedSkin) {
 		delete lpMainWindow->m_lpBitmapRenderedSkin;
+		lpMainWindow->m_lpBitmapRenderedSkin = NULL;
 	}
 
 	int model = lpMainWindow->lpCalc->model;
@@ -267,11 +270,10 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 		keymapHeight = pBitmapKeymap->GetHeight();
 	}
 
-	if ((skinWidth % SKIN_WIDTH) || (skinHeight % SKIN_HEIGHT) || skinHeight <= 0 || skinWidth <= 0) {
-		lpMainWindow->bSkinEnabled = false;
-		MessageBox(lpMainWindow->hwndFrame, _T("Invalid skin size."), _T("Error"), MB_OK | MB_ICONERROR);
-		return 0;
-	} else if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight)) {
+	SKIN_WIDTH = skinWidth;
+	SKIN_HEIGHT = skinHeight;
+
+	if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight)) {
 		lpMainWindow->bSkinEnabled = false;
 		MessageBox(lpMainWindow->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"), MB_OK | MB_ICONERROR);
 		return 0;
@@ -282,8 +284,8 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 			lpMainWindow->skin_scale = lpMainWindow->skin_scale / lpMainWindow->default_skin_scale;
 		}
 
-		lpMainWindow->default_skin_scale = (double)SKIN_WIDTH / skinWidth;
-		lpMainWindow->skin_scale = lpMainWindow->skin_scale * lpMainWindow->default_skin_scale;
+		lpMainWindow->default_skin_scale = 1.0;
+		lpMainWindow->skin_scale = sqrt(253750.0 * 4 / (double)(skinWidth * skinHeight));
 		
 		lpMainWindow->m_RectSkin.Width = skinWidth;
 		lpMainWindow->m_RectSkin.Height = skinHeight;

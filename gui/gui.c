@@ -69,6 +69,8 @@
 #define WM_OPEN_DEBUGGER WM_AVI_AUDIO_FRAME+1
 #define WM_CLOSE_DEBUGGER WM_OPEN_DEBUGGER+1
 
+int SKIN_WIDTH = 350;
+int SKIN_HEIGHT = 725;
 
 CWabbitemuModule _Module;
 
@@ -458,7 +460,7 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 	}
 
 	if (lpMainWindow->bSkinEnabled) {
-		SetRect(&r, 0, 0, SKIN_WIDTH, SKIN_HEIGHT);
+		SetRect(&r, 0, 0, lpMainWindow->m_RectSkin.Width * lpMainWindow->scale, lpMainWindow->m_RectSkin.Height * lpMainWindow->scale);
 	} else {
 		SetRect(&r, 0, 0, 128 * lpMainWindow->scale, 64 * lpMainWindow->scale);
 	}

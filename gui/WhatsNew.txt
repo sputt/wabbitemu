@@ -1,3 +1,7 @@
+1.9.2.22
+Allow any size skin (and possibly brought back some bugs with skin scaling)
+Remove record AVI option which is not currently working
+
 1.9.2.21
 Fixed bugs with skin scaling
 Performance improvements

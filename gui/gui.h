@@ -9,8 +9,8 @@
 
 class CWabbitemu;
 
-#define SKIN_WIDTH	350
-#define SKIN_HEIGHT	725
+extern int SKIN_WIDTH;
+extern int SKIN_HEIGHT;
 
 #define MIN_SKIN_WIDTH	290
 #define MIN_SKIN_HEIGHT	600
@@ -20,7 +20,7 @@ class CWabbitemu;
 
 #define WABBITVER		_T("1.9")
 
-#define g_szWebPage		_T("http://wabbit.codeplex.com")
+#define g_szWebPage		_T("http://www.wabbitemu.org")
 #ifdef _WIN64
 #define g_szDownload	_T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/x64/Wabbitemu.exe")
 #else

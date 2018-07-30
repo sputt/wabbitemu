@@ -16,3 +16,5 @@ TestResults/
 Wabbitemu_h.h
 Wabbitemu_i.c
 Wabbitemu_p.c
+/GUI/Wabbitemu.aps
+/dlldata.c

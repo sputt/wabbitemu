@@ -277,7 +277,7 @@ LRESULT HandleSkinSizingMessage(HWND hwnd, LPMAINWINDOW lpMainWindow, WPARAM wPa
 	double CurrentRatio = (double)ClientNewWidth / (double)ClientNewHeight;
 	LONG DiffWidth = 0;
 	LONG DiffHeight = 0;
-	if (AdjustWidth > AdjustHeight) {
+	if (abs(AdjustWidth) < abs(AdjustHeight)) {
 		DiffHeight = (SKIN_HEIGHT * ClientNewWidth / SKIN_WIDTH) - ClientNewHeight;
 	} else if ((AdjustHeight > AdjustWidth) || (CurrentRatio - SkinRatio) > DBL_EPSILON) {
 		// second case may be caused by being sent WM_SIZE (eg aero snap)
@@ -335,8 +335,8 @@ LRESULT GetMinMaxInfo(HWND hwnd, LPMAINWINDOW lpMainWindow, MINMAXINFO *info) {
 	AdjustWindowRect(&minRc, WS_CAPTION | WS_TILEDWINDOW, GetMenu(hwnd) != NULL);
 	AdjustWindowRect(&maxRc, WS_CAPTION | WS_TILEDWINDOW, GetMenu(hwnd) != NULL);
 
-	info->ptMinTrackSize.x = minRc.right - minRc.left;
-	info->ptMinTrackSize.y = minRc.bottom - minRc.top;
+	info->ptMinTrackSize.x = SKIN_WIDTH / 2.0;
+	info->ptMinTrackSize.y = SKIN_HEIGHT / 2.0;
 	info->ptMaxTrackSize.x = maxRc.right - maxRc.left;
 	info->ptMaxTrackSize.y = maxRc.bottom - maxRc.top;
 	return 0;
