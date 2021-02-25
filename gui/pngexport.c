@@ -69,6 +69,7 @@ void export_png(LPCALC lpCalc, TCHAR *filename) {
 		Bitmap *newBitmap = new Bitmap(lcd->display_width * scale, lcd->height * scale);
 		Graphics graphics(newBitmap);
 		graphics.SetInterpolationMode(InterpolationModeNearestNeighbor);
+		graphics.SetPixelOffsetMode(PixelOffsetModeHalf);
 		graphics.DrawImage(image, 0, 0, lcd->width * scale, lcd->height * scale);
 		// delete so we close the output file
 		delete image;
