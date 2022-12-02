@@ -4,7 +4,7 @@
 
 // Unnamed struct/union
 #pragma warning( disable : 4201)
-#define _WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 
 #ifndef STRICT
 #define STRICT
@@ -18,12 +18,15 @@
 #include <Windows.h>
 #include <WindowsX.h>
 #include <tchar.h>
+#include <commdlg.h>
+#include <dlgs.h>
 #include <CommCtrl.h>
 #include <shlobj.h>
 #include <Uxtheme.h>
 #include <dwmapi.h>
 #include <Ole2.h>
 #include <OleIdl.h>
+#include <shellapi.h>
 #include <ShObjIdl.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -41,6 +44,8 @@
 #include <fcntl.h>
 #include <direct.h>
 #include <WinInet.h>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
 
 #ifdef __cplusplus
 #include <gdiplus.h>

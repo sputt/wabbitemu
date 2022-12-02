@@ -77,6 +77,7 @@
     <ClCompile Include="core\indexcb_reverse.c" />
     <ClCompile Include="core\reverse_info.c" />
     <ClCompile Include="DBPaneContainer.cpp" />
+    <ClCompile Include="dbremote.c" />
     <ClCompile Include="debugger\dbbreakpoints.c" />
     <ClCompile Include="debugger\dbcolorlcd.c" />
     <ClCompile Include="debugger\dbcommon.c" />
@@ -308,6 +309,7 @@
     <ClInclude Include="core\reverse_info.h" />
     <ClInclude Include="core\reverse_info_table.h" />
     <ClInclude Include="DBPaneContainer.h" />
+    <ClInclude Include="dbremote.h" />
     <ClInclude Include="debugger\dbbreakpoints.h" />
     <ClInclude Include="debugger\dbcolorlcd.h" />
     <ClInclude Include="debugger\dbcommon.h" />
@@ -781,7 +783,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreEmbeddedIDL>true</IgnoreEmbeddedIDL>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>

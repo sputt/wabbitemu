@@ -25,6 +25,7 @@
 #include "dbmonitor.h"
 #include "dbcolorlcd.h"
 #include "dbbreakpoints.h"
+#include "dbremote.h"
 
 #include "guibuttons.h"
 #include "guicommandline.h"
@@ -849,6 +850,10 @@ typedef BOOL (WINAPI *MINIDUMPWRITEDUMP)(HANDLE hProcess, DWORD dwPid, HANDLE hF
 static BOOL hasCrashed = FALSE;
 extern int def(FILE *, FILE *, int);
 
+void ListenForRemoteDebugger(LPCALC lpCalc) {
+	CreateThread(NULL, 0, dbremote_thread, lpCalc, NULL, NULL);
+}
+
 LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 	SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOALIGNMENTFAULTEXCEPT | SEM_NOGPFAULTERRORBOX);
 	if (hasCrashed) {
@@ -1097,6 +1102,8 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 	if (show_whats_new) {
 		ShowWhatsNew(FALSE);
 	}
+
+	ListenForRemoteDebugger(lpCalc);
 
 	LoadCommandlineFiles(&m_parsedArgs, (LPARAM) lpMainWindow, LoadToLPCALC);
 
