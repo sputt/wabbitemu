@@ -24,8 +24,54 @@
 #define IDC_LCD_MODE (IDC_LCD_ON+4)
 #define IDC_LCD_CONTRAST	(IDC_LCD_ON+5)
 
+// These are numbered strangely to match VICE's values
+typedef enum {
+	REGISTER_INVALID = -1,
+
+	REGISTER_A = 0x00,
+	REGISTER_PC = 0x03,
+	REGISTER_SP = 0x04,
+	REGISTER_FLAGS = 0x05,
+
+	REGISTER_AF = 0x06,
+	REGISTER_BC = 0x07,
+	REGISTER_DE = 0x08,
+	REGISTER_HL = 0x09,
+
+	REGISTER_IX = 0x0a,
+	REGISTER_IY = 0x0b,
+	REGISTER_I = 0x0c,
+	REGISTER_R = 0x0d,
+
+	REGISTER_AFP = 0x0e,
+	REGISTER_BCP = 0x0f,
+	REGISTER_DEP = 0x10,
+	REGISTER_HLP = 0x11,
+
+	REGISTER_B = 0x21,
+	REGISTER_C = 0x22,
+	REGISTER_D = 0x26,
+	REGISTER_E = 0x29,
+
+	REGISTER_H = 0x2f,
+	REGISTER_L = 0x30,
+
+	REGISTER_IXL = 0x31,
+	REGISTER_IXH = 0x32,
+
+	REGISTER_IYL = 0x33,
+	REGISTER_IYH = 0x34,
+} REGISTER;
+
+typedef struct register_info {
+	REGISTER id;
+	TCHAR* name;
+	void *data;
+	size_t size;
+} register_info_t;
 
 LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+register_info_t* GetAllRegisters(LPCALC lpCalc);
 void HandleEditMessages(HWND hwnd, WPARAM wParam, LPARAM lParam);
 
 #endif

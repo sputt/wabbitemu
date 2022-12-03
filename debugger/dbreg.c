@@ -147,6 +147,64 @@ static BOOL CALLBACK EnumDeselectChildren(HWND hwndChild, LPARAM) {
 	return TRUE;
 }
 
+static register_info_t* GetDisplayRegisters(LPCALC lpCalc) {
+	register_info_t reg[] = 
+	{
+			{REGISTER_AF, _T("af"), &lpCalc->cpu.af, 2}, {REGISTER_AFP, _T("af'"), &lpCalc->cpu.afp, 2},
+			{REGISTER_BC, _T("bc"), &lpCalc->cpu.bc, 2}, {REGISTER_BCP, _T("bc'"), &lpCalc->cpu.bcp, 2},
+			{REGISTER_DE, _T("de"), &lpCalc->cpu.de, 2}, {REGISTER_DEP, _T("de'"), &lpCalc->cpu.dep, 2},
+			{REGISTER_HL, _T("hl"), &lpCalc->cpu.hl, 2}, {REGISTER_HLP, _T("hl'"), &lpCalc->cpu.hlp, 2},
+			{REGISTER_IX, _T("ix"), &lpCalc->cpu.ix, 2}, {REGISTER_SP, _T("sp"),  &lpCalc->cpu.sp, 2},
+			{REGISTER_IY, _T("iy"), &lpCalc->cpu.iy, 2}, {REGISTER_PC, _T("pc"),  &lpCalc->cpu.pc, 2},
+			{REGISTER_INVALID, _T(""), NULL, -1},
+	};
+
+	void *ret = malloc(sizeof(reg));
+	memcpy(ret, reg, sizeof(reg));
+
+	return (register_info_t*)ret;
+}
+
+register_info_t* GetAllRegisters(LPCALC lpCalc) {
+	// These values are ordered to match VICE's ordering
+	register_info_t reg[] = 
+	{
+			{REGISTER_PC, _T("pc"), &lpCalc->cpu.pc, 2},
+			{REGISTER_A, _T("a"), &lpCalc->cpu.a, 1},
+			{REGISTER_AF, _T("af"), &lpCalc->cpu.af, 2},
+			{REGISTER_B, _T("b"), &lpCalc->cpu.b, 1},
+			{REGISTER_C, _T("c"), &lpCalc->cpu.c, 1},
+			{REGISTER_BC, _T("bc"), &lpCalc->cpu.bc, 1},
+			{REGISTER_D, _T("d"), &lpCalc->cpu.d, 1},
+			{REGISTER_E, _T("e"), &lpCalc->cpu.e, 1},
+			{REGISTER_DE, _T("de"), &lpCalc->cpu.de, 2},
+			{REGISTER_H, _T("h"), &lpCalc->cpu.h, 1},
+			{REGISTER_L, _T("l"), &lpCalc->cpu.l, 1},
+			{REGISTER_HL, _T("hl"), &lpCalc->cpu.hl, 2},
+			{REGISTER_IXH, _T("ixh"), &lpCalc->cpu.ixh, 1},
+			{REGISTER_IXL, _T("ixl"), &lpCalc->cpu.ixl, 1},
+			{REGISTER_IX, _T("ix"), &lpCalc->cpu.ix, 2},
+			{REGISTER_IYH, _T("iyh"), &lpCalc->cpu.iyh, 1},
+			{REGISTER_IYL, _T("iyl"), &lpCalc->cpu.iyl, 1},
+			{REGISTER_IY, _T("iy"), &lpCalc->cpu.iy, 2},
+			{REGISTER_SP, _T("sp"), &lpCalc->cpu.sp, 2},
+			{REGISTER_I, _T("i"), &lpCalc->cpu.i, 1},
+			{REGISTER_R, _T("r"), &lpCalc->cpu.r, 1},
+			{REGISTER_AFP, _T("af'"), &lpCalc->cpu.afp, 2},
+			{REGISTER_BCP, _T("bc'"), &lpCalc->cpu.bcp, 2},
+			{REGISTER_DEP, _T("de'"), &lpCalc->cpu.dep, 2},
+			{REGISTER_HLP, _T("hl'"), &lpCalc->cpu.hlp, 2},
+			{REGISTER_FLAGS, _T("fl"), &lpCalc->cpu.f, 2},
+
+			{REGISTER_INVALID, _T(""), NULL, -1},
+	};
+
+	void *ret = malloc(sizeof(reg));
+	memcpy(ret, reg, sizeof(reg));
+
+	return (register_info_t*)ret;
+}
+
 LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static LPCALC lpCalc;
 	static LPDEBUGWINDOWINFO lpDebugInfo;
@@ -155,23 +213,16 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	{
 		lpDebugInfo = (LPDEBUGWINDOWINFO) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 		lpCalc = lpDebugInfo->lpCalc;
-		struct {TCHAR *name; void *data; size_t size;} reg[] = 
-		{
-				{_T("af"), &lpCalc->cpu.af, 2}, {_T("af'"), &lpCalc->cpu.afp, 2},
-				{_T("bc"), &lpCalc->cpu.bc, 2}, {_T("bc'"), &lpCalc->cpu.bcp, 2},
-				{_T("de"), &lpCalc->cpu.de, 2}, {_T("de'"), &lpCalc->cpu.dep, 2},
-				{_T("hl"), &lpCalc->cpu.hl, 2}, {_T("hl'"), &lpCalc->cpu.hlp, 2},
-				{_T("ix"), &lpCalc->cpu.ix, 2}, {_T("sp"),  &lpCalc->cpu.sp, 2},
-				{_T("iy"), &lpCalc->cpu.iy, 2}, {_T("pc"),  &lpCalc->cpu.pc, 2},
-		};
+		register_info_t *reg = GetDisplayRegisters(lpCalc);
 
 		// Create all of the value fields
-		int i;
-		for (i = 0; i < NumElm(reg); i++) {
+		for (int i = 0; reg[i].id != -1; i++) {
 			HWND hwndValue = CreateValueField(hwnd, lpDebugInfo, reg[i].name, lpDebugInfo->kRegAddr, reg[i].data, reg[i].size, 4, HEX4);
 			SetWindowPos(hwndValue, NULL, (i % 2) * lpDebugInfo->kRegAddr*3, lpDebugInfo->kRegRow * (i / 2), 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 		}
+
+		free(reg);
 		return 0;
 	}
 	case WM_COMMAND:

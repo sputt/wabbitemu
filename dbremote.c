@@ -2,6 +2,7 @@
 
 #include "calc.h"
 #include "dbremote.h"
+#include "dbreg.h"
 #include "keys.h"
 
 #define DEFAULT_BUFLEN 512
@@ -326,6 +327,59 @@ static void process_exit(binary_command_t* command, LPCALC lpCalc) {
     calc_set_running(lpCalc, true);
 }
 
+static void send_register_info(LPCALC lpCalc, uint32_t request_id)
+{
+	register_info_t *regs;
+	register_info_t *regs_cursor;
+	unsigned char *response;
+	unsigned char *response_cursor;
+	uint32_t response_size = 2;
+	uint16_t count = 0;
+	uint8_t item_size = 3;
+
+	regs = GetAllRegisters(lpCalc);
+	regs_cursor = regs;
+
+	for (; regs_cursor->id != -1; regs_cursor++) {
+		++count;
+	}
+
+	response_size += count * (item_size + 1);
+	response = (unsigned char*)malloc(response_size);
+	response_cursor = response;
+
+	regs_cursor = regs;
+
+	response_cursor = write_uint16(count, response_cursor);
+
+	for (; regs_cursor->id != -1; regs_cursor++) {
+		*response_cursor = item_size;
+		++response_cursor;
+
+		*response_cursor = regs_cursor->id;
+		++response_cursor;
+
+		response_cursor = write_uint16(*(uint16_t*)(regs_cursor->data), response_cursor);
+	}
+
+	free(regs);
+
+	send_response(response_size, e_MON_RESPONSE_REGISTER_INFO, e_MON_ERR_OK, request_id, response);
+
+	free(response);
+}
+
+static void process_registers_get(binary_command_t* command, LPCALC lpCalc) {
+	// FIXME or ignore???
+	uint8_t requested_memspace = command->body[0];
+	if (command->length < 1) {
+		send_error(e_MON_ERR_CMD_INVALID_LENGTH, command->request_id);
+		return;
+	}
+
+	send_register_info(lpCalc, command->request_id);
+}
+
 static void process_command(unsigned char* pbuffer, LPCALC lpCalc)
 {
     BINARY_COMMAND command_type;
@@ -380,7 +434,7 @@ static void process_command(unsigned char* pbuffer, LPCALC lpCalc)
 
     }
     else if (command_type == e_MON_CMD_REGISTERS_GET) {
-        send_error(BINARY_ERROR::e_MON_ERR_CMD_INVALID_TYPE, command.request_id);
+		process_registers_get(&command, lpCalc);
     }
     else if (command_type == e_MON_CMD_REGISTERS_SET) {
         send_error(BINARY_ERROR::e_MON_ERR_CMD_INVALID_TYPE, command.request_id);
