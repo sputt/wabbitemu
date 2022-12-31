@@ -1233,6 +1233,7 @@ HRESULT CWabbitemuModule::PostMessageLoop() {
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int nCmdShow)
 {
+	SetProcessDPIAware();
 	return _Module.WinMain(nCmdShow);
 }
 
