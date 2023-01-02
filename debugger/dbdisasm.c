@@ -306,6 +306,7 @@ int disasmhdr_insert(HWND hwndHeader, disasmhdr_t* dhdr) {
 	int iSize;
 
 	HDC hdc = GetDC(GetParent(hwndHeader));
+	SelectObject(hdc, dhdr->hfont);
 	GetTextMetrics(hdc, &tm);
 	ReleaseDC(hwndHeader, hdc);
 

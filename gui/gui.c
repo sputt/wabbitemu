@@ -374,7 +374,9 @@ void gui_debug(LPCALC lpCalc, LPVOID lParam) {
 	}
 	BOOL set_place = TRUE;
 	int flags = 0;
-	RECT pos = {0, 0, 800, 600};
+	int iDpi = GetDpiForWindow(lpMainWindow->hwndFrame);
+
+	RECT pos = {0, 0, MulDiv(800, iDpi, 96), MulDiv(600, iDpi, 96)};
 	WINDOWPLACEMENT db_placement = {0};
 	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO)GetWindowLongPtr(lpMainWindow->hwndDebug, GWLP_USERDATA);
 	if (!lpDebugInfo) {
@@ -1233,7 +1235,7 @@ HRESULT CWabbitemuModule::PostMessageLoop() {
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int nCmdShow)
 {
-	SetProcessDPIAware();
+	// SetProcessDPIAware();
 	return _Module.WinMain(nCmdShow);
 }
 
@@ -1770,14 +1772,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				lpMainWindow->teacher_view_init = TRUE;
 			}
 
+			int dpi = GetDpiForWindow(hwnd);
 			RECT r;
 			int lcdWidth = lpCalc->cpu.pio.lcd->display_width;
 			int lcdHeight = lpCalc->cpu.pio.lcd->height;
 			int scale = lpCalc->model < TI_84PCSE ? TEACHER_VIEW_SCALE : 1;
-			SetRect(&r, 0, 0, 
-				(lcdWidth * scale * TEACHER_VIEW_COLS), 
-				(lcdHeight * scale * TEACHER_VIEW_ROWS) +
-				(TEACHER_VIEW_CAPTION_SIZE * (TEACHER_VIEW_ROWS)));
+			SetRect(&r, 0, 0,
+				MulDiv((lcdWidth* scale* TEACHER_VIEW_COLS), dpi, 96),
+				MulDiv((lcdHeight* scale* TEACHER_VIEW_ROWS) +
+					(TEACHER_VIEW_CAPTION_SIZE * (TEACHER_VIEW_ROWS)), dpi, 96));
 			AdjustWindowRect(&r, WS_CAPTION | WS_SYSMENU, FALSE);
 
 			POINT startPoint = GetStartPoint();

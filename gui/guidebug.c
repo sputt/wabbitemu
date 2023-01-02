@@ -48,21 +48,22 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 		return TRUE;
 
 	idChild = GetWindowID(hwndChild);
+	int iDpi = GetDpiForWindow(hwndChild);
 	
 	switch (idChild) {
 		case ID_TOOLBAR:
-			MoveWindow(hwndChild, 0, 0, rcParent->right, CY_TOOLBAR, FALSE); 
+			MoveWindow(hwndChild, 0, 0, rcParent->right, MulDiv(CY_TOOLBAR, iDpi, 96), FALSE); 
 			break;
 		case ID_DISASMTAB: {
 			RECT tabRc;
 			tabRc.left = 0;
-			tabRc.top = CY_TOOLBAR;
-			tabRc.right = rcParent->right - REG_PANE_WIDTH;
+			tabRc.top = MulDiv(CY_TOOLBAR, iDpi, 96);
+			tabRc.right = rcParent->right - MulDiv(REG_PANE_WIDTH, iDpi, 96);
 			tabRc.bottom = debugInfo->cyDisasm;
 			MoveWindow(hwndChild, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, FALSE);
 			int index = TabCtrl_GetCurSel(hwndChild);
 			tabRc.top = 0;
-			tabRc.bottom = debugInfo->cyDisasm - CY_TOOLBAR;
+			tabRc.bottom = debugInfo->cyDisasm - MulDiv(CY_TOOLBAR, iDpi, 96);
 			TabCtrl_AdjustRect(hwndChild, FALSE, &tabRc);
 			HWND curTab = GetDisasmPaneHWND(debugInfo, index);
 			MoveWindow(curTab, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, FALSE);
@@ -70,20 +71,20 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 			break;
 		}
 		case ID_MEMTAB: {
-			MoveWindow(hwndChild, 3, debugInfo->cyDisasm + debugInfo->cyGripper, rcParent->right - 103 - REG_PANE_WIDTH - 8,
-						debugInfo->cyMem - debugInfo->cyGripper - 3, FALSE);
+			MoveWindow(hwndChild, MulDiv(3, iDpi, 96), debugInfo->cyDisasm + debugInfo->cyGripper, rcParent->right - MulDiv(103 + 8, iDpi, 96) - MulDiv(REG_PANE_WIDTH, iDpi, 96),
+						debugInfo->cyMem - debugInfo->cyGripper - MulDiv(3, iDpi, 96), FALSE);
 			int index = TabCtrl_GetCurSel(hwndChild);
 			HWND curTab = GetMemPaneHWND(debugInfo, index);
-			MoveWindow(curTab, 3, 24, rcParent->right - REG_PANE_WIDTH - 118, debugInfo->cyMem - debugInfo->cyGripper - 32, FALSE);
+			MoveWindow(curTab, MulDiv(3, iDpi, 96), MulDiv(24, iDpi, 96), rcParent->right - MulDiv(REG_PANE_WIDTH + 118, iDpi, 96), debugInfo->cyMem - debugInfo->cyGripper - MulDiv(32, iDpi, 96), FALSE);
 			SendMessage(curTab, WM_USER, DB_UPDATE, 0);
 			break;
 		}
 		case ID_STACK:
-			MoveWindow(hwndChild, rcParent->right - 110 - REG_PANE_WIDTH, debugInfo->cyDisasm + debugInfo->cyGripper,
-						110, debugInfo->cyMem - debugInfo->cyGripper, FALSE);
+			MoveWindow(hwndChild, rcParent->right - MulDiv(110, iDpi, 96) - MulDiv(REG_PANE_WIDTH, iDpi, 96), debugInfo->cyDisasm + debugInfo->cyGripper,
+				MulDiv(110, iDpi, 96), debugInfo->cyMem - debugInfo->cyGripper, FALSE);
 			break;
 		case ID_REG:
-			SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
+			SetWindowPos(hwndChild, HWND_TOP, rcParent->right - MulDiv(REG_PANE_WIDTH, iDpi, 96), MulDiv(CY_TOOLBAR, iDpi, 96), MulDiv(REG_PANE_WIDTH, iDpi, 96), rcParent->bottom - CY_TOOLBAR, 0);
 			break;
 	}
 	SendMessage(hwndChild, WM_USER, DB_UPDATE, 0);
@@ -379,8 +380,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			lpDebugInfo->lpMainWindow = lpMainWindow;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LPARAM) lpDebugInfo);
 
-			lpDebugInfo->cyGripper = 10;
-			lpDebugInfo->cyDisasm = 350;
+			int iDpi = GetDpiForWindow(hwnd);
+			lpDebugInfo->cyGripper = MulDiv(10, iDpi, 96);
+			lpDebugInfo->cyDisasm = MulDiv(350, iDpi, 96);
 			lpDebugInfo->hDebug = hwnd;
 			lpDebugInfo->code_count_tstates = -1;
 			lpDebugInfo->dispType = (DISPLAY_BASE) QueryDebugKey((TCHAR *) DisplayTypeString);
@@ -506,7 +508,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				g_szRegName,
 				_T("reg"),
 				WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL,
-				0, 0, 100, 300,
+				0, 0, 1, 1,
 				hwnd,
 				(HMENU) ID_REG,
 				g_hInst, lpDebugInfo);

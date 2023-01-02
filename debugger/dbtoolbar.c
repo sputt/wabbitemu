@@ -120,7 +120,7 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 		SelectObject(hdcRight, hbmRight);
 
 		StretchBlt(hdcBuf, 0, 0, r->right - r->left, r->bottom - r->top,
-				hdcRight, 0, r->top, 1, r->bottom - r->top, SRCCOPY);
+				hdcRight, 0, 0, 1, 32, SRCCOPY);
 
 		DeleteObject(hbmRight);
 		DeleteDC(hdcRight);
@@ -662,6 +662,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			}
 
 			bf.SourceConstantAlpha = 255;
+			int iDpi = GetDpiForWindow(hwnd);
 
 			int ox = 0, oy = 0;
 			if (tbb->MouseState == MOUSE_DOWN || tbb->MouseState == MOUSE_DOWN_SPLIT)
@@ -690,7 +691,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 
 			HDC hdcBtn = CreateCompatibleDC(hdc);
 			HBITMAP hbmPrior = (HBITMAP) SelectObject(hdcBtn, tbb->hbmIcon);
-			AlphaBlend(	hdcBuf, 4 + ox, 4 + oy, 16, 16,
+			AlphaBlend(	hdcBuf, MulDiv(4, iDpi, 96) + ox, MulDiv(4, iDpi, 96) + oy, MulDiv(16, iDpi, 96), MulDiv(16, iDpi, 96),
 						hdcBtn, 0, 0, 16, 16,
 						bf);
 
@@ -701,7 +702,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			TCHAR szTitle[32];
 			GetWindowText(hwnd, szTitle, 32);
 
-			RECT r = {16 + 9 + ox, 2 + oy, 400 + ox, 24 + oy};
+			RECT r = {MulDiv(16 + 9, iDpi, 96) + ox, 2 + oy, MulDiv(400, iDpi, 96) + ox, MulDiv(24, iDpi, 96) + oy};
 			if (!isWindows7OrGreater) {
 				SetTextColor(hdcBuf, RGB(30, 57, 91));
 			} else {
@@ -761,11 +762,14 @@ int CreateToolbarButton(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *s
 		prevBtn->next = tbb;
 	tbb->next = NULL;
 
+	RECT parentRect;
+	GetWindowRect(hwndParent, &parentRect);
+
 	HWND hwndBtn = CreateWindow(
 		_T("BUTTON"),
 		szCaption,
 		WS_CHILD | BS_PUSHBUTTON,
-		x, y, 60, 24,
+		0, 0, 1, 1,
 		hwndParent, (HMENU) ID, g_hInst, NULL);
 	SetWindowFont(hwndBtn, lpDebugInfo->hfontSegoe, FALSE);
 
@@ -785,10 +789,12 @@ int CreateToolbarButton(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *s
 		img_sz_seperator = 0;
 	int splitSize = 0;
 	if (tbb->bSplitButton) {
-		splitSize = 20;
+		splitSize = 20; 
 		tbb->hMenu = hMenu;
 	}
-	MoveWindow(hwndBtn, x, y, 4 + 16 + img_sz_seperator + splitSize + r.right + 4, 24, FALSE);
+
+	int iDpi = GetDpiForWindow(hwndParent);
+	MoveWindow(hwndBtn, x, y, MulDiv(16 + 8 + img_sz_seperator, iDpi, 96) + splitSize + r.right, MulDiv(24, iDpi, 96), FALSE);
 	ShowWindow(hwndBtn, SW_SHOW);
 
 	OldButtonProc = (WNDPROC) GetWindowLongPtr(hwndBtn, GWLP_WNDPROC);
@@ -817,7 +823,7 @@ int CreateToolbarButton(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *s
 	toolInfo.lpszText = szTooltip;
 	SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &toolInfo);
 
-	return x + 4 + 16 + 8 + r.right + 4 + 4 + splitSize;
+	return x + MulDiv(16 + img_sz_seperator + 16, iDpi, 96) + r.right + splitSize;
 }
 
 BOOL CALLBACK EnumToolbarRedraw(HWND hwndChild, LPARAM) {
@@ -886,6 +892,10 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 			prevBtn = NULL;
 			SelectObject(GetDC(hwnd), lpDebugInfo->hfontSegoe);
+			int iDpi = GetDpiForWindow(hwnd);
+
+			int buttonY = MulDiv(4, iDpi, 96);
+
 			int next = 4;
 			next = CreateToolbarButton(hwnd,
 				lpDebugInfo,
@@ -893,7 +903,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				_T("Run the calculator."),
 				_T("DBRun"),
 				next,
-				4,
+				buttonY,
 				RUN_ID);
 			next = CreateToolbarButton(hwnd,
 				lpDebugInfo,
@@ -901,7 +911,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				_T("Toggle the breakpoint on the current selection."),
 				_T("DBBreak"),
 				next,
-				4,
+				buttonY,
 				BREAK_ID);
 			HMENU hmenu = LoadMenu(g_hInst, (LPCTSTR) IDR_DISASM_WATCH_MENU);
 			next = CreateToolbarButton(hwnd,
@@ -910,7 +920,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				_T("Toggle a memory breakpoint at the current selection."),
 				_T("DBMemBreak"),
 				next,
-				4,
+				buttonY,
 				MEM_BREAK_ID,
 				TRUE,
 				hmenu);
@@ -920,7 +930,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				_T("Run a single command."),
 				_T("DBStep"),
 				next,
-				4,
+				buttonY,
 				STEP_ID);
 			next = CreateToolbarButton(hwnd,
 				lpDebugInfo,
@@ -928,7 +938,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				_T("Run a single line."),
 				_T("DBStepOver"),
 				next,
-				4,
+				buttonY,
 				STEP_OVER_ID);
 #ifdef WITH_REVERSE
 			next = CreateToolbarButton(hwnd,
@@ -937,7 +947,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				_T("Reverses a single command."),
 				_T("DBStepBack"),
 				next,
-				4,
+				buttonY,
 				STEP_BACK_ID);
 #endif
 			next = CreateToolbarButton(hwnd,
@@ -946,7 +956,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				_T("Goto an address in RAM or Flash."),
 				_T("DBGoto"),
 				next,
-				4,
+				buttonY,
 				GOTO_ID);
 
 			TCHAR *szChevronBMP;
@@ -1142,10 +1152,10 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				SelectObject(hdcRight, hbmRight);
 
 				if (rc.right > 3 + 120) {
-					StretchBlt(hdcBuf, 3, 0, rc.right - 123, 32, hdcRight, 0, 0, 1, 32, SRCCOPY);
+					StretchBlt(hdcBuf, 3, 0, rc.right - 123, rc.bottom - rc.top, hdcRight, 0, 0, 1, 32, SRCCOPY);
 				}
 
-				BitBlt(hdcBuf, rc.right - 120, 0, 120, 32, hdcRight, 0, 0, SRCCOPY);
+				StretchBlt(hdcBuf, rc.right - 120, 0, 120, rc.bottom - rc.top, hdcRight, 0, 0, 120, 32, SRCCOPY);
 
 				DeleteObject(hbmRight);
 				DeleteDC(hdcRight);
@@ -1154,7 +1164,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				HBITMAP hbmLeft = LoadBitmap(g_hInst, isWindows7OrGreater ? _T("TBLEFT7") : _T("TBLEFT"));
 				SelectObject(hdcLeft, hbmLeft);
 
-				BitBlt(hdcBuf, 0, 0, 3, 32, hdcLeft, 0, 0, SRCCOPY);
+				StretchBlt(hdcBuf, 0, 0, 3, rc.bottom - rc.top, hdcLeft, 0, 0, 1, 32, SRCCOPY);
 
 				DeleteObject(hbmLeft);
 				DeleteDC(hdcLeft);

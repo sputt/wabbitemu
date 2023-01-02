@@ -128,20 +128,20 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 			return TRUE;
 		}
-		case WM_SIZE: {
-			GetWindowRect(hwnd, &VTrc);
-			int width = VTrc.right - VTrc.left - 14 - 6 - 8;
-			int height = VTrc.bottom - VTrc.top - 38 - 30 - 73;
-			MoveWindow(g_hwndVarTree, 6, 30, width, height, TRUE);
-			SetWindowPos(GetDlgItem(hwnd, IDC_TXT_NAME), NULL, 15, height + 2 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
-			SetWindowPos(GetDlgItem(hwnd, IDC_LAB_ADDRESS), NULL, 6, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
-			SetWindowPos(GetDlgItem(hwnd, IDC_TXT_ADDRESS), NULL, 65, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
-			SetWindowPos(GetDlgItem(hwnd, IDC_LAB_PAGE), NULL, 6, height + 40 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
-			SetWindowPos(GetDlgItem(hwnd, IDC_TXT_PAGE), NULL, 65, height + 40 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
-			SetWindowPos(GetDlgItem(hwnd, IDC_LAB_RAM), NULL, 150, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
-			SetWindowPos(GetDlgItem(hwnd, IDC_TXT_RAM), NULL, 205, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
-			return 0;
-		}
+		//case WM_SIZE: {
+		//	GetWindowRect(hwnd, &VTrc);
+		//	int width = VTrc.right - VTrc.left - 14 - 6 - 8;
+		//	int height = VTrc.bottom - VTrc.top - 38 - 30 - 73;
+		//	MoveWindow(g_hwndVarTree, 6, 30, width, height, TRUE);
+		//	SetWindowPos(GetDlgItem(hwnd, IDC_TXT_NAME), NULL, 15, height + 2 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
+		//	SetWindowPos(GetDlgItem(hwnd, IDC_LAB_ADDRESS), NULL, 6, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
+		//	SetWindowPos(GetDlgItem(hwnd, IDC_TXT_ADDRESS), NULL, 65, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
+		//	SetWindowPos(GetDlgItem(hwnd, IDC_LAB_PAGE), NULL, 6, height + 40 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
+		//	SetWindowPos(GetDlgItem(hwnd, IDC_TXT_PAGE), NULL, 65, height + 40 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
+		//	SetWindowPos(GetDlgItem(hwnd, IDC_LAB_RAM), NULL, 150, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
+		//	SetWindowPos(GetDlgItem(hwnd, IDC_TXT_RAM), NULL, 205, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOCOPYBITS);
+		//	return 0;
+		//}
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
 				case IDC_REFRESH_VAR_LIST:

@@ -117,17 +117,19 @@ LRESULT CALLBACK TeacherViewProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 		GetTextMetrics(hdc, &tm);
 		ReleaseDC(hwnd, hdc);
 
+		int dpi = GetDpiForWindow(hwnd);
+
 		LPCALC lpCalc = lpMainWindow->lpCalc;
-		LONG lcd_width = lpCalc->cpu.pio.lcd->display_width * TEACHER_VIEW_SCALE;
-		LONG lcd_height = lpCalc->cpu.pio.lcd->height * TEACHER_VIEW_SCALE;
+		LONG lcd_width = MulDiv(lpCalc->cpu.pio.lcd->display_width * TEACHER_VIEW_SCALE, dpi, 96);
+		LONG lcd_height = MulDiv(lpCalc->cpu.pio.lcd->height * TEACHER_VIEW_SCALE, dpi, 96);
 		int i = BASE_ID;
 
 		for (int row = 0; row < TEACHER_VIEW_ROWS; row++) {
 			for (int col = 0; col < TEACHER_VIEW_COLS; col++) {
 				TCHAR *name = _T("View Type: ");
-				LONG x = lcd_width * col + 5;
-				LONG y = (lcd_height * (row + 1)) + (TEACHER_VIEW_CAPTION_SIZE * row) + 
-					(TEACHER_VIEW_CAPTION_SIZE / 4);
+				LONG x = lcd_width * col + tm.tmAveCharWidth;
+				LONG y = (lcd_height * (row + 1)) + MulDiv((TEACHER_VIEW_CAPTION_SIZE * row) +
+					(TEACHER_VIEW_CAPTION_SIZE / 4), dpi, 96);
 				LONG width = tm.tmAveCharWidth * _tcslen(name);
 				LONG height = tm.tmHeight;
 				HWND hwndNewStatic = CreateWindow(WC_STATIC, name, WS_CHILD | WS_VISIBLE, 
@@ -136,7 +138,7 @@ LRESULT CALLBACK TeacherViewProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 				HWND hwndNewCombo = CreateWindow(WC_COMBOBOX, _T(""), 
 					WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS,
-					x + width, y - 1, 100, height, hwnd, (HMENU)i++, g_hInst, NULL);
+					x + width, y - 1, tm.tmAveCharWidth * 10, height, hwnd, (HMENU)i++, g_hInst, NULL);
 				SetWindowFont(hwndNewCombo, hfontSegoe, TRUE);
 				ComboBox_AddString(hwndNewCombo, _T("Y="));
 				ComboBox_AddString(hwndNewCombo, _T("Stat Plot"));
@@ -203,9 +205,11 @@ LRESULT CALLBACK TeacherViewProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 		lpNewCalc->running = TRUE;
 		lpNewCalc->speed = 400;
+
+		int dpi = GetDpiForWindow(hwnd);
 		int scale = lpNewCalc->model < TI_84PCSE ? TEACHER_VIEW_SCALE : 1;
-		LONG lcd_width = lpNewCalc->cpu.pio.lcd->display_width * scale;
-		LONG lcd_height = lpNewCalc->cpu.pio.lcd->height * scale;
+		LONG lcd_width = MulDiv(lpNewCalc->cpu.pio.lcd->display_width * scale, dpi, 96);
+		LONG lcd_height = MulDiv(lpNewCalc->cpu.pio.lcd->height * scale, dpi, 96);
 
 		for (int row = 0; row < TEACHER_VIEW_ROWS; row++) {
 			for (int col = 0; col < TEACHER_VIEW_COLS; col++) {
@@ -236,7 +240,7 @@ LRESULT CALLBACK TeacherViewProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 				calc_run_tstates(lpNewCalc, lpNewCalc->timer_c.freq / 8);
 				DrawScreen(g, 
 					row * lcd_width,
-					(col * lcd_height) + (TEACHER_VIEW_CAPTION_SIZE * col),
+					(col * lcd_height) + MulDiv((TEACHER_VIEW_CAPTION_SIZE * col), dpi, 96),
 					lcd_width,
 					lcd_height,
 					lpNewCalc);

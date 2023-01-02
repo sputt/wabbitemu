@@ -86,7 +86,6 @@ HWND CreateExpandPane(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *nam
 			MessageBox(NULL, _T("Unable to set parent!\n"), _T("shit"), MB_OK);
 		}
 		ShowWindow(contents, SW_SHOW);
-		SetWindowPos(contents, HWND_BOTTOM, 16, tm.tmHeight*3/2, 0, 0, SWP_NOSIZE);
 		//DestroyWindow(contents);
 	}
 
@@ -144,14 +143,14 @@ void SetExpandPaneState(LPDEBUGWINDOWINFO lpDebugInfo, const ep_state *state) {
 
 }
 
-void DrawHeader(HDC hdc, HFONT hfontSegoe, TCHAR *s, int y, int width) {
+void DrawHeader(HDC hdc, HFONT hfontSegoe, TCHAR *s, int dpi, int y, int width) {
 
 	SelectObject(hdc, hfontSegoe);
 
 	TEXTMETRIC tm;
 	GetTextMetrics(hdc, &tm);
 
-	RECT r = {8, y, width, y + tm.tmHeight*3/2};
+	RECT r = {MulDiv(8, dpi, 96), y, width, y + tm.tmHeight*3/2};
 
 	SetBkMode(hdc, TRANSPARENT);
 	SetTextColor(hdc, RGB(0, 51, 153));
@@ -161,7 +160,7 @@ void DrawHeader(HDC hdc, HFONT hfontSegoe, TCHAR *s, int y, int width) {
 	SelectObject(hdc, GetStockObject(DC_PEN));
 	SetDCPenColor(hdc, RGB(176, 191, 222));
 	MoveToEx(hdc, r.right + tm.tmAveCharWidth/2, (r.bottom - r.top)/2 + 1, NULL);
-	LineTo(hdc, width - 28, (r.bottom - r.top)/2 + 1);
+	LineTo(hdc, width - MulDiv(28, dpi, 96), (r.bottom - r.top)/2 + 1);
 }
 
 
@@ -175,13 +174,14 @@ static LRESULT CALLBACK HeaderProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		return 0;
 	case WM_PAINT:
 	{
+		int iDpi = GetDpiForWindow(hwnd);
 		HDC hdc;
 		PAINTSTRUCT ps;
-		TCHAR pszText[32];
+		TCHAR pszText[256];
 		RECT rc;
 		ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-		GetWindowText(GetParent(hwnd), pszText, sizeof(pszText));
+		GetWindowText(GetParent(hwnd), pszText, ARRAYSIZE(pszText));
 
 		hdc = BeginPaint(hwnd, &ps);
 		GetClientRect(hwnd, &rc);
@@ -189,7 +189,7 @@ static LRESULT CALLBACK HeaderProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		if (eps->bHot) {
 			DrawItemSelection(hdc, &rc, TRUE, FALSE, 130);
 		}
-		DrawHeader(hdc, eps->lpDebugInfo->hfontSegoe, pszText, 0, rc.right - rc.left);
+		DrawHeader(hdc, eps->lpDebugInfo->hfontSegoe, pszText, iDpi, 0, rc.right - rc.left);
 		EndPaint(hwnd, &ps);
 		return 0;
 	}
@@ -240,6 +240,7 @@ static WNDPROC OldButtonProc;
 static HDC hdcButtons = NULL;
 
 static LRESULT CALLBACK ExpandButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+	int iDpi = GetDpiForWindow(hwnd);
 	switch (Message) {
 		case WM_VSCROLL:
 			SendMessage(GetParent(hwnd), Message, wParam, lParam);
@@ -306,11 +307,12 @@ static LRESULT CALLBACK ExpandButtonProc(HWND hwnd, UINT Message, WPARAM wParam,
 			if (eps->bButtonHot)
 				base_x += 15;
 
-			BitBlt(hdc, (rc.right - rc.left - 15)/2,
-					(rc.bottom - rc.top - 15)/2, 15, 15, hdcButtons, base_x, 15, SRCAND);
+			int buttonSize = MulDiv(15, iDpi, 96);
+			StretchBlt(hdc, (rc.right - rc.left - buttonSize)/2,
+					(rc.bottom - rc.top - buttonSize)/2, buttonSize, buttonSize, hdcButtons, base_x, 15, 15, 15, SRCAND);
 
-			BitBlt(hdc, (rc.right - rc.left - 15)/2,
-					(rc.bottom - rc.top - 15)/2, 15, 15, hdcButtons, base_x, 0, SRCPAINT);
+			StretchBlt(hdc, (rc.right - rc.left - buttonSize)/2,
+					(rc.bottom - rc.top - buttonSize)/2, buttonSize, buttonSize, hdcButtons, base_x, 0, 15, 15, SRCPAINT);
 
 			if (eps->bFading) {
 				// Blit the copy to the actual hdc
@@ -349,6 +351,7 @@ static LRESULT CALLBACK ExpandButtonProc(HWND hwnd, UINT Message, WPARAM wParam,
 LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static TEXTMETRIC tm;
 	static BOOL bFirstRun = TRUE;
+	int iDpi = GetDpiForWindow(hwnd);
 
 	switch (Message) {
 		case WM_CREATE:
@@ -378,7 +381,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					_T("WabbitExpPaneHeader"),
 					_T("Test"),
 					WS_CHILD | WS_VISIBLE,
-					0, 0, 40, 20,
+					0, 0, 1, 1,
 					hwnd, (HMENU) 10,
 					g_hInst, NULL);
 			SetWindowPos(eps->hwndHeader, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
@@ -403,7 +406,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			HDC hdc = GetDC(hwnd);
 			GetTextMetrics(hdc, &tm);
 			ReleaseDC(hwnd, hdc);
-			eps->dwHeight = 100;
+			// eps->dwHeight = MulDiv(100, iDpi, 96);
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 			return 0;
 		}
@@ -472,16 +475,17 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		case WM_SIZE:
 		{
 			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-
+			
 			HDC hdc = GetDC(hwnd);
 			SelectObject(hdc, eps->lpDebugInfo->hfontSegoe);
+			GetTextMetrics(hdc, &tm);
 
 			ReleaseDC(hwnd, hdc);
 
 			RECT prc;
 			GetWindowRect(GetParent(hwnd), &prc);
 
-			DWORD dwHeight = tm.tmHeight*3/2;
+			DWORD dwHeaderHeight = MulDiv(tm.tmHeight, 3, 2);
 			DWORD dwWidth = prc.right - prc.left - GetSystemMetrics(SM_CXVSCROLL);
 			int index = GetWindowLongPtr(hwnd, GWLP_ID) - EXPAND_PANE_BASE_ID;
 
@@ -503,11 +507,10 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 				GetWindowInfo(eps->contents, &wi);
 
 				eps->dwHeight = wi.rcClient.bottom - wi.rcClient.top;
-				if ((eps->ExpandState == EP_OPENING) && ((eps->VisibleHeight + tm.tmHeight*3/2) > eps->dwHeight)) {
+				if ((eps->ExpandState == EP_OPENING) && ((eps->VisibleHeight + dwHeaderHeight) > eps->dwHeight)) {
 					KillTimer(hwnd, 0);
 					eps->ExpandState = EP_OPEN;
-					eps->VisibleHeight = eps->dwHeight - tm.tmHeight*3/2;
-					printf("Pane is open\n");
+					eps->VisibleHeight = eps->dwHeight - dwHeaderHeight;
 					HWND hParent = GetParent(hwnd);
 					if (hParent != NULL)
 						SendMessage(hParent, WM_SIZE, 0, 0);
@@ -515,27 +518,31 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					KillTimer(hwnd, 0);
 					eps->ExpandState = EP_CLOSED;
 					eps->VisibleHeight = 0;
-					printf("Pane is closed\n");
 					HWND hParent = GetParent(hwnd);
 					if (hParent != NULL)
 						SendMessage(hParent, WM_SIZE, 0, 0);
 				}
 
-				SetWindowPos(eps->contents, HWND_BOTTOM, 16, tm.tmHeight*3 + (int) eps->VisibleHeight - eps->dwHeight, 0, 0, SWP_NOSIZE);
+				SetWindowPos(eps->contents, HWND_BOTTOM,
+					MulDiv(16, iDpi, 96),
+					dwHeaderHeight * 2 + (int) eps->VisibleHeight - eps->dwHeight,
+					0, 0, SWP_NOSIZE);
 				InvalidateRect(eps->contents, NULL, FALSE);
 				UpdateWindow(eps->contents);
 			}
 
+			DWORD dwHeight = dwHeaderHeight;
 			if (eps->ExpandState != EP_CLOSED)
-				dwHeight = tm.tmHeight*3/2 + (DWORD) eps->VisibleHeight;
+				dwHeight += (DWORD) eps->VisibleHeight;
 			//accounts for a gap the MoveWindow y = 2 below
-			eps->lpDebugInfo->PanesHeight += dwHeight + 2;
+			eps->lpDebugInfo->PanesHeight += dwHeight + MulDiv(2, iDpi, 96);
 
 			RECT rc;
-			MoveWindow(hwnd, 2, cy, dwWidth - 4, dwHeight, TRUE);
+			MoveWindow(hwnd, MulDiv(2, iDpi, 96), cy, dwWidth - MulDiv(4, iDpi, 96), dwHeight, TRUE);
 			GetClientRect(hwnd, &rc);
-			SetWindowPos(eps->hwndHeader, HWND_TOP, 0, 0, dwWidth, tm.tmHeight*3/2, 0);
-			SetWindowPos(eps->hwndBtn, NULL, dwWidth - 24 - 8, (tm.tmHeight*3/2 - 20)/2, 20, 20, SWP_NOZORDER);
+			SetWindowPos(eps->hwndHeader, HWND_TOP, 0, 0, dwWidth, dwHeaderHeight, 0);
+			SetWindowPos(eps->hwndBtn, NULL, dwWidth - MulDiv(24 + 8, iDpi, 96), (dwHeaderHeight - MulDiv(20, iDpi, 96))/2,
+				MulDiv(20, iDpi, 96), MulDiv(20, iDpi, 96), SWP_NOZORDER);
 
 			return 0;
 		}
@@ -558,7 +565,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			FillRect(hdc, &r, hbr);
 			CopyRect(&r, &rc);
 			r.top += tm.tmHeight*3/2;
-			r.right = 16;
+			r.right = MulDiv(16, iDpi, 96);
 			FillRect(hdc, &r, hbr);
 
 			RECT rContents;

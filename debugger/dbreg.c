@@ -1175,6 +1175,8 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	static SCROLLINFO si;
 	static LPDEBUGWINDOWINFO lpDebugInfo;
 
+	int iDpi = GetDpiForWindow(hwnd);
+
 	switch (Message) {
 		case WM_CREATE:
 		{
@@ -1329,7 +1331,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			lpDebugInfo->reg_pane_old_height = si.nMax;
 			ArrangeExpandPanes(lpDebugInfo);
-			int height = GetExpandPanesHeight(lpDebugInfo) + 7;
+			int height = GetExpandPanesHeight(lpDebugInfo) + MulDiv(7, iDpi, 96);
 			// positive diff we opened a pane, negative diff we closed
 			int diff = height - si.nMax;
 

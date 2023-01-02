@@ -1,72 +1,31 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wabbitemu", "Wabbitemu.vcxproj", "{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}"
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 2
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Wabbitemu.vcxproj
-		SccLocalPath1 = .
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug DLL|Win32 = Debug DLL|Win32
 		Debug DLL|x64 = Debug DLL|x64
-		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
-		Release DLL|Win32 = Release DLL|Win32
 		Release DLL|x64 = Release DLL|x64
-		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
-		WabbitComp Debug|Win32 = WabbitComp Debug|Win32
-		WabbitComp Debug|x64 = WabbitComp Debug|x64
-		WabbitComp Release|Win32 = WabbitComp Release|Win32
-		WabbitComp Release|x64 = WabbitComp Release|x64
-		Wabbitemu Release|Win32 = Wabbitemu Release|Win32
-		Wabbitemu Release|x64 = Wabbitemu Release|x64
-		WindowsPhone8|Win32 = WindowsPhone8|Win32
-		WindowsPhone8|x64 = WindowsPhone8|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug DLL|Win32.ActiveCfg = Debug DLL|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug DLL|Win32.Build.0 = Debug DLL|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug DLL|x64.ActiveCfg = Debug DLL|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug DLL|x64.Build.0 = Debug DLL|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug|Win32.ActiveCfg = Debug|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug|Win32.Build.0 = Debug|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug|x64.ActiveCfg = Debug|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug|x64.Build.0 = Debug|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release DLL|Win32.ActiveCfg = Release DLL|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release DLL|Win32.Build.0 = Release DLL|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release DLL|x64.ActiveCfg = Release DLL|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release DLL|x64.Build.0 = Release DLL|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release|Win32.ActiveCfg = Release|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release|Win32.Build.0 = Release|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release|x64.ActiveCfg = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release|x64.Build.0 = Release|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WabbitComp Debug|Win32.ActiveCfg = WabbitComp Debug|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WabbitComp Debug|Win32.Build.0 = WabbitComp Debug|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WabbitComp Debug|x64.ActiveCfg = WabbitComp Debug|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WabbitComp Debug|x64.Build.0 = WabbitComp Debug|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WabbitComp Release|Win32.ActiveCfg = WabbitComp Release|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WabbitComp Release|Win32.Build.0 = WabbitComp Release|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WabbitComp Release|x64.ActiveCfg = WabbitComp Release|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WabbitComp Release|x64.Build.0 = WabbitComp Release|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Release|Win32.ActiveCfg = Wabbitemu Release|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Release|Win32.Build.0 = Wabbitemu Release|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Release|x64.ActiveCfg = Wabbitemu Release|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Release|x64.Build.0 = Wabbitemu Release|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WindowsPhone8|Win32.ActiveCfg = WindowsPhone8|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WindowsPhone8|Win32.Build.0 = WindowsPhone8|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WindowsPhone8|x64.ActiveCfg = WindowsPhone8|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.WindowsPhone8|x64.Build.0 = WindowsPhone8|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F7A05326-4FFC-422A-8279-6CC532E389FB}
 	EndGlobalSection
 EndGlobal
