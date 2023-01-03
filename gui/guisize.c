@@ -221,7 +221,7 @@ BOOL UnadjustWindowRect(LPRECT prc, DWORD dwStyle, BOOL fMenu) {
 	return fRc;
 }
 
-double GetSkinScale(LONG ClientNewWidth, LONG ClientNewHeight, 
+double GetSkinScale(LONG ClientNewWidth, LONG ClientNewHeight,
 	LONG *DiffWidth, LONG *DiffHeight, double default_skin_scale)
 {
 	
@@ -284,6 +284,7 @@ LRESULT HandleSkinSizingMessage(HWND hwnd, LPMAINWINDOW lpMainWindow, WPARAM wPa
 		DiffWidth = (SKIN_WIDTH * ClientNewHeight / SKIN_HEIGHT) - ClientNewWidth;
 	}
 
+	int dpi = GetDpiForWindow(hwnd);
 	lpMainWindow->skin_scale = GetSkinScale(ClientNewWidth, ClientNewHeight,
 		&DiffWidth, &DiffHeight, lpMainWindow->default_skin_scale);
 

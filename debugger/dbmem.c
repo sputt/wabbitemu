@@ -296,10 +296,10 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			MoveToEx(hdc, tm.tmAveCharWidth * sidebar_width - 1, mps->cyHeader, NULL);
 			LineTo(hdc, tm.tmAveCharWidth * sidebar_width - 1, r.bottom);
 
-			int i, j, 	rows = (r.bottom - r.top + mps->cyRow - 1)/mps->cyRow,
-						cols =
-						(r.right - r.left - tm.tmAveCharWidth * sidebar_width) /
-						(kMemWidth + 2 * tm.tmAveCharWidth);
+			int i, j, rows = (r.bottom - r.top + mps->cyRow - 1) / mps->cyRow,
+				cols =
+				max(1, (r.right - r.left - tm.tmAveCharWidth * sidebar_width) /
+					(kMemWidth + 2 * tm.tmAveCharWidth));
 
 			mps->nRows = rows;
 			mps->nCols = cols;

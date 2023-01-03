@@ -440,8 +440,6 @@ POINT GetStartPoint() {
 LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 	RECT r;
 
-	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, TRUE);
-
 	// this is to do some checks on some bad registry settings we may have saved
 	// its also good for multiple monitors, in case wabbit was on a monitor that
 	// no longer exists
@@ -453,20 +451,8 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 		return NULL;
 	}
 
-	if (!lpMainWindow->scale) {
-		lpMainWindow->scale = 2;
-	}
-
-	if (lpMainWindow->skin_scale < DBL_EPSILON) {
-		lpMainWindow->skin_scale = 1.0;
-	}
-
-	if (lpMainWindow->bSkinEnabled) {
-		SetRect(&r, 0, 0, lpMainWindow->m_RectSkin.Width * lpMainWindow->scale, lpMainWindow->m_RectSkin.Height * lpMainWindow->scale);
-	} else {
-		SetRect(&r, 0, 0, 128 * lpMainWindow->scale, 64 * lpMainWindow->scale);
-	}
-
+	lpMainWindow->scale = 1;
+	lpMainWindow->default_skin_scale = 1.0;
 	lpMainWindow->lpCalc = lpCalc;
 	lpMainWindow->silent_mode = silent_mode;
 	lpMainWindow->GIFAdd = 1;
@@ -477,12 +463,15 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 		g_szAppName,
 		_T("Wabbitemu"),
 		WS_TILEDWINDOW | WS_CLIPCHILDREN,
-		startPoint.x, startPoint.y, r.right - r.left, r.bottom - r.top,
+		startPoint.x, startPoint.y, 0, 0,
 		NULL, 0, g_hInst, (LPVOID) lpMainWindow);
 
 	if (lpMainWindow->hwndFrame == NULL) {
 		return NULL;
 	}
+
+	int dpi = GetDpiForWindow(lpMainWindow->hwndFrame);
+	lpMainWindow->skin_scale = (96.0 / (double)dpi);
 
 	lpCalc->speed = 100;
 	lpMainWindow->hMenu = GetMenu(lpMainWindow->hwndFrame);
@@ -516,6 +505,7 @@ void load_settings(LPCALC lpCalc, LPVOID lParam) {
 		lcd->lcd_delay = (u_int)QueryWabbitKey(_T("lcd_delay"));
 	}
 
+	// Finally cause the main window to load its skin.
 	SendMessage(lpMainWindow->hwndFrame, WM_FRAME_UPDATE, 0, 0);
 	if (lpMainWindow->hwndDebug != NULL) {
 		SendMessage(lpMainWindow->hwndFrame, WM_CLOSE_DEBUGGER, 0, 0);
@@ -1235,7 +1225,7 @@ HRESULT CWabbitemuModule::PostMessageLoop() {
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int nCmdShow)
 {
-	// SetProcessDPIAware();
+	SetProcessDPIAware();
 	return _Module.WinMain(nCmdShow);
 }
 
@@ -1343,20 +1333,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				// still pretty resource intensive
 				// UpdateWabbitemuLayeredWindow(lpMainWindow);
 			} else {
-				LONG updateWidth = ps.rcPaint.right - ps.rcPaint.left;
-				LONG updateHeight = ps.rcPaint.bottom - ps.rcPaint.top;
+				RECT clientRect;
+				GetClientRect(hwnd, &clientRect);
 
-				double skin_scale = lpMainWindow->skin_scale;
-				Rect updateRect(ps.rcPaint.left, ps.rcPaint.top, updateWidth, updateHeight);
 				Graphics g(hdc);
 				g.SetInterpolationMode(InterpolationModeLowQuality);
+
+				Rect fullClientRect = Rect(clientRect.left, clientRect.top, clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 				g.DrawImage(lpMainWindow->m_lpBitmapRenderedSkin,
-					updateRect,
-					(INT) (ps.rcPaint.left / skin_scale),
-					(INT) (ps.rcPaint.top / skin_scale),
-					(INT) (updateWidth / skin_scale), 
-					(INT) (updateHeight / skin_scale),
-					UnitPixel);
+					fullClientRect);
 			}
 
 			delete lpMainWindow->m_lpBitmapRenderedSkin;

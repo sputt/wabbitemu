@@ -55,28 +55,13 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 		lpMainWindow->hwndStatusBar = NULL;
 	}
 
+	int dpi = GetDpiForWindow(lpMainWindow->hwndFrame);
 	if (lpMainWindow->bSkinEnabled) {
 		bChecked = MF_CHECKED;
 		rc.left = lpMainWindow->m_RectSkin.X;
 		rc.top = lpMainWindow->m_RectSkin.Y;
 		rc.right = lpMainWindow->m_RectSkin.GetRight();
 		rc.bottom = lpMainWindow->m_RectSkin.GetBottom();
-		LONG screenHeight = (LONG) GetSystemMetrics(SM_CYVIRTUALSCREEN);
-		LONG clientHeight = rc.bottom - rc.top;
-		// not checking if you screenWidth < rectWidth
-		// please save yourself if you have a screen < 300px
-		if (screenHeight < clientHeight * lpMainWindow->default_skin_scale) {
-			// you have a tiny computer screen, scale the skin down to fit
-			LONG clientWidth = rc.right - rc.left;
-			LONG newWidth = SKIN_WIDTH * clientHeight / SKIN_HEIGHT;
-
-			LONG heightDiff = clientHeight - screenHeight;
-			LONG widthDiff = clientWidth - newWidth;
-
-			lpMainWindow->skin_scale = GetSkinScale(clientWidth, clientHeight,
-				&widthDiff, &heightDiff, lpMainWindow->default_skin_scale);
-		}
-
 		rc.left = (LONG)(rc.left * lpMainWindow->skin_scale);
 		rc.top = (LONG)(rc.top * lpMainWindow->skin_scale);
 		rc.right = (LONG)(rc.right * lpMainWindow->skin_scale);
@@ -88,7 +73,7 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 		// fix scale so that it is valid for this calc
 		lpMainWindow->scale = max(GetDefaultKeymapScreenScale(lpCalc->model), lpMainWindow->scale);
 		SetRect(&rc, 0, 0, lpCalc->cpu.pio.lcd->width * lpMainWindow->scale, lpCalc->cpu.pio.lcd->height * lpMainWindow->scale);
-		int iStatusWidths[] = { 100, -1 };
+		int iStatusWidths[] = { MulDiv(100, dpi, 96), -1 };
 		lpMainWindow->hwndStatusBar = CreateWindow(STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE,
 			0, 0, 0, 0, lpMainWindow->hwndFrame, NULL, g_hInst, NULL);
 		// set the text. Text on the left will be the FPS (set in LCD code)
@@ -134,7 +119,7 @@ void UpdateWabbitemuMainWindow(LPMAINWINDOW lpMainWindow) {
 		SetWindowLongPtr(lpMainWindow->hwndFrame, GWL_STYLE, style);
 	}
 	SetWindowPos(lpMainWindow->hwndFrame, HWND_TOPMOST, 0, 0, windowWidth, windowHeight, flags);
-	SendMessage(lpMainWindow->hwndFrame, WM_SIZE, SIZE_RESTORED, MAKELPARAM(clientWidth, clientHeight));
+	// SendMessage(lpMainWindow->hwndFrame, WM_SIZE, SIZE_RESTORED, MAKELPARAM(clientWidth, clientHeight));
 	// Added because starting in window mode doesn't refresh the model string
 	InvalidateRect(lpMainWindow->hwndStatusBar, NULL, FALSE);
 }
@@ -278,15 +263,6 @@ int gui_frame_update(LPMAINWINDOW lpMainWindow) {
 		MessageBox(lpMainWindow->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"), MB_OK | MB_ICONERROR);
 		return 0;
 	} else {
-		if (lpMainWindow->skin_scale < DBL_EPSILON) {
-			lpMainWindow->skin_scale = 1.0;
-		} else if (lpMainWindow->default_skin_scale > DBL_EPSILON) {
-			lpMainWindow->skin_scale = lpMainWindow->skin_scale / lpMainWindow->default_skin_scale;
-		}
-
-		lpMainWindow->default_skin_scale = 1.0;
-		lpMainWindow->skin_scale = sqrt(253750.0 * 4 / (double)(skinWidth * skinHeight));
-		
 		lpMainWindow->m_RectSkin.Width = skinWidth;
 		lpMainWindow->m_RectSkin.Height = skinHeight;
 		BitmapData *data = new BitmapData;

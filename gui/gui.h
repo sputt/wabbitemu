@@ -114,8 +114,12 @@ typedef struct MainWindow {
 	LPCALC lpTeacherViewCalc;
 	TeacherViewScreen_t teacher_views[TEACHER_VIEW_ROWS][TEACHER_VIEW_COLS];
 
+	// Integer scale multiplier if the skin isn't enabled
 	DWORD scale;
+
 	double default_skin_scale;
+
+	// Scale if the skin is enabled. Conversion from client coordinates to skin coordinates
 	double skin_scale;
 	BOOL bCutout;
 	BOOL bSkinEnabled;

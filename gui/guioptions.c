@@ -177,7 +177,8 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 
 		screenImage = lcd->image(lcd);
 		
-		StretchDIBits(hdc, 0, 0, 192, 128,
+		int dpi = GetDpiForSystem();
+		StretchDIBits(hdc, 0, 0, MulDiv(192, dpi, 96), MulDiv(128, dpi, 96),
 			0, 0, 96, 64,
 			screenImage,
 			GetLCDColorPalette(TI_83P, lcd),
@@ -257,7 +258,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 
 			cbMode = GetDlgItem(hwndDlg, IDC_CBODISPLAYMODE);
 			imgDisplayPreview = GetDlgItem(hwndDlg, IDC_IMGDISPLAYPREVIEW);
-
+			
 			ComboBox_AddString(cbMode, _T("Perfect gray"));
 			ComboBox_AddString(cbMode, _T("Steady freq"));
 			ComboBox_AddString(cbMode, _T("Game gray"));
@@ -292,7 +293,8 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			SendMessage(trbFPS, TBM_SETTICFREQ, 10, 0);
 			SendMessage(trbFPS, TBM_SETPOS, TRUE, MAKELPARAM(displayFPS, 0));
 
-			SetWindowPos(imgDisplayPreview, NULL, 0, 0, 196, 132, SWP_NOMOVE | SWP_NOZORDER);
+			int dpi = GetDpiForWindow(imgDisplayPreview);
+			SetWindowPos(imgDisplayPreview, NULL, 0, 0, MulDiv(196, dpi, 96), MulDiv(132, dpi, 96), SWP_NOMOVE | SWP_NOZORDER);
 			if (hdlThread != NULL) {
 				TerminateThread(hdlThread, 0);
 				hdlThread = NULL;

@@ -309,7 +309,8 @@ HRESULT LoadRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCal
 	lpMainWindow->bAlphaBlendLCD = (BOOL)QueryWabbitKey(_T("alphablend_lcd"));
 	lpMainWindow->scale = (int)QueryWabbitKey(_T("screen_scale"));
 	StringCbCopy(skinScale, sizeof(skinScale), (TCHAR *) QueryWabbitKey(_T("skin_scale")));
-	lpMainWindow->skin_scale = _ttof(skinScale);
+	int dpi = GetDpiForWindow(lpMainWindow->hwndFrame);
+	lpMainWindow->skin_scale = _ttof(skinScale) * (double)dpi / 96.0;
 	lpMainWindow->m_FaceplateColor = (COLORREF)QueryWabbitKey(_T("faceplate_color"));
 	exit_save_state = (BOOL) QueryWabbitKey(_T("exit_save_state"));
 	new_calc_on_load_files = (BOOL) QueryWabbitKey(_T("load_files_first"));
@@ -452,8 +453,10 @@ HRESULT SaveRegistrySettings(const LPMAINWINDOW lpMainWindow, const LPCALC lpCal
 			SaveWabbitKey(_T("lcd_delay"), REG_DWORD, &lcd->lcd_delay);
 		}
 		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpMainWindow->scale);
+
+		int dpi = GetDpiForWindow(lpMainWindow->hwndFrame);
 		TCHAR scaleString[32];
-		StringCbPrintf(scaleString, sizeof(scaleString), _T("%lf"), lpMainWindow->skin_scale / lpMainWindow->default_skin_scale);
+		StringCbPrintf(scaleString, sizeof(scaleString), _T("%lf"), lpMainWindow->skin_scale * 96.0 / (double) dpi);
 		SaveWabbitKey(_T("skin_scale"), REG_SZ, &scaleString);
 
 		TCHAR versionBuffer[32];

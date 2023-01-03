@@ -49,6 +49,9 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 
 	idChild = GetWindowID(hwndChild);
 	int iDpi = GetDpiForWindow(hwndChild);
+
+	int regPaneWidth = debugInfo->kRegAddr * 7;
+	int stackPaneWidth = debugInfo->kRegAddr * 4;
 	
 	switch (idChild) {
 		case ID_TOOLBAR:
@@ -58,7 +61,7 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 			RECT tabRc;
 			tabRc.left = 0;
 			tabRc.top = MulDiv(CY_TOOLBAR, iDpi, 96);
-			tabRc.right = rcParent->right - MulDiv(REG_PANE_WIDTH, iDpi, 96);
+			tabRc.right = rcParent->right - regPaneWidth;
 			tabRc.bottom = debugInfo->cyDisasm;
 			MoveWindow(hwndChild, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, FALSE);
 			int index = TabCtrl_GetCurSel(hwndChild);
@@ -71,20 +74,20 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 			break;
 		}
 		case ID_MEMTAB: {
-			MoveWindow(hwndChild, MulDiv(3, iDpi, 96), debugInfo->cyDisasm + debugInfo->cyGripper, rcParent->right - MulDiv(103 + 8, iDpi, 96) - MulDiv(REG_PANE_WIDTH, iDpi, 96),
+			MoveWindow(hwndChild, MulDiv(3, iDpi, 96), debugInfo->cyDisasm + debugInfo->cyGripper, rcParent->right - stackPaneWidth - MulDiv(8, iDpi, 96) - regPaneWidth,
 						debugInfo->cyMem - debugInfo->cyGripper - MulDiv(3, iDpi, 96), FALSE);
 			int index = TabCtrl_GetCurSel(hwndChild);
 			HWND curTab = GetMemPaneHWND(debugInfo, index);
-			MoveWindow(curTab, MulDiv(3, iDpi, 96), MulDiv(24, iDpi, 96), rcParent->right - MulDiv(REG_PANE_WIDTH + 118, iDpi, 96), debugInfo->cyMem - debugInfo->cyGripper - MulDiv(32, iDpi, 96), FALSE);
+			MoveWindow(curTab, MulDiv(3, iDpi, 96), MulDiv(24, iDpi, 96), rcParent->right - regPaneWidth - stackPaneWidth - MulDiv(8, iDpi, 96), debugInfo->cyMem - debugInfo->cyGripper - MulDiv(32, iDpi, 96), FALSE);
 			SendMessage(curTab, WM_USER, DB_UPDATE, 0);
 			break;
 		}
 		case ID_STACK:
-			MoveWindow(hwndChild, rcParent->right - MulDiv(110, iDpi, 96) - MulDiv(REG_PANE_WIDTH, iDpi, 96), debugInfo->cyDisasm + debugInfo->cyGripper,
-				MulDiv(110, iDpi, 96), debugInfo->cyMem - debugInfo->cyGripper, FALSE);
+			MoveWindow(hwndChild, rcParent->right - stackPaneWidth - regPaneWidth, debugInfo->cyDisasm + debugInfo->cyGripper,
+				stackPaneWidth, debugInfo->cyMem - debugInfo->cyGripper, FALSE);
 			break;
 		case ID_REG:
-			SetWindowPos(hwndChild, HWND_TOP, rcParent->right - MulDiv(REG_PANE_WIDTH, iDpi, 96), MulDiv(CY_TOOLBAR, iDpi, 96), MulDiv(REG_PANE_WIDTH, iDpi, 96), rcParent->bottom - CY_TOOLBAR, 0);
+			SetWindowPos(hwndChild, HWND_TOP, rcParent->right - regPaneWidth, MulDiv(CY_TOOLBAR, iDpi, 96), regPaneWidth, rcParent->bottom - CY_TOOLBAR, 0);
 			break;
 	}
 	SendMessage(hwndChild, WM_USER, DB_UPDATE, 0);
@@ -117,7 +120,13 @@ int CALLBACK EnumFontFamExProc(
 ) {
 	HDC hdc = GetDC(NULL);
 	LOGFONT *lplf = &lpelfe->elfLogFont;
-	lplf->lfHeight = -MulDiv(9, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+
+	NONCLIENTMETRICS ncm;
+	ncm.cbSize = sizeof(ncm);
+
+	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, 0, &ncm, 0);
+
+	lplf->lfHeight = ncm.lfMessageFont.lfHeight;
 	lplf->lfWidth = 0;
 	*((HFONT *) lParam) = CreateFontIndirect(lplf);
 	ReleaseDC(NULL, hdc);
@@ -387,35 +396,37 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			lpDebugInfo->code_count_tstates = -1;
 			lpDebugInfo->dispType = (DISPLAY_BASE) QueryDebugKey((TCHAR *) DisplayTypeString);
 
-			LOGFONT lf;
-			memset(&lf, 0, sizeof(LOGFONT));
-			StringCbCopy(lf.lfFaceName, sizeof(lf.lfFaceName), _T("Lucida Console"));
-			HDC hdc = GetDC(NULL);
-			EnumFontFamiliesEx(
-					hdc,
-					&lf,
-					(FONTENUMPROC) EnumFontFamExProc,
-					(LPARAM) &lpDebugInfo->hfontLucida,
-					0);
 
+			HTHEME hTheme = OpenThemeData(hwnd, L"Button");
+			LOGFONT lfLucida;
+			LOGFONT lfSegoe;
+
+			HDC hdc = GetDC(NULL);
+
+			memset(&lfLucida, 0, sizeof(LOGFONT));
+			StringCbCopy(lfLucida.lfFaceName, sizeof(lfLucida.lfFaceName), _T("Lucida Console"));
+
+			memset(&lfSegoe, 0, sizeof(LOGFONT));
+			StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Segoe UI"));
+
+			EnumFontFamiliesEx(
+				hdc,
+				&lfLucida,
+				(FONTENUMPROC)EnumFontFamExProc,
+				(LPARAM)&lpDebugInfo->hfontLucida,
+				0);
+
+			LOGFONT lf;
 			GetObject(lpDebugInfo->hfontLucida, sizeof(LOGFONT), &lf);
 			lf.lfWeight = FW_BOLD;
 
 			lpDebugInfo->hfontLucidaBold = CreateFontIndirect(&lf);
 			ReleaseDC(NULL, hdc);
 
-			LOGFONT lfSegoe;
-			memset(&lfSegoe, 0, sizeof(LOGFONT));
-			StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Segoe UI"));
-
 			hdc = GetDC(NULL);
-			if (EnumFontFamiliesEx(hdc, &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &lpDebugInfo->hfontSegoe, 0) != 0) {
-				StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("MS Shell Dlg"));
-				ReleaseDC(NULL, hdc);
-				hdc = GetDC(NULL);
-				EnumFontFamiliesEx(hdc, &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &lpDebugInfo->hfontSegoe, 0);
-				ReleaseDC(NULL, hdc);
-			}
+			EnumFontFamiliesEx(hdc, &lfSegoe, (FONTENUMPROC)EnumFontFamExProc, (LPARAM)&lpDebugInfo->hfontSegoe, 0);
+
+			ReleaseDC(NULL, hdc);
 
 			//need to do this before we add the tabs (sizes)
 			RECT rc;

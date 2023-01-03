@@ -21,6 +21,7 @@
 #include <CommCtrl.h>
 #include <shlobj.h>
 #include <Uxtheme.h>
+#include <Vssym32.h>
 #include <dwmapi.h>
 #include <Ole2.h>
 #include <OleIdl.h>
