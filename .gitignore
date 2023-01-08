@@ -21,3 +21,5 @@ Wabbitemu_p.c
 /GUI/Wabbitemu.aps
 /dlldata.c
 .vscode/
+*.orig
+*.rej
