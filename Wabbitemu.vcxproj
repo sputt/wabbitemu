@@ -747,7 +747,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>interface\wabbitemu.def</ModuleDefinitionFile>
     </Link>
     <ResourceCompile>
@@ -878,7 +878,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -934,7 +934,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -972,7 +972,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>interface\wabbitemu.def</ModuleDefinitionFile>
     </Link>
     <Midl>
@@ -1000,7 +1000,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
       <ForceFileOutput>
@@ -1134,7 +1134,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
@@ -1165,7 +1165,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>interface\wabbitemu.def</ModuleDefinitionFile>
     </Link>
@@ -1196,7 +1196,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;Vfw32.lib;Version.lib;WinInet.lib;DbgHelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>interface\wabbitemu.def</ModuleDefinitionFile>
       <IgnoreAllDefaultLibraries>
