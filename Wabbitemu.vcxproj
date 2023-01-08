@@ -830,7 +830,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreEmbeddedIDL>true</IgnoreEmbeddedIDL>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
