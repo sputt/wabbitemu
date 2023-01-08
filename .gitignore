@@ -7,6 +7,8 @@ ipch/
 lib/
 TestResults/
 *.db
+*.db-shm
+*.db-wal
 *.opendb
 *.psess
 *.sdf
@@ -18,3 +20,4 @@ Wabbitemu_i.c
 Wabbitemu_p.c
 /GUI/Wabbitemu.aps
 /dlldata.c
+.vscode/
