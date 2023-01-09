@@ -355,10 +355,10 @@ static void process_zZ(LPCALC lpCalc, char* buffer, size_t bufferSize) {
 	int read = sscanf(&buffer[2], "%x,%x,%x", &type, &addr, &kind);
 	bool set = buffer[1] == 'Z';
 	if (set) {
-		set_break(&lpCalc->mem_c, MAKE_WADDR((uint16_t)addr, 0, 0));
+		set_break(&lpCalc->mem_c, MAKE_WADDR((uint16_t)addr, 1, 1));
 	}
 	else {
-		clear_break(&lpCalc->mem_c, MAKE_WADDR((uint16_t)addr, 0, 0));
+		clear_break(&lpCalc->mem_c, MAKE_WADDR((uint16_t)addr, 1, 1));
 	}
 
 	send_response("OK", 2);
