@@ -394,10 +394,6 @@ static void process_c(LPCALC lpCalc, char* buffer, size_t bufferSize) {
 	waiting_for_stop = true;
 	CPU_step(&lpCalc->cpu);
 	calc_set_running(lpCalc, TRUE);
-
-	while (waiting_for_stop) {
-		Sleep(1);
-	}
 }
 
 static void process_M(LPCALC lpCalc, char* buffer, size_t bufferSize) {
@@ -502,16 +498,23 @@ DWORD WINAPI dbremote_thread(LPVOID lpParam) {
 		size_t recvBufSize = 0;
         while (recv(clientSocket, (char *)&recvBuf[recvBufSize++], 1, 0) != SOCKET_ERROR) {
 			char thisChar = recvBuf[recvBufSize - 1];
-			if (thisChar == '+') {
-				send_nack();
-				recvBufSize = 0;
-			}
-			else if(thisChar == '-') {
-				resend_response();
-				recvBufSize = 0;
-			}
-			else if (thisChar == '$') {
-				receiving = true;
+			if (recvBufSize == 1) {
+				if (thisChar == '\x03') {
+					waiting_for_stop = TRUE;
+					recvBufSize = 0;
+					calc_set_running(lpCalc, FALSE);
+				}
+				else if (thisChar == '+') {
+					send_nack();
+					recvBufSize = 0;
+				}
+				else if(thisChar == '-') {
+					resend_response();
+					recvBufSize = 0;
+				}
+				else if (thisChar == '$') {
+					receiving = true;
+				}
 			}
 			else if (thisChar == '#') {
 				receiving = false;
