@@ -348,6 +348,23 @@ static void process_question(LPCALC lpCalc) {
 	free(response);
 }
 
+static void process_i(LPCALC lpCalc, char* buffer, size_t bufferSize) {
+	unsigned short start_address = lpCalc->cpu.pc;
+
+	int byte_offset = 0;
+	sscanf(&buffer[2], "%d", &byte_offset);
+
+	unsigned short dst = start_address + byte_offset;
+
+	while (lpCalc->cpu.pc != dst) {
+		CPU_step(&lpCalc->cpu);
+	}
+
+	send_response("OK", 2);
+
+	process_question(lpCalc);
+}
+
 static void process_zZ(LPCALC lpCalc, char* buffer, size_t bufferSize) {
 	int type;
 	int addr;
@@ -445,6 +462,9 @@ static void do_process(LPCALC lpCalc, char* buffer, size_t bufferSize) {
 	}
 	else if (command == 's') {
 		process_s(lpCalc, buffer, bufferSize);
+	}
+	else if (command == 'i') {
+		process_i(lpCalc, buffer, bufferSize);
 	}
 	else if (command == 'z') {
 		process_zZ(lpCalc, buffer, bufferSize);
