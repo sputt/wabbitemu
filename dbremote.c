@@ -392,9 +392,10 @@ static void process_c(LPCALC lpCalc, char* buffer, size_t bufferSize) {
 	}
 
 	waiting_for_stop = true;
+	CPU_step(&lpCalc->cpu);
 	calc_set_running(lpCalc, TRUE);
 
-	while (lpCalc->running) {
+	while (waiting_for_stop) {
 		Sleep(1);
 	}
 }
@@ -474,8 +475,8 @@ static void do_process(LPCALC lpCalc, char* buffer, size_t bufferSize) {
 
 static void emit_break(LPCALC lpCalc, LPVOID lpParam) {
 	if (!lpCalc->running && waiting_for_stop) {
-		waiting_for_stop = false;
 		process_question(lpCalc);
+		waiting_for_stop = false;
 	}
 }
 
@@ -544,6 +545,7 @@ DWORD WINAPI dbremote_thread(LPVOID lpParam) {
 
 		calc_unregister_event(lpCalc, EVENT_TYPE::BREAKPOINT_EVENT, &emit_break, NULL);
 		calc_unregister_event(lpCalc, EVENT_TYPE::ROM_RUNNING_EVENT, &emit_break, NULL);
+		CPU_step(&lpCalc->cpu);
 		calc_set_running(lpCalc, TRUE);
     }
 }
