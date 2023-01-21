@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <crtdbg.h>
+#include <sysinfoapi.h>
 
 #include <stdio.h>
 #include <sys/types.h>

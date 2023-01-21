@@ -4,9 +4,56 @@
 #include "guikeylist.h"
 #include "guibuttons.h"
 #include "gui.h"
+#include "sendfileswindows.h"
 
 static HIMAGELIST hImageList = NULL;
+static BOOL replayRunning = FALSE;
 extern HINSTANCE g_hInst;
+
+
+DWORD CALLBACK ReplayKeypressThread(LPVOID lpParam) {
+	if (replayRunning) {
+		return 0;
+	}
+
+	replayRunning = TRUE;
+
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lpParam;
+	LPCALC lpCalc = lpMainWindow->lpCalc;
+
+	WaitForCalcFileSendThread(lpCalc);
+
+	uint64_t prevTimestamp = 0;
+	for (auto it = lpMainWindow->keys_pressed->begin(); it != lpMainWindow->keys_pressed->end(); it++) {
+		Sleep(lpMainWindow->key_playback_delay);
+		press_key(lpCalc, it->group, it->bit);
+	}
+
+	replayRunning = FALSE;
+
+	return 0;
+}
+
+int LoadKeyFile(TCHAR *filename, LPMAINWINDOW lpMainWindow) {
+	FILE *file;
+	_tfopen_s(&file, filename, _T("rb"));
+	if (file == NULL) {
+		return -1;
+	}
+
+	lpMainWindow->keys_pressed->clear();
+	while (true) {
+		key_string_t key;
+		if (_ftscanf_s(file, _T("Bit: %d Group: %d\r\n"), &key.bit, &key.group) != 2) {
+			break;
+		}
+
+		lpMainWindow->keys_pressed->push_back(key);
+	}
+	fclose(file);
+
+	return 0;
+}
 
 LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -26,6 +73,10 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			lpMainWindow = (LPMAINWINDOW)lParam;
 			lpCalc = lpMainWindow->lpCalc;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)lpMainWindow);
+
+			HWND replayDelay = GetDlgItem(hwnd, IDC_SLIDER_REPLAYDELAY);
+			SendMessage(replayDelay, TBM_SETRANGEMIN, true, 50);
+			SendMessage(replayDelay, TBM_SETRANGEMAX, true, 1000);
 
 			if (hImageList) {
 				ImageList_Destroy(hImageList);
@@ -100,10 +151,25 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 			HWND hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
-			SetWindowPos(hListKeys, NULL, 0, 0, rc.right - 10 - 10, rc.bottom - 10 - 40, SWP_NOMOVE | SWP_NOZORDER);
-			SetWindowPos(GetDlgItem(hwnd, IDC_BTN_CLEARKEYS), NULL, 10, rc.bottom - 40 + 5, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-			SetWindowPos(GetDlgItem(hwnd, IDC_BTN_SAVEKEYS), NULL, 130, rc.bottom - 40 + 5, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+#define BOTTOM_BAR_HEIGHT 40
+#define BOTTOM_BAR_MARGIN 5
+			SetWindowPos(hListKeys, NULL, 0, 0, rc.right - 10 - 10, rc.bottom - 10 - BOTTOM_BAR_HEIGHT * 2, SWP_NOMOVE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_BTN_CLEARKEYS), NULL, 10, rc.bottom - BOTTOM_BAR_HEIGHT * 2 + BOTTOM_BAR_MARGIN, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_BTN_SAVEKEYS), NULL, 130, rc.bottom - BOTTOM_BAR_HEIGHT * 2 + BOTTOM_BAR_MARGIN, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_BTN_LOADKEYS), NULL, 250, rc.bottom - BOTTOM_BAR_HEIGHT * 2 + BOTTOM_BAR_MARGIN, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+			SetWindowPos(GetDlgItem(hwnd, IDC_BTN_REPLAYKEYS), NULL, 10, rc.bottom - BOTTOM_BAR_HEIGHT  + BOTTOM_BAR_MARGIN, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_REPLAYDELAY_LABEL), NULL, 130, rc.bottom - BOTTOM_BAR_HEIGHT + BOTTOM_BAR_MARGIN, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_SLIDER_REPLAYDELAY), NULL, 190, rc.bottom - BOTTOM_BAR_HEIGHT + BOTTOM_BAR_MARGIN, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_CHECK_RECORDKEYS), NULL, 310, rc.bottom - BOTTOM_BAR_HEIGHT + BOTTOM_BAR_MARGIN, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 			SendMessage(hwnd, WM_USER, REFRESH_LISTVIEW, 0);
+			break;
+		}
+		case WM_HSCROLL: {
+			HWND replayDelay = GetDlgItem(hwnd, IDC_SLIDER_REPLAYDELAY);
+			if ((HWND)lParam == replayDelay) {
+				lpMainWindow->key_playback_delay = SendMessage(replayDelay, TBM_GETPOS, 0, 0);
+			}
 			break;
 		}
 		case WM_COMMAND: {
@@ -111,24 +177,47 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			switch (HIWORD(wParam)) {
 				case BN_CLICKED: {
 					switch (LOWORD(wParam)) {
+						case IDC_CHECK_RECORDKEYS:
+							lpMainWindow->keylogging_enabled = !lpMainWindow->keylogging_enabled;
+							SendMessage(hwnd, WM_USER, REFRESH_LISTVIEW, 0);
+							break;
 						case IDC_BTN_CLEARKEYS: {
 							lpMainWindow->keys_pressed->clear();
 							
 							ListView_DeleteAllItems(hListKeys);
 							break;
 						}
+						case IDC_BTN_REPLAYKEYS: {
+							CreateThread(NULL, 0, ReplayKeypressThread, lpMainWindow, 0, NULL);
+							break;
+						}
 						case IDC_BTN_SAVEKEYS:
-							TCHAR lpStrFile[MAX_PATH];
+						case IDC_BTN_LOADKEYS:
 							const TCHAR lpstrFilter[] = _T("Recorded key files ( *.key) \0*.key\0\
 														All Files (*.*)\0*.*\0\0");
-							if (!SaveFile(lpStrFile, lpstrFilter, _T("Save key file"), _T(".key"), 0, 0)) {
-								FILE *file;
-								_tfopen_s(&file, lpStrFile, _T("wb"));
-								for (auto it = lpMainWindow->keys_pressed->begin(); it != lpMainWindow->keys_pressed->end(); it++) {
-									key_string_t current = *it;
-									_ftprintf_s(file, _T("Bit: %d Group: %d\r\n"), current.bit, current.group);
+
+							WORD selection = LOWORD(wParam);
+							if (selection == IDC_BTN_SAVEKEYS) {
+								TCHAR lpStrFile[MAX_PATH];
+								if (!SaveFile(lpStrFile, lpstrFilter, _T("Save key file"), _T(".key"), 0, 0)) {
+									FILE *file;
+									_tfopen_s(&file, lpStrFile, _T("wb"));
+									uint64_t firstTimestamp = 0;
+									uint64_t prevTimestamp = 0;
+									for (auto it = lpMainWindow->keys_pressed->begin(); it != lpMainWindow->keys_pressed->end(); it++) {
+										_ftprintf_s(file, _T("Bit: %d Group: %d\r\n"), it->bit, it->group);
+									}
+									fclose(file);
 								}
-								fclose(file);
+							}
+							else if(selection == IDC_BTN_LOADKEYS) {
+								TCHAR lpStrFile[MAX_PATH];
+								if (!BrowseFile(lpStrFile, lpstrFilter, _T("Load key file"), _T(".key"), 0, 0)) {
+									if (!LoadKeyFile(lpStrFile, lpMainWindow)) {
+										ListView_DeleteAllItems(hListKeys);
+										SendMessage(hwnd, WM_USER, REFRESH_LISTVIEW, 0);
+									}
+								}
 							}
 							break;
 						}
@@ -172,17 +261,19 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				ListView_DeleteAllItems(hListKeys);
 				int i = 0;
 				for (auto it = lpMainWindow->keys_pressed->begin(); it != lpMainWindow->keys_pressed->end(); it++) {
-					key_string_t current = *it;
 					LVITEM lItem;
 					lItem.mask = LVIF_IMAGE;
 					lItem.iSubItem = 0;
-					lItem.iImage = (current.group << 3)+ current.bit;
+					lItem.iImage = (it->group << 3)+ it->bit;
 					lItem.iItem = i++;
 					int error = ListView_InsertItem(hListKeys, &lItem);
 					if (error == -1) {
 						error = GetLastError();
 					}
 				}
+
+				Button_SetCheck(GetDlgItem(hwnd, IDC_CHECK_RECORDKEYS), lpMainWindow->keylogging_enabled);
+				SendMessage(GetDlgItem(hwnd, IDC_SLIDER_REPLAYDELAY), TBM_SETPOS, true, lpMainWindow->key_playback_delay);
 			}
 
 			return TRUE;

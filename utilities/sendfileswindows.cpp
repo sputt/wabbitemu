@@ -148,6 +148,29 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 	return 0;
 }
 
+void WaitForCalcFileSendThread(const LPCALC lpCalc) {
+	if (lpCalc == NULL) {
+		return;
+	}
+
+	LPSENDINFO lpsi = g_SendInfo[lpCalc];
+	if (lpsi == NULL) {
+		// not sending
+		return;
+	}
+
+	while(WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0) {
+		if (!lpsi->FileList->size()) {
+			break;
+		}
+		ReleaseMutex(lpsi->hFileListMutex);
+		Sleep(50);
+	}
+	ReleaseMutex(lpsi->hFileListMutex);
+
+	return;
+}
+
 void CancelFileThreadSend(const LPCALC lpCalc) {
 	if (lpCalc == NULL) {
 		return;
