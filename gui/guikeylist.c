@@ -7,10 +7,17 @@
 #include "sendfileswindows.h"
 
 static HIMAGELIST hImageList = NULL;
+static BOOL replayRunning = FALSE;
 extern HINSTANCE g_hInst;
 
 
 DWORD CALLBACK ReplayKeypressThread(LPVOID lpParam) {
+	if (replayRunning) {
+		return 0;
+	}
+
+	replayRunning = TRUE;
+
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lpParam;
 	LPCALC lpCalc = lpMainWindow->lpCalc;
 
@@ -21,6 +28,8 @@ DWORD CALLBACK ReplayKeypressThread(LPVOID lpParam) {
 		Sleep(lpMainWindow->key_playback_delay);
 		press_key(lpCalc, it->group, it->bit);
 	}
+
+	replayRunning = FALSE;
 
 	return 0;
 }
