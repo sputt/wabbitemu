@@ -4,15 +4,19 @@
 
 #include "guicommandline.h"
 #include "calc.h"
+#include "guikeylist.h"
 #include "sendfileswindows.h"
 
 void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 	TCHAR tmpstring[512];
+	TCHAR nextarg[512];
+	bool handledargv[200];
 	SEND_FLAG ram = SEND_CUR;
 	int argc;
 	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
 	ZeroMemory(parsedArgs, sizeof(ParsedCmdArgs));
+	ZeroMemory(handledargv, sizeof(handledargv));
 
 	if (argv && argc > 1) {
 #ifdef _UNICODE
@@ -22,12 +26,23 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 		wcstombs_s(&numConv, tmpstring, argv[1], 512);
 #endif
 		for(int i = 1; i < argc; i++) {
+			if (handledargv[i]) {
+				continue;
+			}
+
 			ZeroMemory(tmpstring, 512);
+			ZeroMemory(nextarg, 512);
 #ifdef _UNICODE
 			StringCbCopy(tmpstring, sizeof(tmpstring), argv[i]);
+			if (i + 1 < argc) {
+				StringCbCopy(nextarg, sizeof(nextarg), argv[i + 1]);
+			}
 #else
 			size_t numConv;
 			wcstombs_s(&numConv, tmpstring, argv[i], 512);
+			if (i + 1 < argc) {
+				wcstombs_s(&numConv, nextarg, argv[i + 1], 512);
+			}
 #endif
 			char secondChar = (char) toupper(tmpstring[1]);
 			if (*tmpstring != '-' && *tmpstring != '/') {
@@ -54,20 +69,40 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 				} else {
 					parsedArgs->archive_files[parsedArgs->num_archive_files++] = temp;
 				}
-			} else if (_tcslen(tmpstring) == 2) {
+				handledargv[i] = TRUE;
+			}
+			else if (_tcslen(tmpstring) == 2) {
+				handledargv[i] = TRUE;
 				if (secondChar == 'R') {
 					ram = SEND_RAM;
-				} else if (secondChar == 'A') {
+				}
+				else if (secondChar == 'A') {
 					ram = SEND_ARC;
-				} else if (secondChar == 'S') {
+				}
+				else if (secondChar == 'S') {
 					parsedArgs->silent_mode = TRUE;
-				} else if (secondChar == 'F') {
+				}
+				else if (secondChar == 'F') {
 					parsedArgs->force_focus = TRUE;
-				} else if (secondChar == 'N') {
+				}
+				else if (secondChar == 'N') {
 					parsedArgs->force_new_instance = TRUE;
 				}
+				else {
+					handledargv[i] = FALSE;
+				}
+			} else if (_tcsicmp(tmpstring + 1, _T("replay-keys")) == 0 && i + 1 < argc && *nextarg != '-' && *nextarg != '/') {
+				parsedArgs->replay_file = (LPTSTR)malloc((_tcslen(nextarg) + 1) * sizeof(TCHAR));
+				_tcscpy(parsedArgs->replay_file, nextarg);
+				handledargv[i] = TRUE;
+				handledargv[i + 1] = TRUE;
+			} else if (_tcsicmp(tmpstring + 1, _T("gdb-port")) == 0 && i + 1 < argc && *nextarg != '-' && *nextarg != '/') {
+				_stscanf(nextarg, _T("%i"), &parsedArgs->gdb_port);
+				handledargv[i] = TRUE;
+				handledargv[i + 1] = TRUE;
 			} else if (_tcsicmp(tmpstring + 1, _T("embedding")) == 0) {
 				parsedArgs->no_create_calc = TRUE;
+				handledargv[i] = TRUE;
 			}
 		}
 	}
@@ -121,5 +156,16 @@ void LoadCommandlineFiles(ParsedCmdArgs *parsedArgs, LPARAM lParam,
 	// finally utility files (label, break, etc)
 	for (int i = 0; i < parsedArgs->num_utility_files; i++) {
 		load_callback(lParam, parsedArgs->utility_files[i], SEND_ARC);
+	}
+}
+
+void PressCommandlineKeys(ParsedCmdArgs* parsedArgs, LPARAM lParam) {
+	if (!parsedArgs->replay_file) {
+		return;
+	}
+
+	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
+	if(!LoadKeyFile(parsedArgs->replay_file, lpMainWindow)) {
+		CreateThread(NULL, 0, ReplayKeypressThread, lpMainWindow, 0, NULL);
 	}
 }

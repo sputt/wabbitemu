@@ -4,20 +4,44 @@
 #include "guikeylist.h"
 #include "guibuttons.h"
 #include "gui.h"
+#include "sendfileswindows.h"
 
 static HIMAGELIST hImageList = NULL;
 extern HINSTANCE g_hInst;
 
 
-static DWORD CALLBACK ReplayKeypressThread(LPVOID lpParam) {
+DWORD CALLBACK ReplayKeypressThread(LPVOID lpParam) {
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lpParam;
 	LPCALC lpCalc = lpMainWindow->lpCalc;
+
+	WaitForCalcFileSendThread(lpCalc);
 
 	uint64_t prevTimestamp = 0;
 	for (auto it = lpMainWindow->keys_pressed->begin(); it != lpMainWindow->keys_pressed->end(); it++) {
 		Sleep(lpMainWindow->key_playback_delay);
 		press_key(lpCalc, it->group, it->bit);
 	}
+
+	return 0;
+}
+
+int LoadKeyFile(TCHAR *filename, LPMAINWINDOW lpMainWindow) {
+	FILE *file;
+	_tfopen_s(&file, filename, _T("rb"));
+	if (file == NULL) {
+		return -1;
+	}
+
+	lpMainWindow->keys_pressed->clear();
+	while (true) {
+		key_string_t key;
+		if (_ftscanf_s(file, _T("Bit: %d Group: %d\r\n"), &key.bit, &key.group) != 2) {
+			break;
+		}
+
+		lpMainWindow->keys_pressed->push_back(key);
+	}
+	fclose(file);
 
 	return 0;
 }
@@ -180,25 +204,10 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 							else if(selection == IDC_BTN_LOADKEYS) {
 								TCHAR lpStrFile[MAX_PATH];
 								if (!BrowseFile(lpStrFile, lpstrFilter, _T("Load key file"), _T(".key"), 0, 0)) {
-									FILE *file;
-									_tfopen_s(&file, lpStrFile, _T("rb"));
-									if (file == NULL) {
-										return 0;
+									if (!LoadKeyFile(lpStrFile, lpMainWindow)) {
+										ListView_DeleteAllItems(hListKeys);
+										SendMessage(hwnd, WM_USER, REFRESH_LISTVIEW, 0);
 									}
-
-									lpMainWindow->keys_pressed->clear();
-									ListView_DeleteAllItems(hListKeys);
-									while (true) {
-										key_string_t key;
-										if (_ftscanf_s(file, _T("Bit: %d Group: %d\r\n"), &key.bit, &key.group) != 2) {
-											break;
-										}
-
-										lpMainWindow->keys_pressed->push_back(key);
-									}
-
-									SendMessage(hwnd, WM_USER, REFRESH_LISTVIEW, 0);
-									fclose(file);
 								}
 							}
 							break;

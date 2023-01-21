@@ -1102,6 +1102,8 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 
 	LoadCommandlineFiles(&m_parsedArgs, (LPARAM) lpMainWindow, LoadToLPCALC);
 
+	PressCommandlineKeys(&m_parsedArgs, (LPARAM)lpMainWindow);
+
 	// Set the one global timer for all calcs
 	SetTimer(NULL, 0, TPF, TimerProc);
 
