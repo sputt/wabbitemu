@@ -96,6 +96,10 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 				_tcscpy(parsedArgs->replay_file, nextarg);
 				handledargv[i] = TRUE;
 				handledargv[i + 1] = TRUE;
+			} else if (_tcsicmp(tmpstring + 1, _T("replay-keys-delay")) == 0 && i + 1 < argc && *nextarg != '-' && *nextarg != '/') {
+				_stscanf(nextarg, _T("%i"), &parsedArgs->replay_delay);
+				handledargv[i] = TRUE;
+				handledargv[i + 1] = TRUE;
 			} else if (_tcsicmp(tmpstring + 1, _T("gdb-port")) == 0 && i + 1 < argc && *nextarg != '-' && *nextarg != '/') {
 				_stscanf(nextarg, _T("%i"), &parsedArgs->gdb_port);
 				handledargv[i] = TRUE;
@@ -165,6 +169,10 @@ void PressCommandlineKeys(ParsedCmdArgs* parsedArgs, LPARAM lParam) {
 	}
 
 	LPMAINWINDOW lpMainWindow = (LPMAINWINDOW)lParam;
+	if (parsedArgs->replay_delay > 0) {
+		lpMainWindow->key_playback_delay = parsedArgs->replay_delay;
+	}
+
 	if(!LoadKeyFile(parsedArgs->replay_file, lpMainWindow)) {
 		CreateThread(NULL, 0, ReplayKeypressThread, lpMainWindow, 0, NULL);
 	}

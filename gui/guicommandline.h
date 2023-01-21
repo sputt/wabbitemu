@@ -18,6 +18,7 @@ struct ParsedCmdArgs
 	int num_ram_files;
 	int num_cur_files;
 	int gdb_port;
+	int replay_delay;
 	BOOL silent_mode;
 	BOOL force_new_instance;
 	BOOL force_focus;
