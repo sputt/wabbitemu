@@ -55,6 +55,10 @@ void FindButtonsRect(BitmapData *bitmapData) {
 }
 
 void LogKeypress(LPMAINWINDOW lpMainWindow, int model, int group, int bit) {
+	if (!lpMainWindow->keylogging_enabled) {
+		return;
+	}
+
 	int i;
 	key_string_t *keystrings = model == TI_85 || model == TI_86 ? ti86keystrings : ti83pkeystrings;
 	for (i = 0; i < KEY_STRING_SIZE; i++) {
@@ -63,14 +67,13 @@ void LogKeypress(LPMAINWINDOW lpMainWindow, int model, int group, int bit) {
 		}
 	}
 
-	if (i == KEY_STRING_SIZE) {
-		return;
-	}
-
 	key_string_t current;
 	current.bit = bit;
 	current.group = group;
-	current.text = keystrings[i].text;
+	if (i != KEY_STRING_SIZE) {
+		current.text = keystrings[i].text;
+	}
+
 	lpMainWindow->keys_pressed->push_back(current);
 
 	if (lpMainWindow->keys_pressed->size() >= MAX_KEYPRESS_HISTORY) {
@@ -234,7 +237,7 @@ void HandleKeyUp(LPMAINWINDOW lpMainWindow, WPARAM key) {
 		key = last_shift;
 	}
 
-	keypad_key_release(&lpCalc->cpu, key);
+	keyprog_t *kp = keypad_key_release(&lpCalc->cpu, key);
 	FinalizeButtons(lpMainWindow);
 }
 

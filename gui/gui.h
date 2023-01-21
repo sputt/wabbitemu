@@ -108,6 +108,8 @@ typedef struct MainWindow {
 	// custom keymap path
 	TCHAR keymap_path[256];
 
+	BOOL keylogging_enabled;
+	int key_playback_delay;
 	list<key_string_t> *keys_pressed;
 
 	BOOL teacher_view_init;

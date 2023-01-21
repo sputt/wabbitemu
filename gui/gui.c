@@ -943,6 +943,8 @@ LPMAINWINDOW CWabbitemuModule::CreateNewFrame(LPCALC lpCalc) {
 	}
 
 	lpMainWindow->keys_pressed = new list<key_string_t>;
+	lpMainWindow->keylogging_enabled = true;
+	lpMainWindow->key_playback_delay = 200;
 	m_lpMainWindows.push_back(lpMainWindow);
 	return lpMainWindow;
 }
@@ -1981,8 +1983,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		ReleaseCapture();
 		KillTimer(hwnd, KEY_TIMER);
 
-		for (int group = 0; group < 7; group++) {
-			for (int bit = 0; bit < 8; bit++) {
+		int group, bit;
+		for (group = 0; group < 7; group++) {
+			for (bit = 0; bit < 8; bit++) {
 				if (kp->last_pressed[group][bit] - lpCalc->cpu.timer_c->tstates >= MIN_KEY_DELAY || !lpCalc->running) {
 					kp->keys[group][bit] &= (~KEY_MOUSEPRESS);
 				} else {
