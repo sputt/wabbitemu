@@ -25,6 +25,7 @@
 #include "dbmonitor.h"
 #include "dbcolorlcd.h"
 #include "dbbreakpoints.h"
+#include "dbremote.h"
 
 #include "guibuttons.h"
 #include "guicommandline.h"
@@ -387,7 +388,9 @@ void gui_debug(LPCALC lpCalc, LPVOID lParam) {
 		db_placement = lpDebugInfo->db_placement;
 	}
 
-	calc_set_running(lpCalc, FALSE);
+	if (_Module.GetParsedCmdArgs()->gdb_port == 0) {
+		calc_set_running(lpCalc, FALSE);
+	}
 	calc_pause_linked();
 	if (lpMainWindow->hwndDebug && IsWindow(lpMainWindow->hwndDebug)) {
 		SwitchToThisWindow(lpMainWindow->hwndDebug, TRUE);
@@ -416,6 +419,9 @@ void gui_debug(LPCALC lpCalc, LPVOID lParam) {
 
 	SendMessage(lpMainWindow->hwndDebug, WM_SIZE, 0, 0);
 	Debug_UpdateWindow(lpMainWindow->hwndDebug);
+	if (_Module.GetParsedCmdArgs()->gdb_port != 0) {
+		calc_set_running(lpCalc, lpCalc->running);
+	}
 }
 
 POINT GetStartPoint() {
@@ -695,7 +701,7 @@ LPMAINWINDOW create_calc_frame_register_events() {
 	calc_register_event(lpCalc, GIF_FRAME_EVENT, &handle_screenshot, NULL);
 	calc_register_event(lpCalc, AVI_VIDEO_FRAME_EVENT, &handle_avi_video_frame, lpMainWindow);
 	calc_register_event(lpCalc, AVI_AUDIO_FRAME_EVENT, &handle_avi_audio_frame, lpMainWindow);
-	if (!_Module.GetParsedCmdArgs()->no_create_calc) {
+	if (!_Module.GetParsedCmdArgs()->no_create_calc && _Module.GetParsedCmdArgs()->gdb_port == 0) {
 		calc_register_event(lpCalc, BREAKPOINT_EVENT, &gui_debug, lpMainWindow);
 	}
 	
@@ -848,6 +854,12 @@ typedef BOOL (WINAPI *MINIDUMPWRITEDUMP)(HANDLE hProcess, DWORD dwPid, HANDLE hF
 
 static BOOL hasCrashed = FALSE;
 extern int def(FILE *, FILE *, int);
+
+void ListenForRemoteDebugger(LPCALC lpCalc) {
+	if (_Module.GetParsedCmdArgs()->gdb_port != 0) {
+		CreateThread(NULL, 0, dbremote_thread, lpCalc, NULL, NULL);
+	}
+}
 
 LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 	SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOALIGNMENTFAULTEXCEPT | SEM_NOGPFAULTERRORBOX);
@@ -1099,6 +1111,8 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 	}
 
 	LoadCommandlineFiles(&m_parsedArgs, (LPARAM) lpMainWindow, LoadToLPCALC);
+
+	ListenForRemoteDebugger(lpCalc);
 
 	// Set the one global timer for all calcs
 	SetTimer(NULL, 0, TPF, TimerProc);

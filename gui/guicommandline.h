@@ -16,6 +16,7 @@ struct ParsedCmdArgs
 	int num_archive_files;
 	int num_ram_files;
 	int num_cur_files;
+	int gdb_port;
 	BOOL silent_mode;
 	BOOL force_new_instance;
 	BOOL force_focus;

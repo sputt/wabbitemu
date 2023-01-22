@@ -1183,8 +1183,10 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		case WM_DESTROY: {
 			LPCALC lpCalc = lpDebugInfo->lpCalc;
 			calc_unregister_event(lpCalc, ROM_RUNNING_EVENT, &UpdateRunningMenu, hwnd);
-			CPU_step(&lpCalc->cpu);
-			calc_set_running(lpCalc, TRUE);
+			if (_Module.GetParsedCmdArgs()->gdb_port == 0) {
+				CPU_step(&lpCalc->cpu);
+				calc_set_running(lpCalc, TRUE);
+			}
 
 			GetWindowPlacement(hwnd, &lpDebugInfo->db_placement);
 			lpDebugInfo->db_maximized = IsMaximized(hwnd);

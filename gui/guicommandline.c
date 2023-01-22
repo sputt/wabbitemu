@@ -8,11 +8,14 @@
 
 void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 	TCHAR tmpstring[512];
+	TCHAR nextarg[512];
+	bool handledargv[200];
 	SEND_FLAG ram = SEND_CUR;
 	int argc;
 	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
 	ZeroMemory(parsedArgs, sizeof(ParsedCmdArgs));
+	ZeroMemory(handledargv, sizeof(handledargv));
 
 	if (argv && argc > 1) {
 #ifdef _UNICODE
@@ -22,12 +25,23 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 		wcstombs_s(&numConv, tmpstring, argv[1], 512);
 #endif
 		for(int i = 1; i < argc; i++) {
+			if (handledargv[i]) {
+				continue;
+			}
+
 			ZeroMemory(tmpstring, 512);
+			ZeroMemory(nextarg, 512);
 #ifdef _UNICODE
 			StringCbCopy(tmpstring, sizeof(tmpstring), argv[i]);
+			if (i + 1 < argc) {
+				StringCbCopy(nextarg, sizeof(nextarg), argv[i + 1]);
+			}
 #else
 			size_t numConv;
 			wcstombs_s(&numConv, tmpstring, argv[i], 512);
+			if (i + 1 < argc) {
+				wcstombs_s(&numConv, nextarg, argv[i + 1], 512);
+			}
 #endif
 			char secondChar = (char) toupper(tmpstring[1]);
 			if (*tmpstring != '-' && *tmpstring != '/') {
@@ -54,7 +68,9 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 				} else {
 					parsedArgs->archive_files[parsedArgs->num_archive_files++] = temp;
 				}
+				handledargv[i] = TRUE;
 			} else if (_tcslen(tmpstring) == 2) {
+				handledargv[i] = TRUE;
 				if (secondChar == 'R') {
 					ram = SEND_RAM;
 				} else if (secondChar == 'A') {
@@ -65,9 +81,16 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 					parsedArgs->force_focus = TRUE;
 				} else if (secondChar == 'N') {
 					parsedArgs->force_new_instance = TRUE;
+				} else {
+					handledargv[i] = FALSE;
 				}
+			} else if (_tcsicmp(tmpstring + 1, _T("gdb-port")) == 0 && i + 1 < argc && *nextarg != '-' && *nextarg != '/') {
+				_stscanf(nextarg, _T("%i"), &parsedArgs->gdb_port);
+				handledargv[i] = TRUE;
+				handledargv[i + 1] = TRUE;
 			} else if (_tcsicmp(tmpstring + 1, _T("embedding")) == 0) {
 				parsedArgs->no_create_calc = TRUE;
+				handledargv[i] = TRUE;
 			}
 		}
 	}
