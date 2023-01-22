@@ -1110,9 +1110,9 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 		ShowWhatsNew(FALSE);
 	}
 
-	ListenForRemoteDebugger(lpCalc);
-
 	LoadCommandlineFiles(&m_parsedArgs, (LPARAM) lpMainWindow, LoadToLPCALC);
+
+	ListenForRemoteDebugger(lpCalc);
 
 	// Set the one global timer for all calcs
 	SetTimer(NULL, 0, TPF, TimerProc);

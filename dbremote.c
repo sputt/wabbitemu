@@ -5,6 +5,7 @@
 #include "guidebug.h"
 #include "dbreg.h"
 #include "keys.h"
+#include "sendfileswindows.h"
 
 #define DEFAULT_BUFLEN 800
 #define DEFAULT_PORT 27015
@@ -498,6 +499,8 @@ static void emit_break(LPCALC lpCalc, LPVOID lpParam) {
 
 DWORD WINAPI dbremote_thread(LPVOID lpParam) {	
     LPCALC lpCalc = (LPCALC)lpParam;
+	WaitForCalcFileSendThread(lpCalc);
+
 	if (_Module.GetParsedCmdArgs()->gdb_port > 0 && _Module.GetParsedCmdArgs()->gdb_port <= INTERNET_MAX_PORT_NUMBER_VALUE) {
 		port = _Module.GetParsedCmdArgs()->gdb_port;
 	}
