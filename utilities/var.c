@@ -9,7 +9,7 @@
 const char self_test[] = "Self Test?";
 const char catalog[] = "CATALOG";
 const char txt73[] = "GRAPH  EXPLORER  SOFTWARE";
-const char txt86[] = "Already Installed";
+const char txt86[] = "Memory Backup";
 
 
 #define tmpread( fp ) \
@@ -732,3 +732,4 @@ TIFILE_t* FreeTiFile(TIFILE_t * tifile) {
 	free(tifile);
 	return NULL;
 }
+
