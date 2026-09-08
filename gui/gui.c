@@ -471,8 +471,7 @@ LPMAINWINDOW gui_frame(LPCALC lpCalc) {
 		return NULL;
 	}
 
-	int dpi = GetDpiForWindow(lpMainWindow->hwndFrame);
-	lpMainWindow->skin_scale = (96.0 / (double)dpi);
+	lpMainWindow->skin_scale = 1.0;
 
 	lpCalc->speed = 100;
 	lpMainWindow->hMenu = GetMenu(lpMainWindow->hwndFrame);
@@ -1116,7 +1115,10 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 		export_png(lpCalc, screenshot);
 	}
 
-	// Set the one global timer for all calcs
+	// Set the one global timer for all calcs.
+	// Without 1ms resolution, WM_TIMER coalesces on modern Windows and the
+	// calc runs far below 100% with almost no CPU and dropped key repeats.
+	timeBeginPeriod(1);
 	SetTimer(NULL, 0, TPF, TimerProc);
 
 	hacceldebug = LoadAccelerators(g_hInst, _T("DisasmAccel"));
@@ -1241,6 +1243,8 @@ HRESULT CWabbitemuModule::PostMessageLoop() {
 		handle_screenshot(NULL, NULL);
 	}
 
+	timeEndPeriod(1);
+
 	// Shutdown GDI+
 	GdiplusShutdown(m_gdiplusToken);
 
@@ -1249,7 +1253,6 @@ HRESULT CWabbitemuModule::PostMessageLoop() {
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int nCmdShow)
 {
-	SetProcessDPIAware();
 	return _Module.WinMain(nCmdShow);
 }
 

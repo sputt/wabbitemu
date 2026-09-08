@@ -54,13 +54,26 @@ HRESULT CWabbitemu::FinalConstruct()
 	m_pBreakpointCollObj->AddRef();
 	m_pBreakpointCollObj->Initialize(m_lpCalc);
 
-	m_idTimer = SetTimer(NULL, 0, TPF, TimerProc);
+	// The GUI already installs TimerProc. A second NULL-hwnd timer shares
+	// TimerProc's static lag counters and skips frames, which looks like a
+	// slow calc that still uses almost no CPU.
+	if (m_ownsFrame) {
+		timeBeginPeriod(1);
+		m_idTimer = SetTimer(NULL, 0, TPF, TimerProc);
+	} else {
+		m_idTimer = 0;
+	}
 	return S_OK;
 };
 
 void CWabbitemu::FinalRelease()
 {
 	calc_unregister_event(m_lpCalc, ROM_LOAD_EVENT, &CreateObjects, this);
+	if (m_idTimer) {
+		KillTimer(NULL, m_idTimer);
+		m_idTimer = 0;
+		timeEndPeriod(1);
+	}
 	if (m_ownsFrame) {
 		destroy_calc_frame(m_lpMainWindow);
 	}
