@@ -62,6 +62,7 @@ public:
 	STDMETHOD(StepOver)();
 	STDMETHOD(Run)();
 	STDMETHOD(Break)();
+	STDMETHOD(PressReleaseKey)(CalcKey Key);
 
 	STDMETHOD(Reset)();
 	STDMETHOD(TurnCalcOn)();
@@ -79,6 +80,10 @@ public:
 	STDMETHOD(get_Symbols)(ITISymbolCollection **ppSymList);
 	STDMETHOD(get_Keypad)(IKeypad **ppKeypad);
 	STDMETHOD(get_Labels)(ILabelServer **ppLabelServer);
+	STDMETHOD(PressKeyCode)(LONG KeyCode);
+	STDMETHOD(PressKeyFor)(LONG KeyCode, LONG DurationMs);
+	STDMETHOD(SetKeyState)(LONG KeyCode, VARIANT_BOOL Pressed);
+	STDMETHOD(AdvanceMilliseconds)(LONG DurationMs);
 
 	// IPersistStreamInit
 	STDMETHODIMP GetClassID(CLSID *pclsid)
@@ -119,6 +124,7 @@ public:
 private:
 	VARIANT_BOOL m_fVisible;
 	struct MainWindow *m_lpMainWindow;
+	bool m_ownsFrame = false;
 	LPCALC m_lpCalc;
 	CComPtr<IZ80> m_pZ80;
 	CComPtr<IMemoryContext> m_pMem;

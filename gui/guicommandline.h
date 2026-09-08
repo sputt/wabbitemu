@@ -20,6 +20,7 @@ struct ParsedCmdArgs
 	BOOL force_new_instance;
 	BOOL force_focus;
 	BOOL no_create_calc;
+	BOOL launch_first_app;
 };
 
 void ParseCommandLineArgs(ParsedCmdArgs *);

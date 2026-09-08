@@ -193,6 +193,10 @@ public :
 		return &m_parsedArgs;
 	}
 
+	LPMAINWINDOW GetFirstMainWindow() {
+		return m_lpMainWindows.empty() ? NULL : m_lpMainWindows.front();
+	}
+
 private:
 	vector<LPMAINWINDOW> m_lpMainWindows;
 	ULONG_PTR m_gdiplusToken;

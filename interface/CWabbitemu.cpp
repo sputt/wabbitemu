@@ -19,8 +19,14 @@
 
 HRESULT CWabbitemu::FinalConstruct()
 {
-	m_lpMainWindow = create_calc_frame_register_events();
-	m_lpMainWindow->silent_mode = TRUE;
+	m_lpMainWindow = _Module.GetFirstMainWindow();
+	m_ownsFrame = (m_lpMainWindow == NULL);
+	if (m_ownsFrame) {
+		m_lpMainWindow = create_calc_frame_register_events();
+	}
+	if (m_ownsFrame) {
+		m_lpMainWindow->silent_mode = TRUE;
+	}
 	if (m_lpMainWindow == NULL || m_lpMainWindow->lpCalc == NULL) {
 		MessageBox(NULL, _T("Unable to create main window"), _T("Error"), MB_OK | MB_ICONERROR);
 		return E_UNEXPECTED;
@@ -30,6 +36,17 @@ HRESULT CWabbitemu::FinalConstruct()
 	m_lpCalc = m_lpMainWindow->lpCalc;
 	calc_register_event(m_lpCalc, ROM_LOAD_EVENT, CreateObjects, this);
 	LoadRegistrySettings(m_lpMainWindow, m_lpCalc);
+	if (!m_ownsFrame) {
+		// The normal GUI instance has already loaded its ROM, so its ROM-load
+		// event has passed. Build the COM wrappers explicitly.
+		CreateObjects(m_lpCalc, this);
+	} else {
+		// Automation-only instances do not pass through normal startup.
+		if (rom_load(m_lpCalc, m_lpCalc->rom_path) == FALSE) {
+			return E_FAIL;
+		}
+		CreateObjects(m_lpCalc, this);
+	}
 
 	m_fVisible = VARIANT_FALSE;
 
@@ -44,7 +61,9 @@ HRESULT CWabbitemu::FinalConstruct()
 void CWabbitemu::FinalRelease()
 {
 	calc_unregister_event(m_lpCalc, ROM_LOAD_EVENT, &CreateObjects, this);
-	destroy_calc_frame(m_lpMainWindow);
+	if (m_ownsFrame) {
+		destroy_calc_frame(m_lpMainWindow);
+	}
 	m_pBreakpointCollObj->Release();
 }
 
@@ -305,9 +324,18 @@ STDMETHODIMP CWabbitemu::StopRecordGIF()
 
 STDMETHODIMP CWabbitemu::SavePNG(BSTR FileName)
 {
-	m_lpCalc->running = FALSE;
-	export_png(m_lpCalc, _bstr_t(FileName));
-	m_lpCalc->running = FALSE;
+	LPCALC lpCalc = m_lpCalc;
+	if (lpCalc == NULL) {
+		LPMAINWINDOW lpMainWindow = _Module.GetFirstMainWindow();
+		lpCalc = lpMainWindow ? lpMainWindow->lpCalc : NULL;
+	}
+	if (lpCalc == NULL) {
+		return E_POINTER;
+	}
+	BOOL wasRunning = lpCalc->running;
+	lpCalc->running = FALSE;
+	export_png(lpCalc, _bstr_t(FileName));
+	lpCalc->running = wasRunning;
 	return S_OK;
 }
 
@@ -339,12 +367,108 @@ STDMETHODIMP CWabbitemu::get_Symbols(ITISymbolCollection **ppSymList)
 
 STDMETHODIMP CWabbitemu::get_Keypad(IKeypad **ppKeypad)
 {
-	if (m_pKeypad == NULL)
-	{
+	LPCALC lpCalc = m_lpCalc;
+	if (lpCalc == NULL) {
+		LPMAINWINDOW lpMainWindow = _Module.GetFirstMainWindow();
+		lpCalc = lpMainWindow ? lpMainWindow->lpCalc : NULL;
+	}
+	if (ppKeypad == NULL || lpCalc == NULL) {
 		return E_POINTER;
 	}
+	CComObject<CKeypad> *keypad = NULL;
+	HRESULT hr = CComObject<CKeypad>::CreateInstance(&keypad);
+	if (FAILED(hr) || keypad == NULL) {
+		return E_OUTOFMEMORY;
+	}
+	keypad->Initialize(lpCalc);
+	return keypad->QueryInterface(IID_IKeypad, (LPVOID *) ppKeypad);
+}
 
-	return m_pKeypad->QueryInterface(IID_IKeypad, (LPVOID *) ppKeypad);
+STDMETHODIMP CWabbitemu::PressReleaseKey(CalcKey Key)
+{
+	CComObject<CKeypad> *keypad = NULL;
+	if (m_lpCalc == NULL || FAILED(CComObject<CKeypad>::CreateInstance(&keypad)) || keypad == NULL) {
+		return E_POINTER;
+	}
+	keypad->Initialize(m_lpCalc);
+	return keypad->PressReleaseKey(Key);
+}
+
+STDMETHODIMP CWabbitemu::PressKeyCode(LONG KeyCode)
+{
+	static const struct { int group; int bit; } keyMaps[] =
+	{
+		{0, 3}, {0, 1}, {0, 2}, {0, 0}, {6, 5}, {6, 6}, {6, 7}, {5, 7},
+		{4, 7}, {3, 7}, {6, 4}, {6, 3}, {6, 2}, {6, 1}, {6, 0}, {5, 6},
+		{4, 6}, {3, 6}, {2, 6}, {1, 6}, {5, 5}, {4, 5}, {3, 5}, {2, 5},
+		{1, 5}, {5, 4}, {4, 4}, {3, 4}, {2, 4}, {1, 4}, {5, 3}, {4, 3},
+		{3, 3}, {2, 3}, {1, 3}, {5, 2}, {4, 2}, {3, 2}, {2, 2}, {1, 2},
+		{5, 1}, {4, 1}, {3, 1}, {2, 1}, {1, 1}, {5, 0}, {4, 0}, {3, 0},
+		{2, 0}, {1, 0}
+	};
+	if (m_lpCalc == NULL || KeyCode < 0 || KeyCode >= ARRAYSIZE(keyMaps)) {
+		return E_INVALIDARG;
+	}
+	press_key(m_lpCalc, keyMaps[KeyCode].group, keyMaps[KeyCode].bit);
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::PressKeyFor(LONG KeyCode, LONG DurationMs)
+{
+	static const struct { int group; int bit; } keyMaps[] =
+	{
+		{0, 3}, {0, 1}, {0, 2}, {0, 0}, {6, 5}, {6, 6}, {6, 7}, {5, 7},
+		{4, 7}, {3, 7}, {6, 4}, {6, 3}, {6, 2}, {6, 1}, {6, 0}, {5, 6},
+		{4, 6}, {3, 6}, {2, 6}, {1, 6}, {5, 5}, {4, 5}, {3, 5}, {2, 5},
+		{1, 5}, {5, 4}, {4, 4}, {3, 4}, {2, 4}, {1, 4}, {5, 3}, {4, 3},
+		{3, 3}, {2, 3}, {1, 3}, {5, 2}, {4, 2}, {3, 2}, {2, 2}, {1, 2},
+		{5, 1}, {4, 1}, {3, 1}, {2, 1}, {1, 1}, {5, 0}, {4, 0}, {3, 0},
+		{2, 0}, {1, 0}
+	};
+	if (m_lpCalc == NULL || KeyCode < 0 || KeyCode >= ARRAYSIZE(keyMaps) || DurationMs <= 0) {
+		return E_INVALIDARG;
+	}
+	m_lpCalc->fake_running = TRUE;
+	keypad_press(&m_lpCalc->cpu, keyMaps[KeyCode].group, keyMaps[KeyCode].bit);
+	calc_run_tstates(m_lpCalc, (m_lpCalc->cpu.timer_c->freq * DurationMs) / 1000);
+	keypad_release(&m_lpCalc->cpu, keyMaps[KeyCode].group, keyMaps[KeyCode].bit);
+	calc_run_tstates(m_lpCalc, m_lpCalc->cpu.timer_c->freq / 32);
+	m_lpCalc->fake_running = FALSE;
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::SetKeyState(LONG KeyCode, VARIANT_BOOL Pressed)
+{
+	static const struct { int group; int bit; } keyMaps[] =
+	{
+		{0, 3}, {0, 1}, {0, 2}, {0, 0}, {6, 5}, {6, 6}, {6, 7}, {5, 7},
+		{4, 7}, {3, 7}, {6, 4}, {6, 3}, {6, 2}, {6, 1}, {6, 0}, {5, 6},
+		{4, 6}, {3, 6}, {2, 6}, {1, 6}, {5, 5}, {4, 5}, {3, 5}, {2, 5},
+		{1, 5}, {5, 4}, {4, 4}, {3, 4}, {2, 4}, {1, 4}, {5, 3}, {4, 3},
+		{3, 3}, {2, 3}, {1, 3}, {5, 2}, {4, 2}, {3, 2}, {2, 2}, {1, 2},
+		{5, 1}, {4, 1}, {3, 1}, {2, 1}, {1, 1}, {5, 0}, {4, 0}, {3, 0},
+		{2, 0}, {1, 0}
+	};
+	if (m_lpCalc == NULL || KeyCode < 0 || KeyCode >= ARRAYSIZE(keyMaps)) {
+		return E_INVALIDARG;
+	}
+	if (Pressed == VARIANT_TRUE) {
+		keypad_press(&m_lpCalc->cpu, keyMaps[KeyCode].group, keyMaps[KeyCode].bit);
+	} else {
+		keypad_release(&m_lpCalc->cpu, keyMaps[KeyCode].group, keyMaps[KeyCode].bit);
+	}
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::AdvanceMilliseconds(LONG DurationMs)
+{
+	if (m_lpCalc == NULL || DurationMs <= 0) {
+		return E_INVALIDARG;
+	}
+	m_lpCalc->fake_running = TRUE;
+	calc_run_tstates(m_lpCalc, ((time_t)m_lpCalc->cpu.timer_c->freq * DurationMs) / 1000);
+	m_lpCalc->fake_running = FALSE;
+	return S_OK;
 }
 
 STDMETHODIMP CWabbitemu::get_Labels(ILabelServer **)

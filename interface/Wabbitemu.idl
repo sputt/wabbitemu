@@ -571,6 +571,8 @@ interface IWabbitemu : IDispatch
 	HRESULT Run();
 	[helpstring("Stops execution of the emulator core.")]
 	HRESULT Break();
+	[helpstring("Presses and releases a calculator key.")]
+	HRESULT PressReleaseKey([in] CalcKey Key);
 
 	[helpstring("Resets the calculator.")]
 	HRESULT Reset();
@@ -603,6 +605,21 @@ interface IWabbitemu : IDispatch
 	
 	[propget, helpstring("Gets the list of labels loaded on this calculator.")]
 	HRESULT Labels([out, retval] ILabelServer **Labels);
+
+	[id(1001), helpstring("Presses and releases a calculator key using the IKeypad numeric key code.")]
+	HRESULT PressKeyCode([in] LONG KeyCode);
+
+	[id(1002), helpstring("Saves the current calculator LCD to a PNG file.")]
+	HRESULT SavePNG([in] BSTR FileName);
+
+	[id(1003), helpstring("Holds a calculator key for the specified duration in milliseconds.")]
+	HRESULT PressKeyFor([in] LONG KeyCode, [in] LONG DurationMs);
+
+	[id(1004), helpstring("Changes a calculator key's pressed state without advancing the emulator.")]
+	HRESULT SetKeyState([in] LONG KeyCode, [in] VARIANT_BOOL Pressed);
+
+	[id(1005), helpstring("Advances the emulated calculator by the specified duration in milliseconds.")]
+	HRESULT AdvanceMilliseconds([in] LONG DurationMs);
 };
 
 [

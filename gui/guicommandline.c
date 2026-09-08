@@ -65,6 +65,8 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 					parsedArgs->force_focus = TRUE;
 				} else if (secondChar == 'N') {
 					parsedArgs->force_new_instance = TRUE;
+				} else if (secondChar == 'Z') {
+					parsedArgs->launch_first_app = TRUE;
 				}
 			} else if (_tcsicmp(tmpstring + 1, _T("embedding")) == 0) {
 				parsedArgs->no_create_calc = TRUE;

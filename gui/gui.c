@@ -58,6 +58,7 @@
 #include "CWabbitemu.h"
 
 #define GIFGRAD_PEAK 15
+
 #define GIFGRAD_TROUGH 10
 #define KEY_TIMER 1
 #define MIN_KEY_DELAY 400
@@ -1091,6 +1092,29 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 	}
 
 	LoadCommandlineFiles(&m_parsedArgs, (LPARAM) lpMainWindow, LoadToLPCALC);
+	if (m_parsedArgs.launch_first_app) {
+		// Headless launch support: run the first application menu entry using
+		// calculator key matrix values, without synthesizing window messages.
+		Sleep(5000); // allow the link sender to complete the app transfer
+		press_key(lpCalc, 4, 6); // APPS
+		press_key(lpCalc, 3, 1); // 2
+		Sleep(250);
+		TCHAR input[256] = {0};
+		GetEnvironmentVariable(_T("WABBITEMU_KEYS"), input, ARRAYSIZE(input));
+		for (TCHAR *key = input; *key != '\0'; key++) {
+			for (int step = 0; step < 8; step++) {
+				switch (*key) {
+				case _T('U'): press_key(lpCalc, 0, 3); break;
+				case _T('L'): press_key(lpCalc, 0, 1); break;
+				case _T('R'): press_key(lpCalc, 0, 2); break;
+				case _T('D'): press_key(lpCalc, 0, 0); break;
+				}
+			}
+		}
+		TCHAR screenshot[MAX_PATH] = _T("zelda-headless.png");
+		GetEnvironmentVariable(_T("WABBITEMU_SCREENSHOT"), screenshot, ARRAYSIZE(screenshot));
+		export_png(lpCalc, screenshot);
+	}
 
 	// Set the one global timer for all calcs
 	SetTimer(NULL, 0, TPF, TimerProc);
